@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Exception;
+use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
@@ -75,4 +76,24 @@ class AuthController extends Controller
         }    
     }
 
+    public function changePassword(Request $request) {
+        try {
+            $request->validate([
+                "old_password"=> "required",
+                "new_password"=> "required",
+                "confirm_password"=> "required",
+            ]);
+
+            if (Hash::check($request->old_password, Auth::user()->password)) {
+                Auth::user()->update([
+                    "password"=> bcrypt($request->new_password)
+                ]);
+            } else {
+                return $this->sendError(["old_password" => "Old password is incorrect." ]);    
+            }
+
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
 }
