@@ -55,7 +55,6 @@ class AuthController extends Controller
                 "status" => "required",
                 "email" => "required",
                 "password" => "required",
-                "confirm_password" => "required"
             ]);
 
             User::create([
