@@ -33,19 +33,35 @@ class RolesPermissionController extends Controller
         }
     }
 
+    public function getAllRoles (Request $request) {
+        try {
+            $roles = Role::all();
+
+            return $this->sendResponse(["roles" => $roles]);
+        } catch(Exception $e) {
+
+            return $this->sendError($e->getMessage());
+        }
+    }
+
     public function updateOrCreateNewRole(Request $request) {
         try {
+
+            $request->validate([
+                "name" => "required",
+                "permissions" => "required"
+            ]);
+
             $role = Role::updateOrCreate([
                 "name" => $request->name,
                 "guard_name" => "web",
             ]);
 
-            $permissions = json_decode($request->permissions);
-            $role->syncPermissions($permissions);
+            $role->syncPermissions($request->permissions);
 
             return $this->sendResponse(["message"=> "Roles and permission saved successfully"]);
         } catch(Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage()]);
         }
     }
 }

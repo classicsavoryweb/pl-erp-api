@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Exception;
+
+class UserController extends Controller
+{
+    public function getAllUsers (Request $request) {
+        try {
+            $perPage = $request->per_page ?? 10;
+
+            $users = User::with("role")->paginate($perPage);
+
+            return $this->sendResponse($users);
+        } catch (Exception $e) {
+            return $this->sendError($e->getMessage());
+        }
+    }
+}

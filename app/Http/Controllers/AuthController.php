@@ -51,9 +51,9 @@ class AuthController extends Controller
             $request->validate([
                 "first_name" => "required",
                 "last_name" => "required",
-                "role" => "required",
-                "status" => "required",
-                "email" => "required",
+                "role_id" => "required",
+                "employee_number" => "required|unique:users",
+                "email" => "required|unique:users",
                 "password" => "required",
             ]);
 
@@ -62,8 +62,10 @@ class AuthController extends Controller
                 "last_name" => $request->last_name,
                 "middle_name" => $request->middle_name,
                 "role_id" => $request->role_id,
+                "employee_number" => $request->employee_number,
                 "email"=> $request->email,
-                "password"=> bcrypt($request->password)
+                "password"=> bcrypt($request->password),
+                "status" => "active"
             ]);
 
             return $this->sendResponse([
