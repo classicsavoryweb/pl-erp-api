@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 
 class User extends Authenticatable
 {
@@ -48,6 +50,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected $appends = ['full_name'];
+
+
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(
+            fn () => "{$this->last_name}, {$this->first_name} {$this->middle_name}"
+        );
+    }
 
     public function isActive() {
         if ($this->status === "active") {

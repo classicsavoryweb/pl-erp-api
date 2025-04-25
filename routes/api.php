@@ -19,5 +19,5 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_view_roles_and_permissions"])->get("/get-all-roles", [RolesPermissionController::class,"getAllRoles"]);
     //users module
     Route::middleware(["permission:can_create_users"])->post('/create-user', [AuthController::class, 'createUser']);
-    Route::middleware(["permission:can_view_users_module"])->get('/get-all-users', [UserController::class, "getAllUsers"]);
+    Route::middleware(["permission:can_view_users"])->get('/get-all-users', [UserController::class, "getAllUsers"]);
 });
