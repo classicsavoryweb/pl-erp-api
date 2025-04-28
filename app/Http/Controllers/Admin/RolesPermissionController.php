@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use DB;
 use Exception;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
@@ -60,6 +61,17 @@ class RolesPermissionController extends Controller
             $role->syncPermissions($request->permissions);
 
             return $this->sendResponse(["message"=> "Roles and permission saved successfully"]);
+        } catch(Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function deleteRolesAndPermissions(Request $request, $id) {
+        try {
+            $role = Role::find($id);
+            $role->delete();
+
+            return $this->sendResponse(["message"=> "Roles and permission deleted successfully."]);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
