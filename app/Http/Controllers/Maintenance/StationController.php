@@ -20,4 +20,52 @@ class StationController extends Controller
             return $this->sendError($e->getMessage());
         }
     }
+
+    public function deleteStation(Request $request, $id) {
+        try {
+            $station = Station::find($id);
+            $station->delete();
+            return $this->sendResponse(["message" => "Station deleted successfully"]);
+        } catch(Exception $e) {
+
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+    public function createStation(Request $request) {
+        try {
+            $request->validate([
+                "name" => "required",
+                "station_order" => "required"
+            ]);
+            Station::create([
+                "name" => $request->name,
+                "station_order" => $request->station_order
+            ]);
+
+            return $this->sendResponse(["message" => "Station created successfully"]);
+        } catch(Exception $e) {
+
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+    public function editStation (Request $request, $id) {
+        try {
+            $request->validate([
+                "name" => "required",
+                "station_order" => "required"
+            ]);
+            $station = Station::find($id);
+            $station->update([
+                "name" => $request->name,
+                "station_order" => $request->station_order
+            ]);
+
+            return $this->sendResponse(["message" => "Station updated successfully"]);
+        } catch(Exception $e) {
+
+            return $this->sendError($e->getMessage());
+        }
+    }
 }

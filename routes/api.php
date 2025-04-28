@@ -30,6 +30,9 @@ Route::middleware('auth:sanctum')->group( function () {
     // MAINTENANCE MODULE
     //stations
     Route::get("/get-all-stations", [StationController::class, "getAllStation"]);
+    Route::middleware(["permission:can_create_stations"])->get("/delete-station/{id}", [StationController::class,"deleteStation"]);
+    Route::middleware(["permission:can_create_stations"])->post("/edit-station/{id}", [StationController::class,"editStation"]);
+    Route::middleware(["permission:can_create_stations"])->post("/create-station", [StationController::class,"createStation"]);
     //employee status
     Route::get("/get-all-status", [EmployeeStatusController::class, "getAllEmployeStatus"]);
     Route::middleware(["permission:can_create_employee_status"])->post("/create-employee-status", [EmployeeStatusController::class, "createEmployeeStatus"]);
