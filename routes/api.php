@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\RolesPermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\PositionController;
 use App\Http\Controllers\Maintenance\StationController;
@@ -45,7 +46,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-positions", [PositionController::class, "getPositions"]);
     Route::middleware(["permission:can_perform_stations"])->post("/create-position", [PositionController::class,"createPosition"]);
     Route::middleware(["permission:can_perform_stations"])->post("/edit-position/{id}", [PositionController::class,"editPosition"]);
-
-
+    //agency
+    Route::get("/get-all-agencies", [AgencyController::class, "getAllAgencies"]);
+    Route::get("/get-agencies", [AgencyController::class, "getAgencies"]);
+    Route::middleware(["permission:can_perform_agencies"])->post("/create-agency", [AgencyController::class, "createAgency"]);
+    Route::middleware(["permission:can_perform_agencies"])->post("/edit-agency/{id}", [AgencyController::class, "editAgency"]);
 });
 

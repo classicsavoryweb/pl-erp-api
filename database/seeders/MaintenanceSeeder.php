@@ -15,5 +15,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(StationSeeder::class);
         $this->call(EmployeeStatusSeeder::class);
         $this->call(PositionSeeder::class);
+        $this->call(AgencySeeder::class);
     }
 }
