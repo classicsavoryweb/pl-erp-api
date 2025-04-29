@@ -25,12 +25,14 @@ class EmployeeStatusController extends Controller
         try {
             $request->validate([
                 "type" => "required",
-                "description" => "required"
+                "description" => "required",
+                "status" => "required"
             ]);
 
             EmployeeStatus::create([
                 "type" => $request->type,
-                "description" => $request->description
+                "description" => $request->description,
+                "status" => $request->status
             ]);
 
             return $this->sendResponse(["message" => "Employee status saved successfully"]);
@@ -54,9 +56,16 @@ class EmployeeStatusController extends Controller
 
     public function editEmployeeStatus(Request $request, $id) {
         try {
+            $request->validate([
+                "type" => "required",
+                "description" => "required",
+                "status" => "required"
+            ]);
+
             EmployeeStatus::where("id", $id)->update([
                 "type" => $request->type,
-                "description" => $request->description
+                "description" => $request->description,
+                "status" => $request->status
             ]);
 
             return $this->sendResponse(["message" => "Employee status saved successfully"]);

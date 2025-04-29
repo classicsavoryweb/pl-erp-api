@@ -13,7 +13,8 @@ class EmployeeStatus extends Model
 
     protected $fillable = [
         "type",
-        "description"
+        "description",
+        "status"
     ];
 }
 

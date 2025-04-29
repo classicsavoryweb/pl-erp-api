@@ -23,7 +23,7 @@ class AgencyController extends Controller
 
     public function getAgencies(Request $request) {
         try {
-            $agencies = Agency::all();
+            $agencies = Agency::where("status", "active")->get();
             return $this->sendResponse(["agencies" => $agencies]);
         } catch(Exception $e) {
 

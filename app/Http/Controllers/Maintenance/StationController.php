@@ -24,7 +24,7 @@ class StationController extends Controller
     public function getStations(Request $request) {
         try {
 
-            $stations = Station::all();
+            $stations = Station::where("status", "active")->get();
             return $this->sendResponse(["stations" => $stations]);
         } catch(Exception $e) {
 
@@ -47,11 +47,13 @@ class StationController extends Controller
         try {
             $request->validate([
                 "name" => "required",
-                "station_order" => "required"
+                "station_order" => "required",
+                "status" => "required"
             ]);
             Station::create([
                 "name" => $request->name,
-                "station_order" => $request->station_order
+                "station_order" => $request->station_order,
+                "status" => $request->status
             ]);
 
             return $this->sendResponse(["message" => "Station created successfully"]);
@@ -65,12 +67,14 @@ class StationController extends Controller
         try {
             $request->validate([
                 "name" => "required",
-                "station_order" => "required"
+                "station_order" => "required",
+                "status" => "required"
             ]);
             $station = Station::find($id);
             $station->update([
                 "name" => $request->name,
-                "station_order" => $request->station_order
+                "station_order" => $request->station_order,
+                "status" => $request->status
             ]);
 
             return $this->sendResponse(["message" => "Station updated successfully"]);

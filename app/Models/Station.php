@@ -11,7 +11,8 @@ class Station extends Model
 
     protected $fillable = [
         "name",
-        "station_order"
+        "station_order",
+        "status"
     ];
 
     public function position() {

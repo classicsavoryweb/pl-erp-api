@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //employee status
     Route::get("/get-all-status", [EmployeeStatusController::class, "getAllEmployeStatus"]);
     Route::middleware(["permission:can_perform_employee_status"])->post("/create-employee-status", [EmployeeStatusController::class, "createEmployeeStatus"]);
-    Route::middleware(["permission:can_perform_employee_status"])->post("/edit-employee-status", [EmployeeStatusController::class, "editEmployeeStatus"]);
+    Route::middleware(["permission:can_perform_employee_status"])->post("/edit-employee-status/{id}", [EmployeeStatusController::class, "editEmployeeStatus"]);
     Route::middleware(["permission:can_perform_employee_status"])->get("/delete-employee-status/{id}", [EmployeeStatusController::class, "deleteEmployeeStatus"]);
     //positions
     Route::get("/get-all-positions", [PositionController::class, "getAllPositions"]);
