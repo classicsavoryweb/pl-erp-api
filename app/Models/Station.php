@@ -13,4 +13,8 @@ class Station extends Model
         "name",
         "station_order"
     ];
+
+    public function position() {
+        return $this->belongsTo(Position::class);
+    }
 }

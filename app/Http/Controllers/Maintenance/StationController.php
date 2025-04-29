@@ -21,6 +21,17 @@ class StationController extends Controller
         }
     }
 
+    public function getStations(Request $request) {
+        try {
+
+            $stations = Station::all();
+            return $this->sendResponse(["stations" => $stations]);
+        } catch(Exception $e) {
+
+            return $this->sendError($e->getMessage());
+        }
+    }
+
     public function deleteStation(Request $request, $id) {
         try {
             $station = Station::find($id);

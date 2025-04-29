@@ -17,8 +17,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "can_view_administrators_module"]);
         Permission::updateOrCreate(["name" => "can_view_roles_and_permissions"]);
         Permission::updateOrCreate(["name" => "can_view_users"]);
-        Permission::updateOrCreate(["name" => "can_create_roles_and_permissions"]);
-        Permission::updateOrCreate(["name" => "can_create_users"]);
+        Permission::updateOrCreate(["name" => "can_perform_roles_and_permissions"]);
+        Permission::updateOrCreate(["name" => "can_perform_users"]);
 
         //maintenance module
         Permission::updateOrCreate(["name" => "can_view_maintenance_module"]);
@@ -26,9 +26,9 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "can_view_branches"]);
         Permission::updateOrCreate(["name" => "can_view_employee_status"]);
         Permission::updateOrCreate(["name" => "can_view_stations"]);
-        Permission::updateOrCreate(["name" => "can_create_positions"]);
-        Permission::updateOrCreate(["name" => "can_create_branches"]);
-        Permission::updateOrCreate(["name" => "can_create_employee_status"]);
-        Permission::updateOrCreate(["name" => "can_create_stations"]);
+        Permission::updateOrCreate(["name" => "can_perform_positions"]);
+        Permission::updateOrCreate(["name" => "can_perform_branches"]);
+        Permission::updateOrCreate(["name" => "can_perform_employee_status"]);
+        Permission::updateOrCreate(["name" => "can_perform_stations"]);
     }
 }
