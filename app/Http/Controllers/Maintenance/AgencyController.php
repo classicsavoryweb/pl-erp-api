@@ -59,12 +59,14 @@ class AgencyController extends Controller
             $request->validate([
                 "name" => "required",
                 "status" => "required",
-                "employee_code" => "required"
+                "employee_code" => "required",
+                "address" => "required"
             ]);
 
-            Agency::where("id", $id)->updaate([
+            Agency::where("id", $id)->update([
                 "name" => $request->name,
                 "status" => $request->status,
+                "address" => $request->address,
                 "employee_code" => $request->employee_code
             ]);
 

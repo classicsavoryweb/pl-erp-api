@@ -13,6 +13,7 @@ class Agency extends Model
     protected $fillable = [
         "name",
         "status",
-        "address"
+        "address",
+        "employee_code"
     ];
 }
