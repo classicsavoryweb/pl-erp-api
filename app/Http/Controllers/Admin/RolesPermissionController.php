@@ -47,7 +47,7 @@ class RolesPermissionController extends Controller
 
     public function updateOrCreateNewRole(Request $request) {
         try {
-
+            DB::beginTransaction();
             $request->validate([
                 "name" => "required",
                 "permissions" => "required"
@@ -59,9 +59,10 @@ class RolesPermissionController extends Controller
             ]);
 
             $role->syncPermissions($request->permissions);
-
-            return $this->sendResponse(["message"=> "Roles and permission saved successfully"]);
+            DB::commit();
+            return $this->sendResponse(["message"=> "Role and its permissions saved successfully"]);
         } catch(Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
@@ -71,7 +72,7 @@ class RolesPermissionController extends Controller
             $role = Role::find($id);
             $role->delete();
 
-            return $this->sendResponse(["message"=> "Roles and permission deleted successfully."]);
+            return $this->sendResponse(["message"=> "Role and its permissions deleted successfully."]);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
