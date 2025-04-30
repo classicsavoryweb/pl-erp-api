@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
+use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PositionController;
 use App\Http\Controllers\Maintenance\StationController;
 use Illuminate\Support\Facades\Route;
@@ -15,7 +16,6 @@ Route::middleware('auth:sanctum')->group( function () {
 
     Route::get('/logout', [AuthController::class,'logout']);
     Route::post('/change-password', [AuthController::class,'changePassword']);
-
 
     // ADMINISTRATOR MODULE
     //roles and permission
@@ -51,5 +51,18 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-agencies", [AgencyController::class, "getAgencies"]);
     Route::middleware(["permission:can_perform_agencies"])->post("/create-agency", [AgencyController::class, "createAgency"]);
     Route::middleware(["permission:can_perform_agencies"])->post("/edit-agency/{id}", [AgencyController::class, "editAgency"]);
+    //offenses
+    Route::get("/get-all-offenses", [OffenseController::class, "getAllOffenses"]);
+    Route::get("/get-all-categories", [OffenseController::class, "getAllCategories"]);
+    Route::get("/get-all-subcategories", [OffenseController::class, "getAllSubCategories"]);
+    Route::get("/get-subcategories", [OffenseController::class, "getSubCategories"]);
+    Route::get("/get-categories", [OffenseController::class, "getCategories"]);
+    Route::middleware(["permission:can_perform_offenses"])->post("/create-offense", [OffenseController::class, "createOffense"]);
+    Route::middleware(["permission:can_perform_offenses"])->post("/edit-offense/{id}", [OffenseController::class, "editOffense"]);
+    Route::middleware(["permission:can_perform_offenses"])->post("/create-category", [OffenseController::class, "createCategory"]);
+    Route::middleware(["permission:can_perform_offenses"])->post("/edit-category/{id}", [OffenseController::class, "editCategory"]);
+    Route::middleware(["permission:can_perform_offenses"])->post("/create-subcategory", [OffenseController::class, "createSubCategory"]);
+    Route::middleware(["permission:can_perform_offenses"])->post("/edit-subcategory/{id}", [OffenseController::class, "editSubCategory"]);
+
 });
 
