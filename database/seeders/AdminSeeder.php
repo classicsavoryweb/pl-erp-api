@@ -16,10 +16,19 @@ class AdminSeeder extends Seeder
     {
         $adminRole = Role::where("name","admin")->first();
         User::create([
-            'employee_number' => 'STF0001',
+            'employee_number' => 'SFI0014602',
             'first_name' => 'Kea',
             'last_name' => 'Bartolome',
             'email' => 'keabartolome7@gmail.com',
+            'password' => bcrypt('password'),
+            'role_id' => $adminRole->id,
+            'status' => 'active'
+        ]);
+        User::create([
+            'employee_number' => 'STF0001',
+            'first_name' => 'Denmark',
+            'last_name' => 'Maghanoy',
+            'email' => 'denmarkmaghanoy2gmail.com',
             'password' => bcrypt('password'),
             'role_id' => $adminRole->id,
             'status' => 'active'

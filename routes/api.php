@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\RolesPermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Maintenance\AgencyController;
+use App\Http\Controllers\Maintenance\BranchController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PositionController;
@@ -21,12 +22,12 @@ Route::middleware('auth:sanctum')->group( function () {
     //roles and permission
     Route::get("/get-all-roles-and-permissions", [RolesPermissionController::class, "getAllRolesAndPermissions"]);
     Route::get("/get-all-permissions", [RolesPermissionController::class, "getAllPermissions"]);
-    Route::middleware(["permission:can_perform_roles_and_permissions"])->post("/update-or-create-roles-and-permissions", [RolesPermissionController::class, "updateOrCreateNewRole"]);
     Route::get("/get-all-roles", [RolesPermissionController::class,"getAllRoles"]);
+    Route::middleware(["permission:can_perform_roles_and_permissions"])->post("/update-or-create-roles-and-permissions", [RolesPermissionController::class, "updateOrCreateNewRole"]);
     Route::middleware(["permission:can_perform_roles_and_permissions"])->get("/delete-role/{id}", [RolesPermissionController::class,"deleteRolesAndPermissions"]);
     //users
-    Route::middleware(["permission:can_perform_users"])->post('/create-user', [AuthController::class, 'createUser']);
     Route::get('/get-all-users', [UserController::class, "getAllUsers"]);
+    Route::middleware(["permission:can_perform_users"])->post('/create-user', [AuthController::class, 'createUser']);
     Route::middleware(["permission:can_perform_users"])->post("/edit-user/{id}", [UserController::class,"editUser"]);
 
     // MAINTENANCE MODULE
@@ -63,6 +64,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_offenses"])->post("/edit-category/{id}", [OffenseController::class, "editCategory"]);
     Route::middleware(["permission:can_perform_offenses"])->post("/create-subcategory", [OffenseController::class, "createSubCategory"]);
     Route::middleware(["permission:can_perform_offenses"])->post("/edit-subcategory/{id}", [OffenseController::class, "editSubCategory"]);
-
+    //branches
+    Route::get("/get-all-branches", [BranchController::class, "getAllBranches"]);
+    Route::get("/get-branches", [BranchController::class, "getBranches"]);
+    Route::middleware(["permission:can_perform_branches"])->post("/create-branch", [BranchController::class, "createBranch"]);
+    Route::middleware(["permission:can_perform_branches"])->post("/edit-branch/{id}", [BranchController::class, "editBranch"]);
 });
 
