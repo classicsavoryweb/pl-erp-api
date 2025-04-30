@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogsController;
 use App\Http\Controllers\Admin\RolesPermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
@@ -20,6 +21,7 @@ Route::middleware('auth:sanctum')->group( function () {
 
     // ADMINISTRATOR MODULE
     //roles and permission
+    Route::get("/get-all-activity-logs", [ActivityLogsController::class, "getAllActivityLogs"]);
     Route::get("/get-all-roles-and-permissions", [RolesPermissionController::class, "getAllRolesAndPermissions"]);
     Route::get("/get-all-permissions", [RolesPermissionController::class, "getAllPermissions"]);
     Route::get("/get-all-roles", [RolesPermissionController::class,"getAllRoles"]);

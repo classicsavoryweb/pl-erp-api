@@ -15,6 +15,7 @@ class PermissionSeeder extends Seeder
     {
         //administrator
         Permission::updateOrCreate(["name" => "can_view_administrators_module"]);
+        Permission::updateOrCreate(["name" => "can_view_activity_logs"]);
         Permission::updateOrCreate(["name" => "can_view_roles_and_permissions"]);
         Permission::updateOrCreate(["name" => "can_view_users"]);
         Permission::updateOrCreate(["name" => "can_perform_roles_and_permissions"]);

@@ -26,6 +26,8 @@ class AuthController extends Controller
             $user->assignRole($role);
             $token = $user->createToken($user->email, $role->permissions->pluck("name")->toArray());
 
+            activity()->causedBy($user)->useLog("Login")->log('User logged in');
+
             return $this->sendResponse([
                 "message" => "Logged in successfully",
                 "user" => $user,
@@ -39,8 +41,8 @@ class AuthController extends Controller
     }
 
     public function logout(Request $request) {
+        activity()->causedBy(Auth::user())->useLog("Logout")->log('User logged out');
         Auth::user()->tokens()->delete();
-
         return $this->sendResponse([
             "message" => "Logged out successfully",
         ]);
