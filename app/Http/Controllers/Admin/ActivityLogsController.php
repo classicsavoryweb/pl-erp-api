@@ -18,7 +18,7 @@ class ActivityLogsController extends Controller
 
             return $this->sendResponse($activityLogs);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 }

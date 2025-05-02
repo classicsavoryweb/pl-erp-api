@@ -17,7 +17,7 @@ class EmployeeStatusController extends Controller
             return $this->sendResponse($status);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -38,7 +38,7 @@ class EmployeeStatusController extends Controller
             return $this->sendResponse(["message" => "Employee status saved successfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -50,7 +50,7 @@ class EmployeeStatusController extends Controller
             return $this->sendResponse(["message" => "Employee status deleted successfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -71,7 +71,7 @@ class EmployeeStatusController extends Controller
             return $this->sendResponse(["message" => "Employee status saved successfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 }

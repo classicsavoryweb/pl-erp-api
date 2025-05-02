@@ -17,7 +17,7 @@ class TrainingTitleController extends Controller
             return $this->sendResponse($trainingTitles);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -27,7 +27,7 @@ class TrainingTitleController extends Controller
             return $this->sendResponse(["training_titles" => $trainingTitles]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -51,7 +51,7 @@ class TrainingTitleController extends Controller
             return $this->sendResponse(["message" => "Training title created successfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -75,7 +75,7 @@ class TrainingTitleController extends Controller
             return $this->sendResponse(["message" => "Training title updated successfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 }

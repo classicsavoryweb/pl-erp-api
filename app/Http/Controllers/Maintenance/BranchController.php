@@ -17,7 +17,7 @@ class BranchController extends Controller
             return $this->sendResponse($branches);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -28,7 +28,7 @@ class BranchController extends Controller
             return $this->sendResponse(["branches" => $branches]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 

@@ -19,7 +19,7 @@ class RolesPermissionController extends Controller
 
             return $this->sendResponse($roles);
         } catch(Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -30,7 +30,7 @@ class RolesPermissionController extends Controller
             return $this->sendResponse(["permissions" => $permissions]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -41,7 +41,7 @@ class RolesPermissionController extends Controller
             return $this->sendResponse(["roles" => $roles]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 

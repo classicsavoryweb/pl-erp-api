@@ -17,7 +17,7 @@ class AgencyController extends Controller
             return $this->sendResponse($agencies);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -27,7 +27,7 @@ class AgencyController extends Controller
             return $this->sendResponse(["agencies" => $agencies]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -50,7 +50,7 @@ class AgencyController extends Controller
             return $this->sendResponse(["message" => "Agency created succesfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -73,7 +73,7 @@ class AgencyController extends Controller
             return $this->sendResponse(["message" => "Agency created succesfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 }

@@ -18,7 +18,7 @@ class UserController extends Controller
 
             return $this->sendResponse($users);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
     
@@ -41,7 +41,7 @@ class UserController extends Controller
                 "message"=> "User updated successfully.",
             ]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 }

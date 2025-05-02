@@ -16,7 +16,7 @@ class PositionController extends Controller
             $positions = Position::with("station")->paginate($perPage);
             return $this->sendResponse($positions);
         } catch(Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -25,7 +25,7 @@ class PositionController extends Controller
             $positions = Position::where("status", "active")->get();
             return $this->sendResponse(["positions" => $positions]);
         } catch(Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -47,7 +47,7 @@ class PositionController extends Controller
 
             return $this->sendResponse(["message" => "Position saved successfully"]);
         } catch(Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -70,7 +70,7 @@ class PositionController extends Controller
 
             return $this->sendResponse(["message" => "Position saved successfully"]);
         } catch(Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 }

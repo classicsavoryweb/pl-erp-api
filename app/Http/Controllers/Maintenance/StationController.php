@@ -17,7 +17,7 @@ class StationController extends Controller
             return $this->sendResponse($stations);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -28,7 +28,7 @@ class StationController extends Controller
             return $this->sendResponse(["stations" => $stations]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -39,7 +39,7 @@ class StationController extends Controller
             return $this->sendResponse(["message" => "Station deleted successfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -59,7 +59,7 @@ class StationController extends Controller
             return $this->sendResponse(["message" => "Station created successfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -80,7 +80,7 @@ class StationController extends Controller
             return $this->sendResponse(["message" => "Station updated successfully"]);
         } catch(Exception $e) {
 
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 }

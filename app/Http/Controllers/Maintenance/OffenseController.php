@@ -18,7 +18,7 @@ class OffenseController extends Controller
             $offenses = Offense::paginate($perPage);
             return $this->sendResponse($offenses);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -28,7 +28,7 @@ class OffenseController extends Controller
 
             return $this->sendResponse([ "offenses" => $offenses]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -50,7 +50,7 @@ class OffenseController extends Controller
 
             return $this->sendResponse([ "message" => "Offense created successfully"]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -72,7 +72,7 @@ class OffenseController extends Controller
 
             return $this->sendResponse([ "message" => "Offense updated successfully"]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -83,7 +83,7 @@ class OffenseController extends Controller
             $categories = Category::paginate($perPage);
             return $this->sendResponse($categories);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -93,7 +93,7 @@ class OffenseController extends Controller
             $categories = Category::where("status", "active")->get();
             return $this->sendResponse(["categories" => $categories]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -111,7 +111,7 @@ class OffenseController extends Controller
 
             return $this->sendResponse([ "message" => "Category created successfully"]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -129,7 +129,7 @@ class OffenseController extends Controller
 
             return $this->sendResponse([ "message" => "Category updated successfully"]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -139,7 +139,7 @@ class OffenseController extends Controller
             $categories = SubCategory::where("status", "active")->get();
             return $this->sendResponse(["categories" => $categories]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -150,7 +150,7 @@ class OffenseController extends Controller
             $subCategories = SubCategory::paginate($perPage);
             return $this->sendResponse($subCategories);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -168,7 +168,7 @@ class OffenseController extends Controller
 
             return $this->sendResponse([ "message" => "Sub category created successfully"]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -186,7 +186,7 @@ class OffenseController extends Controller
 
             return $this->sendResponse([ "message" => "Sub category updated successfully"]);
         } catch (Exception $e) {
-            return $this->sendError($e->getMessage());
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
