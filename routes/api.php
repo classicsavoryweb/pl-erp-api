@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BranchController;
+use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PositionController;
@@ -77,5 +78,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-training-titles", [TrainingTitleController::class, "getTrainingTitles"]);
     Route::middleware(["permission:can_perform_training_titles"])->post("/create-training-title", [TrainingTitleController::class, "createTrainingTitle"]);
     Route::middleware(["permission:can_perform_training_titles"])->post("/edit-training-title/{id}", [TrainingTitleController::class, "editTrainingTitle"]);
+    //diagnosis
+    Route::get("/get-all-diagnosis", [DiagnosisController::class, "getAllDiagnosis"]);
+    Route::get("/get-diagnosis", [DiagnosisController::class, "getDiagnosis"]);
+    Route::middleware(["permission:can_perform_diagnosis"])->post("/create-diagnosis", [DiagnosisController::class, "createDiagnosis"]);
+    Route::middleware(["permission:can_perform_diagnosis"])->post("/edit-diagnosis/{id}", [DiagnosisController::class, "editDiagnosis"]);
 });
 
