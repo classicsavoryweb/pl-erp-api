@@ -23,7 +23,7 @@ class TrainingTitleController extends Controller
 
     public function getTrainingTitles(Request $request) {
         try {
-            $trainingTitles = TrainingTitle::all();
+            $trainingTitles = TrainingTitle::where("status", "active")->get();
             return $this->sendResponse(["training_titles" => $trainingTitles]);
         } catch(Exception $e) {
 

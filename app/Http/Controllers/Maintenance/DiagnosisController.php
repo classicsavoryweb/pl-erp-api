@@ -22,7 +22,7 @@ class DiagnosisController extends Controller
 
     public function getDiagnosis(Request $request) {
         try {
-            $diagnosis = Diagnosis::all();
+            $diagnosis = Diagnosis::where("status", "active")->get();
             return $this->sendResponse(["diagnosis" => $diagnosis]);
         } catch(Exception $e) {
 

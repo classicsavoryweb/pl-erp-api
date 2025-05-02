@@ -10,6 +10,7 @@ use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PositionController;
+use App\Http\Controllers\Maintenance\RateController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use Illuminate\Support\Facades\Route;
@@ -83,5 +84,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-diagnosis", [DiagnosisController::class, "getDiagnosis"]);
     Route::middleware(["permission:can_perform_diagnosis"])->post("/create-diagnosis", [DiagnosisController::class, "createDiagnosis"]);
     Route::middleware(["permission:can_perform_diagnosis"])->post("/edit-diagnosis/{id}", [DiagnosisController::class, "editDiagnosis"]);
+    //rate per group
+    Route::get("/get-all-rates", [RateController::class, "getAllRates"]);
+    Route::get("/get-rates", [RateController::class, "getRates"]);
+    Route::middleware(["permission:can_perform_rate_per_group"])->post("/create-rate", [RateController::class, "createRate"]);
+    Route::middleware(["permission:can_perform_rate_per_group"])->post("/edit-rate/{id}", [RateController::class, "editRate"]);
 });
 
