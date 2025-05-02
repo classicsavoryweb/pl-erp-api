@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\RolesPermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Maintenance\AgencyController;
+use App\Http\Controllers\Maintenance\BankAccountTypeController;
 use App\Http\Controllers\Maintenance\BranchController;
 use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
@@ -89,5 +90,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-rates", [RateController::class, "getRates"]);
     Route::middleware(["permission:can_perform_rate_per_group"])->post("/create-rate", [RateController::class, "createRate"]);
     Route::middleware(["permission:can_perform_rate_per_group"])->post("/edit-rate/{id}", [RateController::class, "editRate"]);
+    //bank account types
+    Route::get("/get-all-bank-account-types", [BankAccountTypeController::class, "getAllBankAccountTypes"]);
+    Route::get("/get-bank-account-types", [BankAccountTypeController::class, "getBankAccountTypes"]);
+    Route::middleware(["permission:can_perform_rate_per_group"])->post("/create-bank-account-type", [BankAccountTypeController::class, "createBankAccountType"]);
+    Route::middleware(["permission:can_perform_rate_per_group"])->post("/edit-bank-account-type/{id}", [BankAccountTypeController::class, "editBankAccountType"]);
 });
 
