@@ -10,6 +10,7 @@ use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PositionController;
 use App\Http\Controllers\Maintenance\StationController;
+use App\Http\Controllers\Maintenance\TrainingTitleController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -71,5 +72,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-branches", [BranchController::class, "getBranches"]);
     Route::middleware(["permission:can_perform_branches"])->post("/create-branch", [BranchController::class, "createBranch"]);
     Route::middleware(["permission:can_perform_branches"])->post("/edit-branch/{id}", [BranchController::class, "editBranch"]);
+    //training titles
+    Route::get("/get-all-training-titles", [TrainingTitleController::class, "getAllTrainingTitles"]);
+    Route::get("/get-training-titles", [TrainingTitleController::class, "getTrainingTitles"]);
+    Route::middleware(["permission:can_perform_training_titles"])->post("/create-training-title", [TrainingTitleController::class, "createTrainingTitle"]);
+    Route::middleware(["permission:can_perform_training_titles"])->post("/edit-training-title/{id}", [TrainingTitleController::class, "editTrainingTitle"]);
 });
 
