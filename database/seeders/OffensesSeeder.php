@@ -3903,47 +3903,47 @@ class OffensesSeeder extends Seeder
             ]
         ];
 
-        // foreach ($offenses as $offense) {
-        //     Offense::create([
-        //         "category" => $offense["category"],
-        //         "subcategory" => $offense["subcategory"],
-        //         "description" => $offense["description"],
-        //         "status" => $offense["status"],
-        //     ]);
-        // }
+        foreach ($offenses as $offense) {
+            Offense::create([
+                "category" => $offense["category"],
+                "subcategory" => $offense["subcategory"],
+                "description" => $offense["description"],
+                "status" => $offense["status"],
+            ]);
+        }
 
         Category::create([
             "name" => "Conduct and Decorum",
             "status" => "active"
         ]);
-		Category::create([
-            "name" => "Company Productivity",
-            "status" => "active"
-        ]);
-		Category::create([
-            "name" => "Health and Safety",
-            "status" => "active"
-        ]);
-		Category::create([
-            "name" => "Property and Security",
-            "status" => "active"
-        ]);
-		Category::create([
-            "name" => "Repeated Violation",
-            "status" => "active"
-        ]);
+        Category::create([
+                "name" => "Company Productivity",
+                "status" => "active"
+            ]);
+        Category::create([
+                "name" => "Health and Safety",
+                "status" => "active"
+            ]);
+        Category::create([
+                "name" => "Property and Security",
+                "status" => "active"
+            ]);
+        Category::create([
+                "name" => "Repeated Violation",
+                "status" => "active"
+            ]);
 
-		SubCategory::create([
-			"name" => "1st",
-			"status" => "active",
-		]);
-		SubCategory::create([
-			"name" => "2nd",
-			"status" => "active",
-		]);
-		SubCategory::create([
-			"name" => "3rd",
-			"status" => "active",
-		]);
+        SubCategory::create([
+          "name" => "1st",
+          "status" => "active",
+        ]);
+        SubCategory::create([
+          "name" => "2nd",
+          "status" => "active",
+        ]);
+        SubCategory::create([
+          "name" => "3rd",
+          "status" => "active",
+        ]);
     }
 }
