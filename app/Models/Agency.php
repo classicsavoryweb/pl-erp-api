@@ -16,4 +16,8 @@ class Agency extends Model
         "address",
         "employee_code"
     ];
+
+    public function employee() {
+        return $this->belongsTo(Employees::class);
+    }
 }

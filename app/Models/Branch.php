@@ -19,4 +19,8 @@ class Branch extends Model
         "date_open",
         "status"
     ];
+
+    public function employee() {
+        return $this->belongsTo(Employees::class);
+    }
 }

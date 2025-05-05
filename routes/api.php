@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ActivityLogsController;
 use App\Http\Controllers\Admin\RolesPermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Employees\EmployeeController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BankAccountTypeController;
 use App\Http\Controllers\Maintenance\BranchController;
@@ -101,5 +102,9 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-salary-positions", [SalaryPositionController::class, "getSalaryPositions"]);
     Route::middleware(["permission:can_perform_salary_positions"])->post("/create-salary-position", [SalaryPositionController::class, "createSalaryPosition"]);
     Route::middleware(["permission:can_perform_salary_positions"])->post("/edit-salary-position/{id}", [SalaryPositionController::class, "editSalaryPosition"]);
+
+    // EMPLOYEES MODULE
+    Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
+    Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
 });
 

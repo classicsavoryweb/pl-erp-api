@@ -18,4 +18,8 @@ class Station extends Model
     public function position() {
         return $this->belongsTo(Position::class);
     }
+
+    public function employee() {
+        return $this->belongsTo(Employees::class);
+    }
 }

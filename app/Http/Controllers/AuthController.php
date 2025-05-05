@@ -26,7 +26,7 @@ class AuthController extends Controller
             $user->assignRole($role);
             $token = $user->createToken($user->email, $role->permissions->pluck("name")->toArray());
 
-            activity()->causedBy($user)->useLog("Login")->log('User logged in');
+            activity()->causedBy($user)->useLog("Login")->log('user logged in');
 
             return $this->sendResponse([
                 "message" => "Logged in successfully",
@@ -36,12 +36,13 @@ class AuthController extends Controller
             ]);
 
         } else {
+
             return $this->sendError(["message" => "Invalid credentials" ]);
         }
     }
 
     public function logout(Request $request) {
-        activity()->causedBy(Auth::user())->useLog("Logout")->log('User logged out');
+        activity()->causedBy(Auth::user())->useLog("Logout")->log('user logged out');
         Auth::user()->tokens()->delete();
         return $this->sendResponse([
             "message" => "Logged out successfully",

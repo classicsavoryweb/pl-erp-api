@@ -10,12 +10,12 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -78,7 +78,7 @@ class User extends Authenticatable
     {
         return LogOptions::defaults()
             ->logAll()
-            ->useLogName('user')
+            ->useLogName('Admin')
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

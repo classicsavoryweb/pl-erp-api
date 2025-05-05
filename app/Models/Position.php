@@ -23,4 +23,8 @@ class Position extends Model
     public function salary() {
         return $this->hasOne(SalaryPosition::class, "id", "position_id");
     }
+
+    public function employee() {
+        return $this->belongsTo(Employees::class,"position_id","id");
+    }
 }
