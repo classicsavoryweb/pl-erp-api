@@ -19,4 +19,8 @@ class Position extends Model
     public function station() {
         return $this->hasOne(Station::class,"id","station_id");
     }
+
+    public function salary() {
+        return $this->hasOne(SalaryPosition::class, "id", "position_id");
+    }
 }

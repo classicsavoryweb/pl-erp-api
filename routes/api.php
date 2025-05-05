@@ -12,6 +12,7 @@ use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PositionController;
 use App\Http\Controllers\Maintenance\RateController;
+use App\Http\Controllers\Maintenance\SalaryPositionController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use Illuminate\Support\Facades\Route;
@@ -95,5 +96,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-bank-account-types", [BankAccountTypeController::class, "getBankAccountTypes"]);
     Route::middleware(["permission:can_perform_rate_per_group"])->post("/create-bank-account-type", [BankAccountTypeController::class, "createBankAccountType"]);
     Route::middleware(["permission:can_perform_rate_per_group"])->post("/edit-bank-account-type/{id}", [BankAccountTypeController::class, "editBankAccountType"]);
+    //salary positions
+    Route::get("/get-all-salary-positions", [SalaryPositionController::class, "getAllSalaryPositions"]);
+    Route::get("/get-salary-positions", [SalaryPositionController::class, "getSalaryPositions"]);
+    Route::middleware(["permission:can_perform_salary_positions"])->post("/create-salary-position", [SalaryPositionController::class, "createSalaryPosition"]);
+    Route::middleware(["permission:can_perform_salary_positions"])->post("/edit-salary-position/{id}", [SalaryPositionController::class, "editSalaryPosition"]);
 });
 
