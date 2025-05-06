@@ -33,7 +33,7 @@ return new class extends Migration
             $table->string("philhealth")->nullable();
             $table->string("pagibig")->nullable();
             $table->string("referred_by")->nullable();
-            $table->string("remarks")->nullable();
+            $table->longText("remarks")->nullable();
             $table->string("date_hired")->nullable();
             $table->string("type")->nullable();
             $table->string("agency_id")->nullable();
