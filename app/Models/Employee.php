@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Employees extends Model
+class Employee extends Model
 {
     use HasFactory, LogsActivity;
 
@@ -21,6 +21,7 @@ class Employees extends Model
         "civil_status",
         "gender",
         "height",
+        "birthday",
         "birthplace",
         "address",
         "provincial_address",
@@ -63,6 +64,9 @@ class Employees extends Model
             ->dontSubmitEmptyLogs();
     }
 
+    public function status() {
+        return $this->hasOne(EmployeeStatus::class,'id','employee_status_id');
+    }
     public function position() {
         return $this->hasOne(Position::class,'id','position_id');
     }

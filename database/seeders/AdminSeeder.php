@@ -25,7 +25,16 @@ class AdminSeeder extends Seeder
             'status' => 'active'
         ]);
         User::create([
-            'employee_number' => 'STF0001',
+            'employee_number' => 'SFI0000001',
+            'first_name' => 'Classic',
+            'last_name' => 'Savory',
+            'email' => 'admin@classicsavory.com',
+            'password' => bcrypt('password'),
+            'role_id' => $adminRole->id,
+            'status' => 'active'
+        ]);
+        User::create([
+            'employee_number' => 'SFI0000002',
             'first_name' => 'Denmark',
             'last_name' => 'Maghanoy',
             'email' => 'denmarkmaghanoy2gmail.com',

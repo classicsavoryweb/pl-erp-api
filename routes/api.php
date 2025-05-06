@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ActivityLogsController;
 use App\Http\Controllers\Admin\RolesPermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Employees\EmployeeController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BankAccountTypeController;
@@ -24,7 +25,7 @@ Route::middleware('auth:sanctum')->group( function () {
 
     Route::get('/logout', [AuthController::class,'logout']);
     Route::post('/change-password', [AuthController::class,'changePassword']);
-
+    Route::get("/get-summary-details", [DashboardController::class, "getSummaryDetails"]);
     // ADMINISTRATOR MODULE
     //roles and permission
     Route::get("/get-all-activity-logs", [ActivityLogsController::class, "getAllActivityLogs"]);
