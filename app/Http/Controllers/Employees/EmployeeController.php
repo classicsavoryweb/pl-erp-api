@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Employees;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contract;
 use App\Models\Employee;
+use App\Models\EmployeeStatus;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -26,9 +29,31 @@ class EmployeeController extends Controller
                 "date_hired" => "required",
                 "birthday" => "required",
                 "contact_number" => "required",
+                "contract_duration" => "required",
             ]);
 
-            Employee::create([ ...$request->all()]);
+            $employeeCount = Employee::count();
+            $employeeNumber = "SFI" . str_pad(++$employeeCount, 7, '0', STR_PAD_LEFT);
+            $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
+            $fields = $request->except(["contract_duration"]);
+
+            $employee = Employee::create([
+                "employee_number" => $employeeNumber,
+                "employee_status" => $pendingStatus->id,
+                ...$fields
+            ]);
+
+            $startDate = Carbon::parse($request->date_hired);
+            $contractEndDate = $startDate->addMonths($request->contract_duration)->toDateString();
+            Contract::create([
+                "employee_id" => $employee->id,
+                "employee_number" => $employee->employee_number,
+                "contract_start_date" => $employee->date_hired,
+                "contract_end_date" => $contractEndDate,
+                "contract_number" => 1,
+                "remarks" => "1st contract",
+                "status" => "active"
+            ]);
 
             DB::commit();
             return $this->sendResponse(["message" => "Employee added successfully." ]);

@@ -16,10 +16,16 @@ return new class extends Migration
             $table->string('branch_number')->unique();
             $table->string('name');
             $table->string('short_name');
-            $table->string('mall_admin');
             $table->string('address');
             $table->string('location');
-            $table->string('date_open');
+            $table->string('date_open')->nullable();
+            $table->string('company')->nullable();
+            $table->string('branch_email')->nullable();
+            $table->string('rate_code')->nullable();
+            $table->string('branch_head_employee_number')->nullable();
+            $table->string('group_head_employee_number')->nullable();
+            $table->string('branch_head')->nullable();
+            $table->string('group_head')->nullable();
             $table->string("status")->default("active");
             $table->timestamps();
         });

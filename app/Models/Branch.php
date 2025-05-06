@@ -10,14 +10,20 @@ class Branch extends Model
     use HasFactory;
     protected $table = "branches";
     protected $fillable = [
-        "branch_number",
         "name",
+        "branch_number",
+        "status",
         "short_name",
-        "mall_admin",
         "address",
         "location",
         "date_open",
-        "status"
+        "company",
+        "branch_email",
+        "rate_code",
+        'branch_head_employee_number',
+        "group_head_employee_number",
+        'branch_head',
+        "group_head",
     ];
 
     public function employee() {

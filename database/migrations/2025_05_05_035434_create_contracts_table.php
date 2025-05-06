@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string("employee_id");
             $table->string("employee_number");
-            $table->string( "contract_start");
-            $table->string( "contract_date");
+            $table->string( "contract_number");
+            $table->string( "contract_start_date");
+            $table->string( "contract_end_date");
             $table->string( "remarks");
             $table->string( "status");
             $table->timestamps();
