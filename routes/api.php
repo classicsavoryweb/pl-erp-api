@@ -107,6 +107,7 @@ Route::middleware('auth:sanctum')->group( function () {
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
     Route::get("/get-employees", [EmployeeController::class, "getEmployees"]);
+    Route::get("/get-employee/{employee_number}", [EmployeeController::class, "getEmployee"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
 });
 

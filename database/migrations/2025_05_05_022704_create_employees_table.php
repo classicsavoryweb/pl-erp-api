@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string("provincial_address")->nullable();
             $table->string("region")->nullable();;
             $table->string("contact_number")->nullable();
+            $table->string("tax_type")->nullable();
             $table->string("tin")->nullable();
             $table->string("sss")->nullable();
             $table->string("philhealth")->nullable();

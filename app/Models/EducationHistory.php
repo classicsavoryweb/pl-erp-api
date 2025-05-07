@@ -16,10 +16,11 @@ class EducationHistory extends Model
         "course",
         "college_date_started",
         "college_date_graduated",
-        "highchool",
-        "highchool_address",
-        "highchool_date_started",
-        "highchool_date_graduated",
+        "highschool",
+        "highschool_address",
+        "highschool_date_started",
+        "highschool_date_graduated",
+        "remarks",
     ];
     protected $table="education_history";
 

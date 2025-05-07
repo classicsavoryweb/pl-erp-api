@@ -62,7 +62,18 @@ class EmployeeController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+    
+    public function getEmployee(Request $request, $employee_number) {
+        try {
+            $employee = Employee::with(["position", "agency", "branch", "station", "employee_status"])
+                ->where("employee_number", $employee_number)
+                ->first();
 
+            return $this->sendResponse(["employee" => $employee]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
     public function getAllEmployees(Request $request) { 
         try {
             $perPage = $request->per_page ?? 10;

@@ -20,10 +20,11 @@ return new class extends Migration
             $table->string("course")->nullable();
             $table->string("college_date_started")->nullable();
             $table->string("college_date_graduated")->nullable();
-            $table->string("highchool")->nullable();
-            $table->string("highchool_address")->nullable();
-            $table->string("highchool_date_started")->nullable();
-            $table->string("highchool_date_graduated")->nullable();
+            $table->string("highschool")->nullable();
+            $table->string("highschool_address")->nullable();
+            $table->string("highschool_date_started")->nullable();
+            $table->string("highschool_date_graduated")->nullable();
+            $table->string("remarks")->nullable();
             $table->timestamps();
         });
     }

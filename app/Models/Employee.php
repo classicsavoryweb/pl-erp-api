@@ -28,6 +28,7 @@ class Employee extends Model
         "provincial_address",
         "region",
         "contact_number",
+        "tax_type",
         "tin",
         "sss",
         "philhealth",
@@ -65,7 +66,7 @@ class Employee extends Model
             ->dontSubmitEmptyLogs();
     }
 
-    public function status() {
+    public function employee_status() {
         return $this->hasOne(EmployeeStatus::class,'id','employee_status_id');
     }
     public function position() {

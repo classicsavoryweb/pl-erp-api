@@ -10,7 +10,7 @@ use App\Models\Station;
 use App\Models\EmployeeStatus;
 use App\Models\Dependents;
 use App\Models\Branch;
-
+use App\Models\EducationHistory;
 class AgencyEmployeeSeeder extends Seeder
 {
     /**
@@ -436927,7 +436927,7 @@ class AgencyEmployeeSeeder extends Seeder
             $employmentStatus = EmployeeStatus::where("description", $employee["description"])->first();
             $station = Station::where("name", $employee["station"])->first();
 
-            $employee = Employee::create([
+            $emp = Employee::create([
                 "employee_number" => $employee["employee_id2"],
                 "biometric_number" => $employee["biometricID"],
                 "first_name"=> $employee["first_name"],
@@ -436943,6 +436943,7 @@ class AgencyEmployeeSeeder extends Seeder
                 "provincial_address"    => $employee["provincial_address"],
                 "region"    => $employee["region"],
                 "contact_number"  => $employee["contact_no"],
+                "tax_type" => $employee["tax_type"],
                 "tin" => $employee["tin"],
                 "sss" => $employee["sss"],
                 "philhealth"=> $employee["philhealth"],
@@ -436958,6 +436959,20 @@ class AgencyEmployeeSeeder extends Seeder
                 "type"=> "agency",
                 "agency_id" => $employee["agency_id"],
                 "status" => $employee["employment_status"],
+            ]);
+
+            EducationHistory::create([
+              "employee_id" => $emp->id,
+              "employee_number" => $emp->employee_number,
+              "college" => $employee["college"],
+              "college_address" => $employee["college_address"],
+              "course" => $employee["course"],
+              "college_date_started" => $employee["cdate_started"],
+              "college_date_graduated" => $employee["cdate_graduated"],
+              "highschool" => $employee["highschool"],
+              "highschool_address" => $employee["highschool_address"],
+              "highschool_date_started" => $employee["hdate_started"],
+              "highschool_date_graduated" => $employee["hdate_graduated"],
             ]);
         }
     }

@@ -13,17 +13,17 @@ class DashboardController extends Controller
         try {
             $branches = Branch::where("status", "active")->count();
             $probationaryEmployees = Employee::where("status", "active")
-            ->whereHas("status", function($query) {
+            ->whereHas("employee_status", function($query) {
                 $query->where("description", "Probationary");
             })
             ->count();
             $regularEmployees = Employee::where("status", "active")
-            ->whereHas("status", function($query) {
+            ->whereHas("employee_status", function($query) {
                 $query->where("description", "Regular");
             })
             ->count();
             $contractualEmployees = Employee::where("status", "active")
-            ->whereHas("status", function($query) {
+            ->whereHas("employee_status", function($query) {
                 $query->where("description", "Contractual");
             })
             ->count();
