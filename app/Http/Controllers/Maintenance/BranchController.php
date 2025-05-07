@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Exception;
 
@@ -36,23 +37,39 @@ class BranchController extends Controller
         try {
             $request->validate([
                 "name" => "required",
-                "branch_number" => "required|unique:branches",
                 "status" => "required",
-                "mall_admin" => "required",
                 "short_name" => "required",
                 "address" => "required",
                 "location" => "required",
+                "company" => "required",
                 "date_open" => "required",
+                "branch_email" => "required",
+                "rate_code" => "required",
+                'branch_head_employee_number',
+                "group_head_employee_number",
             ]);
+
+            $count = Branch::count();
+            $format = $request->company === "Tony Ting Food Concepts Inc." ? "TTFC" : "SFI";
+            $branchNumber = $format . str_pad(++$count, 5, '0', STR_PAD_LEFT);
+            $bhEmployee = Employee::where("employee_number", $request->branch_head_employee_number)->first();
+            $ghEmployee = Employee::where("employee_number", $request->group_head_employee_number)->first();
+
             Branch::create([
                 "name" => $request->name,
-                "branch_number" => $request->branch_number,
+                "branch_number" => $branchNumber,
                 "status" => $request->status,
-                "mall_admin" => $request->mall_admin,
                 "short_name" => $request->short_name,
                 "address" => $request->address,
                 "location" => $request->location,
                 "date_open" => $request->date_open,
+                "company" => $request->company,
+                "rate_code" => $request->rate_code,
+                "branch_email" => $request->branch_email,
+                'branch_head_employee_number' => $bhEmployee->employee_number,
+                "group_head_employee_number" => $ghEmployee->employee_number,
+                'branch_head' => $bhEmployee->full_name,
+                "group_head" => $ghEmployee->full_name,
             ]);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);
@@ -66,23 +83,35 @@ class BranchController extends Controller
         try {
             $request->validate([
                 "name" => "required",
-                "branch_number" => "required|unique:branches,branch_number," . $id,
                 "status" => "required",
-                "mall_admin" => "required",
                 "short_name" => "required",
                 "address" => "required",
                 "location" => "required",
+                "company" => "required",
                 "date_open" => "required",
+                "branch_email" => "required",
+                "rate_code" => "required",
+                'branch_head_employee_number',
+                "group_head_employee_number",
             ]);
+
+            $bhEmployee = Employee::where("employee_number", $request->branch_head_employee_number)->first();
+            $ghEmployee = Employee::where("employee_number", $request->group_head_employee_number)->first();
+
             Branch::where("id", $id)->update([
                 "name" => $request->name,
-                "branch_number" => $request->branch_number,
                 "status" => $request->status,
-                "mall_admin" => $request->mall_admin,
                 "short_name" => $request->short_name,
                 "address" => $request->address,
                 "location" => $request->location,
                 "date_open" => $request->date_open,
+                "company" => $request->company,
+                "rate_code" => $request->rate_code,
+                "branch_email" => $request->branch_email,
+                'branch_head_employee_number' => $bhEmployee->employee_number,
+                "group_head_employee_number" => $ghEmployee->employee_number,
+                'branch_head' => $bhEmployee->full_name,
+                "group_head" => $ghEmployee->full_name,
             ]);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);

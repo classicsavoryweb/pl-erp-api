@@ -31,9 +31,10 @@ class UserController extends Controller
             $user->email = $request->email;
             $user->status = $request->status;
             $user->role_id = $request->role_id;
+            $user->employee_number = $request->employee_number;
             $user->middle_name = $request->middle_name ?? null;
             if ($request->password) {
-                $user->password = Hash::make($request->password);
+                $user->password = Hash::make(value: $request->password);
             }
 
             $user->save();

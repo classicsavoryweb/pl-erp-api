@@ -22,4 +22,8 @@ class EducationHistory extends Model
         "highchool_date_graduated",
     ];
     protected $table="education_history";
+
+    public function employee() {
+        return $this->belongsTo(Employee::class);
+    }
 }

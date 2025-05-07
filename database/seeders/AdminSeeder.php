@@ -34,10 +34,10 @@ class AdminSeeder extends Seeder
             'status' => 'active'
         ]);
         User::create([
-            'employee_number' => 'SFI0000002',
+            'employee_number' => '767',
             'first_name' => 'Denmark',
             'last_name' => 'Maghanoy',
-            'email' => 'denmarkmaghanoy2gmail.com',
+            'email' => 'denmarkmaghanoy2@gmail.com',
             'password' => bcrypt('password'),
             'role_id' => $adminRole->id,
             'status' => 'active'

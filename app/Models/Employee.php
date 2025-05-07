@@ -14,6 +14,7 @@ class Employee extends Model
 
     protected $fillable = [
         "employee_number",
+        "biometric_number",
         "first_name",
         "middle_name",
         "last_name",
@@ -84,6 +85,10 @@ class Employee extends Model
     }
 
     public function contract() {
-        return $this->hasMany(Employee::class, 'id','employee_id');
+        return $this->hasMany(Contract::class, 'id','employee_id');
+    }
+
+    public function education() {
+        return $this->hasOne(EducationHistory::class, 'id','employee_id');
     }
 }

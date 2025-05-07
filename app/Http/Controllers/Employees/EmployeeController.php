@@ -67,9 +67,22 @@ class EmployeeController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $employees = Employee::with(["position", "agency", "branch", "station"])->paginate($perPage);
+            $employees = Employee::with(["position", "agency", "branch", "station"])
+            ->orderBy("date_hired","desc")
+            ->paginate($perPage);
             return $this->sendResponse($employees);
         } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getEmployees(Request $request) {
+        try {
+
+            $employees = Employee::where("status", "active")->get();
+            return $this->sendResponse(["employees" => $employees]);
+        } catch(Exception $e) {
+
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
