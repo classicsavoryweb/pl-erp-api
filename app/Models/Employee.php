@@ -69,12 +69,16 @@ class Employee extends Model
     public function employee_status() {
         return $this->hasOne(EmployeeStatus::class,'id','employee_status_id');
     }
-    public function position() {
+    public function current_position() {
         return $this->hasOne(Position::class,'id','position_id');
     }
 
-    public function branch() {
+    public function current_branch() {
         return $this->hasOne(Branch::class,'id','branch_id');
+    }
+
+    public function home_branch() {
+        return $this->hasOne(Branch::class,'id','home_branch_id');
     }
 
     public function station() {
@@ -85,11 +89,19 @@ class Employee extends Model
         return $this->hasOne(Station::class,'id','agency_id');
     }
 
-    public function contract() {
+    public function contracts() {
         return $this->hasMany(Contract::class, 'id','employee_id');
     }
 
     public function education() {
         return $this->hasOne(EducationHistory::class, 'id','employee_id');
+    }
+
+    public function positions() {
+        return $this->belongsToMany(Position::class);
+    }
+
+    public function branches() {
+        return $this->belongsToMany(Branch::class);
     }
 }

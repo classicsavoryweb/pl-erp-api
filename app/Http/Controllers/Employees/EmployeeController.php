@@ -65,8 +65,16 @@ class EmployeeController extends Controller
     
     public function getEmployee(Request $request, $employee_number) {
         try {
-            $employee = Employee::with(["position", "agency", "branch", "station", "employee_status"])
-                ->where("employee_number", $employee_number)
+            $employee = Employee::with([
+                    "current_position",
+                    "agency",
+                    "current_branch",
+                    "station",
+                    "employee_status",
+                    "home_branch",
+                    "branches",
+                    "positions"
+                ])->where("employee_number", $employee_number)
                 ->first();
 
             return $this->sendResponse(["employee" => $employee]);
@@ -78,7 +86,7 @@ class EmployeeController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $employees = Employee::with(["position", "agency", "branch", "station"])
+            $employees = Employee::with(["current_position", "agency", "current_branch", "station"])
             ->orderBy("date_hired","desc")
             ->paginate($perPage);
             return $this->sendResponse($employees);

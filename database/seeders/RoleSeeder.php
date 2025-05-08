@@ -16,5 +16,11 @@ class RoleSeeder extends Seeder
         Role::updateOrCreate([
             "name" => "admin"
         ]);
+        Role::updateOrCreate([
+            "name" => "hr-head"
+        ]);
+        Role::updateOrCreate([
+            "name" => "hr"
+        ]);
     }
 }
