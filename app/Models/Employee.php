@@ -98,10 +98,14 @@ class Employee extends Model
     }
 
     public function positions() {
-        return $this->belongsToMany(Position::class);
+        return $this->belongsToMany(Position::class)
+        ->withPivot('date_started', 'remarks')
+        ->withTimestamps();
     }
 
     public function branches() {
-        return $this->belongsToMany(Branch::class);
+        return $this->belongsToMany(Branch::class)
+        ->withPivot('date_assigned', 'remarks')
+        ->withTimestamps();
     }
 }

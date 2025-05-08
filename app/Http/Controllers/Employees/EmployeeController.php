@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Employees;
 
 use App\Http\Controllers\Controller;
+use App\Models\BranchEmployee;
 use App\Models\Contract;
 use App\Models\Employee;
+use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
+use App\Models\Position;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
-use Illuminate\Support\Facades\Auth;
-use Spatie\Activitylog\Models\Activity;
 use DB;
 
 class EmployeeController extends Controller
@@ -33,28 +34,41 @@ class EmployeeController extends Controller
             ]);
 
             $employeeCount = Employee::count();
-            $employeeNumber = "SFI" . str_pad(++$employeeCount, 7, '0', STR_PAD_LEFT);
+            $employeeNumber = str_pad(++$employeeCount, 7, '0', STR_PAD_LEFT);
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration"]);
+            $position = Position::find($request->position_id);
 
             $employee = Employee::create([
                 "employee_number" => $employeeNumber,
-                "employee_status" => $pendingStatus->id,
+                "employee_status_id" => $pendingStatus->id,
+                "station_id" => $position->station_id,
                 ...$fields
             ]);
 
             $startDate = Carbon::parse($request->date_hired);
             $contractEndDate = $startDate->addMonths($request->contract_duration)->toDateString();
+
+            BranchEmployee::create([
+                "employee_id" => $employee->id,
+                "branch_id" => $request->branch_id,
+                "date_assigned" => $request->date_hired
+            ]);
+            EmployeePosition::create([
+                "employee_id" => $employee->id,
+                "position_id" => $request->position_id,
+                "date_started" => $request->date_hired
+            ]);
             Contract::create([
                 "employee_id" => $employee->id,
                 "employee_number" => $employee->employee_number,
                 "contract_start_date" => $employee->date_hired,
                 "contract_end_date" => $contractEndDate,
-                "contract_number" => 1,
+                "contract_number" => "1st",
                 "remarks" => "1st contract",
                 "status" => "active"
             ]);
-
+            
             DB::commit();
             return $this->sendResponse(["message" => "Employee added successfully." ]);
         } catch (Exception $e) {
