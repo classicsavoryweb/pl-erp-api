@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Spatie\Activitylog\Models\Activity;
 
 class EmployeeController extends Controller
 {
@@ -104,6 +105,22 @@ class EmployeeController extends Controller
             ->orderBy("date_hired","desc")
             ->paginate($perPage);
             return $this->sendResponse($employees);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getEmployeeAuditLogs(Request $request, $employeeNumber) {
+        try {
+            $perPage = $request->per_page ??10;
+
+            $employee = Employee::where("employee_number", $employeeNumber)->first();
+            $activities = Activity::with("causer")
+                ->forSubject($employee)
+                ->orderBy("created_at", "DESC")
+                ->paginate($perPage);
+
+            return $this->sendResponse($activities);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
