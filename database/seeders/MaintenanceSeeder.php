@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BankAccountType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -20,6 +21,7 @@ class MaintenanceSeeder extends Seeder
         $this->call(BranchSeeder::class);
         $this->call(DiagnosisSeeder::class);
         $this->call(SalaryPositionSeeder::class);
-        $this->call(BranchSeeder::class);
+        $this->call(RateSeeder::class);
+        $this->call(BankAccountTypeSeeder::class);
     }
 }
