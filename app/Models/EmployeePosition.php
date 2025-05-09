@@ -10,7 +10,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class EmployeePosition extends Pivot
 {
     use HasFactory, LogsActivity;
-
+    public $incrementing = true;
     protected $fillable = ["employee_id", "position_id", "date_started", "remarks"];
     protected $table = "employee_position";
 

@@ -11,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class BranchEmployee extends Pivot
 {
     use HasFactory, LogsActivity;
-
+    public $incrementing = true;
     protected $fillable = ["employee_id", "branch_id", "date_assigned", "remarks"];
     protected $table = "branch_employee";
 
