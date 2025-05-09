@@ -37,12 +37,17 @@ class Employee extends Model
         "remarks",
         "date_hired",
         "employee_status_id",
+        "education_history_id",
         "position_id",
         "station_id",
         "branch_id",
         "home_branch_id",
         "type",
-        "agency_id"
+        "agency_id",
+        "emergency_contact_name",
+        "emergency_contact_number",
+        "emergency_contact_address",
+        "emergency_contact_relationship",
     ];
 
     protected $table = "employees";
@@ -90,11 +95,15 @@ class Employee extends Model
     }
 
     public function contracts() {
-        return $this->hasMany(Contract::class, 'id','employee_id');
+        return $this->hasMany(Contract::class, 'employee_id','id');
     }
 
     public function education() {
-        return $this->hasOne(EducationHistory::class, 'id','employee_id');
+        return $this->hasOne(EducationHistory::class, 'id','education_history_id');
+    }
+
+    public function dependents() {
+        return $this->hasMany(Dependents::class, 'employee_id','id');
     }
 
     public function positions() {

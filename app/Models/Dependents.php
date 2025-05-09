@@ -17,4 +17,8 @@ class Dependents extends Model
     ];
 
     protected $table= "dependents";
+
+    public function employee() {
+        return $this->belongsTo(Employee::class);
+    }
 }

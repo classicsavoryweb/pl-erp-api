@@ -109,6 +109,9 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-employees", [EmployeeController::class, "getEmployees"]);
     Route::get("/get-employee/{employee_number}", [EmployeeController::class, "getEmployee"]);
     Route::get("/get-employee-audit-logs/{employee_number}", [EmployeeController::class, "getEmployeeAuditLogs"]);
+    Route::get("/get-employee-positions/{employee_number}", [EmployeeController::class, "getEmployeePositionHistory"]);
+    Route::get("/get-employee-branches/{employee_number}", [EmployeeController::class, "getEmployeeBranchHistory"]);
+    Route::get("/get-employee-contracts/{employee_number}", [EmployeeController::class, "getEmployeeContractHistory"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
 });
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Employees;
 
 use App\Http\Controllers\Controller;
+use App\Models\Agency;
 use App\Models\BranchEmployee;
 use App\Models\Contract;
 use App\Models\Employee;
@@ -39,11 +40,30 @@ class EmployeeController extends Controller
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration"]);
             $position = Position::find($request->position_id);
+            $biometricsNumber = "";
+
+            if ($request->type === "Direct") {
+                $biometricsNumber = "10".$employeeNumber;
+            }
+            if ($request->type === "Agency") {
+                $agency = Agency::find($request->agency_id);
+
+                if ($agency->name === "MSC") {
+                    $biometricsNumber = "50".$employeeNumber;
+                } else if ($agency->name === "GMI") {
+                    $biometricsNumber = "70".$employeeNumber;
+                } else if ($agency->name === "CNT") {
+                    $biometricsNumber = "11".$employeeNumber;
+                } else {
+                    $biometricsNumber = "12".$employeeNumber;
+                }
+            }
 
             $employee = Employee::create([
                 "employee_number" => $employeeNumber,
                 "employee_status_id" => $pendingStatus->id,
                 "station_id" => $position->station_id,
+                "biometric_number" => $biometricsNumber,
                 ...$fields
             ]);
 
@@ -88,7 +108,10 @@ class EmployeeController extends Controller
                     "employee_status",
                     "home_branch",
                     "branches",
-                    "positions"
+                    "positions",
+                    "education",
+                    "dependents",
+                    "contracts"
                 ])->where("employee_number", $employee_number)
                 ->first();
 
@@ -133,6 +156,52 @@ class EmployeeController extends Controller
             return $this->sendResponse(["employees" => $employees]);
         } catch(Exception $e) {
 
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getEmployeePositionHistory(Request $request, $employee_number) {
+        try {
+            $perPage = $request->per_page ??10;
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $positions = EmployeePosition::
+                with(["position"])
+                ->where("employee_id", $employee->id)
+                ->orderBy("date_started","DESC")
+                ->paginate($perPage);
+
+            return $this->sendResponse($positions);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getEmployeeBranchHistory(Request $request, $employee_number) {
+        try {
+            $perPage = $request->per_page ??10;
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $branches = BranchEmployee::
+                with(["branch"])
+                ->where("employee_id", $employee->id)
+                ->orderBy("date_assigned","DESC")
+                ->paginate($perPage);
+
+            return $this->sendResponse($branches);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getEmployeeContractHistory(Request $request, $employee_number) {
+        try {
+            $perPage = $request->per_page ??10;
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $branches = Contract::where("employee_id", $employee->id)
+                ->orderBy("contract_start_date","DESC")
+                ->paginate($perPage);
+
+            return $this->sendResponse($branches);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
