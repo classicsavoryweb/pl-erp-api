@@ -61,7 +61,7 @@ class AgencyEmployeeSeeder extends Seeder
                 "station_id"=> $station?->id ?? null,
                 "branch_id" => $branch?->id ?? null,
                 "home_branch_id"  => $homeBranch?->id ?? null,
-                "type"=> "agency",
+                "type"=> "Agency",
                 "agency_id" => $employee["agency_id"],
                 "status" => $employee["employment_status"],
             ]);

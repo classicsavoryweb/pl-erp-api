@@ -38,6 +38,11 @@ return new class extends Migration
             $table->longText("remarks")->nullable();
             $table->string("date_hired")->nullable();
             $table->string("type")->nullable();
+            $table->string("emergency_contact_name")->nullable();
+            $table->string("emergency_contact_number")->nullable();
+            $table->string("emergency_contact_address")->nullable();
+            $table->string("emergency_contact_relationship")->nullable();
+            $table->string("education_history_id")->nullable();
             $table->string("agency_id")->nullable();
             $table->string("employee_status_id")->nullable();
             $table->string("position_id")->nullable();

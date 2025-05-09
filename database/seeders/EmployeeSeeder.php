@@ -60,24 +60,44 @@ class EmployeeSeeder extends Seeder
                 "station_id"=> $station?->id ?? null,
                 "branch_id" => $branch?->id ?? null,
                 "home_branch_id"  => $homeBranch?->id ?? null,
-                "type"=> "direct",
+                "type"=> "Direct",
                 "agency_id" => null,
                 "status" => $employee["employment_status"],
+                "emergency_contact_name" => $employee["notify_emergency"],
+                "emergency_contact_number" => $employee["notify_contactno"],
+                "emergency_contact_address" => $employee["notify_address"],
+                "emergency_contact_relationship" => $employee["notify_relationship"],
             ]);
 
-            EducationHistory::create([
-              "employee_id" => $emp->id,
-              "employee_number" => $emp->employee_number,
-              "college" => $employee["college"],
-              "college_address" => $employee["college_address"],
-              "course" => $employee["course"],
-              "college_date_started" => $employee["cdate_started"],
-              "college_date_graduated" => $employee["cdate_graduated"],
-              "highschool" => $employee["highschool"],
-              "highschool_address" => $employee["highschool_address"],
-              "highschool_date_started" => $employee["hdate_started"],
-              "highschool_date_graduated" => $employee["hdate_graduated"],
+            $education = EducationHistory::create([
+                "employee_id"=> $emp->id,
+                "employee_number" => $emp->employee_number,
+                "college" => $employee["college"],
+                "college_address" => $employee["college_address"],
+                "course" => $employee["course"],
+                "college_date_started" => $employee["cdate_started"],
+                "college_date_graduated" => $employee["cdate_graduated"],
+                "highschool" => $employee["highschool"],
+                "highschool_address" => $employee["highschool_address"],
+                "highschool_date_started" => $employee["hdate_started"],
+                "highschool_date_graduated" => $employee["hdate_graduated"],
             ]);
+            if ($education) {
+                $emp->update([
+                    "education_history_id" => $education->id
+                ]);
+            }
+
+            for ($i = 1; $i < 5; $i++) {
+                if ($employee["dependents".$i] !== "") {
+                    Dependents::create([
+                        "employee_id" => $emp->id,
+                        "employee_number" => $emp->employee_number,
+                        "dependent_name" => $employee["dependents".$i],
+                        "birthday" => $employee["dependents_bday".$i],
+                    ]);
+                }
+            }
         }
     }
 }

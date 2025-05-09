@@ -20,6 +20,10 @@ class EmployeeStatusSeeder extends Seeder
         ]);
         EmployeeStatus::create([
             "type" => "active",
+            "description" => "Regular"
+        ]);
+        EmployeeStatus::create([
+            "type" => "active",
             "description" => "Probationary"
         ]);
         EmployeeStatus::create([

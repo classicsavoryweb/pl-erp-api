@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string( "contract_number");
             $table->string( "contract_start_date");
             $table->string( "contract_end_date");
-            $table->string( "remarks");
-            $table->string( "status");
+            $table->longText( "remarks")->nullable();
+            $table->string( "status")->default("active");
             $table->timestamps();
         });
     }
