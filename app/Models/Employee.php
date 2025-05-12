@@ -51,6 +51,7 @@ class Employee extends Model
         "emergency_contact_number",
         "emergency_contact_address",
         "emergency_contact_relationship",
+        "status",
     ];
 
     protected $table = "employees";
@@ -112,6 +113,7 @@ class Employee extends Model
                 "emergency_contact_number",
                 "emergency_contact_address",
                 "emergency_contact_relationship",
+                "status",
             ])
             ->useLogName('Employee')
             ->logOnlyDirty()
