@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_stations"])->post("/create-station", [StationController::class,"createStation"]);
     //employee status
     Route::get("/get-all-status", [EmployeeStatusController::class, "getAllEmployeStatus"]);
+    Route::get("/get-status", [EmployeeStatusController::class, "getEmployeeStatus"]);
     Route::middleware(["permission:can_perform_employee_status"])->post("/create-employee-status", [EmployeeStatusController::class, "createEmployeeStatus"]);
     Route::middleware(["permission:can_perform_employee_status"])->post("/edit-employee-status/{id}", [EmployeeStatusController::class, "editEmployeeStatus"]);
     Route::middleware(["permission:can_perform_employee_status"])->get("/delete-employee-status/{id}", [EmployeeStatusController::class, "deleteEmployeeStatus"]);
@@ -113,5 +114,6 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-employee-branches/{employee_number}", [EmployeeController::class, "getEmployeeBranchHistory"]);
     Route::get("/get-employee-contracts/{employee_number}", [EmployeeController::class, "getEmployeeContractHistory"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
+    Route::middleware(["permission:can_perform_employee_tracking"])->post("/update-employee/{employee_number}", [EmployeeController::class, "updateEmployeeDetails"]);
 });
 

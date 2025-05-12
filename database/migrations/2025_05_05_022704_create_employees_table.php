@@ -37,6 +37,9 @@ return new class extends Migration
             $table->string("referred_by")->nullable();
             $table->longText("remarks")->nullable();
             $table->string("date_hired")->nullable();
+            $table->string("regularization_date")->nullable();
+            $table->string("separation_date")->nullable();
+            $table->string("separation_reason")->nullable();
             $table->string("type")->nullable();
             $table->string("emergency_contact_name")->nullable();
             $table->string("emergency_contact_number")->nullable();

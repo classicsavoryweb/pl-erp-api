@@ -20,6 +20,8 @@ class EducationHistory extends Model
         "highschool_address",
         "highschool_date_started",
         "highschool_date_graduated",
+        "college_remarks",
+        "highschool_remarks",
         "remarks",
     ];
     protected $table="education_history";

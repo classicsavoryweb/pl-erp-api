@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agency;
 use App\Models\BranchEmployee;
 use App\Models\Contract;
+use App\Models\EducationHistory;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
@@ -202,6 +203,77 @@ class EmployeeController extends Controller
 
             return $this->sendResponse($branches);
         } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function updateEmployeeDetails(Request $request, $employee_number) { 
+        try {
+            DB::beginTransaction();
+            $employee = Employee::where("employee_number", $employee_number)->first();
+
+            $educationData = collect($request->education)
+            ->except(["created_at", "updated_at"])
+            ->toArray();
+
+            if ($employee->education) {
+                $employee->education()->update($educationData);
+                $education = $employee->education;
+            } else {
+                $educationData['employee_id'] = $employee->id;
+                $educationData['employee_number'] = $employee->employee_number;
+                $education = EducationHistory::create($educationData);
+            }
+
+            $employee->update([
+                // "image" => $request->image,
+                "first_name" => $request->first_name,
+                "middle_name" => $request->middle_name,
+                "last_name" => $request->last_name,
+                "email" => $request->email,
+                "civil_status" => $request->civil_status,
+                "gender" => $request->gender,
+                "height" => $request->height,
+                "birthday" => $request->birthday,
+                "birthplace" => $request->birthplace,
+                "address" => $request->address,
+                "provincial_address" => $request->provincial_address,
+                "region" => $request->region,
+                "contact_number" => $request->contact_number,
+                "tax_type" => $request->tax_type,
+                "tin" => $request->tin,
+                "sss" => $request->sss,
+                "philhealth" => $request->philhealth,
+                "pagibig" => $request->pagibig,
+                "referred_by" => $request->referred_by,
+                "date_hired" => $request->date_hired,
+                "remarks" => $request->remarks,
+                "regularization_date" => $request->regularization_date,
+                "separation_date" => $request->separation_date,
+                "separation_reason" => $request->separation_reason,
+                "emergency_contact_name" => $request->emergency_contact_name,
+                "emergency_contact_number" => $request->emergency_contact_number,
+                "emergency_contact_address" => $request->emergency_contact_address,
+                "emergency_contact_relationship" => $request->emergency_contact_relationship,
+                "education_history_id" => $education->id,
+                "employee_status_id" => $request->employee_status_id,
+                "status" => $request->status
+            ]);
+
+            if (!empty($request->dependents) && count($request->dependents) > 0) {
+                foreach($request->dependents as $dependant) {
+                    $employee->dependents()->updateOrCreate([
+                        "employee_number" => $employee->employee_number,
+                        ...$dependant
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Employee updated successfully"]);
+        } catch (Exception $e) {
+
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }

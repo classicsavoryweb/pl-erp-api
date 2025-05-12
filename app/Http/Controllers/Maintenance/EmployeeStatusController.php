@@ -21,6 +21,20 @@ class EmployeeStatusController extends Controller
         }
     }
 
+    public function getEmployeeStatus(Request $request) {
+        try {
+            $type = $request->type;
+
+            $status = EmployeeStatus::where("status", "active")
+            ->where('type', $type)
+            ->get();
+            return $this->sendResponse(["status" => $status]);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
     public function createEmployeeStatus(Request $request) {
         try {
             $request->validate([
