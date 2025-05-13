@@ -93,7 +93,7 @@ class AuthController extends Controller
                     "password"=> bcrypt($request->new_password)
                 ]);
             } else {
-                return $this->sendError(["message" => "Old password is incorrect." ]);    
+                return $this->sendError(["old_password" => "Old password is incorrect." ]);    
             }
 
         } catch (Exception $e) {

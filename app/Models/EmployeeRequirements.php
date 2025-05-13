@@ -33,4 +33,8 @@ class EmployeeRequirements extends Model
         "occupational_permit",
     ];
     protected $table = "employee_requirements";
+
+    public function employee(){
+        return $this->belongsTo(Employee::class);
+    }
 }

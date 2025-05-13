@@ -66,6 +66,59 @@ class Employee extends Model
         );
     }
 
+    public function employee_status() {
+        return $this->hasOne(EmployeeStatus::class,'id','employee_status_id');
+    }
+    public function current_position() {
+        return $this->hasOne(Position::class,'id','position_id');
+    }
+
+    public function current_branch() {
+        return $this->hasOne(Branch::class,'id','branch_id');
+    }
+
+    public function home_branch() {
+        return $this->hasOne(Branch::class,'id','home_branch_id');
+    }
+
+    public function station() {
+        return $this->hasOne(Station::class,'id','station_id');
+    }
+
+    public function agency() {
+        return $this->hasOne(Station::class,'id','agency_id');
+    }
+
+    public function requirements() {
+        return $this->hasOne(EmployeeRequirements::class, "employee_id", "id");
+    }
+
+    public function contracts() {
+        return $this->hasMany(Contract::class, 'employee_id','id');
+    }
+
+    public function education() {
+        return $this->hasOne(EducationHistory::class, 'id','education_history_id');
+    }
+
+    public function dependents() {
+        return $this->hasMany(Dependents::class, 'employee_id','id');
+    }
+
+    public function positions() {
+        return $this->belongsToMany(Position::class)
+        ->using(EmployeePosition::class)
+        ->withPivot('date_started', 'remarks')
+        ->withTimestamps();
+    }
+
+    public function branches() {
+        return $this->belongsToMany(Branch::class)
+        ->using(BranchEmployee::class)
+        ->withPivot('date_assigned', 'remarks')
+        ->withTimestamps();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -118,54 +171,5 @@ class Employee extends Model
             ->useLogName('Employee')
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
-    }
-
-    public function employee_status() {
-        return $this->hasOne(EmployeeStatus::class,'id','employee_status_id');
-    }
-    public function current_position() {
-        return $this->hasOne(Position::class,'id','position_id');
-    }
-
-    public function current_branch() {
-        return $this->hasOne(Branch::class,'id','branch_id');
-    }
-
-    public function home_branch() {
-        return $this->hasOne(Branch::class,'id','home_branch_id');
-    }
-
-    public function station() {
-        return $this->hasOne(Station::class,'id','station_id');
-    }
-
-    public function agency() {
-        return $this->hasOne(Station::class,'id','agency_id');
-    }
-
-    public function contracts() {
-        return $this->hasMany(Contract::class, 'employee_id','id');
-    }
-
-    public function education() {
-        return $this->hasOne(EducationHistory::class, 'id','education_history_id');
-    }
-
-    public function dependents() {
-        return $this->hasMany(Dependents::class, 'employee_id','id');
-    }
-
-    public function positions() {
-        return $this->belongsToMany(Position::class)
-        ->using(EmployeePosition::class)
-        ->withPivot('date_started', 'remarks')
-        ->withTimestamps();
-    }
-
-    public function branches() {
-        return $this->belongsToMany(Branch::class)
-        ->using(BranchEmployee::class)
-        ->withPivot('date_assigned', 'remarks')
-        ->withTimestamps();
     }
 }
