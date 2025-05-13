@@ -277,4 +277,151 @@ class EmployeeController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function addPosition(Request $request, $employee_number) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "position_id" => "required",
+                "date_started" => "required"
+            ]);
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $employee->update([
+                "position_id" => $request->position_id,
+            ]);
+            $employee->positions()->attach($request->position_id, [
+                ...$request->all()
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Position added successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function editPosition(Request $request, $employee_number) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "id" => "required",
+                "position_id" => "required",
+                "date_started" => "required"
+            ]);
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $employee->update([
+                "position_id" => $request->position_id,
+            ]);
+            EmployeePosition::where("id", $request->id)->update( [
+                ...$request->except(["id"])
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Position updated successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function addBranch(Request $request, $employee_number) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "branch_id" => "required",
+                "date_assigned" => "required"
+            ]);
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $employee->update([
+                "branch_id" => $request->branch_id,
+            ]);
+            $employee->branches()->attach($request->branch_id, [
+                ...$request->all()
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Branch added successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function editBranch(Request $request, $employee_number) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "id" => "required",
+                "branch_id" => "required",
+                "date_assigned" => "required"
+            ]);
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $employee->update([
+                "branch_id" => $request->branch_id,
+            ]);
+            BranchEmployee::where("id", $request->id)->update( [
+                ...$request->except(["id"])
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Branch updated successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function addContract(Request $request, $employee_number) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "contract_start_date" => "required",
+                "contract_end_date" => "required",
+                "status" => "required",
+            ]);
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $count = $employee->contracts()->count();
+            $employee->contracts()->update(['status' => 'inactive']);
+            $employee->contracts()->create([
+                "employee_number" => $employee->employee_number,
+                "contract_number" => $this->ordinal(++$count),
+                ...$request->all()
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Contract added successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function editContract(Request $request, $employee_number) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "id" => "required",
+                "contract_start_date" => "required",
+                "contract_end_date" => "required",
+                "status" => "required",
+            ]);
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $employee->contracts()->where("id", $request->id)->update([
+                ...$request->all()
+            ]);
+            
+            DB::commit();
+            return $this->sendResponse(["message" => "Contract updated successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
 }
