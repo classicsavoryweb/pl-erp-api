@@ -24,7 +24,11 @@ class AuthController extends Controller
 
             $role = Role::find($user->role_id);
             $user->assignRole($role);
-            $token = $user->createToken($user->email, $role->permissions->pluck("name")->toArray());
+            $token = $user->createToken(
+                 $user->email,
+            $role->permissions->pluck("name")->toArray(),
+            now()->addHours(12)
+            );
 
             activity()->causedBy($user)->useLog("Login")->log('user logged in');
 
