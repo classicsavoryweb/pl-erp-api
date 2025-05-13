@@ -31,6 +31,8 @@ class PositionHistorySeeder extends Seeder
                     "employee_id" => $employee->id,
                     "position_id" => $updatedPosition->id,
                     "date_started" => $position["date_started"],
+                    "oic_assignment" => $position["oic_assignment"] === "Yes" ? "Yes" : "No",
+                    "date_appointed" => $position["date_appointed"],
                     "remarks" => $position["remarks"]
                 ]);
             }

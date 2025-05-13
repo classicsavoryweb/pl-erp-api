@@ -11,7 +11,7 @@ class EmployeePosition extends Pivot
 {
     use HasFactory, LogsActivity;
     public $incrementing = true;
-    protected $fillable = ["employee_id", "position_id", "date_started", "remarks"];
+    protected $fillable = ["employee_id", "position_id", "date_started", "oic_assignment", "date_appointed", "remarks"];
     protected $table = "employee_position";
 
     public function employee()

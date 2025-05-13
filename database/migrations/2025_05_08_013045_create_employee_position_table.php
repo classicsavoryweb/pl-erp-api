@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string("employee_id");
             $table->string("position_id");
             $table->string("date_started")->nullable();
+            $table->string("oic_assignment")->default("No")->nullable();
+            $table->string("date_appointed")->nullable();
             $table->longText("remarks")->nullable();
             $table->timestamps();
         });

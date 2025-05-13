@@ -108,7 +108,7 @@ class Employee extends Model
     public function positions() {
         return $this->belongsToMany(Position::class)
         ->using(EmployeePosition::class)
-        ->withPivot('date_started', 'remarks')
+        ->withPivot('date_started', 'remarks', "oic_assignment", "date_appointed")
         ->withTimestamps();
     }
 
