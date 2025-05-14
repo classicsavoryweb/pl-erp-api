@@ -23,5 +23,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(SalaryPositionSeeder::class);
         $this->call(RateSeeder::class);
         $this->call(BankAccountTypeSeeder::class);
+        $this->call(SanctionSeeder::class);
     }
 }

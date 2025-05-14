@@ -18,5 +18,6 @@ class EmployeeRecordSeeder extends Seeder
         $this->call(PositionHistorySeeder::class);
         $this->call(ContractSeeder::class);
         $this->call(BankHistorySeeder::class);
+        $this->call(EmployeeOffensesSeeder::class);
     }
 }

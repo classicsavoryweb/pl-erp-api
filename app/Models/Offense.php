@@ -16,4 +16,9 @@ class Offense extends Model
         "description",
         "status"
     ];
+
+    public function employee_offense() {
+        return $this->belongsTo(EmployeeOffense::class);
+    }
+
 }
