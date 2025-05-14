@@ -113,13 +113,16 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-employee-positions/{employee_number}", [EmployeeController::class, "getEmployeePositionHistory"]);
     Route::get("/get-employee-branches/{employee_number}", [EmployeeController::class, "getEmployeeBranchHistory"]);
     Route::get("/get-employee-contracts/{employee_number}", [EmployeeController::class, "getEmployeeContractHistory"]);
+    Route::get("/get-employee-bank-details/{employee_number}", [EmployeeController::class, "getEmployeeBankDetailsHistory"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/update-employee/{employee_number}", [EmployeeController::class, "updateEmployeeDetails"]);
-    Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee-position/{empoyee_number}", [EmployeeController::class, "addPosition"]);
-    Route::middleware(["permission:can_perform_employee_tracking"])->post("/edit-employee-position/{empoyee_number}", [EmployeeController::class, "editPosition"]);
-    Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee-branch/{empoyee_number}", [EmployeeController::class, "addBranch"]);
-    Route::middleware(["permission:can_perform_employee_tracking"])->post("/edit-employee-branch/{empoyee_number}", [EmployeeController::class, "editBranch"]);
-    Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee-contract/{empoyee_number}", [EmployeeController::class, "addContract"]);
-    Route::middleware(["permission:can_perform_employee_tracking"])->post("/edit-employee-contract/{empoyee_number}", [EmployeeController::class, "editContract"]);
+    Route::middleware(["permission:can_perform_employee_position"])->post("/add-employee-position/{employee_number}", [EmployeeController::class, "addPosition"]);
+    Route::middleware(["permission:can_perform_employee_position"])->post("/edit-employee-position/{employee_number}", [EmployeeController::class, "editPosition"]);
+    Route::middleware(["permission:can_perform_employee_branch"])->post("/add-employee-branch/{employee_number}", [EmployeeController::class, "addBranch"]);
+    Route::middleware(["permission:can_perform_employee_branch"])->post("/edit-employee-branch/{employee_number}", [EmployeeController::class, "editBranch"]);
+    Route::middleware(["permission:can_perform_employee_contract"])->post("/add-employee-contract/{employee_number}", [EmployeeController::class, "addContract"]);
+    Route::middleware(["permission:can_perform_employee_contract"])->post("/edit-employee-contract/{employee_number}", [EmployeeController::class, "editContract"]);
+    Route::middleware(["permission:can_perform_employee_bank_details"])->post("/add-employee-bank-details/{employee_number}", [EmployeeController::class, "addBankDetails"]);
+    Route::middleware(["permission:can_perform_employee_bank_details"])->post("/edit-employee-bank-details/{employee_number}", [EmployeeController::class, "editBankDetails"]);
 });
 

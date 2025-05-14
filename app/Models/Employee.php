@@ -104,7 +104,10 @@ class Employee extends Model
     public function dependents() {
         return $this->hasMany(Dependents::class, 'employee_id','id');
     }
-
+    
+    public function bank_details() {
+        return $this->hasMany(BankDetail::class,'employee_id','id');
+    }
     public function positions() {
         return $this->belongsToMany(Position::class)
         ->using(EmployeePosition::class)

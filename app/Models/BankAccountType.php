@@ -10,4 +10,8 @@ class BankAccountType extends Model
     use HasFactory;
     protected $fillable = ["description", "number_length", "status"];
     protected $table = "bank_account_type";
+
+    public function bank_detail() {
+        return $this->belongsTo(BankDetail::class);
+    }
 }
