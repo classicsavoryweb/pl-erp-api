@@ -13,7 +13,15 @@ class TrainingTitleController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $trainingTitles = TrainingTitle::paginate($perPage);
+            $trainingTitles = TrainingTitle::query();
+            if ($request->has(["column_type", "key_word"])) {
+               $trainingTitles = $trainingTitles->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $trainingTitles = $trainingTitles->where("status", $request->status);
+            }
+            $trainingTitles = $trainingTitles->paginate($perPage);
             return $this->sendResponse($trainingTitles);
         } catch(Exception $e) {
 

@@ -13,7 +13,17 @@ class RateController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $rates = Rate::paginate($perPage);
+            $rates = Rate::query();
+
+            if ($request->has(["column_type", "key_word"])) {
+               $rates = $rates->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $rates = $rates->where("status", $request->status);
+            }
+
+            $rates = $rates->paginate($perPage);
             return $this->sendResponse($rates);
         } catch(Exception $e) {
 

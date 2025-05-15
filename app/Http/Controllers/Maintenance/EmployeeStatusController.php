@@ -13,7 +13,15 @@ class EmployeeStatusController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $status = EmployeeStatus::paginate($perPage);
+            $status = EmployeeStatus::query();
+            if ($request->has(["column_type", "key_word"])) {
+               $status = $status->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $status = $status->where("status", $request->status);
+            }
+            $status = $status->paginate($perPage);
             return $this->sendResponse($status);
         } catch(Exception $e) {
 

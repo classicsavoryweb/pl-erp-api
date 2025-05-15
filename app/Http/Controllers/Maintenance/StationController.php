@@ -13,7 +13,16 @@ class StationController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $stations = Station::paginate($perPage);
+            $stations = Station::query();
+            if ($request->has(["column_type", "key_word"])) {
+               $stations = $stations->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $stations = $stations->where("status", $request->status);
+            }
+
+            $stations = $stations->paginate($perPage);
             return $this->sendResponse($stations);
         } catch(Exception $e) {
 

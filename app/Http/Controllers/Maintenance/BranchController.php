@@ -14,7 +14,22 @@ class BranchController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $branches = Branch::paginate($perPage);
+            $branches = Branch::query();
+
+            if ($request->has(["column_type", "key_word"])) {
+               $branches = $branches->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["date_from", "date_to"])) {
+                $branches = $branches->whereBetween('date_open', [$request->date_from, $request->date_to]);
+            }
+
+            if ($request->has(["status"])) {
+                $branches = $branches->where("status", $request->status);
+            }
+ 
+            $branches = $branches->paginate($perPage);
+
             return $this->sendResponse($branches);
         } catch(Exception $e) {
 

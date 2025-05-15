@@ -13,7 +13,15 @@ class PositionController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $positions = Position::with("station")->paginate($perPage);
+            $positions = Position::query();
+            if ($request->has(["column_type", "key_word"])) {
+               $positions = $positions->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $positions = $positions->where("status", $request->status);
+            }
+            $positions= $positions->with("station")->paginate($perPage);
             return $this->sendResponse($positions);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);

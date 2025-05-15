@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SalaryPosition;
 use Illuminate\Http\Request;
 use Exception;
+use Str;
 
 class SalaryPositionController extends Controller
 {
@@ -13,7 +14,28 @@ class SalaryPositionController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $salaryPositions = SalaryPosition::with("position")->paginate($perPage);
+            $salaryPositions = SalaryPosition::query();
+
+            if ($request->has(["column_type", "key_word"])) {
+               $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if (Str::contains($column, '.')) {
+                    [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                    $salaryPositions = $salaryPositions->whereHas($relation, function ($query) use ($relatedColumn, $keyword) {
+                        $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                    });
+                } else {
+                    $salaryPositions = $salaryPositions->where($column, 'LIKE', "%$keyword%");
+                }
+            }
+
+            if ($request->has(["status"])) {
+                $salaryPositions = $salaryPositions->where("status", $request->status);
+            }
+            $salaryPositions = $salaryPositions->with("position")->paginate($perPage);
+
             return $this->sendResponse($salaryPositions);
         } catch(Exception $e) {
 

@@ -12,7 +12,16 @@ class BankAccountTypeController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $bankAccountTypes = BankAccountType::paginate($perPage);
+            $bankAccountTypes = BankAccountType::query();
+            
+            if ($request->has(["column_type", "key_word"])) {
+               $bankAccountTypes = $bankAccountTypes->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $bankAccountTypes = $bankAccountTypes->where("status", $request->status);
+            }
+            $bankAccountTypes = $bankAccountTypes->paginate($perPage);
             return $this->sendResponse($bankAccountTypes);
         } catch(Exception $e) {
 

@@ -13,7 +13,16 @@ class AgencyController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $agencies = Agency::paginate($perPage);
+            $agencies = Agency::query();
+            if ($request->has(["column_type", "key_word"])) {
+               $agencies = $agencies->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $agencies = $agencies->where("status", $request->status);
+            }
+               
+            $agencies = $agencies->paginate($perPage);
             return $this->sendResponse($agencies);
         } catch(Exception $e) {
 

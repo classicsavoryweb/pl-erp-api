@@ -12,7 +12,16 @@ class DiagnosisController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $diagnosis = Diagnosis::paginate($perPage);
+            $diagnosis = Diagnosis::query();
+
+            if ($request->has(["column_type", "key_word"])) {
+               $diagnosis = $diagnosis->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $diagnosis = $diagnosis->where("status", $request->status);
+            }
+            $diagnosis = $diagnosis->paginate($perPage);
             return $this->sendResponse($diagnosis);
         } catch(Exception $e) {
 

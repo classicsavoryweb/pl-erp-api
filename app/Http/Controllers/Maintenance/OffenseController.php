@@ -16,7 +16,15 @@ class OffenseController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $offenses = Offense::paginate($perPage);
+            $offenses = Offense::query();
+            if ($request->has(["column_type", "key_word"])) {
+               $offenses = $offenses->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $offenses = $offenses->where("status", $request->status);
+            }
+            $offenses = $offenses->paginate($perPage);
             return $this->sendResponse($offenses);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);

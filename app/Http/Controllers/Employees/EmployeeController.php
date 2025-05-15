@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Spatie\Activitylog\Models\Activity;
+use Str;
 
 class EmployeeController extends Controller
 {
@@ -127,10 +128,45 @@ class EmployeeController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $employees = Employee::with(["current_position", "agency", "current_branch", "station"])
-            ->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
+            $employees = Employee::query();
+
+            if ($request->has(["column_type", "key_word"])) {
+                $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if ($column == "full_name") {
+                    $employees = $employees->where(function ($query) use ($keyword) {
+                        $query->where('first_name', 'LIKE', "%$keyword%")
+                            ->orWhere('last_name', 'LIKE', "%$keyword%")
+                            ->orWhere('middle_name', 'LIKE', "%$keyword%");
+                    });
+                } else {
+                    if (Str::contains($column, '.')) {
+                        [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                        $employees = $employees->whereHas($relation, function ($query) use ($relatedColumn, $keyword) {
+                            $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                        });
+                    } else {
+                        $employees = $employees->where($column, 'LIKE', "%$keyword%");
+                    }
+                }
+            }
+
+            if ($request->has(["date_from", "date_to"])) {
+                $employees = $employees->whereBetween('date_hired', [$request->date_from, $request->date_to]);
+            }
+
+            if ($request->has(["status"])) {
+                $employees = $employees->where("status", $request->status);
+            } else {
+                $employees = $employees->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END");
+            }
+
+            $employees = $employees->with(["current_position", "agency", "current_branch", "station"])
             ->orderBy("date_hired", "desc")
             ->paginate($perPage);
+
             return $this->sendResponse($employees);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
