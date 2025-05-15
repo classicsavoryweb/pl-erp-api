@@ -68,6 +68,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-subcategories", [OffenseController::class, "getAllSubCategories"]);
     Route::get("/get-subcategories", [OffenseController::class, "getSubCategories"]);
     Route::get("/get-categories", [OffenseController::class, "getCategories"]);
+    Route::get("/get-offenses", [OffenseController::class, "getOffenses"]);
+    Route::get("/get-sanctions", [OffenseController::class, "getSanctions"]);
     Route::middleware(["permission:can_perform_offenses"])->post("/create-offense", [OffenseController::class, "createOffense"]);
     Route::middleware(["permission:can_perform_offenses"])->post("/edit-offense/{id}", [OffenseController::class, "editOffense"]);
     Route::middleware(["permission:can_perform_offenses"])->post("/create-category", [OffenseController::class, "createCategory"]);

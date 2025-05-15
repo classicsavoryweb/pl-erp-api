@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Maintenance;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Offense;
+use App\Models\Sanction;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Exception;
@@ -185,6 +186,15 @@ class OffenseController extends Controller
             ]);
 
             return $this->sendResponse([ "message" => "Sub category updated successfully"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getSanctions(Request $request) {
+        try {
+            $sanctions = Sanction::all();
+            return $this->sendResponse([ "sanctions" => $sanctions]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }

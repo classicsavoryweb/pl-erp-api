@@ -128,7 +128,8 @@ class EmployeeController extends Controller
             $perPage = $request->per_page ?? 10;
 
             $employees = Employee::with(["current_position", "agency", "current_branch", "station"])
-            ->orderBy("date_hired","desc")
+            ->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
+            ->orderBy("date_hired", "desc")
             ->paginate($perPage);
             return $this->sendResponse($employees);
         } catch (Exception $e) {

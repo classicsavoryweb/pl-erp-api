@@ -20,6 +20,7 @@ class EmployeeOffense extends Model
         'date_served_ao',
         'suspension_dates',
         'date_served_da',
+        'attachment',
         'remarks',
     ];
 
