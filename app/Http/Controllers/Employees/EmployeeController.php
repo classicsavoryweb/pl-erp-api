@@ -117,6 +117,11 @@ class EmployeeController extends Controller
                     "contracts"
                 ])->where("employee_number", $employee_number)
                 ->first();
+            $storage = Storage::disk("hr_system_folder");
+            if ($employee->image) {
+                $profilePicture = $storage->get($employee->image);            
+                $employee->profile_picture = 'data:image/png;base64,' . base64_encode($profilePicture);
+            }
 
             return $this->sendResponse(["employee" => $employee]);
         } catch (Exception $e) {
