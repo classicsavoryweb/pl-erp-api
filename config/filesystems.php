@@ -28,6 +28,24 @@ return [
     |
     */
 
+    
+// public function createFolder($id)
+// {
+//     // Use your custom disk
+//     $disk = Storage::disk('my_custom_disk');
+
+//     // Define folder name (e.g., based on ID)
+//     $folderName = (string) $id;
+
+//     // Create the folder
+//     if (!$disk->exists($folderName)) {
+//         $disk->makeDirectory($folderName);
+//         return response()->json(['message' => "Folder '$folderName' created successfully."]);
+//     } else {
+//         return response()->json(['message' => "Folder '$folderName' already exists."]);
+//     }
+// }
+
     'disks' => [
 
         'local' => [
@@ -42,6 +60,11 @@ return [
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
+        ],
+
+        'hr_system_folder' => [
+            'driver' => "local",
+            'root' => env("APP_ENV") === "production" ? "\\192.168.2.5\Transfer Folder\HR System SFI Files" : "\\192.168.2.5\Programmer Files\Kea\HR System SFI Files"
         ],
 
         's3' => [

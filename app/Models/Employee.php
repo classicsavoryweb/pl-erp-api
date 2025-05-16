@@ -86,7 +86,7 @@ class Employee extends Model
     }
 
     public function agency() {
-        return $this->hasOne(Station::class,'id','agency_id');
+        return $this->hasOne(Agency::class,'id','agency_id');
     }
 
     public function requirements() {

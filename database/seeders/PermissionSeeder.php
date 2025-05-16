@@ -55,11 +55,13 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "can_view_employee_branches"]);
         Permission::updateOrCreate(["name" => "can_view_employee_offenses"]);
         Permission::updateOrCreate(["name" => "can_view_employee_position"]);
+        Permission::updateOrCreate(["name" => "can_view_employee_requirements"]);
         Permission::updateOrCreate(["name" => "can_view_employee_bank_details"]);
         Permission::updateOrCreate(["name" => "can_perform_employee_tracking"]);
         Permission::updateOrCreate(["name" => "can_perform_employee_branches"]);
         Permission::updateOrCreate(["name" => "can_perform_employee_offenses"]);
         Permission::updateOrCreate(["name" => "can_perform_employee_position"]);
+        Permission::updateOrCreate(["name" => "can_perform_employee_requirements"]);
         Permission::updateOrCreate(["name" => "can_perform_employee_bank_details"]);
     }
 }
