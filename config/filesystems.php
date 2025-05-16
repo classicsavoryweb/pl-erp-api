@@ -64,7 +64,8 @@ return [
 
         'hr_system_folder' => [
             'driver' => "local",
-            'root' => env("APP_ENV") === "production" ? "\\192.168.2.5\Transfer Folder\HR System SFI Files" : "\\192.168.2.5\Programmer Files\Kea\HR System SFI Files"
+            'root' => env('STORAGE_PATH'),
+            'visibility' => 'public',
         ],
 
         's3' => [
