@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\Models\Activity;
 use Str;
 
@@ -221,8 +222,23 @@ class EmployeeController extends Controller
                 $education = EducationHistory::create($educationData);
             }
 
+            $pathName = "";
+            if ($request->hasFile("image")) {
+                $file = $request->file("image");
+
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/Images/" . $employee->employee_number;
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+                $pathName = $filePath;
+            }
+
             $employee->update([
-                // "image" => $request->image,
+                "image" => $pathName,
                 "first_name" => $request->first_name,
                 "middle_name" => $request->middle_name,
                 "last_name" => $request->last_name,

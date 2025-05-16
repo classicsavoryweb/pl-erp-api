@@ -13,6 +13,7 @@ class Employee extends Model
     use HasFactory, LogsActivity;
 
     protected $fillable = [
+        "image",
         "employee_number",
         "biometric_number",
         "first_name",
