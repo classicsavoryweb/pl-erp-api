@@ -24,5 +24,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(RateSeeder::class);
         $this->call(BankAccountTypeSeeder::class);
         $this->call(SanctionSeeder::class);
+        $this->call(TrainingTitleSeeder::class);
     }
 }
