@@ -31,7 +31,14 @@ class TrainingTitleController extends Controller
 
     public function getTrainingTitles(Request $request) {
         try {
-            $trainingTitles = TrainingTitle::where("status", "active")->get();
+            $trainingTitles = TrainingTitle::where("status", "active");
+
+            if ($request->has(["option"])) {
+                $trainingTitles = $trainingTitles->where("option", $request->option);
+            }
+            
+            $trainingTitles = $trainingTitles->get();
+
             return $this->sendResponse(["training_titles" => $trainingTitles]);
         } catch(Exception $e) {
 

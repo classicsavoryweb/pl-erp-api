@@ -12,6 +12,7 @@ use App\Http\Controllers\Employees\EmployeeController;
 use App\Http\Controllers\Employees\EmployeeOffensesControlller;
 use App\Http\Controllers\Employees\EmployeePositionControlller;
 use App\Http\Controllers\Employees\EmployeeRequirementsController;
+use App\Http\Controllers\Employees\EmployeeTrainingController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BankAccountTypeController;
 use App\Http\Controllers\Maintenance\BranchController;
@@ -125,6 +126,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "getEmployeeBankDetailsHistory"]);
     Route::get("/get-employee-offenses/{employee_number}", [EmployeeOffensesControlller::class, "getEmployeeOffenses"]);
     Route::get("/get-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "getEmployeeRequirements"]);
+    Route::get("/get-employee-trainings/{employee_number}", [EmployeeTrainingController::class, "getEmployeeTrainings"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/update-employee/{employee_number}", [EmployeeController::class, "updateEmployeeDetails"]);
     Route::middleware(["permission:can_perform_employee_position"])->post("/add-employee-position/{employee_number}", [EmployeePositionControlller::class, "addPosition"]);
@@ -138,6 +140,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_employee_offenses"])->post("/add-employee-offense/{employee_number}", [EmployeeOffensesControlller::class, "addOffense"]);
     Route::middleware(["permission:can_perform_employee_offenses"])->post("/edit-employee-offense/{employee_number}", [EmployeeOffensesControlller::class, "editOffense"]);
     Route::middleware(["permission:can_perform_employee_requirements"])->post("/create-or-edit-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "updateOrCreateRequirements"]);
+    Route::middleware(["permission:can_perform_employee_training_titles"])->post("/add-employee-training-title/{employee_number}", [EmployeeTrainingController::class, "addTrainingTitle"]);
 
     //REPORTS MODULE
     //employee offenses

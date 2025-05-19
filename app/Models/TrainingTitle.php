@@ -14,4 +14,11 @@ class TrainingTitle extends Model
     ];
 
     protected $table = "training_titles";
+
+    public function employee() {
+        return $this->belongsToMany(Employee::class)
+        ->using(EmployeeTrainings::class)
+        ->withPivot('date')
+        ->withTimestamps();
+    }
 }

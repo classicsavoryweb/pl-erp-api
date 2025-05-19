@@ -128,6 +128,13 @@ class Employee extends Model
         ->withTimestamps();
     }
 
+    public function trainings() {
+        return $this->belongsToMany(TrainingTitle::class)
+        ->using(EmployeeTrainings::class)
+        ->withPivot('date', "score")
+        ->withTimestamps();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
