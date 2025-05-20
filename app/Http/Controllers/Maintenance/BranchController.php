@@ -51,9 +51,9 @@ class BranchController extends Controller
     public function createBranch(Request $request) {
         try {
             $request->validate([
-                "name" => "required",
+                "name" => "required|unique:branches,name",
                 "status" => "required",
-                "short_name" => "required",
+                "short_name" => "required|unique:branches,short_name",
                 "address" => "required",
                 "location" => "required",
                 "company" => "required",
@@ -97,9 +97,9 @@ class BranchController extends Controller
     public function editBranch(Request $request, $id) {
         try {
             $request->validate([
-                "name" => "required",
+                "name" => "required|unique:branches,name,except,",$id,
                 "status" => "required",
-                "short_name" => "required",
+                "short_name" => "required|unique:branches,short_name,except,",$id,
                 "address" => "required",
                 "location" => "required",
                 "company" => "required",

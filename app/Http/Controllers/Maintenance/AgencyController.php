@@ -43,7 +43,7 @@ class AgencyController extends Controller
     public function createAgency(Request $request) {
         try {
             $request->validate([
-                "name" => "required",
+                "name" => "required|unique:agencies",
                 "status" => "required",
                 "employee_code" => "required",
                 "address" => "required"
@@ -66,7 +66,7 @@ class AgencyController extends Controller
     public function editAgency(Request $request, $id) {
         try {
             $request->validate([
-                "name" => "required",
+                "name" => "required|unique:agencies,name,".$id,
                 "status" => "required",
                 "employee_code" => "required",
                 "address" => "required"

@@ -42,7 +42,7 @@ class DiagnosisController extends Controller
     public function createDiagnosis(Request $request) {
         try {
             $request->validate([
-                "description" => "required",
+                "description" => "required|unique:diagnosis",
                 "status" => "required",
             ]);
 
@@ -60,7 +60,7 @@ class DiagnosisController extends Controller
     public function editDiagnosis(Request $request, $id) {
         try {
             $request->validate([
-                "description" => "required",
+                "description" => "required|unique:diagnosis,description,except,".$id,
                 "status" => "required",
             ]);
 

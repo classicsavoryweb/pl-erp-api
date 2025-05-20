@@ -40,7 +40,7 @@ class PositionController extends Controller
     public function createPosition (Request $request) {
         try {
             $request->validate([
-                "description" => "required",
+                "description" => "required|unique:positions",
                 "rank" => "required",
                 "status" => "required",
                 "station_id" => "required"
@@ -62,7 +62,7 @@ class PositionController extends Controller
     public function editPosition (Request $request, $id) {
         try {
             $request->validate([
-                "description" => "required",
+                "description" => "required|unique:positions,description,except,".$id,
                 "rank" => "required",
                 "status" => "required",
                 "station_id" => "required"

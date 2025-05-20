@@ -55,7 +55,7 @@ class StationController extends Controller
     public function createStation(Request $request) {
         try {
             $request->validate([
-                "name" => "required",
+                "name" => "required|unique:stations",
                 "station_order" => "required",
                 "status" => "required"
             ]);
@@ -75,7 +75,7 @@ class StationController extends Controller
     public function editStation (Request $request, $id) {
         try {
             $request->validate([
-                "name" => "required",
+                "name" => "required|unique:stations,name,except,".$id,
                 "station_order" => "required",
                 "status" => "required"
             ]);

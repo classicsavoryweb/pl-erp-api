@@ -46,7 +46,7 @@ class OffenseController extends Controller
             $request->validate([
                 "category" => "required",
                 "subcategory" => "required",
-                "description" => "required",
+                "description" => "required|unique:offenses",
                 "status" => "required",
             ]);
 
@@ -68,7 +68,7 @@ class OffenseController extends Controller
             $request->validate([
                 "category" => "required",
                 "subcategory" => "required",
-                "description" => "required",
+                "description" => "required|unique:offenses,description,except,".$id,
                 "status" => "required",
             ]);
 

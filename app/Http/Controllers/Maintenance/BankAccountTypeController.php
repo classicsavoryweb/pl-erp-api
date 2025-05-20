@@ -42,7 +42,7 @@ class BankAccountTypeController extends Controller
     public function createBankAccountType(Request $request) {
         try {
             $request->validate([
-                "description" => "required",
+                "description" => "required|unique:bank_account_type",
                 "number_length" => "required",
                 "status" => "required",
             ]);
@@ -62,7 +62,7 @@ class BankAccountTypeController extends Controller
     public function editBankAccountType(Request $request, $id) {
         try {
             $request->validate([
-                "description" => "required",
+                "description" => "required|unique:bank_account_type,name,".$id,
                 "number_length" => "required",
                 "status" => "required",
             ]);

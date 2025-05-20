@@ -50,7 +50,7 @@ class TrainingTitleController extends Controller
         try {
             $request->validate([
                 "option" => "required",
-                "title" => "required",
+                "title" => "required|unique:training_titles",
                 "venue" => "required",
                 "speaker" => "required",
                 "status" => "required",
@@ -74,7 +74,7 @@ class TrainingTitleController extends Controller
         try {
             $request->validate([
                 "option" => "required",
-                "title" => "required",
+                "title" => "required|unique:training_titles,title,except,".$id,
                 "venue" => "required",
                 "speaker" => "required",
                 "status" => "required",

@@ -44,7 +44,7 @@ class RateController extends Controller
     public function createRate(Request $request) {
         try {
             $request->validate([
-                "code" => "required",
+                "code" => "required|unique:rates",
                 "area" => "required",
                 "minimum" => "required",
                 "status" => "required",
@@ -66,7 +66,7 @@ class RateController extends Controller
     public function editRate(Request $request, $id) {
         try {
             $request->validate([
-                "code" => "required",
+                "code" => "required|unique:rates,code,except,".$id,
                 "area" => "required",
                 "minimum" => "required",
                 "status" => "required",
