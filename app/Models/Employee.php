@@ -135,6 +135,13 @@ class Employee extends Model
         ->withTimestamps();
     }
 
+    public function vaccines() {
+        return $this->belongsToMany(Vaccine::class)
+        ->using(EmployeeVaccine::class)
+        ->withPivot("dose", "status", "date")
+        ->withTimestamps();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

@@ -15,4 +15,11 @@ class Vaccine extends Model
     ];
 
     protected $table = "vaccines";
+
+    public function employee() {
+        return $this->belongsToMany(Employee::class)
+        ->using(EmployeeVaccine::class)
+        ->withPivot("dose", "status", "date")
+        ->withTimestamps();
+    }
 }

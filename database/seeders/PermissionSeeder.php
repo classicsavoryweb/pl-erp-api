@@ -67,8 +67,8 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_perform_employee_bank_details"]);
         Permission::firstOrCreate(["name" => "can_view_employee_training_titles"]);
         Permission::firstOrCreate(["name" => "can_perform_employee_training_titles"]);
-        Permission::firstOrCreate(["name" => "can_view_employee_vaccine_brand"]);
-        Permission::firstOrCreate(["name" => "can_perform_employee_vaccine_brand"]);
+        Permission::firstOrCreate(["name" => "can_view_employee_vaccination"]);
+        Permission::firstOrCreate(["name" => "can_perform_employee_vaccination"]);
         Permission::firstOrCreate(["name" => "can_view_employee_health_and_safety"]);
         Permission::firstOrCreate(["name" => "can_perform_employee_health_and_safety"]);
         Permission::firstOrCreate(["name" => "can_view_employee_audit_logs"]);
@@ -78,5 +78,9 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_view_reports_module"]);
         Permission::firstOrCreate(["name" => "can_view_reports_offenses"]);
         Permission::firstOrCreate(["name" => "can_perform_reports_offenses"]);
+        Permission::firstOrCreate(["name" => "can_view_reports_vaccination"]);
+        Permission::firstOrCreate(["name" => "can_perform_reports_vaccination"]);
+        Permission::firstOrCreate(["name" => "can_view_reports_health_and_safety"]);
+        Permission::firstOrCreate(["name" => "can_perform_reports_health_and_safety"]);
     }
 }
