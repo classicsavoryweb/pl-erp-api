@@ -9,6 +9,7 @@ use App\Http\Controllers\Employees\EmployeeBankAccountController;
 use App\Http\Controllers\Employees\EmployeeBranchControlller;
 use App\Http\Controllers\Employees\EmployeeContractControlller;
 use App\Http\Controllers\Employees\EmployeeController;
+use App\Http\Controllers\Employees\EmployeeHealthSafetyController;
 use App\Http\Controllers\Employees\EmployeeOffensesControlller;
 use App\Http\Controllers\Employees\EmployeePositionControlller;
 use App\Http\Controllers\Employees\EmployeeRequirementsController;
@@ -160,6 +161,11 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-employee-vaccination/{employee_number}", [EmployeeVaccinationController::class, "getEmployeeVaccines"]);
     Route::middleware(["permission:can_perform_employee_vaccination"])->post("/add-employee-vaccination/{employee_number}", [EmployeeVaccinationController::class, "addVaccine"]);
     Route::middleware(["permission:can_perform_employee_vaccination"])->post("/edit-employee-vaccination/{employee_number}", [EmployeeVaccinationController::class, "editVaccine"]);
+    //health and safety
+    Route::get("/get-employee-health-safety/{employee_number}", [EmployeeHealthSafetyController::class, "getEmployeeHealthSafety"]);
+    Route::middleware(["permission:can_perform_employee_health_and_safety"])->post("/add-employee-health-safety/{employee_number}", [EmployeeHealthSafetyController::class, "addEmployeeHealthSafety"]);
+    Route::middleware(["permission:can_perform_employee_health_and_safety"])->post("/edit-employee-health-safety/{employee_number}", [EmployeeHealthSafetyController::class, "editEmployeeHealthSafety"]);
+
 
     //REPORTS MODULE
     //employee offenses

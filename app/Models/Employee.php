@@ -142,6 +142,27 @@ class Employee extends Model
         ->withTimestamps();
     }
 
+    public function diagnosis() {
+        return $this->belongsToMany(Diagnosis::class)
+        ->using(EmployeeHealthSafety::class)
+        ->withPivot(
+            "consultation_date",
+            "last_duty_date",
+            "hso",
+            "chief_complaint",
+            "attending_physician",
+            "physician_name",
+            "swab_test",
+            "swab_test_date",
+            "swab_test_type",
+            "swab_test_result",
+            "return_to_work_date",
+            "quarantine_period_from",
+            "quarantine_period_to",
+        )
+        ->withTimestamps();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
