@@ -75,7 +75,7 @@ class StationController extends Controller
     public function editStation (Request $request, $id) {
         try {
             $request->validate([
-                "name" => "required|unique:stations,name,except,".$id,
+                "name" => "required|unique:stations,name,".$id,
                 "station_order" => "required",
                 "status" => "required"
             ]);

@@ -66,7 +66,7 @@ class RateController extends Controller
     public function editRate(Request $request, $id) {
         try {
             $request->validate([
-                "code" => "required|unique:rates,code,except,".$id,
+                "code" => "required|unique:rates,code,".$id,
                 "area" => "required",
                 "minimum" => "required",
                 "status" => "required",

@@ -80,7 +80,7 @@ class EmployeeStatusController extends Controller
         try {
             $request->validate([
                 "type" => "required",
-                "description" => "required|unique:employee_status,description,except,".$id,
+                "description" => "required|unique:employee_status,description,".$id,
                 "status" => "required"
             ]);
 

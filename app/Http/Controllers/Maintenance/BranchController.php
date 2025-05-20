@@ -97,9 +97,9 @@ class BranchController extends Controller
     public function editBranch(Request $request, $id) {
         try {
             $request->validate([
-                "name" => "required|unique:branches,name,except,",$id,
+                "name" => "required|unique:branches,name,".$id,
                 "status" => "required",
-                "short_name" => "required|unique:branches,short_name,except,",$id,
+                "short_name" => "required|unique:branches,short_name,".$id,
                 "address" => "required",
                 "location" => "required",
                 "company" => "required",
