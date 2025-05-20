@@ -24,6 +24,7 @@ use App\Http\Controllers\Maintenance\RateController;
 use App\Http\Controllers\Maintenance\SalaryPositionController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
+use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Reports\ReportsOffensesController;
 use Illuminate\Support\Facades\Route;
 
@@ -114,31 +115,44 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-salary-positions", [SalaryPositionController::class, "getSalaryPositions"]);
     Route::middleware(["permission:can_perform_salary_positions"])->post("/create-salary-position", [SalaryPositionController::class, "createSalaryPosition"]);
     Route::middleware(["permission:can_perform_salary_positions"])->post("/edit-salary-position/{id}", [SalaryPositionController::class, "editSalaryPosition"]);
+    //vaccines
+    Route::get("/get-all-vaccines", [VaccineController::class, "getAllVaccines"]);
+    Route::get("/get-vaccines", [VaccineController::class, "getVaccines"]);
+    Route::middleware(["permission:can_perform_vaccine_brand"])->post("/create-vaccine", [VaccineController::class, "createVaccine"]);
+    Route::middleware(["permission:can_perform_vaccine_brand"])->post("/edit-vaccine/{id}", [VaccineController::class, "editVaccine"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
     Route::get("/get-employees", [EmployeeController::class, "getEmployees"]);
     Route::get("/get-employee/{employee_number}", [EmployeeController::class, "getEmployee"]);
-    Route::get("/get-employee-audit-logs/{employee_number}", [EmployeeController::class, "getEmployeeAuditLogs"]);
-    Route::get("/get-employee-positions/{employee_number}", [EmployeePositionControlller::class, "getEmployeePositionHistory"]);
-    Route::get("/get-employee-branches/{employee_number}", [EmployeeBranchControlller::class, "getEmployeeBranchHistory"]);
-    Route::get("/get-employee-contracts/{employee_number}", [EmployeeContractControlller::class, "getEmployeeContractHistory"]);
-    Route::get("/get-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "getEmployeeBankDetailsHistory"]);
-    Route::get("/get-employee-offenses/{employee_number}", [EmployeeOffensesControlller::class, "getEmployeeOffenses"]);
-    Route::get("/get-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "getEmployeeRequirements"]);
-    Route::get("/get-employee-trainings/{employee_number}", [EmployeeTrainingController::class, "getEmployeeTrainings"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/update-employee/{employee_number}", [EmployeeController::class, "updateEmployeeDetails"]);
+    //audit logs
+    Route::get("/get-employee-audit-logs/{employee_number}", [EmployeeController::class, "getEmployeeAuditLogs"]);
+    //positions history
+    Route::get("/get-employee-positions/{employee_number}", [EmployeePositionControlller::class, "getEmployeePositionHistory"]);
     Route::middleware(["permission:can_perform_employee_position"])->post("/add-employee-position/{employee_number}", [EmployeePositionControlller::class, "addPosition"]);
     Route::middleware(["permission:can_perform_employee_position"])->post("/edit-employee-position/{employee_number}", [EmployeePositionControlller::class, "editPosition"]);
+    //branches history
+    Route::get("/get-employee-branches/{employee_number}", [EmployeeBranchControlller::class, "getEmployeeBranchHistory"]);
     Route::middleware(["permission:can_perform_employee_branch"])->post("/add-employee-branch/{employee_number}", [EmployeeBranchControlller::class, "addBranch"]);
     Route::middleware(["permission:can_perform_employee_branch"])->post("/edit-employee-branch/{employee_number}", [EmployeeBranchControlller::class, "editBranch"]);
+    //contracts history
+    Route::get("/get-employee-contracts/{employee_number}", [EmployeeContractControlller::class, "getEmployeeContractHistory"]);
     Route::middleware(["permission:can_perform_employee_contract"])->post("/add-employee-contract/{employee_number}", [EmployeeContractControlller::class, "addContract"]);
     Route::middleware(["permission:can_perform_employee_contract"])->post("/edit-employee-contract/{employee_number}", [EmployeeContractControlller::class, "editContract"]);
+    //bank details history
+    Route::get("/get-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "getEmployeeBankDetailsHistory"]);
     Route::middleware(["permission:can_perform_employee_bank_details"])->post("/add-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "addBankDetails"]);
     Route::middleware(["permission:can_perform_employee_bank_details"])->post("/edit-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "editBankDetails"]);
+    //offenses history
+    Route::get("/get-employee-offenses/{employee_number}", [EmployeeOffensesControlller::class, "getEmployeeOffenses"]);
     Route::middleware(["permission:can_perform_employee_offenses"])->post("/add-employee-offense/{employee_number}", [EmployeeOffensesControlller::class, "addOffense"]);
     Route::middleware(["permission:can_perform_employee_offenses"])->post("/edit-employee-offense/{employee_number}", [EmployeeOffensesControlller::class, "editOffense"]);
+    //requirements
+    Route::get("/get-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "getEmployeeRequirements"]);
+    //trainings history
+    Route::get("/get-employee-trainings/{employee_number}", [EmployeeTrainingController::class, "getEmployeeTrainings"]);
     Route::middleware(["permission:can_perform_employee_requirements"])->post("/create-or-edit-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "updateOrCreateRequirements"]);
     Route::middleware(["permission:can_perform_employee_training_titles"])->post("/add-employee-training-title/{employee_number}", [EmployeeTrainingController::class, "addTrainingTitle"]);
 
