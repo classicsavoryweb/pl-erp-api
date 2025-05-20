@@ -107,8 +107,8 @@ Route::middleware('auth:sanctum')->group( function () {
     //bank account types
     Route::get("/get-all-bank-account-types", [BankAccountTypeController::class, "getAllBankAccountTypes"]);
     Route::get("/get-bank-account-types", [BankAccountTypeController::class, "getBankAccountTypes"]);
-    Route::middleware(["permission:can_perform_rate_per_group"])->post("/create-bank-account-type", [BankAccountTypeController::class, "createBankAccountType"]);
-    Route::middleware(["permission:can_perform_rate_per_group"])->post("/edit-bank-account-type/{id}", [BankAccountTypeController::class, "editBankAccountType"]);
+    Route::middleware(["permission:can_perform_bank_account_types"])->post("/create-bank-account-type", [BankAccountTypeController::class, "createBankAccountType"]);
+    Route::middleware(["permission:can_perform_bank_account_types"])->post("/edit-bank-account-type/{id}", [BankAccountTypeController::class, "editBankAccountType"]);
     //salary positions
     Route::get("/get-all-salary-positions", [SalaryPositionController::class, "getAllSalaryPositions"]);
     Route::get("/get-salary-positions", [SalaryPositionController::class, "getSalaryPositions"]);
