@@ -27,6 +27,7 @@ use App\Http\Controllers\Maintenance\SalaryPositionController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
+use App\Http\Controllers\Reports\ReportsHealthSafetyController;
 use App\Http\Controllers\Reports\ReportsOffensesController;
 use App\Http\Controllers\Reports\ReportsVaccinationController;
 use Illuminate\Support\Facades\Route;
@@ -173,5 +174,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-reports-offenses", [ReportsOffensesController::class, "getAllEmployeeOffenses"]);
     //vaccination
     Route::get("/get-all-reports-vaccination", [ReportsVaccinationController::class, "getAllReportsVaccines"]);
+    //health and safety
+    Route::get("/get-all-reports-health-and-safety", [ReportsHealthSafetyController::class, "getAllReportsHealthAndSafety"]);
 });
 
