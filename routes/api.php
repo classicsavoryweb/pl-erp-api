@@ -18,6 +18,7 @@ use App\Http\Controllers\Employees\EmployeeVaccinationController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BankAccountTypeController;
 use App\Http\Controllers\Maintenance\BranchController;
+use App\Http\Controllers\Maintenance\CoeReasonController;
 use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\OffenseController;
@@ -124,6 +125,11 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-vaccines", [VaccineController::class, "getVaccines"]);
     Route::middleware(["permission:can_perform_vaccine_brand"])->post("/create-vaccine", [VaccineController::class, "createVaccine"]);
     Route::middleware(["permission:can_perform_vaccine_brand"])->post("/edit-vaccine/{id}", [VaccineController::class, "editVaccine"]);
+    //coe reasonse
+    Route::get("/get-all-coe-reasons", [CoeReasonController::class, "getAllCoeReasons"]);
+    Route::get("/get-coe-reasons", [CoeReasonController::class, "getCoeReasons"]);
+    Route::middleware(["permission:can_perform_coe_reasons"])->post("/create-coe-reason", [CoeReasonController::class, "createCoeReason"]);
+    Route::middleware(["permission:can_perform_coe_reasons"])->post("/edit-coe-reason/{id}", [CoeReasonController::class, "editCoeReason"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);

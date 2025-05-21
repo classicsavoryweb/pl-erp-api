@@ -26,5 +26,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(SanctionSeeder::class);
         $this->call(TrainingTitleSeeder::class);
         $this->call(VaccineSeeder::class);
+        $this->call(CoeReasonSeeder::class);
     }
 }
