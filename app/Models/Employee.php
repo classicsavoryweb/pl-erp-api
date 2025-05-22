@@ -114,6 +114,10 @@ class Employee extends Model
         return $this->hasMany(EmployeeOffense::class,'employee_id','id');
     }
 
+    public function coe_requests() {
+        return $this->hasMany(CoeRequest::class,'employee_id','id');
+    }
+
     public function positions() {
         return $this->belongsToMany(Position::class)
         ->using(EmployeePosition::class)

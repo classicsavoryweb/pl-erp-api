@@ -31,6 +31,7 @@ use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Reports\ReportsHealthSafetyController;
 use App\Http\Controllers\Reports\ReportsOffensesController;
 use App\Http\Controllers\Reports\ReportsVaccinationController;
+use App\Http\Controllers\Reports\ReportCoeRequestsController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -182,5 +183,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-reports-vaccination", [ReportsVaccinationController::class, "getAllReportsVaccines"]);
     //health and safety
     Route::get("/get-all-reports-health-and-safety", [ReportsHealthSafetyController::class, "getAllReportsHealthAndSafety"]);
+    //coe requests
+    Route::get("/get-all-reports-coe-requests", [ReportCoeRequestsController::class, "getAllCoeRequests"]);
+    Route::middleware(["permission:can_perform_reports_coe_requests"])->post("/add-reports-coe-request", [ReportCoeRequestsController::class, "createCoeRequest"]);
+    Route::middleware(["permission:can_perform_reports_coe_requests"])->post("/edit-reports-coe-request/{id}", [ReportCoeRequestsController::class, "editCoeRequest"]);
+
 });
 
