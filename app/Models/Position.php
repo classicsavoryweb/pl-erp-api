@@ -21,7 +21,7 @@ class Position extends Model
     }
 
     public function salary() {
-        return $this->hasOne(SalaryPosition::class, "id", "position_id");
+        return $this->hasOne(SalaryPosition::class, "position_id", "id");
     }
 
     public function employee() {

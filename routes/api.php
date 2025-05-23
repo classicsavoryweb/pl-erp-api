@@ -135,6 +135,7 @@ Route::middleware('auth:sanctum')->group( function () {
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
     Route::get("/get-employees", [EmployeeController::class, "getEmployees"]);
+    Route::get("/get-employees-list", [EmployeeController::class, "getEmployeeList"]);
     Route::get("/get-employee/{employee_number}", [EmployeeController::class, "getEmployee"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/update-employee/{employee_number}", [EmployeeController::class, "updateEmployeeDetails"]);
@@ -146,12 +147,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_employee_position"])->post("/edit-employee-position/{employee_number}", [EmployeePositionControlller::class, "editPosition"]);
     //branches history
     Route::get("/get-employee-branches/{employee_number}", [EmployeeBranchControlller::class, "getEmployeeBranchHistory"]);
-    Route::middleware(["permission:can_perform_employee_branch"])->post("/add-employee-branch/{employee_number}", [EmployeeBranchControlller::class, "addBranch"]);
-    Route::middleware(["permission:can_perform_employee_branch"])->post("/edit-employee-branch/{employee_number}", [EmployeeBranchControlller::class, "editBranch"]);
+    Route::middleware(["permission:can_perform_employee_branches"])->post("/add-employee-branch/{employee_number}", [EmployeeBranchControlller::class, "addBranch"]);
+    Route::middleware(["permission:can_perform_employee_branches"])->post("/edit-employee-branch/{employee_number}", [EmployeeBranchControlller::class, "editBranch"]);
     //contracts history
     Route::get("/get-employee-contracts/{employee_number}", [EmployeeContractControlller::class, "getEmployeeContractHistory"]);
-    Route::middleware(["permission:can_perform_employee_contract"])->post("/add-employee-contract/{employee_number}", [EmployeeContractControlller::class, "addContract"]);
-    Route::middleware(["permission:can_perform_employee_contract"])->post("/edit-employee-contract/{employee_number}", [EmployeeContractControlller::class, "editContract"]);
+    Route::middleware(["permission:can_perform_employee_contracts"])->post("/add-employee-contract/{employee_number}", [EmployeeContractControlller::class, "addContract"]);
+    Route::middleware(["permission:can_perform_employee_contracts"])->post("/edit-employee-contract/{employee_number}", [EmployeeContractControlller::class, "editContract"]);
     //bank details history
     Route::get("/get-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "getEmployeeBankDetailsHistory"]);
     Route::middleware(["permission:can_perform_employee_bank_details"])->post("/add-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "addBankDetails"]);
@@ -185,8 +186,11 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-reports-health-and-safety", [ReportsHealthSafetyController::class, "getAllReportsHealthAndSafety"]);
     //coe requests
     Route::get("/get-all-reports-coe-requests", [ReportCoeRequestsController::class, "getAllCoeRequests"]);
+    Route::get("/get-reports-coe-request/{id}", [ReportCoeRequestsController::class, "getCoeRequest"]);
     Route::middleware(["permission:can_perform_reports_coe_requests"])->post("/add-reports-coe-request", [ReportCoeRequestsController::class, "createCoeRequest"]);
     Route::middleware(["permission:can_perform_reports_coe_requests"])->post("/edit-reports-coe-request/{id}", [ReportCoeRequestsController::class, "editCoeRequest"]);
+    Route::middleware(["permission:can_perform_reports_coe_requests"])->get("/cancel-reports-coe-request/{id}", [ReportCoeRequestsController::class, "cancelCoeRequest"]);
+    Route::middleware(["permission:can_perform_reports_coe_requests"])->get("/approve-reports-coe-request/{id}", [ReportCoeRequestsController::class, "approveCoeRequest"]);
 
 });
 

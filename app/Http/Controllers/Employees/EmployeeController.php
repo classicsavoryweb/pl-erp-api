@@ -209,6 +209,34 @@ class EmployeeController extends Controller
         }
     }
 
+    public function getEmployeeList(Request $request) {
+        try {
+
+            $employees = Employee::query();
+            
+            if ($request->has("keyWord")) {
+                $keyword = $request->keyWord;
+
+                $employees = $employees->where(function ($query) use ($keyword) {
+                    $query->whereAny(
+                        ["first_name", "last_name", "middle_name"],
+                        'LIKE',
+                        "%$keyword%"
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                        }
+                    );
+                });
+            }
+
+            $employees = $employees->take(100)->get();
+            return $this->sendResponse($employees);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
     public function updateEmployeeDetails(Request $request, $employee_number) { 
         try {
             DB::beginTransaction();

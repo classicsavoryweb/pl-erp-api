@@ -17,9 +17,11 @@ return new class extends Migration
             $table->string('date_requested');
             $table->string("include_salary")->default("No");
             $table->string("coe_format");
-            $table->string("salary")->nullable();
+            $table->string("places")->nullable();
             $table->string("coe_reason")->nullable();
             $table->string("status")->default("Pending");
+            $table->string("leave_from")->nullable();
+            $table->string("leave_to")->nullable();
             $table->timestamps();
         });
     }

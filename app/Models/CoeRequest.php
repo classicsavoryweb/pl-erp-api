@@ -14,9 +14,11 @@ class CoeRequest extends Model
         'date_requested',
         "include_salary",
         "coe_format",
-        "salary",
+        "places",
         "coe_reason",
         "status",
+        "leave_from",
+        "leave_to"
     ];
 
     protected $table="coe_requests";
