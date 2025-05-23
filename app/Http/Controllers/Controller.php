@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use NumberFormatter;
 
 class Controller extends BaseController
 {
@@ -32,5 +33,21 @@ class Controller extends BaseController
         } else {
             return $number . $ends[$number % 10];
         }
+    }
+
+    public function convertToChequeWords($amount): string {
+        $formatter = new NumberFormatter('en', NumberFormatter::SPELLOUT);
+        $amount = str_replace(',', '', $amount);
+        $amount = (float) $amount; 
+        $parts = explode('.', number_format($amount, 2, '.', ''));
+        $pesos = (int)$parts[0];
+        $centavos = (int)$parts[1];
+
+        $words = ucfirst($formatter->format($pesos));
+        $words = str_replace('-', ' ', $words);
+        $words = ucwords($words);
+        $centavosPart = str_pad($centavos, 2, '0', STR_PAD_RIGHT);
+        $formattedAmount = number_format($amount, 2, '.', ',');
+        return "{$words} & {$centavosPart}/100 ({$formattedAmount})";
     }
 }

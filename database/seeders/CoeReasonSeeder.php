@@ -23,5 +23,8 @@ class CoeReasonSeeder extends Seeder
         CoeReason::create(["reason" => "Cooperative Loan Application","status" => "active"]);
         CoeReason::create(["reason" => "Car Loan Application","status" => "active"]);
         CoeReason::create(["reason" => "Laptop Loan Application","status" => "active"]);
+        CoeReason::create(["reason" => "whatever legal purpose it may serve","status" => "active"]);
+        CoeReason::create(["reason" => "Certificate of Leave - Special","status" => "active"]);
+        CoeReason::create(["reason" => "Travel Purposes - Special","status" => "active"]);
     }
 }
