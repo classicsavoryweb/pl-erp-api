@@ -78,14 +78,18 @@ class PermissionSeeder extends Seeder
 
 
         //reports module
-        Permission::firstOrCreate(["name" => "can_view_reports_module"]);
-        Permission::firstOrCreate(["name" => "can_view_reports_offenses"]);
-        Permission::firstOrCreate(["name" => "can_perform_reports_offenses"]);
-        Permission::firstOrCreate(["name" => "can_view_reports_vaccination"]);
-        Permission::firstOrCreate(["name" => "can_perform_reports_vaccination"]);
-        Permission::firstOrCreate(["name" => "can_view_reports_health_and_safety"]);
-        Permission::firstOrCreate(["name" => "can_perform_reports_health_and_safety"]);
-        Permission::firstOrCreate(["name" => "can_view_reports_coe_requests"]);
-        Permission::firstOrCreate(["name" => "can_perform_reports_coe_requests"]);
+        Permission::firstOrCreate(["name" => "can_view_all_records_module"]);
+        Permission::firstOrCreate(["name" => "can_view_all_records_offenses"]);
+        Permission::firstOrCreate(["name" => "can_perform_all_records_offenses"]);
+        Permission::firstOrCreate(["name" => "can_view_all_records_vaccination"]);
+        Permission::firstOrCreate(["name" => "can_perform_all_records_vaccination"]);
+        Permission::firstOrCreate(["name" => "can_view_all_records_health_and_safety"]);
+        Permission::firstOrCreate(["name" => "can_perform_all_records_health_and_safety"]);
+        Permission::firstOrCreate(["name" => "can_view_all_records_coe_requests"]);
+        Permission::firstOrCreate(["name" => "can_perform_all_records_coe_requests"]);
+        Permission::firstOrCreate(["name" => "can_view_all_records_employment_status"]);
+        Permission::firstOrCreate(["name" => "can_perform_all_records_employment_status"]);
+        Permission::firstOrCreate(["name" => "can_view_all_records_tardiness"]);
+        Permission::firstOrCreate(["name" => "can_perform_all_records_tardiness"]);
     }
 }

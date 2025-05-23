@@ -187,10 +187,10 @@ Route::middleware('auth:sanctum')->group( function () {
     //coe requests
     Route::get("/get-all-reports-coe-requests", [ReportCoeRequestsController::class, "getAllCoeRequests"]);
     Route::get("/get-reports-coe-request/{id}", [ReportCoeRequestsController::class, "getCoeRequest"]);
-    Route::middleware(["permission:can_perform_reports_coe_requests"])->post("/add-reports-coe-request", [ReportCoeRequestsController::class, "createCoeRequest"]);
-    Route::middleware(["permission:can_perform_reports_coe_requests"])->post("/edit-reports-coe-request/{id}", [ReportCoeRequestsController::class, "editCoeRequest"]);
-    Route::middleware(["permission:can_perform_reports_coe_requests"])->get("/cancel-reports-coe-request/{id}", [ReportCoeRequestsController::class, "cancelCoeRequest"]);
-    Route::middleware(["permission:can_perform_reports_coe_requests"])->get("/approve-reports-coe-request/{id}", [ReportCoeRequestsController::class, "approveCoeRequest"]);
+    Route::middleware(["permission:can_perform_all_records_coe_requests"])->post("/add-reports-coe-request", [ReportCoeRequestsController::class, "createCoeRequest"]);
+    Route::middleware(["permission:can_perform_all_records_coe_requests"])->post("/edit-reports-coe-request/{id}", [ReportCoeRequestsController::class, "editCoeRequest"]);
+    Route::middleware(["permission:can_perform_all_records_coe_requests"])->get("/cancel-reports-coe-request/{id}", [ReportCoeRequestsController::class, "cancelCoeRequest"]);
+    Route::middleware(["permission:can_perform_all_records_coe_requests"])->get("/approve-reports-coe-request/{id}", [ReportCoeRequestsController::class, "approveCoeRequest"]);
 
 });
 
