@@ -77,7 +77,7 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_view_employee_audit_logs"]);
 
 
-        //reports module
+        //all records module
         Permission::firstOrCreate(["name" => "can_view_all_records_module"]);
         Permission::firstOrCreate(["name" => "can_view_all_records_offenses"]);
         Permission::firstOrCreate(["name" => "can_perform_all_records_offenses"]);

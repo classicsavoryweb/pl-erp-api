@@ -14,6 +14,7 @@ return new class extends Migration
 
         Schema::create('offenses', function (Blueprint $table) {
             $table->id();
+            $table->string('offense_number')->nullable();
             $table->string('category');
             $table->string('subcategory');
             $table->longText('description');

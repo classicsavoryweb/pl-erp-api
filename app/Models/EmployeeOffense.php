@@ -22,6 +22,7 @@ class EmployeeOffense extends Model
         'date_served_da',
         'attachment',
         'remarks',
+        'tardiness_id',
     ];
 
     protected $table = "employee_offenses";

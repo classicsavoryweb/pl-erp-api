@@ -15,7 +15,7 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         $adminRole = Role::where("name","admin")->first();
-        User::create([
+        User::firstOrCreate([
             'employee_number' => '0014602',
             'first_name' => 'Kea',
             'last_name' => 'Bartolome',
@@ -24,7 +24,7 @@ class AdminSeeder extends Seeder
             'role_id' => $adminRole->id,
             'status' => 'active'
         ]);
-        User::create([
+        User::firstOrCreate([
             'employee_number' => 'SFI0000001',
             'first_name' => 'Classic',
             'last_name' => 'Savory',
@@ -33,11 +33,20 @@ class AdminSeeder extends Seeder
             'role_id' => $adminRole->id,
             'status' => 'active'
         ]);
-        User::create([
+        User::firstOrCreate([
             'employee_number' => '767',
             'first_name' => 'Denmark',
             'last_name' => 'Maghanoy',
             'email' => 'denmarkmaghanoy2@gmail.com',
+            'password' => bcrypt('password'),
+            'role_id' => $adminRole->id,
+            'status' => 'active'
+        ]);
+        User::firstOrCreate([
+            'employee_number' => 'M004',
+            'first_name' => 'IRENE ANNE',
+            'last_name' => 'TING',
+            'email' => 'tingia01310@yahoo.com',
             'password' => bcrypt('password'),
             'role_id' => $adminRole->id,
             'status' => 'active'

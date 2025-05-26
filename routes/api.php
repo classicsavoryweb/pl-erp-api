@@ -30,6 +30,7 @@ use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Reports\ReportsHealthSafetyController;
 use App\Http\Controllers\Reports\ReportsOffensesController;
+use App\Http\Controllers\Reports\ReportsTardinessController;
 use App\Http\Controllers\Reports\ReportsVaccinationController;
 use App\Http\Controllers\Reports\ReportCoeRequestsController;
 use Illuminate\Support\Facades\Route;
@@ -191,6 +192,9 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_all_records_coe_requests"])->post("/edit-reports-coe-request/{id}", [ReportCoeRequestsController::class, "editCoeRequest"]);
     Route::middleware(["permission:can_perform_all_records_coe_requests"])->get("/cancel-reports-coe-request/{id}", [ReportCoeRequestsController::class, "cancelCoeRequest"]);
     Route::middleware(["permission:can_perform_all_records_coe_requests"])->get("/approve-reports-coe-request/{id}", [ReportCoeRequestsController::class, "approveCoeRequest"]);
-
+    //tardiness
+    Route::get("/get-all-reports-tardiness", [ReportsTardinessController::class, "getAllReportsVaccines"]);
+    Route::middleware(["permission:can_perform_all_records_tardiness"])->get("/void-reports-tardiness/{id}", [ReportsTardinessController::class, "voidTardiness"]);
+    Route::middleware(["permission:can_perform_all_records_tardiness"])->get("/approve-reports-tardiness/{id}", [ReportsTardinessController::class, "approveTardiness"]);
 });
 

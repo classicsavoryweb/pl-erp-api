@@ -20,7 +20,7 @@ class EmployeeOffensesSeeder extends Seeder
 
         foreach ($offenses["tbl_eoffenses"] as $empOffense) {
             $employee = Employee::where('employee_number', $empOffense['employee_id'])->first();
-            $offense = Offense::where("description", $empOffense['description'])->first();
+            $offense = Offense::where("offense_number", $empOffense['offense_id'])->first();
             if ($offense && $employee) {
                 $employee->offenses()->create([
                     "offense_id" => $offense->id,

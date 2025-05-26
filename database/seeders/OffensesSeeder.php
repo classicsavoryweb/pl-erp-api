@@ -2730,7 +2730,6 @@ class OffensesSeeder extends Seeder
               "modify_by"=> "admin",
               "modify_date"=> "03/25/2021",
               "status"=> "active",
-              
             ],
             [
               "offense_id"=> "211",
@@ -3905,6 +3904,7 @@ class OffensesSeeder extends Seeder
 
         foreach ($offenses as $offense) {
             Offense::create([
+                "offense_number" => $offense["offense_id2"],
                 "category" => $offense["category"],
                 "subcategory" => $offense["subcategory"],
                 "description" => $offense["description"],

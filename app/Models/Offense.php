@@ -12,6 +12,7 @@ class Offense extends Model
     protected $table = "offenses";
     protected $fillable = [
         "category",
+        "offense_number",
         "subcategory",
         "description",
         "status"
