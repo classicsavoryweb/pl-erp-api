@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\EmployeeOffense;
 use App\Models\Offense;
 use App\Models\Tardiness;
+use App\Models\TardinessMinutes;
 use App\Models\TardinessSanction;
 use Illuminate\Http\Request;
 use Exception;
@@ -81,7 +82,11 @@ class ReportsTardinessController extends Controller
                 ->where("year", Carbon::now()->year)
                 ->latest()
                 ->first();
-                $lastSanction = $lastTardiness->tardiness_sanction()->first();
+
+                $lastSanction = "";
+                if ($lastTardiness) {
+                    $lastSanction = $lastTardiness->tardiness_sanction()->first();
+                }
 
                 if ($lastSanction) {
                     $rank = $lastSanction->rank !== 12 ? $lastSanction->rank + 1 : $lastSanction->rank;
@@ -145,6 +150,10 @@ class ReportsTardinessController extends Controller
 
     public function importTardinessExcel (Request $request) {
         try {
+            $request->validate([
+                "tardiness_file" => "required"
+            ]);
+
             if ($request->hasFile("tardiness_file")) {
                 $storage = Storage::disk("hr_system_folder");
                 $directory = "/imports";
@@ -159,8 +168,104 @@ class ReportsTardinessController extends Controller
                 
                 ProcessTardinessImport::dispatch($filePath);
             }
-            return $this->sendResponse(["message" => $filePath]);
+            return $this->sendResponse(["message" => "Excel file imported successfullyy"]);
         } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getTardinessDetails ($id) {
+        try {
+            $tardiness = Tardiness::find($id);
+            $tardiness_minutes = TardinessMinutes::where("employee_id", $tardiness->employee_id)
+            ->where("month", $tardiness->month)
+            ->where("year", $tardiness->year)
+            ->get();
+            $tardiness["tardiness_minutes"] = $tardiness_minutes;
+
+            return $this->sendResponse($tardiness);
+        } catch(Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function approveBulkTardiness(Request $request) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "tardiness_id" => "required"
+            ]);
+
+            foreach($request->tardiness_id as $tardy) {
+                $tardiness = Tardiness::find($tardy);
+                $employee = Employee::find($tardiness->employee_id);
+
+                if ($tardiness->status === "Pending") {
+                    $offense = Offense::where("offense_number", "0000210")->first();
+
+                    $lastTardiness = Tardiness::where("employee_id", $employee->id)
+                    ->where("status", "Approved")
+                    ->where("year", Carbon::now()->year)
+                    ->latest()
+                    ->first();
+
+                    $lastSanction = "";
+                    if ($lastTardiness) {
+                        $lastSanction = $lastTardiness->tardiness_sanction()->first();
+                    }
+
+                    if ($lastSanction) {
+                        $rank = $lastSanction->rank !== 12 ? $lastSanction->rank + 1 : $lastSanction->rank;
+                        $sanction = TardinessSanction::where("rank", $rank)->first();
+                    } else {
+                        $sanction = TardinessSanction::where("rank", 1)->first();
+                    }
+
+                    $tardiness->update([
+                        "status" => "Approved"
+                    ]);
+
+                    EmployeeOffense::create([
+                        'offense_id' => $offense->id,
+                        'employee_id' => $employee->id,
+                        'sanction_id' => $sanction->id,
+                        'transgression' => $offense->subcategory,
+                        'repetition' => $sanction->count,
+                        'summary' => "Total Minutes Tardy: ". $tardiness->total_minutes ." minutes late",
+                        'date_committed' => $tardiness->year . '-' . str_pad($tardiness->month, 2, '0', STR_PAD_LEFT) . '-01',
+                        'tardiness_id' => $tardiness->id,
+                        'remarks' => $tardiness->reason,
+                    ]);
+                    
+                }
+            }
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Selected tardiness approved successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function editMinutesOfTardiness(Request $request) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "tardiness_minutes" => "required"
+            ]);
+
+            foreach($request->tardiness_minutes as $minutes) {
+                TardinessMinutes::where("id", $minutes["id"])
+                ->update([
+                    "late_minutes" => $minutes["late_minutes"]
+                ]);
+            }
+            
+            DB::commit();
+            return $this->sendResponse(["message" => "Tardiness minutes updated successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }

@@ -91,5 +91,6 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_perform_all_records_employment_status"]);
         Permission::firstOrCreate(["name" => "can_view_all_records_tardiness"]);
         Permission::firstOrCreate(["name" => "can_perform_all_records_tardiness"]);
+        Permission::firstOrCreate(["name" => "can_import_all_records_tardiness"]);
     }
 }
