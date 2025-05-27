@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessTardinessImport;
 use App\Models\Employee;
 use App\Models\EmployeeOffense;
 use App\Models\Offense;
@@ -11,6 +12,7 @@ use App\Models\TardinessSanction;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Illuminate\Support\Facades\Storage;
 use Str;
 use Carbon\Carbon;
 
@@ -137,6 +139,28 @@ class ReportsTardinessController extends Controller
             return $this->sendResponse(["message" => "Tardiness voided successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function importTardinessExcel (Request $request) {
+        try {
+            if ($request->hasFile("tardiness_file")) {
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/imports";
+                $file = $request->file("tardiness_file");
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+                
+                ProcessTardinessImport::dispatch($filePath);
+            }
+            return $this->sendResponse(["message" => $filePath]);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
