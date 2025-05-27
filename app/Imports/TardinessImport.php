@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Employee;
 use App\Models\Tardiness;
+use App\Models\TardinessMinutes;
 use App\Models\TardinessSanction;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -54,6 +55,30 @@ class TardinessImport implements ToCollection, WithHeadingRow
                     "offense_punishment" => $sanction->punishment,
                     "status" => "Pending",
                 ]);
+
+                for ($i = 1; $i < 10; $i++) {
+                    if ($row["late_date_".$i]) {
+                        TardinessMinutes::create([
+                            "employee_id" => $employee->id,
+                            "late_date" => date("Y-m-d", strtotime($row["late_date_".$i])),
+                            "late_minutes" => $row["late_mins_".$i],
+                            "month" => $month,
+                            "year" => $year
+                        ]);
+                    }
+                }
+
+                for ($i = 1; $i < 10; $i++) {
+                    if ($row["late_date_b".$i]) {
+                        TardinessMinutes::create([
+                            "employee_id" => $employee->id,
+                            "late_date" => date("Y-m-d", strtotime($row["late_date_b".$i])),
+                            "late_minutes" => $row["late_mins_b".$i],
+                            "month" => $month,
+                            "year" => $year
+                        ]);
+                    }
+                }
             }
         }
     }
