@@ -20,10 +20,10 @@ return new class extends Migration
             $table->string("total_minutes");
             $table->string("tardiness_sanction_id")->nullable();
             $table->string("offense_punishment")->nullable();
-            $table->string("reason")->nullable();
+            $table->longText("reason")->nullable();
             $table->string("status")->default("Pending");
             $table->string("da_status")->nullable();
-            $table->string("mail_status")->nullable();
+            $table->string("nte_status")->nullable();
             $table->timestamps();
         });
     }

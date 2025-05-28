@@ -20,7 +20,7 @@ class Tardiness extends Model
         "reason",
         "status",
         "da_status",
-        "mail_status",
+        "nte_status",
     ];
 
     public function employee() {

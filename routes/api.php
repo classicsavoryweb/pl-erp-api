@@ -194,7 +194,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_all_records_coe_requests"])->get("/approve-reports-coe-request/{id}", [ReportCoeRequestsController::class, "approveCoeRequest"]);
     //tardiness
     Route::get("/get-all-reports-tardiness", [ReportsTardinessController::class, "getAllReportsVaccines"]);
-    Route::middleware(["permission:can_perform_all_records_tardiness"])->get("/void-reports-tardiness/{id}", [ReportsTardinessController::class, "voidTardiness"]);
+    Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/void-reports-tardiness/{id}", [ReportsTardinessController::class, "voidTardiness"]);
     Route::middleware(["permission:can_perform_all_records_tardiness"])->get("/approve-reports-tardiness/{id}", [ReportsTardinessController::class, "approveTardiness"]);
     Route::middleware(["permission:can_import_all_records_tardiness"])->post("/import-reports-tardiness", [ReportsTardinessController::class, "importTardinessExcel"]);
     Route::get("/get-tardiness-details/{id}", [ReportsTardinessController::class, "getTardinessDetails"]);

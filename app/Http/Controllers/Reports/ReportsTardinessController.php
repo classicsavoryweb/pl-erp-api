@@ -125,6 +125,10 @@ class ReportsTardinessController extends Controller
 
     public function voidTardiness (Request $request, $id) {
         try {
+            $request->validate([
+                "reason" => "required"
+            ]);
+
             DB::beginTransaction();
             $tardiness = Tardiness::find($id);
 
@@ -136,6 +140,7 @@ class ReportsTardinessController extends Controller
                     ->delete();
                 }
                 $tardiness->update([
+                    "reason" => $request->reason,
                     "status" => "Voided"
                 ]);
             }
