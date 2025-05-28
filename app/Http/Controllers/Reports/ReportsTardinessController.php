@@ -315,4 +315,51 @@ class ReportsTardinessController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function getNTEDetails ($id) {
+        try {
+            $tardiness = Tardiness::find($id);
+            $employee = $tardiness->employee()->first();
+            $branch = $employee->current_branch()->first();
+            $position = $employee->current_position()->first();
+            $tardiness_sanction = $tardiness->tardiness_sanction()->first();
+
+            $start1 = Carbon::create($tardiness->year, $tardiness->month, 1)->subMonth()->day(26);
+            $end1 = Carbon::create($tardiness->year, $tardiness->month, 10);
+
+            $start2 = Carbon::create($tardiness->year, $tardiness->month, 11);
+            $end2 = Carbon::create($tardiness->year, $tardiness->month, 25);
+
+            $firstCutOff = TardinessMinutes::where("month", $tardiness->month)
+            ->where("year", $tardiness->year)
+            ->where("employee_id", $employee->id)
+            ->whereBetween("late_date", [$start1, $end1])
+            ->get();
+
+            $secondCutOff = TardinessMinutes::where("month", $tardiness->month)
+            ->where("year", $tardiness->year)
+            ->where("employee_id", $employee->id)
+            ->whereBetween("late_date", [$start2, $end2])
+            ->get();
+
+            $formattedDate = Carbon::now()->format('F d, Y');
+            $formattedDate = strtoupper($formattedDate);
+
+            return $this->sendResponse([
+                "total_minutes" => $tardiness->total_minutes,
+                "full_name" => $employee->full_name,
+                "position" => $position->description,
+                "branch" => $branch->name,
+                "date" => $formattedDate,
+                "group_head" => strtoupper($branch->group_head),
+                "tardiness_sanction" => $tardiness_sanction->punishment,
+                "first_cut_off" => $start1->format('F j, Y') . ' - ' . $end1->format('F j, Y'),
+                "second_cut_off" => $start2->format('F j, Y') . ' - ' . $end2->format('F j, Y'),
+                "first_cut_off_minutes_late" => $firstCutOff,
+                "second_cut_off_minutes_late" => $secondCutOff,
+            ]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
 }
