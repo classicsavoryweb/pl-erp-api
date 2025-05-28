@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessTardinessImport;
+use App\Mail\NTEMail;
 use App\Models\Employee;
 use App\Models\EmployeeOffense;
 use App\Models\Offense;
@@ -13,6 +14,7 @@ use App\Models\TardinessSanction;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Str;
 use Carbon\Carbon;
@@ -269,6 +271,45 @@ class ReportsTardinessController extends Controller
             
             DB::commit();
             return $this->sendResponse(["message" => "Tardiness minutes updated successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+    public function sendNTE(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "nte_memo" => "required"
+            ]);
+            $tardiness = Tardiness::find($id);
+            $employee = $tardiness->employee()->first();
+            $branch = $employee->current_branch()->first();
+
+            if ($request->hasFile("nte_memo")) {
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/Files Per Employee/" . $employee->employee_number;
+                $file = $request->file("nte_memo");
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+
+                $fileName = "TARDINESS-NTE-".$tardiness->year."-".$tardiness->month."-". $employee->last_name. "-".$employee->first_name.'.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+                $pathName = $storage->path($filePath);
+
+                Mail::to($employee->email)
+                ->cc($branch->branch_email)
+                ->send(new NTEMail($pathName));
+            }
+
+            $tardiness->update([
+                "nte_status" => "Sent"
+            ]);
+            
+            DB::commit();
+            return $this->sendResponse(["message" => "NTE sent successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
