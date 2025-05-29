@@ -201,6 +201,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/approve-reports-all-tardiness", [ReportsTardinessController::class, "approveBulkTardiness"]);
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/edit-reports-minutes-tardiness", [ReportsTardinessController::class, "editMinutesOfTardiness"]);
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/send-report-tardiness-nte/{id}", [ReportsTardinessController::class, "sendNTE"]);
+    Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/send-report-tardiness-nod/{id}", [ReportsTardinessController::class, "sendNOD"]);
     Route::get("/get-reports-nte-details/{id}", [ReportsTardinessController::class, "getNTEDetails"]);
 
 });

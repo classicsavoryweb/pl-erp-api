@@ -11,5 +11,5 @@ class TardinessMinutes extends Model
 
 
     protected $table = "tardiness_minutes";
-    protected $fillable = ["employee_id", "late_date", "late_minutes", "month", "year"];
+    protected $fillable = ["employee_id", "late_date", "late_minutes", "month", "year", "reason"];
 }

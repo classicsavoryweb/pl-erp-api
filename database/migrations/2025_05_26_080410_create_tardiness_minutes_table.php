@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string("late_minutes")->nullable();
             $table->string("month")->nullable();
             $table->string("year")->nullable();
+            $table->longText("reason")->nullable();
             $table->timestamps();
         });
     }

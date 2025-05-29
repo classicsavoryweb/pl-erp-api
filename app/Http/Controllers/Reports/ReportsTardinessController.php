@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessTardinessImport;
+use App\Mail\NODMail;
 use App\Mail\NTEMail;
 use App\Models\Employee;
 use App\Models\EmployeeOffense;
@@ -54,8 +55,6 @@ class ReportsTardinessController extends Controller
                     $tardiness = $tardiness->where($column, 'LIKE', "%$keyword%");
                 }
             }
-
-            $tardiness = $tardiness->orderByRaw("CASE WHEN status = 'Pending' THEN 0 ELSE 1 END");
 
             $tardiness = $tardiness->with([
                 "tardiness_sanction",
@@ -265,7 +264,8 @@ class ReportsTardinessController extends Controller
             foreach($request->tardiness_minutes as $minutes) {
                 TardinessMinutes::where("id", $minutes["id"])
                 ->update([
-                    "late_minutes" => $minutes["late_minutes"]
+                    "late_minutes" => $minutes["late_minutes"],
+                    "reason" => $minutes["reason"] ?? null,
                 ]);
             }
             
@@ -330,36 +330,79 @@ class ReportsTardinessController extends Controller
             $start2 = Carbon::create($tardiness->year, $tardiness->month, 11);
             $end2 = Carbon::create($tardiness->year, $tardiness->month, 25);
 
-            $firstCutOff = TardinessMinutes::where("month", $tardiness->month)
+            $tardiness_minutes = TardinessMinutes::where("month", $tardiness->month)
             ->where("year", $tardiness->year)
             ->where("employee_id", $employee->id)
-            ->whereBetween("late_date", [$start1, $end1])
-            ->get();
-
-            $secondCutOff = TardinessMinutes::where("month", $tardiness->month)
-            ->where("year", $tardiness->year)
-            ->where("employee_id", $employee->id)
-            ->whereBetween("late_date", [$start2, $end2])
+            ->orderBy("late_date", "ASC")
             ->get();
 
             $formattedDate = Carbon::now()->format('F d, Y');
             $formattedDate = strtoupper($formattedDate);
 
+            $middleInitial = strtoupper(substr($employee->middle_name, 0, 1));
+            $fullName = strtolower($employee->first_name . ' ' . $middleInitial . '. ' . $employee->last_name);
+            $properFullName = ucwords($fullName);
+
             return $this->sendResponse([
                 "total_minutes" => $tardiness->total_minutes,
                 "full_name" => $employee->full_name,
                 "position" => $position->description,
+                "gender" => $employee->gender,
                 "branch" => $branch->name,
                 "date" => $formattedDate,
+                "proper_full_name" => $properFullName,
+                "branch_head" => $branch->branch_head,
                 "group_head" => strtoupper($branch->group_head),
                 "tardiness_sanction" => $tardiness_sanction->punishment,
+                "rank" => $tardiness_sanction->rank,
+                "count" => $tardiness_sanction->count,
                 "first_cut_off" => $start1->format('F j, Y') . ' - ' . $end1->format('F j, Y'),
                 "second_cut_off" => $start2->format('F j, Y') . ' - ' . $end2->format('F j, Y'),
-                "first_cut_off_minutes_late" => $firstCutOff,
-                "second_cut_off_minutes_late" => $secondCutOff,
+                "tardiness_minutes_late" => $tardiness_minutes,
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function sendNOD(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "nod_memo" => "required"
+            ]);
+            $tardiness = Tardiness::find($id);
+            $employee = $tardiness->employee()->first();
+            $branch = $employee->current_branch()->first();
+
+            if ($request->hasFile("nod_memo")) {
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/Files Per Employee/" . $employee->employee_number;
+                $file = $request->file("nod_memo");
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+
+                $fileName = "TARDINESS-NOD-".$tardiness->year."-".$tardiness->month."-". $employee->last_name. "-".$employee->first_name.'.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+                $pathName = $storage->path($filePath);
+
+                Mail::to($employee->email)
+                ->cc($branch->branch_email)
+                ->send(new NODMail($pathName));
+            }
+
+            $tardiness->update([
+                "da_status" => "Sent"
+            ]);
+            
+            DB::commit();
+            return $this->sendResponse(["message" => "NTE sent successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
 }
