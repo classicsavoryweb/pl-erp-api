@@ -150,7 +150,7 @@ and make sure to sign it as an acknowledgement. <b>The said document must be sen
         </tr>
     </tbody>
 </table>
-<p style="font-size: 10px;">*Other offenses from the Code of Discipline should still follow the appropriate sanction.</p>
+<p style="font-size: 11px;">*Other offenses from the Code of Discipline should still follow the appropriate sanction.</p>
 <br/>
 Should you have any questions, please feel free to contact me.
 <br/>

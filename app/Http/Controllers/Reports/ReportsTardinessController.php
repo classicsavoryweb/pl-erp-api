@@ -398,7 +398,7 @@ class ReportsTardinessController extends Controller
             ]);
             
             DB::commit();
-            return $this->sendResponse(["message" => "NTE sent successfully"]);
+            return $this->sendResponse(["message" => "NOD sent successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
