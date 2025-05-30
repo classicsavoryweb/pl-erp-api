@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Employees;
 
 use App\Http\Controllers\Controller;
+use App\Models\Rate;
 use Illuminate\Http\Request;
 use App\Models\Contract;
 use App\Models\Employee;
@@ -78,6 +79,50 @@ class EmployeeContractControlller extends Controller
             return $this->sendResponse(["message" => "Contract updated successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getContractDetails ($id) {
+        try {
+            $contract = Contract::find($id);
+            $employee = $contract->employee()->first();
+            $position = $employee->current_position()->first();
+            $branch = $employee->current_branch()->first();
+
+            $date1 = Carbon::parse($contract->contract_start_date);
+            $date2 = Carbon::parse($contract->contract_end_date);
+            $duration = $date1->diffInMonths($date2);
+
+            $salary_amount = 0.00;
+            $salary = $position->salary()->first();
+
+            if ($salary !== "minimum") {
+                $salary_amount = ($salary->basic_salary / 26) / 8;
+            } else {
+                $rate = Rate::where("code", $branch->rate_code)->first();
+                $salary_amount = $rate->minimum / 8;
+            }
+
+            $middleInitial = strtoupper(substr($employee->middle_name, 0, 1));
+            $fullName = strtolower($employee->first_name . ' ' . $middleInitial . '. ' . $employee->last_name);
+            $properFullName = ucwords($fullName);
+
+            return $this->sendResponse([
+                "first_name" => $employee->first_name,
+                "middle_name" => $employee->middle_name,
+                "last_name" => $employee->last_name,
+                "gender" => $employee->gender,
+                "address" => $employee->address,
+                "contract_start_date" => $contract->contract_start_date,
+                "contract_end_date" => $contract->contract_end_date,
+                "duration" => $duration,
+                "proper_full_name" => $properFullName,
+                "position" => $position->description,
+                "branch" => $branch->name,
+                "salary_amount" => $salary_amount
+            ]);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
