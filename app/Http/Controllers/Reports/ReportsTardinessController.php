@@ -258,16 +258,25 @@ class ReportsTardinessController extends Controller
         try {
             DB::beginTransaction();
             $request->validate([
+                "id" => "required",
                 "tardiness_minutes" => "required"
             ]);
 
+            $totalMins = 0;
             foreach($request->tardiness_minutes as $minutes) {
+                $totalMins = $totalMins + $minutes["late_minutes"];
+ 
                 TardinessMinutes::where("id", $minutes["id"])
                 ->update([
                     "late_minutes" => $minutes["late_minutes"],
                     "reason" => $minutes["reason"] ?? null,
                 ]);
             }
+
+            Tardiness::where("id", $request->id)
+            ->update([
+                "total_minutes" => $totalMins
+            ]);
             
             DB::commit();
             return $this->sendResponse(["message" => "Tardiness minutes updated successfully"]);
