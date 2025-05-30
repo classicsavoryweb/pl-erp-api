@@ -104,19 +104,21 @@ class EmployeeController extends Controller
     public function getEmployee(Request $request, $employee_number) {
         try {
             $employee = Employee::with([
-                    "current_position",
-                    "agency",
-                    "current_branch",
-                    "station",
-                    "employee_status",
-                    "home_branch",
-                    "branches",
-                    "positions",
-                    "education",
-                    "dependents",
-                    "contracts"
-                ])->where("employee_number", $employee_number)
-                ->first();
+                "current_position",
+                "agency",
+                "current_branch",
+                "station",
+                "employee_status",
+                "home_branch",
+                "branches",
+                "positions",
+                "education",
+                "dependents",
+                "contracts"
+            ])->where("employee_number", $employee_number)
+            ->first();
+            $employee->age = Carbon::parse($employee->birthday)->age;
+
             $storage = Storage::disk("hr_system_folder");
             if ($employee->image) {
                 $profilePicture = $storage->get($employee->image);       
