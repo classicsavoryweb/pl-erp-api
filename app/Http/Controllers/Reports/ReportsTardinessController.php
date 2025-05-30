@@ -272,11 +272,17 @@ class ReportsTardinessController extends Controller
                     "reason" => $minutes["reason"] ?? null,
                 ]);
             }
-
-            Tardiness::where("id", $request->id)
-            ->update([
+            $tardiness = Tardiness::find($request->id);
+            $tardiness->update([
                 "total_minutes" => $totalMins
             ]);
+
+            if ($tardiness->status === "Approved") {
+                EmployeeOffense::where("tardiness_id", $tardiness->id)
+                ->update([
+                    'summary' => "Total Minutes Tardy: ". $totalMins ." minutes late",
+                ]); 
+            }
             
             DB::commit();
             return $this->sendResponse(["message" => "Tardiness minutes updated successfully"]);
