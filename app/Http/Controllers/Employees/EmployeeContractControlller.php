@@ -104,6 +104,11 @@ class EmployeeContractControlller extends Controller
                 $salary_amount = $rate->minimum / 8;
             }
 
+            $previousContract = $employee->contracts()
+            ->where('contract_start_date', '<', $contract->contract_start_date)
+            ->orderBy('contract_start_date', 'desc')
+            ->first();
+
             $middleInitial = strtoupper(substr($employee->middle_name, 0, 1));
             $fullName = strtolower($employee->first_name . ' ' . $middleInitial . '. ' . $employee->last_name);
             $properFullName = ucwords($fullName);
@@ -114,8 +119,11 @@ class EmployeeContractControlller extends Controller
                 "last_name" => $employee->last_name,
                 "gender" => $employee->gender,
                 "address" => $employee->address,
+                "date_hired" => $employee->date_hired,
                 "contract_start_date" => $contract->contract_start_date,
                 "contract_end_date" => $contract->contract_end_date,
+                "previous_contract_start_date" => $previousContract->contract_start_date ?? null,
+                "previous_contract_end_date" => $previousContract->contract_end_date ?? null,
                 "duration" => $duration,
                 "proper_full_name" => $properFullName,
                 "position" => $position->description,
