@@ -28,6 +28,7 @@ use App\Http\Controllers\Maintenance\SalaryPositionController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
+use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
 use App\Http\Controllers\Reports\ReportsHealthSafetyController;
 use App\Http\Controllers\Reports\ReportsOffensesController;
 use App\Http\Controllers\Reports\ReportsTardinessController;
@@ -204,6 +205,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/send-report-tardiness-nte/{id}", [ReportsTardinessController::class, "sendNTE"]);
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/send-report-tardiness-nod/{id}", [ReportsTardinessController::class, "sendNOD"]);
     Route::get("/get-reports-nte-details/{id}", [ReportsTardinessController::class, "getNTEDetails"]);
+    //employment status
+    Route::middleware(["permission:can_perform_all_records_employment_status"])->get("/get-employment-status-report", [ReportsEmploymentStatusController::class, "getEmploymentStatusReports"]);
 
 });
 

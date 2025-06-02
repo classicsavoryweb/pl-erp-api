@@ -118,6 +118,11 @@ class Employee extends Model
         return $this->hasMany(CoeRequest::class,'employee_id','id');
     }
 
+    public function latest_contract()
+    {
+        return $this->hasOne(Contract::class)->latestOfMany();
+    }
+
     public function positions() {
         return $this->belongsToMany(Position::class)
         ->using(EmployeePosition::class)
