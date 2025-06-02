@@ -164,6 +164,22 @@ class EmployeeController extends Controller
                 }
             }
 
+            if ($request->has(["branch_id"])) {
+                $employees = $employees->where("branch_id", $request->branch_id);
+            }
+
+            if ($request->has(["position_id"])) {
+                $employees = $employees->where("position_id", $request->position_id);
+            }
+
+            if ($request->has(["employee_status_id"])) {
+                $employees = $employees->where("employee_status_id", $request->employee_status_id);
+            }
+
+            if ($request->has(["type"])) {
+                $employees = $employees->where("type", $request->type);
+            }
+
             if ($request->has(["date_from", "date_to"])) {
                 $employees = $employees->whereBetween('date_hired', [$request->date_from, $request->date_to]);
             }

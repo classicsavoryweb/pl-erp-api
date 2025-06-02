@@ -97,7 +97,7 @@ class EmployeeContractControlller extends Controller
             $salary_amount = 0.00;
             $salary = $position->salary()->first();
 
-            if ($salary !== "minimum") {
+            if ($salary->rate_category !== "minimum") {
                 $salary_amount = ($salary->basic_salary / 26) / 8;
             } else {
                 $rate = Rate::where("code", $branch->rate_code)->first();
