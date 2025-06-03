@@ -60,8 +60,9 @@ class BranchController extends Controller
                 "date_open" => "required",
                 "branch_email" => "required",
                 "rate_code" => "required",
-                'branch_head_employee_number',
-                "group_head_employee_number",
+                'branch_head_employee_number' => "required",
+                "group_head_employee_number" => "required",
+                "mancom_employee_number" => "required",
             ]);
 
             $count = Branch::count();
@@ -69,6 +70,12 @@ class BranchController extends Controller
             $branchNumber = $format . str_pad(++$count, 5, '0', STR_PAD_LEFT);
             $bhEmployee = Employee::where("employee_number", $request->branch_head_employee_number)->first();
             $ghEmployee = Employee::where("employee_number", $request->group_head_employee_number)->first();
+            $mancom = Employee::where("employee_number", $request->mancom_employee_number)->first();
+
+            $kitchenOIC = "";
+            if ($request->has('kitchen_oic_employee_number')) {
+                $kitchenOIC = Employee::where("employee_number", $request->kitchen_oic_employee_number)->first();
+            }
 
             Branch::create([
                 "name" => $request->name,
@@ -85,6 +92,10 @@ class BranchController extends Controller
                 "group_head_employee_number" => $ghEmployee->employee_number,
                 'branch_head' => $bhEmployee->full_name,
                 "group_head" => $ghEmployee->full_name,
+                "mancom_employee_number" => $mancom->employee_number,
+                "mancom" => $mancom->full_name,
+                "kitchen_oic_employee_number" => $kitchenOIC->employee_number ?? null,
+                "kitchen_oic" => $kitchenOIC->full_name ?? null, 
             ]);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);
@@ -99,6 +110,7 @@ class BranchController extends Controller
             $request->validate([
                 "name" => "required|unique:branches,name,".$id,
                 "status" => "required",
+                "branch_number" => "required|unique:branches,branch_number,".$id,
                 "short_name" => "required|unique:branches,short_name,".$id,
                 "address" => "required",
                 "location" => "required",
@@ -106,17 +118,24 @@ class BranchController extends Controller
                 "date_open" => "required",
                 "branch_email" => "required",
                 "rate_code" => "required",
-                'branch_head_employee_number',
-                "group_head_employee_number",
+                'branch_head_employee_number' => "required",
+                "group_head_employee_number" => "required",
+                "mancom_employee_number" => "required",
             ]);
 
             $bhEmployee = Employee::where("employee_number", $request->branch_head_employee_number)->first();
             $ghEmployee = Employee::where("employee_number", $request->group_head_employee_number)->first();
+            $mancom = Employee::where("employee_number", $request->mancom_employee_number)->first();
 
+            $kitchenOIC = "";
+            if ($request->has('kitchen_oic_employee_number')) {
+                $kitchenOIC = Employee::where("employee_number", $request->kitchen_oic_employee_number)->first();
+            }
             Branch::where("id", $id)->update([
                 "name" => $request->name,
                 "status" => $request->status,
                 "short_name" => $request->short_name,
+                "branch_number" => $request->branch_number,
                 "address" => $request->address,
                 "location" => $request->location,
                 "date_open" => $request->date_open,
@@ -127,9 +146,13 @@ class BranchController extends Controller
                 "group_head_employee_number" => $ghEmployee->employee_number,
                 'branch_head' => $bhEmployee->full_name,
                 "group_head" => $ghEmployee->full_name,
+                "mancom_employee_number" => $mancom->employee_number,
+                "mancom" => $mancom->full_name,
+                "kitchen_oic_employee_number" => $kitchenOIC->employee_number ?? null,
+                "kitchen_oic" => $kitchenOIC->full_name ?? null, 
             ]);
 
-            return $this->sendResponse(["message" => "Branch created successfully"]);
+            return $this->sendResponse(["message" => "Branch updated successfully"]);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }

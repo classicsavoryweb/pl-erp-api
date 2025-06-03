@@ -24,6 +24,10 @@ class Branch extends Model
         "group_head_employee_number",
         'branch_head',
         "group_head",
+        'kitchen_oic_employee_number',
+        'kitchen_oic',
+        'mancom_employee_number',
+        'mancom',
     ];
 
     public function employee() {

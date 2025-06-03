@@ -26,6 +26,10 @@ return new class extends Migration
             $table->string('group_head_employee_number')->nullable();
             $table->string('branch_head')->nullable();
             $table->string('group_head')->nullable();
+            $table->string('kitchen_oic_employee_number')->nullable();
+            $table->string('kitchen_oic')->nullable();
+            $table->string('mancom_employee_number')->nullable();
+            $table->string('mancom')->nullable();
             $table->string("status")->default("active");
             $table->timestamps();
         });
