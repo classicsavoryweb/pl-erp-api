@@ -15,9 +15,7 @@ class EmployeeTrainingController extends Controller
         try {
             $perPage = $request->per_page ??10;
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $training = EmployeeTrainings::
-                with(["training"])
-                ->where("employee_id", $employee->id)
+            $training = EmployeeTrainings::where("employee_id", $employee->id)
                 ->orderBy("date","DESC")
                 ->paginate($perPage);
 
@@ -32,8 +30,12 @@ class EmployeeTrainingController extends Controller
             DB::beginTransaction();
 
             $request->validate([
-                "training_title_id" => "required",
-                "date" => "required"
+                "others" => "required",
+                "speaker" => "required",
+                "training_title" => "required",
+                "venue" => "required",
+                "date" => "required",
+                "covered_date" => "required"
             ]);
 
             $employee = Employee::where("employee_number", $employee_number)->first();

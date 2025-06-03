@@ -21,12 +21,14 @@ class EmployeeTrainingSeeder extends Seeder
 
         foreach ($trainings["tbl_trainings"] as $training) {
             $employee = Employee::where("employee_number", $training["employee_id"])->first();
-            $currentTraining = TrainingTitle::where("title", $training["title"])->first();
             
-            if ($employee && $currentTraining) {
+            if ($employee) {
                 EmployeeTrainings::create([
                     "employee_id" => $employee->id,
-                    "training_title_id" => $currentTraining->id,
+                    "training_title" => $training["title"],
+                    "option" => $training["option"],
+                    "speaker" => $training["speaker"],
+                    "venue" => $training["venue"],
                     "date" => $training["date"],
                     "score" => $training["score"],
                 ]);

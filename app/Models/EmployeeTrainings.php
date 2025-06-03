@@ -11,7 +11,18 @@ class EmployeeTrainings extends Pivot
     use HasFactory;
 
     public $incrementing = true;
-    protected $fillable = ["employee_id", "training_title_id", "date", "score"];
+    protected $fillable = [
+        "employee_id",
+        "training_title",
+        "speaker",
+        "venue",
+        "batch",
+        "others",
+        "date",
+        "covered_date",
+        "option",
+        "score",
+    ];
     protected $table = "employee_trainings";
 
     public function employee()
