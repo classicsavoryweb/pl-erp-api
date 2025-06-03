@@ -32,9 +32,12 @@ class ReportsEmploymentStatusController extends Controller
 
             $branchOIC = Employee::with(["current_position"])
             ->where("employee_number", $branch->branch_head_employee_number)->first();
-            
+            $groupHead = Employee::with(["current_position"])
+            ->where("employee_number", $branch->group_head_employee_number)->first();
+
             return $this->sendResponse([
                 "branch_oic" => $branchOIC,
+                "group_head" => $groupHead,
                 "date" => now()->toDateString(),
                 "branch" => $branch,
                 "data" => $employees,
