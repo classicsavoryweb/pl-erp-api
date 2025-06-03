@@ -38,7 +38,7 @@ class TardinessSeeder extends Seeder
                 "reason" => $tardy["reason"] ,
                 "status" => $status ?? "N/A",
                 "da_status" =>  null,
-                "mail_status" => $tardy["mail_status"],
+                "nte_status" => $tardy["mail_status"],
             ]);
         }
 
