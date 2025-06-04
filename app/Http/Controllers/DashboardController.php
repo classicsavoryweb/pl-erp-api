@@ -79,10 +79,12 @@ class DashboardController extends Controller
                 $weekDates[] = $cursor->format('m-d');
                 $cursor->addDay();
             }
+            $weekDatesString = "'" . implode("','", $weekDates) . "'";
 
             $employees = Employee::with(["current_position", "current_branch"])
             ->whereIn(DB::raw("DATE_FORMAT(birthday, '%m-%d')"), $weekDates)
             ->where("status", "active")
+            ->orderByRaw("FIELD(DATE_FORMAT(birthday, '%m-%d'), $weekDatesString)")
             ->paginate($perPage);
 
             return $this->sendResponse($employees);
