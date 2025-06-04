@@ -45,6 +45,7 @@ class DashboardController extends Controller
             ->where('year', Carbon::now()->year)  // <- simple where here
             ->groupBy('month')
             ->orderBy('month')
+            ->where("status", "Approved")
             ->pluck('total', 'month')
             ->all();
 
@@ -60,6 +61,31 @@ class DashboardController extends Controller
                 "monthly_hires" => $allMonths,
                 "monthly_tardy" => $allTardy,
             ]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getAllEmployeeBirthMonth (Request $request) {
+        try {
+            $perPage = $request->per_page ?? 10;
+
+            $startOfWeek = Carbon::now()->startOfWeek();
+            $endOfWeek = Carbon::now()->endOfWeek();
+
+            $weekDates = [];
+            $cursor = $startOfWeek->copy();
+            while ($cursor->lte($endOfWeek)) {
+                $weekDates[] = $cursor->format('m-d');
+                $cursor->addDay();
+            }
+
+            $employees = Employee::with(["current_position", "current_branch"])
+            ->whereIn(DB::raw("DATE_FORMAT(birthday, '%m-%d')"), $weekDates)
+            ->where("status", "active")
+            ->paginate($perPage);
+
+            return $this->sendResponse($employees);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }

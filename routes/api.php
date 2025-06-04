@@ -43,6 +43,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get('/logout', [AuthController::class,'logout']);
     Route::post('/change-password', [AuthController::class,'changePassword']);
     Route::get("/get-summary-details", [DashboardController::class, "getSummaryDetails"]);
+    Route::get("/get-employees-birthmonth", [DashboardController::class, "getAllEmployeeBirthMonth"]);
+
     // ADMINISTRATOR MODULE
     //roles and permission
     Route::get("/get-all-activity-logs", [ActivityLogsController::class, "getAllActivityLogs"]);
