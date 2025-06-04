@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Employees;
 
+use App\Exports\Employees\EmployeeTrackingExport;
 use App\Http\Controllers\Controller;
 use App\Models\Agency;
 use App\Models\BranchEmployee;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Str;
 
@@ -191,13 +193,25 @@ class EmployeeController extends Controller
             }
 
             $employees = $employees->with(["current_position", "agency", "current_branch", "station"])
-            ->orderBy("date_hired", "desc")
-            ->paginate($perPage);
+            ->orderBy("date_hired", "desc");
+
+            if ($request->has(["export"]) && $request->export) {
+                $employees = $employees->get();
+                return Excel::download(new EmployeeTrackingExport($employees), "employees.xls");
+            }
+
+            $employees = $employees->paginate($perPage);
 
             return $this->sendResponse($employees);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportEmployee (Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllEmployees($request);
     }
 
     public function getEmployeeAuditLogs(Request $request, $employeeNumber) {
