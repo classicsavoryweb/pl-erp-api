@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Employees;
 
+use App\Exports\Employees\EmployeeContractsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Rate;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use App\Models\Employee;
 use Exception;
 use DB;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeContractControlller extends Controller
 {
@@ -18,9 +20,14 @@ class EmployeeContractControlller extends Controller
             $perPage = $request->per_page ??10;
             $employee = Employee::where("employee_number", $employee_number)->first();
             $contracts = Contract::where("employee_id", $employee->id)
-                ->orderBy("contract_start_date","DESC")
-                ->paginate($perPage);
+                ->orderBy("contract_start_date","DESC");
 
+            if($request->has(["export"]) && $request->export) {
+                $contracts = $contracts->get();
+                return Excel::download(new EmployeeContractsExport($contracts), "contracts.xls");
+            }
+
+            $contracts = $contracts->paginate($perPage);
             foreach($contracts as $contract) {
                 $date1 = Carbon::parse($contract->contract_start_date);
                 $date2 = Carbon::parse($contract->contract_end_date);
@@ -32,6 +39,12 @@ class EmployeeContractControlller extends Controller
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }   
+    }
+
+    public function exportEmployeeContractHistory(Request $request, $employee_number) {
+        $request["export"] = true;
+
+        return $this->getEmployeeContractHistory($request, $employee_number);
     }
 
     public function addContract(Request $request, $employee_number) {

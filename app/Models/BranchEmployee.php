@@ -15,6 +15,11 @@ class BranchEmployee extends Pivot
     protected $fillable = ["employee_id", "branch_id", "date_assigned", "remarks"];
     protected $table = "branch_employee";
 
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class);

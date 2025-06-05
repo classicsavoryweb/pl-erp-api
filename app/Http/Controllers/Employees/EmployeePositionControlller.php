@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Employees;
 
+use App\Exports\Employees\EmployeePositionsExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use Exception;
 use DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeePositionControlller extends Controller
 {
@@ -15,16 +17,28 @@ class EmployeePositionControlller extends Controller
         try {
             $perPage = $request->per_page ??10;
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $positions = EmployeePosition::
-                with(["position"])
+
+            $positions = EmployeePosition::with(["position", "employee"])
                 ->where("employee_id", $employee->id)
-                ->orderBy("date_started","DESC")
-                ->paginate($perPage);
+                ->orderBy("date_started","DESC");
+
+            if($request->has(["export"]) && $request->export) {
+                $positions = $positions->get();
+                return Excel::download(new EmployeePositionsExport($positions), "positions.xls");
+            }
+
+            $positions = $positions->paginate($perPage);
 
             return $this->sendResponse($positions);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportEmployeePositionHistory(Request $request, $employee_number) {
+        $request["export"] = true;
+
+        return $this->getEmployeePositionHistory($request, $employee_number);
     }
     public function addPosition(Request $request, $employee_number) {
         try {

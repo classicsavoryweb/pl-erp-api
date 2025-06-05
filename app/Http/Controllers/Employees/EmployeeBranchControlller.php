@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Employees;
 
+use App\Exports\Employees\EmployeeBranchesExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\BranchEmployee;
 use App\Models\Employee;
 use Exception;
 use DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeBranchControlller extends Controller
 {
@@ -15,16 +17,27 @@ class EmployeeBranchControlller extends Controller
         try {
             $perPage = $request->per_page ??10;
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $branches = BranchEmployee::
-                with(["branch"])
+            $branches = BranchEmployee::with(["branch", "employee"])
                 ->where("employee_id", $employee->id)
-                ->orderBy("date_assigned","DESC")
-                ->paginate($perPage);
+                ->orderBy("date_assigned","DESC");
+
+            if($request->has(["export"]) && $request->export) {
+                $branches = $branches->get();
+                return Excel::download(new EmployeeBranchesExport($branches), "branches.xls");
+            }
+
+            $branches = $branches->paginate($perPage);
 
             return $this->sendResponse($branches);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportEmployeeBranchHistory(Request $request, $employee_number) {
+        $request["export"] = true;
+
+        return $this->getEmployeeBranchHistory($request, $employee_number);
     }
     public function addBranch(Request $request, $employee_number) {
         try {

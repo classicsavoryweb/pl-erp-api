@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Employees;
 
+use App\Exports\Employees\EmployeeOffensesExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Employee;
@@ -9,6 +10,7 @@ use App\Models\EmployeeOffense;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeOffensesControlller extends Controller
 {
@@ -19,27 +21,37 @@ class EmployeeOffensesControlller extends Controller
 
             $employee = Employee::where("employee_number", $employee_number)->first();
             $offenses = EmployeeOffense::where("employee_id", $employee->id)
-                ->with(["offense", "sanction"])
-                ->orderBy("date_committed","DESC")
-                ->paginate($perPage);
+                ->with(["offense", "sanction", "employee"])
+                ->orderBy("date_committed","DESC");
 
-            $offenses->getCollection()->transform(function ($offense) use ($storage) {
-
-            if ($offense->attachment && $storage->exists($offense->attachment)) {
-                $fileContents = $storage->get($offense->attachment);
-                $offense->attached_file ='data:application/pdf;base64,' . base64_encode($fileContents);
-            } else {
-                $offense->attached_file = null;
+            if($request->has(["export"]) && $request->export) {
+                $offenses = $offenses->get();
+                return Excel::download(new EmployeeOffensesExport($offenses), "offenses.xls");
             }
 
-            return $offense;
-        });
+            $offenses = $offenses->paginate($perPage);
 
+            $offenses->getCollection()->transform(function ($offense) use ($storage) {
+                if ($offense->attachment && $storage->exists($offense->attachment)) {
+                    $fileContents = $storage->get($offense->attachment);
+                    $offense->attached_file ='data:application/pdf;base64,' . base64_encode($fileContents);
+                } else {
+                    $offense->attached_file = null;
+                }
+
+                return $offense;
+            });
 
             return $this->sendResponse($offenses);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportEmployeeOffenses(Request $request, $employee_number) {
+        $request["export"] = true;
+
+        return $this->getEmployeeOffenses($request, $employee_number);
     }
 
     public function addOffense (Request $request, $employee_number) {
