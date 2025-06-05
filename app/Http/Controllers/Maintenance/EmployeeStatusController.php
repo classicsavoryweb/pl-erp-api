@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\EmployeeStatusExport;
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeStatus;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeStatusController extends Controller
 {
@@ -21,12 +23,24 @@ class EmployeeStatusController extends Controller
             if ($request->has(["status"])) {
                 $status = $status->where("status", $request->status);
             }
+
+            if ($request->has(["export"]) && $request->export) {
+                $status = $status->get();
+                return Excel::download(new EmployeeStatusExport($status), "status.xls");
+            }
+
             $status = $status->paginate($perPage);
             return $this->sendResponse($status);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportEmployeeStatus (Request $request) { 
+        $request["export"] = true;
+
+        return $this->getAllEmployeStatus($request);
     }
 
     public function getEmployeeStatus(Request $request) {

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\TrainingTitlesExport;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingTitle;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TrainingTitleController extends Controller
 {
@@ -21,12 +23,24 @@ class TrainingTitleController extends Controller
             if ($request->has(["status"])) {
                 $trainingTitles = $trainingTitles->where("status", $request->status);
             }
+
+            if ($request->has(["export"]) && $request->export) {
+                $trainingTitles = $trainingTitles->get();
+                return Excel::download(new TrainingTitlesExport($trainingTitles), "training_title.xls");
+            }
+
             $trainingTitles = $trainingTitles->paginate($perPage);
             return $this->sendResponse($trainingTitles);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllTrainingTitles(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllTrainingTitles($request);
     }
 
     public function getTrainingTitles(Request $request) {

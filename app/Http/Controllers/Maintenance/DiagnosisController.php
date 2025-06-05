@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\DiagnosisExport;
 use App\Http\Controllers\Controller;
 use App\Models\Diagnosis;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 class DiagnosisController extends Controller
 {
     public function getAllDiagnosis(Request $request) {
@@ -21,12 +23,24 @@ class DiagnosisController extends Controller
             if ($request->has(["status"])) {
                 $diagnosis = $diagnosis->where("status", $request->status);
             }
+
+            if ($request->has(["export"]) && $request->export) {
+                $diagnosis = $diagnosis->get();
+                return Excel::download(new DiagnosisExport($diagnosis), "diagnosis.xls");
+            }
+
             $diagnosis = $diagnosis->paginate($perPage);
             return $this->sendResponse($diagnosis);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllDiagnosis(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllDiagnosis($request);
     }
 
     public function getDiagnosis(Request $request) {

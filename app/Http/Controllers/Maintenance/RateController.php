@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\RateExport;
 use App\Http\Controllers\Controller;
 use App\Models\Rate;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RateController extends Controller
 {
@@ -23,12 +25,23 @@ class RateController extends Controller
                 $rates = $rates->where("status", $request->status);
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $rates = $rates->get();
+                return Excel::download(new RateExport($rates), "rates.xls");
+            }
+
             $rates = $rates->paginate($perPage);
             return $this->sendResponse($rates);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllRates (Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllRates($request);
     }
 
     public function getRates(Request $request) {

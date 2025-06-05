@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group( function () {
     // MAINTENANCE MODULE
     //stations
     Route::get("/get-all-stations", [StationController::class, "getAllStation"]);
+    Route::get("/export-all-stations", [StationController::class, "exportAllStation"]);
     Route::get("/get-stations", [StationController::class, "getStations"]);
     Route::middleware(["permission:can_perform_stations"])->get("/delete-station/{id}", [StationController::class,"deleteStation"]);
     Route::middleware(["permission:can_perform_stations"])->post("/edit-station/{id}", [StationController::class,"editStation"]);
@@ -68,17 +69,20 @@ Route::middleware('auth:sanctum')->group( function () {
     //employee status
     Route::get("/get-all-status", [EmployeeStatusController::class, "getAllEmployeStatus"]);
     Route::get("/get-status", [EmployeeStatusController::class, "getEmployeeStatus"]);
+    Route::get("/export-all-status", [EmployeeStatusController::class, "exportEmployeeStatus"]);
     Route::middleware(["permission:can_perform_employee_status"])->post("/create-employee-status", [EmployeeStatusController::class, "createEmployeeStatus"]);
     Route::middleware(["permission:can_perform_employee_status"])->post("/edit-employee-status/{id}", [EmployeeStatusController::class, "editEmployeeStatus"]);
     Route::middleware(["permission:can_perform_employee_status"])->get("/delete-employee-status/{id}", [EmployeeStatusController::class, "deleteEmployeeStatus"]);
     //positions
     Route::get("/get-all-positions", [PositionController::class, "getAllPositions"]);
     Route::get("/get-positions", [PositionController::class, "getPositions"]);
+    Route::get("/export-all-positions", [PositionController::class, "exportAllPositions"]);
     Route::middleware(["permission:can_perform_stations"])->post("/create-position", [PositionController::class,"createPosition"]);
     Route::middleware(["permission:can_perform_stations"])->post("/edit-position/{id}", [PositionController::class,"editPosition"]);
     //agency
     Route::get("/get-all-agencies", [AgencyController::class, "getAllAgencies"]);
     Route::get("/get-agencies", [AgencyController::class, "getAgencies"]);
+    Route::get("/export-all-agencies", [AgencyController::class, "exportAllAgencies"]);
     Route::middleware(["permission:can_perform_agencies"])->post("/create-agency", [AgencyController::class, "createAgency"]);
     Route::middleware(["permission:can_perform_agencies"])->post("/edit-agency/{id}", [AgencyController::class, "editAgency"]);
     //offenses
@@ -89,6 +93,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-categories", [OffenseController::class, "getCategories"]);
     Route::get("/get-offenses", [OffenseController::class, "getOffenses"]);
     Route::get("/get-sanctions", [OffenseController::class, "getSanctions"]);
+    Route::get("/export-all-offenses", [OffenseController::class, "exportAllOffenses"]);
     Route::middleware(["permission:can_perform_offenses"])->post("/create-offense", [OffenseController::class, "createOffense"]);
     Route::middleware(["permission:can_perform_offenses"])->post("/edit-offense/{id}", [OffenseController::class, "editOffense"]);
     Route::middleware(["permission:can_perform_offenses"])->post("/create-category", [OffenseController::class, "createCategory"]);
@@ -98,41 +103,49 @@ Route::middleware('auth:sanctum')->group( function () {
     //branches
     Route::get("/get-all-branches", [BranchController::class, "getAllBranches"]);
     Route::get("/get-branches", [BranchController::class, "getBranches"]);
+    Route::get("/export-all-branches", [BranchController::class, "exportBranches"]);
     Route::middleware(["permission:can_perform_branches"])->post("/create-branch", [BranchController::class, "createBranch"]);
     Route::middleware(["permission:can_perform_branches"])->post("/edit-branch/{id}", [BranchController::class, "editBranch"]);
     //training titles
     Route::get("/get-all-training-titles", [TrainingTitleController::class, "getAllTrainingTitles"]);
     Route::get("/get-training-titles", [TrainingTitleController::class, "getTrainingTitles"]);
+    Route::get("/export-all-training-titles", [TrainingTitleController::class, "exportAllTrainingTitles"]);
     Route::middleware(["permission:can_perform_training_titles"])->post("/create-training-title", [TrainingTitleController::class, "createTrainingTitle"]);
     Route::middleware(["permission:can_perform_training_titles"])->post("/edit-training-title/{id}", [TrainingTitleController::class, "editTrainingTitle"]);
     //diagnosis
     Route::get("/get-all-diagnosis", [DiagnosisController::class, "getAllDiagnosis"]);
     Route::get("/get-diagnosis", [DiagnosisController::class, "getDiagnosis"]);
+    Route::get("/export-all-diagnosis", [DiagnosisController::class, "exportAllDiagnosis"]);
     Route::middleware(["permission:can_perform_diagnosis"])->post("/create-diagnosis", [DiagnosisController::class, "createDiagnosis"]);
     Route::middleware(["permission:can_perform_diagnosis"])->post("/edit-diagnosis/{id}", [DiagnosisController::class, "editDiagnosis"]);
     //rate per group
     Route::get("/get-all-rates", [RateController::class, "getAllRates"]);
+    Route::get("/export-all-rates", [RateController::class, "exportAllRates"]);
     Route::get("/get-rates", [RateController::class, "getRates"]);
     Route::middleware(["permission:can_perform_rate_per_group"])->post("/create-rate", [RateController::class, "createRate"]);
     Route::middleware(["permission:can_perform_rate_per_group"])->post("/edit-rate/{id}", [RateController::class, "editRate"]);
     //bank account types
     Route::get("/get-all-bank-account-types", [BankAccountTypeController::class, "getAllBankAccountTypes"]);
+    Route::get("/export-all-bank-account-types", [BankAccountTypeController::class, "exportAllBankAccountTypes"]);
     Route::get("/get-bank-account-types", [BankAccountTypeController::class, "getBankAccountTypes"]);
     Route::middleware(["permission:can_perform_bank_account_types"])->post("/create-bank-account-type", [BankAccountTypeController::class, "createBankAccountType"]);
     Route::middleware(["permission:can_perform_bank_account_types"])->post("/edit-bank-account-type/{id}", [BankAccountTypeController::class, "editBankAccountType"]);
     //salary positions
     Route::get("/get-all-salary-positions", [SalaryPositionController::class, "getAllSalaryPositions"]);
+    Route::get("/export-all-salary-positions", [SalaryPositionController::class, "exportAlLSalaryPositions"]);
     Route::get("/get-salary-positions", [SalaryPositionController::class, "getSalaryPositions"]);
     Route::middleware(["permission:can_perform_salary_positions"])->post("/create-salary-position", [SalaryPositionController::class, "createSalaryPosition"]);
     Route::middleware(["permission:can_perform_salary_positions"])->post("/edit-salary-position/{id}", [SalaryPositionController::class, "editSalaryPosition"]);
     //vaccines
     Route::get("/get-all-vaccines", [VaccineController::class, "getAllVaccines"]);
+    Route::get("/export-all-vaccines", [VaccineController::class, "exportAllVaccines"]);
     Route::get("/get-vaccines", [VaccineController::class, "getVaccines"]);
     Route::middleware(["permission:can_perform_vaccine_brand"])->post("/create-vaccine", [VaccineController::class, "createVaccine"]);
     Route::middleware(["permission:can_perform_vaccine_brand"])->post("/edit-vaccine/{id}", [VaccineController::class, "editVaccine"]);
     //coe reasonse
     Route::get("/get-all-coe-reasons", [CoeReasonController::class, "getAllCoeReasons"]);
     Route::get("/get-coe-reasons", [CoeReasonController::class, "getCoeReasons"]);
+    Route::get("/export-all-coe-reasons", [CoeReasonController::class, "exportAllCoeReasons"]);
     Route::middleware(["permission:can_perform_coe_reasons"])->post("/create-coe-reason", [CoeReasonController::class, "createCoeReason"]);
     Route::middleware(["permission:can_perform_coe_reasons"])->post("/edit-coe-reason/{id}", [CoeReasonController::class, "editCoeReason"]);
 

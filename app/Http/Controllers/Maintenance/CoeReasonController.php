@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\CoeReasonsExport;
 use App\Http\Controllers\Controller;
 use App\Models\CoeReason;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 class CoeReasonController extends Controller
 {
     public function getAllCoeReasons(Request $request) {
@@ -22,12 +24,23 @@ class CoeReasonController extends Controller
                 $reasons = $reasons->where("status", $request->status);
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $reasons = $reasons->get();
+                return Excel::download(new CoeReasonsExport($reasons), "coe_reasons.xls");
+            }
+
             $reasons = $reasons->paginate($perPage);
             return $this->sendResponse($reasons);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllCoeReasons(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllCoeReasons($request);
     }
 
     public function getCoeReasons(Request $request) {

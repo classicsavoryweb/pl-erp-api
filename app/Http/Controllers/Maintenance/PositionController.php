@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\PositionExport;
 use App\Http\Controllers\Controller;
 use App\Models\Position;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PositionController extends Controller
 {
@@ -21,11 +23,24 @@ class PositionController extends Controller
             if ($request->has(["status"])) {
                 $positions = $positions->where("status", $request->status);
             }
-            $positions= $positions->with("station")->paginate($perPage);
+            $positions= $positions->with("station");
+
+            if ($request->has(["export"]) && $request->export) {
+                $positions = $positions->get();
+                return Excel::download(new PositionExport($positions), "positions.xls");
+            }
+
+            $positions = $positions->paginate($perPage);
             return $this->sendResponse($positions);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllPositions (Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllPositions($request);
     }
 
     public function getPositions (Request $request) {

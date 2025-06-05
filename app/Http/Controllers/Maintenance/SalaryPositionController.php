@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\SalaryPositionExport;
 use App\Http\Controllers\Controller;
 use App\Models\SalaryPosition;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 use Str;
 
 class SalaryPositionController extends Controller
@@ -34,13 +36,26 @@ class SalaryPositionController extends Controller
             if ($request->has(["status"])) {
                 $salaryPositions = $salaryPositions->where("status", $request->status);
             }
-            $salaryPositions = $salaryPositions->with("position")->paginate($perPage);
+            $salaryPositions = $salaryPositions->with("position");
+
+            if ($request->has(["export"]) && $request->export) {
+                $salaryPositions = $salaryPositions->get();
+                return Excel::download(new SalaryPositionExport($salaryPositions), "salary_positions.xls");
+            }
+
+            $salaryPositions = $salaryPositions->paginate($perPage);
 
             return $this->sendResponse($salaryPositions);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAlLSalaryPositions(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllSalaryPositions($request);
     }
 
     public function getSalaryPositions(Request $request) {

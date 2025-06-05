@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\AgencyExport;
 use App\Http\Controllers\Controller;
 use App\Models\Agency;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AgencyController extends Controller
 {
@@ -21,13 +23,24 @@ class AgencyController extends Controller
             if ($request->has(["status"])) {
                 $agencies = $agencies->where("status", $request->status);
             }
-               
+            
+            if ($request->has(["export"]) && $request->export) {
+                $agencies = $agencies->get();
+                return Excel::download(new AgencyExport($agencies), "agencies.xls");
+            }
+
             $agencies = $agencies->paginate($perPage);
             return $this->sendResponse($agencies);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllAgencies (Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllAgencies($request);
     }
 
     public function getAgencies(Request $request) {

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\BankAccountExport;
 use App\Http\Controllers\Controller;
 use App\Models\BankAccountType;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 class BankAccountTypeController extends Controller
 {
     public function getAllBankAccountTypes(Request $request) {
@@ -21,12 +23,24 @@ class BankAccountTypeController extends Controller
             if ($request->has(["status"])) {
                 $bankAccountTypes = $bankAccountTypes->where("status", $request->status);
             }
+
+            if ($request->has(["export"]) && $request->export) {
+                $bankAccountTypes = $bankAccountTypes->get();
+                return Excel::download(new BankAccountExport($bankAccountTypes), "bank_account_type.xls");
+            }
+
             $bankAccountTypes = $bankAccountTypes->paginate($perPage);
             return $this->sendResponse($bankAccountTypes);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllBankAccountTypes(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllBankAccountTypes($request);
     }
 
     public function getBankAccountTypes(Request $request) {

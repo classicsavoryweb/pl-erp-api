@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\VaccinneBrandExport;
 use App\Http\Controllers\Controller;
 use App\Models\Vaccine;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class VaccineController extends Controller
 {
@@ -23,6 +25,11 @@ class VaccineController extends Controller
                 $vaccines = $vaccines->where("status", $request->status);
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $vaccines = $vaccines->get();
+                return Excel::download(new VaccinneBrandExport($vaccines), "vaccines.xls");
+            }
+
             $vaccines= $vaccines->paginate($perPage);
 
             return $this->sendResponse($vaccines);
@@ -30,6 +37,12 @@ class VaccineController extends Controller
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllVaccines(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllVaccines($request);
     }
 
     public function getVaccines(Request $request) {

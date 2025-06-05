@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\StationExport;
 use App\Http\Controllers\Controller;
 use App\Models\Station;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StationController extends Controller
 {
@@ -22,12 +24,23 @@ class StationController extends Controller
                 $stations = $stations->where("status", $request->status);
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $stations = $stations->get();
+                return Excel::download(new StationExport($stations), "stations.xls");
+            }
+
             $stations = $stations->paginate($perPage);
             return $this->sendResponse($stations);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllStation(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllStation($request);
     }
 
     public function getStations(Request $request) {

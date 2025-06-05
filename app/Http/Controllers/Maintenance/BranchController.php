@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\BranchExport;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BranchController extends Controller
 {
@@ -27,6 +29,11 @@ class BranchController extends Controller
             if ($request->has(["status"])) {
                 $branches = $branches->where("status", $request->status);
             }
+
+            if ($request->has(["export"]) && $request->export) {
+                $branches = $branches->get();
+                return Excel::download(new BranchExport($branches), "branches.xls");
+            }
  
             $branches = $branches->paginate($perPage);
 
@@ -35,6 +42,12 @@ class BranchController extends Controller
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportBranches(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllBranches($request);
     }
 
     public function getBranches(Request $request) {

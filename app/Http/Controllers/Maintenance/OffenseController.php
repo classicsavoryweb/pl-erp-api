@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\OffensesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Offense;
@@ -9,6 +10,7 @@ use App\Models\Sanction;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OffenseController extends Controller
 {
@@ -24,11 +26,23 @@ class OffenseController extends Controller
             if ($request->has(["status"])) {
                 $offenses = $offenses->where("status", $request->status);
             }
+
+            if ($request->has(["export"]) && $request->export) {
+                $offenses = $offenses->get();
+                return Excel::download(new OffensesExport($offenses), "offenses.xls");
+            }
+
             $offenses = $offenses->paginate($perPage);
             return $this->sendResponse($offenses);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+    
+    public function exportAllOffenses (Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllOffenses($request);
     }
 
     public function getOffenses(Request $request) {
