@@ -56,6 +56,13 @@ class ReportsTardinessController extends Controller
                 }
             }
 
+            if ($request->has(["date_from", "date_to"])) {
+                $start = Carbon::parse($request->date_from)->format('Ym');
+                $end = Carbon::parse($request->date_to)->format('Ym');
+
+                $tardiness = $tardiness->whereRaw("CONCAT(year, LPAD(month, 2, '0')) BETWEEN ? AND ?", [$start, $end]);
+            }
+
             $tardiness = $tardiness->with([
                 "tardiness_sanction",
                 "employee"

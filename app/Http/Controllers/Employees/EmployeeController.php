@@ -192,7 +192,7 @@ class EmployeeController extends Controller
                 $employees = $employees->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END");
             }
 
-            $employees = $employees->with(["current_position", "agency", "current_branch", "station"])
+            $employees = $employees->with(["current_position", "agency", "current_branch", "station", "employee_status"])
             ->orderBy("date_hired", "desc");
 
             if ($request->has(["export"]) && $request->export) {

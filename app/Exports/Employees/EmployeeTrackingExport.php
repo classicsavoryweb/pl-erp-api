@@ -19,17 +19,22 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
     {
         return $this->employees->map(function ($employee) {
             return [
-                $employee->full_name,
-                $employee->status,
+                $employee->employee_number,
+                $employee->last_name,
+                $employee->middle_name,
+                $employee->first_name,
+                $employee->email,
                 $employee->current_position->description ?? '',
                 $employee->current_branch->name ?? '',
                 $employee->date_hired,
+                $employee->employee_status->description,
+                $employee->status,
             ];
         });
     }
 
     public function headings(): array
     {
-        return ['Name', 'Status', 'Position', 'Branch', 'Date Hired'];
+        return ['Employee Number', 'Last Name', 'Middle Name', 'First Name', 'Email' ,'Position', 'Branch', 'Date Hired', 'Employment Status', 'Status',];
     }
 }
