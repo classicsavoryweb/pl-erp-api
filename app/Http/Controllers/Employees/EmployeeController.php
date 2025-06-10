@@ -261,7 +261,8 @@ class EmployeeController extends Controller
                 });
             }
 
-            $employees = $employees->take(100)->get();
+            $employees = $employees->with(["current_position", "current_branch", "employee_status"])
+            ->take(100)->get();
             return $this->sendResponse($employees);
         } catch(Exception $e) {
 

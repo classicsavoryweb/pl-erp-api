@@ -56,6 +56,9 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_view_employees_module"]);
         Permission::firstOrCreate(["name" => "can_view_employee_tracking"]);
         Permission::firstOrCreate(["name" => "can_perform_employee_tracking"]);
+        Permission::firstOrCreate(["name" => "can_view_acting_capacity"]);
+        Permission::firstOrCreate(["name" => "can_perform_acting_capacity"]);
+
         Permission::firstOrCreate(["name" => "can_view_employee_branches"]);
         Permission::firstOrCreate(["name" => "can_perform_employee_branches"]);
         Permission::firstOrCreate(["name" => "can_view_employee_offenses"]);
@@ -72,8 +75,6 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_perform_employee_training_titles"]);
         Permission::firstOrCreate(["name" => "can_view_employee_vaccination"]);
         Permission::firstOrCreate(["name" => "can_perform_employee_vaccination"]);
-        // Permission::firstOrCreate(["name" => "can_view_employee_health_and_safety"]);
-        // Permission::firstOrCreate(["name" => "can_perform_employee_health_and_safety"]);
         Permission::firstOrCreate(["name" => "can_view_employee_audit_logs"]);
 
 

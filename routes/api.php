@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\RolesPermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Employees\ActingCapacityController;
 use App\Http\Controllers\Employees\EmployeeBankAccountController;
 use App\Http\Controllers\Employees\EmployeeBranchControlller;
 use App\Http\Controllers\Employees\EmployeeContractControlller;
@@ -198,7 +199,11 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-employee-health-safety/{employee_number}", [EmployeeHealthSafetyController::class, "getEmployeeHealthSafety"]);
     Route::middleware(["permission:can_perform_employee_health_and_safety"])->post("/add-employee-health-safety/{employee_number}", [EmployeeHealthSafetyController::class, "addEmployeeHealthSafety"]);
     Route::middleware(["permission:can_perform_employee_health_and_safety"])->post("/edit-employee-health-safety/{employee_number}", [EmployeeHealthSafetyController::class, "editEmployeeHealthSafety"]);
-
+    //acting capacity
+    Route::get("/get-all-acting-capacity", [ActingCapacityController::class, "getAllActingCapacity"]);
+    Route::get("/export-all-acting-capacity", [ActingCapacityController::class, "exportAllActingCapacity"]);
+    Route::get("/get-acting-capacity/{id}", [ActingCapacityController::class, "getActingCapacity"]);
+    Route::middleware(["permission:can_perform_acting_capacity"])->post("/add-acting-capacity", [ActingCapacityController::class, "addNewActingCapacity"]);
 
     //REPORTS MODULE
     //employee offenses

@@ -53,6 +53,7 @@ return new class extends Migration
             $table->string("branch_id")->nullable();
             $table->string("home_branch_id")->nullable();
             $table->string("status")->default("active");
+            $table->string("oic_status")->nullable();
             $table->timestamps();
         });
     }

@@ -33,4 +33,8 @@ class Branch extends Model
     public function employee() {
         return $this->belongsToMany(Employee::class);
     }
+
+    public function acting_capacity() {
+        return $this->belongsTo(ActingCapacity::class);
+    }
 }

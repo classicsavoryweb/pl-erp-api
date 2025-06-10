@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActingCapacity;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Tardiness;
@@ -30,36 +31,52 @@ class DashboardController extends Controller
                 $query->where("description", "Contractual");
             })
             ->count();
+            $pendingEmployees = Employee::where("status", "active")
+            ->whereHas("employee_status", function($query) {
+                $query->where("description", "Pending");
+            })
+            ->count();
 
             $monthlyHires = Employee::selectRaw('MONTH(date_hired) as month, COUNT(*) as total')
-                ->whereYear('date_hired', Carbon::now()->year)
-                ->groupBy(DB::raw('MONTH(date_hired)'))
-                ->orderBy(DB::raw('MONTH(date_hired)'))
-                ->pluck('total', 'month')
-                ->all();
+            ->whereYear('date_hired', Carbon::now()->year)
+            ->groupBy(DB::raw('MONTH(date_hired)'))
+            ->orderBy(DB::raw('MONTH(date_hired)'))
+            ->pluck('total', 'month')
+            ->all();
             $allMonths = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyHires) {
                 return [$month => $monthlyHires[$month] ?? 0];
             });
 
             $monthlyTardy = Tardiness::selectRaw('month, COUNT(*) as total')
-            ->where('year', Carbon::now()->year)  // <- simple where here
+            ->where('year', Carbon::now()->year)
             ->groupBy('month')
             ->orderBy('month')
             ->where("status", "Approved")
             ->pluck('total', 'month')
             ->all();
-
             $allTardy = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyTardy) {
                 return [$month => $monthlyTardy[$month] ?? 0];
+            });
+
+            $monthlyPromotions = ActingCapacity::selectRaw('MONTH(confirmed_date) as month, COUNT(*) as total')
+            ->whereYear('confirmed_date', Carbon::now()->year)
+            ->groupBy(DB::raw('MONTH(confirmed_date)'))
+            ->orderBy(DB::raw('MONTH(confirmed_date)'))
+            ->pluck('total', 'month')
+            ->all();
+            $allPromotions = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyPromotions) {
+                return [$month => $monthlyPromotions[$month] ?? 0];
             });
 
             return $this->sendResponse([
                 "branches" => $branches,
                 "probationary_employees" => $probationaryEmployees,
+                "pending_employees" => $pendingEmployees,
                 "regular_employees" => $regularEmployees,
                 "contractual_employees" => $contractualEmployees,
                 "monthly_hires" => $allMonths,
                 "monthly_tardy" => $allTardy,
+                "monthly_promotions" => $allPromotions,
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);

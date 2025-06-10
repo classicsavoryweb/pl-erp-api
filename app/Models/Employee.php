@@ -53,17 +53,35 @@ class Employee extends Model
         "emergency_contact_address",
         "emergency_contact_relationship",
         "status",
+        "oic_status"
     ];
 
     protected $table = "employees";
 
-    protected $appends = ['full_name'];
+    protected $appends = ['full_name', "position", "proper_full_name"];
 
 
     protected function fullName(): Attribute
     {
         return Attribute::get(
             fn () => "{$this->last_name}, {$this->first_name} {$this->middle_name}"
+        );
+    }
+
+    protected function properFullName(): Attribute
+    {
+            $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
+            $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
+            $properFullName = ucwords($fullName);
+        return Attribute::get(
+            fn () => $properFullName
+        );
+    }
+
+    protected function position(): Attribute
+    {
+        return Attribute::get(
+            fn () => "{$this->current_position->description}-{$this->oic_status}"
         );
     }
 
@@ -149,6 +167,10 @@ class Employee extends Model
         ->using(EmployeeVaccine::class)
         ->withPivot("dose", "status", "date")
         ->withTimestamps();
+    }
+
+    public function acting_capacities() {
+        return $this->hasMany(ActingCapacity::class, "employee_id", "id");
     }
 
     public function diagnosis() {
