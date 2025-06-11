@@ -205,6 +205,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-acting-capacity/{id}", [ActingCapacityController::class, "getActingCapacity"]);
     Route::get("/get-acf/{id}", [ActingCapacityController::class, "getACFDetails"]);
     Route::middleware(["permission:can_perform_acting_capacity"])->post("/add-acting-capacity", [ActingCapacityController::class, "addNewActingCapacity"]);
+    Route::middleware(["permission:can_perform_acting_capacity"])->post("/edit-acting-capacity", [ActingCapacityController::class, "editActingCapacity"]);
 
     //REPORTS MODULE
     //employee offenses

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Employees;
 use App\Exports\Employees\ActingCapacityExport;
 use App\Http\Controllers\Controller;
 use App\Models\ActingCapacity;
+use App\Models\ActingCapacityExtension;
 use App\Models\Employee;
 use Exception;
 use Illuminate\Http\Request;
@@ -183,12 +184,15 @@ class ActingCapacityController extends Controller
     public function getACFDetails (Request $request, $id) {
         try {
             $actingCapacity = ActingCapacity::with([
-                "employee",
+                "employee.employee_status",
+                "employee.current_branch",
+                "employee.current_position",
                 "current_position",
                 "recommended_position",
                 "branch",
                 "branch_assignment",
-                "oic"
+                "oic",
+                "extensions"
             ])->find($id);
 
             $station = $actingCapacity->current_position->station->name;
@@ -203,6 +207,86 @@ class ActingCapacityController extends Controller
                 'type' => $type
             ]);
         } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function editActingCapacity(Request $request) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "id" => "required",
+                "employee_number" => "required",
+                "recommended_position_id" => "required",
+                "start_date" => "required",
+                "end_date" => "required",
+                "oic_employee_number" => "required",
+                "branch_assignment_id" => "required",
+            ]);
+            
+            $employee = Employee::where("employee_number", $request->employee_number)->first();
+            $startDate = Carbon::parse($request->start_date);
+            $endDate = Carbon::parse($request->end_date);
+            $months = $startDate->diffInMonths($endDate);
+
+            $pathName = "";
+            if ($request->hasFile("recommendation_letter")) {
+                $file = $request->file("recommendation_letter");
+
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/Acting Capacity Files/" . $employee->employee_number;
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+                $pathName = $filePath;
+            }
+
+            $actingCapacity = ActingCapacity::find( $request->id);
+
+            $actingCapacity->update([
+                "employee_id" => $employee->id,
+                "branch_id" => $employee->branch_id,
+                "current_position_id" => $employee->position_id,
+                "recommended_position_id" => $request->recommended_position_id,
+                "start_date" => $request->start_date,
+                "end_date" => $request->end_date,
+                "period" => $months > 1 ? $months. " Months" : $months . " Month",
+                "remarks" => $request->remarks ?? null,
+                "recommendation_letter" => $pathName,
+                "status" => "Pending",
+                "oic_employee_number" => $request->oic_employee_number,
+                "branch_assignment_id" => $request->branch_assignment_id
+            ]);
+
+            if ($request->has("extensions")) {
+                $extensions = $request->extensions;
+                foreach($extensions as $ext) {
+                    if ( isset($ext['id'])) {
+                        ActingCapacityExtension::where("id", $ext['id'])
+                        ->update([
+                            "acting_capacity_id" => $actingCapacity->id,
+                            "end_date" => $ext['end_date'],
+                            "remarks" => $ext['remarks'],
+                            "reason" => $ext['reason']
+                        ]);
+                    } else {
+                        ActingCapacityExtension::create([
+                            "acting_capacity_id" => $actingCapacity->id,
+                            "end_date" => $ext['end_date'],
+                            "remarks" => $ext['remarks'],
+                            "reason" => $ext['reason']
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Acting capacity updated successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
