@@ -32,6 +32,8 @@ class ActingCapacity extends Model
         "rejected_by",
         "recommendation_letter",
         "bond_year",
+        "oic_employee_number",
+        "branch_assignment_id"
     ];
 
     public function employee() {
@@ -57,4 +59,14 @@ class ActingCapacity extends Model
     public function branch() {
         return $this->hasOne(Branch::class, "id", "branch_id");
     }
+
+    public function branch_assignment() {
+        return $this->hasOne(Branch::class, "id", "branch_assignment_id");
+    }
+
+    public function oic() {
+        return $this->hasOne(Employee::class, "employee_number", "oic_employee_number");
+    }
+
+
 }

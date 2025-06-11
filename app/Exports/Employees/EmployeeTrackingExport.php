@@ -27,7 +27,7 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
                 $employee->current_position->description ?? '',
                 $employee->current_branch->name ?? '',
                 $employee->date_hired,
-                $employee->employee_status->description,
+                $employee->employee_status->description ?? "",
                 $employee->status,
             ];
         });

@@ -37,4 +37,12 @@ class Branch extends Model
     public function acting_capacity() {
         return $this->belongsTo(ActingCapacity::class);
     }
+
+    public function kitchen_oic() {
+        return $this->hasOne(Employee::class, "employee_number", "kitchen_oic_employee_number");
+    }
+
+    public function branch_oic() {
+        return $this->hasOne(Employee::class, "employee_number", "branch_head_employee_number");
+    }
 }

@@ -58,7 +58,7 @@ class Employee extends Model
 
     protected $table = "employees";
 
-    protected $appends = ['full_name', "position", "proper_full_name"];
+    protected $appends = ['full_name', "position", "proper_full_name", "formal_full_name"];
 
 
     protected function fullName(): Attribute
@@ -70,11 +70,22 @@ class Employee extends Model
 
     protected function properFullName(): Attribute
     {
-            $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
-            $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
-            $properFullName = ucwords($fullName);
+        $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
+        $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
+        $properFullName = ucwords($fullName);
         return Attribute::get(
             fn () => $properFullName
+        );
+    }
+
+    protected function formalFullName(): Attribute
+    {
+        $pronoun = $this->gender === "Male" ? "Mr." : "Ms.";
+        $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
+        $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
+        $properFullName = ucwords($fullName);
+        return Attribute::get(
+            fn () => $pronoun ." ". $properFullName
         );
     }
 

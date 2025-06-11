@@ -98,7 +98,9 @@ class ActingCapacityController extends Controller
                 "recommended_position_id" => "required",
                 "start_date" => "required",
                 "end_date" => "required",
-                "recommendation_letter" => "required"
+                "recommendation_letter" => "required",
+                "oic_employee_number" => "required",
+                "branch_assignment_id" => "required"
             ]);
             
             $employee = Employee::where("employee_number", $request->employee_number)->first();
@@ -132,7 +134,9 @@ class ActingCapacityController extends Controller
                 "period" => $months > 1 ? $months. " Months" : $months . " Month",
                 "remarks" => $request->remarks ?? null,
                 "recommendation_letter" => $pathName,
-                "status" => "Pending"
+                "status" => "Pending",
+                "oic_employee_number" => $request->oic_employee_number,
+                "branch_assignment_id" => $request->branch_assignment_id
             ]);
 
             DB::commit();
@@ -171,6 +175,33 @@ class ActingCapacityController extends Controller
             }
 
             return $this->sendResponse(["acting_capacity" => $actingCapacity]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getACFDetails (Request $request, $id) {
+        try {
+            $actingCapacity = ActingCapacity::with([
+                "employee",
+                "current_position",
+                "recommended_position",
+                "branch",
+                "branch_assignment",
+                "oic"
+            ])->find($id);
+
+            $station = $actingCapacity->current_position->station->name;
+
+            $type = "english";
+            if ( strtolower($station) === "back of the house") {
+                $type = "tagalog";
+            }
+
+            return $this->sendResponse([
+                "acting_capacity" => $actingCapacity,
+                'type' => $type
+            ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }

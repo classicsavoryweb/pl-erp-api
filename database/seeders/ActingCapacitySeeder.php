@@ -29,6 +29,11 @@ class ActingCapacitySeeder extends Seeder
             $branch = Branch::where("branch_number", $acting["branchID"])->first();
             $actor = "";
 
+            $oicNumber = $branch->branch_head_employee_number;
+            if ( strtolower($position->station->name) === "back of the house") {
+                $oicNumber = $branch->kitchen_oic_employee_number;
+            }
+
             if ($acting["date_added"]) {
                 $actor = Employee::whereRaw("
                     CONCAT(
@@ -59,6 +64,8 @@ class ActingCapacitySeeder extends Seeder
                 "rejected_date" => $acting["rejected_date"],
                 "rejected_by" => $acting["rejected_by"] ? $actor->id: null,
                 "bond_year" => $acting["bondyear"],
+                "oic_employee_number" => $oicNumber,
+                "branch_assignment_id" => $branch->id,
             ]);
 
             for ($i = 2; $i <= 5; $i++) {

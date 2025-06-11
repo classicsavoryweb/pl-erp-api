@@ -261,7 +261,26 @@ class EmployeeController extends Controller
                 });
             }
 
-            $employees = $employees->with(["current_position", "current_branch", "employee_status"])
+            if ($request->has("status")) {
+                $status = $request->status;
+                switch ($status) {
+                    case "active":
+                        $employees = $employees->where("status", "active");
+                        break;
+                    case "inactive":
+                        $employees = $employees->where("status", "inactive");
+                        break; 
+                    default:
+                        break;
+                }
+            }
+
+            $employees = $employees->with([
+                "current_position",
+                "current_branch",
+                "employee_status",
+                "current_position.station",
+            ])
             ->take(100)->get();
             return $this->sendResponse($employees);
         } catch(Exception $e) {

@@ -203,6 +203,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-acting-capacity", [ActingCapacityController::class, "getAllActingCapacity"]);
     Route::get("/export-all-acting-capacity", [ActingCapacityController::class, "exportAllActingCapacity"]);
     Route::get("/get-acting-capacity/{id}", [ActingCapacityController::class, "getActingCapacity"]);
+    Route::get("/get-acf/{id}", [ActingCapacityController::class, "getACFDetails"]);
     Route::middleware(["permission:can_perform_acting_capacity"])->post("/add-acting-capacity", [ActingCapacityController::class, "addNewActingCapacity"]);
 
     //REPORTS MODULE

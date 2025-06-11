@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Employees;
 
 use App\Exports\Employees\EmployeeBranchesExport;
 use App\Http\Controllers\Controller;
+use App\Models\ActingCapacity;
 use Illuminate\Http\Request;
 use App\Models\BranchEmployee;
 use App\Models\Employee;
@@ -79,6 +80,16 @@ class EmployeeBranchControlller extends Controller
             BranchEmployee::where("id", $request->id)->update( [
                 ...$request->except(["id"])
             ]);
+
+            $latestActingCapacity = ActingCapacity::where("employee_id", $employee->id)
+            ->where("status", "Pending")
+            ->latest();
+
+            if ($latestActingCapacity) {
+                $latestActingCapacity->update([
+                    "branch_id" => $request->branch_id
+                ]);
+            }
 
             DB::commit();
             return $this->sendResponse(["message" => "Branch updated successfully"]);
