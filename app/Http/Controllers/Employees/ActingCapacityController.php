@@ -9,6 +9,7 @@ use App\Models\ActingCapacityExtension;
 use App\Models\Employee;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
@@ -190,20 +191,30 @@ class ActingCapacityController extends Controller
                 "current_position",
                 "recommended_position",
                 "branch",
+                "branch.group_head",
+                "branch.branch_oic",
                 "branch_assignment",
                 "oic",
                 "extensions"
             ])->find($id);
+            
+            $latestExtension = $actingCapacity->extensions()->latest()->first();
+            if ($latestExtension) {
+                $actingCapacity->end_date = $latestExtension->end_date;
+            }
 
             $station = $actingCapacity->current_position->station->name;
-
             $type = "english";
+            $withRecommendation = false;
             if ( strtolower($station) === "back of the house") {
                 $type = "tagalog";
+            } else if (strtolower($station) === "head office") {
+                $withRecommendation = true;
             }
 
             return $this->sendResponse([
                 "acting_capacity" => $actingCapacity,
+                "with_recommendation" => $withRecommendation,
                 'type' => $type
             ]);
         } catch (Exception $e) {
@@ -290,4 +301,33 @@ class ActingCapacityController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function generateConfirmationDocuments(Request $request, $id) {
+        try {
+            $request->validate([
+                "effectivity_date" => "required",
+                "bond_amount" => "required",
+                "bond_year" => "required"
+            ]);
+
+            $employee = Employee::where("employee_number", Auth::user()->employee_number)->first();
+            $actingCapacity = ActingCapacity::find($id);
+            $actingCapacity->update([
+                "effectivity_date" => $request->effectivity_date,
+                "bond_amount" => $request->bond_amount,
+                "bond_year" => $request->bond_year,
+                "generated_by" => $employee->id,
+                "generated_date" => now(),
+                "status" => "For Signature"
+            ]);
+
+            DB::commit();
+            return $this->getACFDetails($request, $id);
+        } catch(Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    
 }

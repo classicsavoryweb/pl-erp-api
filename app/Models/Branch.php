@@ -45,4 +45,8 @@ class Branch extends Model
     public function branch_oic() {
         return $this->hasOne(Employee::class, "employee_number", "branch_head_employee_number");
     }
+
+    public function group_head() {
+        return $this->hasOne(Employee::class, "employee_number", "group_head_employee_number");
+    }
 }

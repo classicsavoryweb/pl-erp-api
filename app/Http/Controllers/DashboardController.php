@@ -62,6 +62,7 @@ class DashboardController extends Controller
             ->whereYear('confirmed_date', Carbon::now()->year)
             ->groupBy(DB::raw('MONTH(confirmed_date)'))
             ->orderBy(DB::raw('MONTH(confirmed_date)'))
+            ->where("status", "Confirmed")
             ->pluck('total', 'month')
             ->all();
             $allPromotions = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyPromotions) {
