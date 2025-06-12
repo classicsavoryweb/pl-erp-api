@@ -152,6 +152,10 @@ class Employee extends Model
         return $this->hasOne(Contract::class)->latestOfMany();
     }
 
+    public function user() {
+        return $this->belongsTo(User::class, "employee_number", "employee_number");
+    }
+
     public function positions() {
         return $this->belongsToMany(Position::class)
         ->using(EmployeePosition::class)

@@ -82,4 +82,8 @@ class User extends Authenticatable
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
+    public function employee() {
+        return $this->hasOne(Employee::class, "employee_number", "employee_number");
+    }
 }
