@@ -63,6 +63,17 @@ class ActingCapacity extends Model
     public function branch_assignment() {
         return $this->hasOne(Branch::class, "id", "branch_assignment_id");
     }
+    public function generate() {
+        return $this->hasOne(Employee::class, "id", "generated_by");
+    }
+
+    public function reject() {
+        return $this->hasOne(Employee::class, "id", "rejected_by");
+    }
+
+    public function confirm() {
+        return $this->hasOne(Employee::class, "id", "confirmed_by");
+    }
 
     public function oic() {
         return $this->hasOne(Employee::class, "employee_number", "oic_employee_number");

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Employees;
 use App\Exports\Employees\ActingCapacityExport;
 use App\Http\Controllers\Controller;
 use App\Models\ActingCapacity;
+use App\Models\ActingCapacityAttachments;
 use App\Models\ActingCapacityExtension;
 use App\Models\Employee;
 use Exception;
@@ -157,7 +158,10 @@ class ActingCapacityController extends Controller
                 "current_position",
                 "recommended_position",
                 "branch",
-                "extensions"
+                "extensions",
+                "reject",
+                "confirm",
+                "generate"
             ])->find($id);
 
             $storage = Storage::disk("hr_system_folder");
@@ -304,6 +308,7 @@ class ActingCapacityController extends Controller
 
     public function generateConfirmationDocuments(Request $request, $id) {
         try {
+            DB::beginTransaction();
             $request->validate([
                 "effectivity_date" => "required",
                 "bond_amount" => "required",
@@ -329,5 +334,89 @@ class ActingCapacityController extends Controller
         }
     }
 
-    
+    public function confirmPromotion(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "attachments" => "required"
+            ]);
+
+            $employee = Employee::where("employee_number", Auth::user()->employee_number)->first();
+            $actingCapacity = ActingCapacity::find($id);
+
+            if ($actingCapacity->status !== "Confirmed" && $actingCapacity->status !== "Rejected") {
+                $actingCapacity->update([
+                    "confirmed_by" => $employee->id,
+                    "confirmed_date" => now(),
+                    "status" => "Confirmed"
+                ]);
+
+                $storage = Storage::disk("hr_system_folder");
+                if ($request->has("attachments")) {
+                    foreach($request->attachments as $attachment) {
+                        $pathName = "";
+                        $directory = "/Acting Capacity Files/" . $employee->employee_number;
+                        $file = $attachment["file"];
+
+                        if (!$storage->exists($directory)) {
+                            $storage->makeDirectory($directory);
+                        }
+
+                        $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                        $filePath = $directory . '/' . $fileName;
+                        $storage->put($filePath, file_get_contents($file));
+                        $pathName = $filePath;
+
+                        ActingCapacityAttachments::create([
+                            "file_path" => $pathName,
+                            "file_name" => $attachment["file_type"],
+                            "acting_capacity_id" => $actingCapacity->id
+                        ]);
+                    }
+                }
+
+                DB::commit();
+                return $this->sendResponse(["message" => "Promotion confirmed successfully"]);
+            }
+
+
+
+            return $this->sendError(["message" => "Promotion already confirmed"]);
+        } catch(Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function rejectPromotion(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "rejected_reason" => "required"
+            ]);
+
+            $employee = Employee::where("employee_number", Auth::user()->employee_number)->first();
+            $actingCapacity = ActingCapacity::find($id);
+
+            if ($actingCapacity->status !== "Rejected") {
+                $actingCapacity->update([
+                    "rejected_by" => $employee->id,
+                    "rejected_date" => now(),
+                    "rejected_reason" => $request->rejected_reason,
+                    "status" => "Rejected"
+                ]);
+
+                DB::commit();
+                return $this->sendResponse(["message" => "Promotion rejected successfully"]);
+            }
+
+            return $this->sendError(["message" => "Promotion already rejected"]);
+        } catch(Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+
 }
