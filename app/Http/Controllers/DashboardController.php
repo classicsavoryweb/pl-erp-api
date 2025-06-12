@@ -42,6 +42,9 @@ class DashboardController extends Controller
             ->groupBy(DB::raw('MONTH(date_hired)'))
             ->orderBy(DB::raw('MONTH(date_hired)'))
             ->pluck('total', 'month')
+            ->mapWithKeys(function ($value, $key) {
+                return [(int)$key => $value];
+            })
             ->all();
             $allMonths = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyHires) {
                 return [$month => $monthlyHires[$month] ?? 0];
@@ -53,6 +56,9 @@ class DashboardController extends Controller
             ->orderBy('month')
             ->where("status", "Approved")
             ->pluck('total', 'month')
+            ->mapWithKeys(function ($value, $key) {
+                return [(int)$key => $value];
+            })
             ->all();
             $allTardy = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyTardy) {
                 return [$month => $monthlyTardy[$month] ?? 0];
@@ -64,6 +70,9 @@ class DashboardController extends Controller
             ->orderBy(DB::raw('MONTH(confirmed_date)'))
             ->where("status", "Confirmed")
             ->pluck('total', 'month')
+            ->mapWithKeys(function ($value, $key) {
+                return [(int)$key => $value];
+            })
             ->all();
             $allPromotions = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyPromotions) {
                 return [$month => $monthlyPromotions[$month] ?? 0];
