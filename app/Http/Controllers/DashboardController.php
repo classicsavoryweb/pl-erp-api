@@ -88,8 +88,8 @@ class DashboardController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $startOfWeek = Carbon::now()->startOfWeek();
-            $endOfWeek = Carbon::now()->endOfWeek();
+            $startOfWeek = Carbon::now();
+            $endOfWeek = Carbon::now()->addDays(5);
 
             $weekDates = [];
             $cursor = $startOfWeek->copy();

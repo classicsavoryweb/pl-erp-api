@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Carbon\Carbon;
 
 class Employee extends Model
 {
@@ -58,13 +59,25 @@ class Employee extends Model
 
     protected $table = "employees";
 
-    protected $appends = ['full_name', "position", "proper_full_name", "formal_full_name"];
+    protected $appends = ['full_name', "position", "proper_full_name", "formal_full_name", "age"];
 
 
     protected function fullName(): Attribute
     {
         return Attribute::get(
             fn () => "{$this->last_name}, {$this->first_name} {$this->middle_name}"
+        );
+    }
+
+    protected function age(): Attribute
+    {
+
+        $now = Carbon::now();
+        $birthday = Carbon::parse($this->birthday);
+        $age = $now->diffInYears($birthday);
+
+        return Attribute::get(
+            fn () => $age
         );
     }
 
