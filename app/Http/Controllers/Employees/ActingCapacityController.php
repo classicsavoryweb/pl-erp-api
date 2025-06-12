@@ -8,6 +8,7 @@ use App\Models\ActingCapacity;
 use App\Models\ActingCapacityAttachments;
 use App\Models\ActingCapacityExtension;
 use App\Models\Employee;
+use App\Models\EmployeePosition;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -161,7 +162,8 @@ class ActingCapacityController extends Controller
                 "extensions",
                 "reject",
                 "confirm",
-                "generate"
+                "generate",
+                "branch_assignment"
             ])->find($id);
 
             $storage = Storage::disk("hr_system_folder");
@@ -205,6 +207,7 @@ class ActingCapacityController extends Controller
             $latestExtension = $actingCapacity->extensions()->latest()->first();
             if ($latestExtension) {
                 $actingCapacity->end_date = $latestExtension->end_date;
+
             }
 
             $station = $actingCapacity->current_position->station->name;
@@ -243,6 +246,13 @@ class ActingCapacityController extends Controller
             $startDate = Carbon::parse($request->start_date);
             $endDate = Carbon::parse($request->end_date);
             $months = $startDate->diffInMonths($endDate);
+
+            if ($request->has("extensions") && is_array($request->extensions)) {
+                $extensions = $request->extensions;
+                $lastExtensionDate = end($extensions);
+                $extendedEndDate = Carbon::parse($lastExtensionDate['end_date']);
+                $months = $startDate->diffInMonths($extendedEndDate);
+            }
 
             $pathName = "";
             if ($request->hasFile("recommendation_letter")) {
@@ -352,6 +362,18 @@ class ActingCapacityController extends Controller
                     "status" => "Confirmed"
                 ]);
 
+                $employee->update([
+                    'position_id' => $actingCapacity->recommended_position_id
+                ]);
+
+                EmployeePosition::create([
+                    "employee_id" => $employee->id,
+                    "oic_assignment" => "No",
+                    'position_id' => $actingCapacity->recommended_position_id,
+                    "date_started" => $actingCapacity->effectivity_date,
+                    "remarks" => "promotion confirmed from acting capacity"
+                ]);
+
                 $storage = Storage::disk("hr_system_folder");
                 if ($request->has("attachments")) {
                     foreach($request->attachments as $attachment) {
@@ -379,8 +401,6 @@ class ActingCapacityController extends Controller
                 DB::commit();
                 return $this->sendResponse(["message" => "Promotion confirmed successfully"]);
             }
-
-
 
             return $this->sendError(["message" => "Promotion already confirmed"]);
         } catch(Exception $e) {
