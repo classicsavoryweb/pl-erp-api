@@ -23,7 +23,7 @@ class AuthController extends Controller
             }
 
             $role = Role::find($user->role_id);
-            $user->assignRole($role);
+            $user->syncRoles($role);
             $token = $user->createToken(
                  $user->email,
             $role->permissions->pluck("name")->toArray(),
