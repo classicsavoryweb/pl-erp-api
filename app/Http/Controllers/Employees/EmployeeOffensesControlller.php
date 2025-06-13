@@ -33,8 +33,11 @@ class EmployeeOffensesControlller extends Controller
 
             $offenses->getCollection()->transform(function ($offense) use ($storage) {
                 if ($offense->attachment && $storage->exists($offense->attachment)) {
+
+                    $mimeType = $storage->mimeType($offense->attachment);
+                    // $actingCapacity->recommendation_letter ='data:'. $mimeType .';base64,' . base64_encode($fileContents);
                     $fileContents = $storage->get($offense->attachment);
-                    $offense->attached_file ='data:application/pdf;base64,' . base64_encode($fileContents);
+                    $offense->attached_file ='data:'.$mimeType.';base64,' . base64_encode($fileContents);
                 } else {
                     $offense->attached_file = null;
                 }
