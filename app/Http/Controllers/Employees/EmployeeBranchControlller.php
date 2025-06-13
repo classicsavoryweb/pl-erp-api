@@ -56,6 +56,16 @@ class EmployeeBranchControlller extends Controller
                 ...$request->all()
             ]);
 
+            $latestActingCapacity = ActingCapacity::where("employee_id", $employee->id)
+            ->where("status", "Pending")
+            ->latest();
+
+            if ($latestActingCapacity) {
+                $latestActingCapacity->update([
+                    "branch_id" => $request->branch_id
+                ]);
+            }
+
             DB::commit();
             return $this->sendResponse(["message" => "Branch added successfully"]);
         } catch (Exception $e) {
