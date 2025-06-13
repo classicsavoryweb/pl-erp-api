@@ -50,7 +50,9 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_view_vaccine_brand"]);
         Permission::firstOrCreate(["name" => "can_perform_vaccine_brand"]);  
         Permission::firstOrCreate(["name" => "can_view_coe_reasons"]);
-        Permission::firstOrCreate(["name" => "can_perform_coe_reasons"]);  
+        Permission::firstOrCreate(["name" => "can_perform_coe_reasons"]);
+        Permission::firstOrCreate(["name" => "can_view_acting_capacity_reasons"]);
+        Permission::firstOrCreate(["name" => "can_perform_acting_capacity_reasons"]);  
 
         //employees module
         Permission::firstOrCreate(["name" => "can_view_employees_module"]);

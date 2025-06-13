@@ -16,6 +16,7 @@ use App\Http\Controllers\Employees\EmployeePositionControlller;
 use App\Http\Controllers\Employees\EmployeeRequirementsController;
 use App\Http\Controllers\Employees\EmployeeTrainingController;
 use App\Http\Controllers\Employees\EmployeeVaccinationController;
+use App\Http\Controllers\Maintenance\ActingCapacityMaintenanceController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BankAccountTypeController;
 use App\Http\Controllers\Maintenance\BranchController;
@@ -143,12 +144,18 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-vaccines", [VaccineController::class, "getVaccines"]);
     Route::middleware(["permission:can_perform_vaccine_brand"])->post("/create-vaccine", [VaccineController::class, "createVaccine"]);
     Route::middleware(["permission:can_perform_vaccine_brand"])->post("/edit-vaccine/{id}", [VaccineController::class, "editVaccine"]);
-    //coe reasonse
+    //coe reasons
     Route::get("/get-all-coe-reasons", [CoeReasonController::class, "getAllCoeReasons"]);
     Route::get("/get-coe-reasons", [CoeReasonController::class, "getCoeReasons"]);
     Route::get("/export-all-coe-reasons", [CoeReasonController::class, "exportAllCoeReasons"]);
     Route::middleware(["permission:can_perform_coe_reasons"])->post("/create-coe-reason", [CoeReasonController::class, "createCoeReason"]);
     Route::middleware(["permission:can_perform_coe_reasons"])->post("/edit-coe-reason/{id}", [CoeReasonController::class, "editCoeReason"]);
+    //acting capacity reasons
+    Route::get("/get-all-acting-capacity-reasons", [ActingCapacityMaintenanceController::class, "getAllActingCapacityReasons"]);
+    Route::get("/get-acting-capacity-reasons", [ActingCapacityMaintenanceController::class, "getActingCapacityReasons"]);
+    Route::get("/export-all-acting-capacity-reasons", [ActingCapacityMaintenanceController::class, "exportActingCapacityReasons"]);
+    Route::middleware(["permission:can_perform_acting_capacity_reasons"])->post("/create-acting-capacity-reason", [ActingCapacityMaintenanceController::class, "createActingCapacityReason"]);
+    Route::middleware(["permission:can_perform_acting_capacity_reasons"])->post("/edit-acting-capacity-reason/{id}", [ActingCapacityMaintenanceController::class, "editActingCapacityReason"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
