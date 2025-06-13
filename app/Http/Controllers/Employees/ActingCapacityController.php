@@ -29,7 +29,8 @@ class ActingCapacityController extends Controller
                     "employee.employee_status",
                     "current_position",
                     "recommended_position",
-                    "branch"
+                    "branch",
+                    "branch_assignment"
                 ])
                 ->orderBy("created_at","DESC");
 
