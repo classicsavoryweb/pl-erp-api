@@ -51,4 +51,32 @@ class EmployeeTrainingController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function editTrainingTitle(Request $request, $employee_number) {
+    try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "id" => "required",
+                "others" => "required",
+                "speaker" => "required",
+                "training_title" => "required",
+                "venue" => "required",
+                "date" => "required",
+                "covered_date" => "required"
+            ]);
+
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            EmployeeTrainings::where("id", $request->id)->update([
+                "employee_id" => $employee->id,
+                ...$request->all()
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Training title updated successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
 }
