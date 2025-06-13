@@ -20,6 +20,7 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
         return $this->employees->map(function ($employee) {
             return [
                 $employee->employee_number,
+                $employee->employee_number_2,
                 $employee->last_name,
                 $employee->middle_name,
                 $employee->first_name,
@@ -35,6 +36,6 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ['Employee Number', 'Last Name', 'Middle Name', 'First Name', 'Email' ,'Position', 'Branch', 'Date Hired', 'Employment Status', 'Status',];
+        return ['Employee Number','Employee Number 2', 'Last Name', 'Middle Name', 'First Name', 'Email' ,'Position', 'Branch', 'Date Hired', 'Employment Status', 'Status',];
     }
 }

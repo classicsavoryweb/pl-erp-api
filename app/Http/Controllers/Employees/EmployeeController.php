@@ -41,7 +41,9 @@ class EmployeeController extends Controller
             ]);
 
             $employeeCount = Employee::count();
+            $company = env('COMPANY_NAME');
             $employeeNumber = str_pad(++$employeeCount, 7, '0', STR_PAD_LEFT);
+            $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration"]);
             $position = Position::find($request->position_id);
@@ -62,10 +64,13 @@ class EmployeeController extends Controller
                 } else {
                     $biometricsNumber = "12".$employeeNumber;
                 }
+
+                $employeeNumber2 = $company."-".$agency->name."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             }
 
             $employee = Employee::create([
                 "employee_number" => $employeeNumber,
+                "employee_number_2" => $employeeNumber2,
                 "employee_status_id" => $pendingStatus->id,
                 "station_id" => $position->station_id,
                 "biometric_number" => $biometricsNumber,

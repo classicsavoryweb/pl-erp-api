@@ -54,7 +54,8 @@ class Employee extends Model
         "emergency_contact_address",
         "emergency_contact_relationship",
         "status",
-        "oic_status"
+        "oic_status",
+        "employee_number_2"
     ];
 
     protected $table = "employees";

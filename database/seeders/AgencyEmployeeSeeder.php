@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Agency;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Employee;
@@ -32,8 +33,16 @@ class AgencyEmployeeSeeder extends Seeder
             $employmentStatus = EmployeeStatus::where("description", $employee["description"])->first();
             $station = Station::where("name", $employee["station"])->first();
 
+            $employeeNumber2 = "";
+            $agency = Agency::find($employee["agency_id"]);
+            $company = env('COMPANY_NAME');
+            if ($agency) {
+                $employeeNumber2 = $company."-".$agency->name."-".str_pad($employee["employee_id2"], 7, '0', STR_PAD_LEFT);
+            }
+
             $emp = Employee::create([
                 "employee_number" => $employee["employee_id2"],
+                "employee_number_2" => $employeeNumber2,
                 "biometric_number" => $employee["biometricID"],
                 "first_name"=> $employee["first_name"],
                 "middle_name"     => $employee["middle_name"],

@@ -32,8 +32,12 @@ class EmployeeSeeder extends Seeder
             $employmentStatus = EmployeeStatus::where("description", $employee["description"])->first();
             $station = Station::where("name", $employee["station"])->first();
 
+            $company = env('COMPANY_NAME');
+            $employeeNumber2 = $company."-".str_pad($employee["employee_id2"], 7, '0', STR_PAD_LEFT);
+
             $emp = Employee::create([
                 "employee_number" => $employee["employee_id2"],
+                "employee_number_2" => $employeeNumber2,
                 "biometric_number" => $employee["biometricID"],
                 "first_name"=> $employee["first_name"],
                 "middle_name"     => $employee["middle_name"],
