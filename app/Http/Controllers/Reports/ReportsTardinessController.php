@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Reports;
 
+use App\Exports\Employees\EmployeeOffensesExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessTardinessImport;
 use App\Mail\NODMail;
@@ -17,12 +18,13 @@ use Exception;
 use DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use Carbon\Carbon;
 
 class ReportsTardinessController extends Controller
 {
-    public function getAllReportsVaccines(Request $request) {
+    public function getAllReportsTardiness(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
 
@@ -63,17 +65,33 @@ class ReportsTardinessController extends Controller
                 $tardiness = $tardiness->whereRaw("CONCAT(year, LPAD(month, 2, '0')) BETWEEN ? AND ?", [$start, $end]);
             }
 
+            if ($request->has(["status"])) {
+                $tardiness = $tardiness->where("status", $request->status);
+            }
+
             $tardiness = $tardiness->with([
                 "tardiness_sanction",
                 "employee"
             ])
-            ->orderBy("id","DESC")
-            ->paginate($perPage);
+            ->orderBy("id","DESC");
+
+            if ($request->has(["export"]) && $request->export) {
+                $tardiness = $tardiness->get();
+                return Excel::download(new EmployeeOffensesExport($tardiness), "offenses.xls");
+            }
+            
+            $tardiness = $tardiness->paginate($perPage);
 
             return $this->sendResponse($tardiness);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportTardiness (Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllReportsTardiness($request);
     }
 
     public function approveTardiness (Request $request, $id) {
