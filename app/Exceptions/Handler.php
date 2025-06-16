@@ -51,4 +51,12 @@ class Handler extends ExceptionHandler
     {
         return response()->json(['message' => 'Unauthenticated.'], 401);
     }
+
+    public function render($request, Throwable $exception)
+    {
+        return response()->json([
+            'message' => $exception->getMessage(),
+            'error' => true,
+        ], method_exists($exception, 'getStatusCode') ? $exception->getStatusCode() : 500);
+    }
 }
