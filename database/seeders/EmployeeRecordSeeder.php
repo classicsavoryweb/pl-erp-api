@@ -25,5 +25,7 @@ class EmployeeRecordSeeder extends Seeder
         $this->call(VaccinationSeeder::class);
         $this->call(ActingCapacitySeeder::class);
         $this->call(AttachmentSeeder::class);
+        $this->call(CoeRequestSeeder::class);
+        $this->call(UnduplicateEmployeeNumberSeeder::class);
     }
 }
