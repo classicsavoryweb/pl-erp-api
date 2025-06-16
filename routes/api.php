@@ -162,7 +162,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-employees", [EmployeeController::class, "getEmployees"]);
     Route::get("/get-employees-list", [EmployeeController::class, "getEmployeeList"]);
     Route::get("/get-employee/{employee_number}", [EmployeeController::class, "getEmployee"]);
-    Route::get("/export-employees-list", [EmployeeController::class, "exportEmployee"]);
+    Route::middleware(["permission:can_export_employee_tracking"])->get("/export-employees-list", [EmployeeController::class, "exportEmployee"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/add-employee", [EmployeeController::class, "addEmployee"]);
     Route::middleware(["permission:can_perform_employee_tracking"])->post("/update-employee/{employee_number}", [EmployeeController::class, "updateEmployeeDetails"]);
     //audit logs
@@ -221,6 +221,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //REPORTS MODULE
     //employee offenses
     Route::get("/get-all-reports-offenses", [ReportsOffensesController::class, "getAllEmployeeOffenses"]);
+    Route::middleware(["permission:can_export_all_records_offenses"])->get("/export-all-reports-offenses", [ReportsOffensesController::class, "exportAllEmployeeOffenses"]);
     //vaccination
     Route::get("/get-all-reports-vaccination", [ReportsVaccinationController::class, "getAllReportsVaccines"]);
     //health and safety

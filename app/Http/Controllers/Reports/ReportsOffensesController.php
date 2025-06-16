@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Reports;
 
+use App\Exports\AllRecords\EmployeeOffensesExport;
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeOffense;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use DB;
 
@@ -52,12 +54,26 @@ class ReportsOffensesController extends Controller
                 "employee",
                 "sanction",
                 "offense"
-            ])->orderBy("date_committed","desc")
-            ->paginate($perPage);
+            ])->orderBy("date_committed","desc");
+
+            if ($request->has(["export"]) && $request->export) {
+                $offenses = $offenses->get();
+                return Excel::download(new EmployeeOffensesExport($offenses), "offenses.xls");
+            }
+
+            $offenses = $offenses->paginate($perPage);
 
             return $this->sendResponse($offenses);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function exportAllEmployeeOffenses(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllEmployeeOffenses($request);
+    }
+
+
 }
