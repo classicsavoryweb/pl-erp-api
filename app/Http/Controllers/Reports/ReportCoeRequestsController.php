@@ -75,7 +75,7 @@ class ReportCoeRequestsController extends Controller
                 ...$request->except(["employee_number"]),
                 "employee_id" => $employee->id,
                 "status" => "Pending",
-                "date_requested" => now()->toDateString()
+                "date_requested" => now()
             ]);
 
             return $this->sendResponse(["message" => "COE Request created successfully"]);
