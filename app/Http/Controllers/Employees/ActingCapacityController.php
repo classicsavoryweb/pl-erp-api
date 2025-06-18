@@ -355,20 +355,22 @@ class ActingCapacityController extends Controller
 
             $employee = Employee::where("employee_number", Auth::user()->employee_number)->first();
             $actingCapacity = ActingCapacity::find($id);
+            $actingEmployee = Employee::find($actingCapacity->employee_id);
 
-            if ($actingCapacity->status !== "Confirmed" && $actingCapacity->status !== "Rejected") {
+            if ($actingCapacity->status === "For Signature") {
+
                 $actingCapacity->update([
                     "confirmed_by" => $employee->id,
                     "confirmed_date" => now(),
                     "status" => "Confirmed"
                 ]);
 
-                $employee->update([
+                $actingEmployee->update([
                     'position_id' => $actingCapacity->recommended_position_id
                 ]);
 
                 EmployeePosition::create([
-                    "employee_id" => $employee->id,
+                    "employee_id" => $actingEmployee->id,
                     "oic_assignment" => "No",
                     'position_id' => $actingCapacity->recommended_position_id,
                     "date_started" => $actingCapacity->effectivity_date,
