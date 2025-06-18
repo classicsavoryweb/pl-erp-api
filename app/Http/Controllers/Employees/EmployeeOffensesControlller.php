@@ -60,8 +60,7 @@ class EmployeeOffensesControlller extends Controller
     public function addOffense (Request $request, $employee_number) {
         try {
             DB::beginTransaction();
-            $request->validate([   
-                'attachment' => "required",     
+            $request->validate([     
                 'offense_id' => "required",
                 'sanction_id' => "required",
                 'transgression' => "required",
