@@ -675,7 +675,7 @@
     {
       "title_id": "59",
       "option": "Internal",
-      "title": "BROMT Batch 52 - Basic Restaurant Operations Management Training  Sept. 2, 9, 12, 16, 17, 18 & 23, 2019 ",
+      "title": "BROMT Batch 52 - Basic Restaurant Operations Management Training Sept. 2, 9, 12, 16, 17, 18 & 23, 2019",
       "venue": "Classic Savory Head Office",
       "speaker": "Training Team - Jo Ann Del Rosario, Juvy Manalo & Marlon Salvadora. Jerome Gonzaga & Rodenie Casabar",
       "status": "active",
@@ -687,7 +687,7 @@
     {
       "title_id": "60",
       "option": "Internal",
-      "title": "Kitchen Management Training  September 3, 10 & 11, 2019 ",
+      "title": "Kitchen Management Training September 3, 10 & 11, 2019",
       "venue": "Classic Savory Head Office and Classic Savory Waltermart Munoz",
       "speaker": "Marlon Salvadora",
       "status": "active",
@@ -700,7 +700,7 @@
       "title_id": "61",
       "option": "Internal",
       "title": "Operations Team Building Batch2 - September 19, 2019",
-      "venue": "Louisse Private Resort, Taytay Rizal   ",
+      "venue": "Louisse Private Resort, Taytay Rizal  ",
       "speaker": "Training Department",
       "status": "active",
       "added_by": "jmanalo",
@@ -951,7 +951,7 @@
     {
       "title_id": "82",
       "option": "Internal",
-      "title": "OPS, H.O, IT and PMD Team Building    Nov. 21, 2019 ",
+      "title": "OPS, H.O, IT and PMD Team Building   Nov. 21, 2019",
       "venue": "Louisse Private Resort, Taytay Rizal",
       "speaker": "Training Team",
       "status": "active",
@@ -963,7 +963,7 @@
     {
       "title_id": "83",
       "option": "Internal",
-      "title": "ONLINE KMT BATCH 23  February 22 and 23, 2022",
+      "title": "ONLINE KMT BATCH 23 February 22 and 23, 2022",
       "venue": "Online",
       "speaker": "Norvee Calindas, Jesper Respeto, Lotlot Fernandez",
       "status": "active",
@@ -1035,7 +1035,7 @@
     {
       "title_id": "89",
       "option": "Internal",
-      "title": "BROMT Batch 56  June 7, 8, 9, 21, 22, 23 and 28, 2022",
+      "title": "BROMT Batch 56 June 7, 8, 9, 21, 22, 23 and 28, 2022",
       "venue": "Online Training",
       "speaker": "Jo Ann del Rosario, Juvy Manalo, Veronica Engalla, May Ane Castillo and HR Dept.",
       "status": "active",
@@ -2891,6 +2891,114 @@
       "added_date": "2025-04-23",
       "modify_by": "Juvy S. Manalo",
       "modify_date": "2025-04-23"
+    },
+    {
+      "title_id": "244",
+      "option": "External",
+      "title": "Sales and Marketing Strategies Batch 2 - April 24, 2025",
+      "venue": "Classic Savory SM Annex",
+      "speaker": "Jennifer Catindig",
+      "status": "active",
+      "added_by": "Juvy S. Manalo",
+      "added_date": "2025-04-25",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
+    },
+    {
+      "title_id": "245",
+      "option": "External",
+      "title": "Occupational First Aid and BLS CPR w/AED Training - April 24-25, 2025",
+      "venue": "Philippine Red Cross Rizal Chapter",
+      "speaker": "Radenjan Sales",
+      "status": "active",
+      "added_by": "Juvy S. Manalo",
+      "added_date": "2025-05-02",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
+    },
+    {
+      "title_id": "246",
+      "option": "External",
+      "title": "Occupational First aid Training - April 14-15, 2025",
+      "venue": "Philippine Red Cross Misamis Oriental Cagayan De Oro Chapter",
+      "speaker": "Philippine Red Cross",
+      "status": "active",
+      "added_by": "Juvy S. Manalo",
+      "added_date": "2025-05-02",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
+    },
+    {
+      "title_id": "247",
+      "option": "External",
+      "title": "Pollution Control Officer -(LLDA) - May 14 - 16, 2024",
+      "venue": "Laguna Lake Development Authority - Eurotel North Edsa Quezon City",
+      "speaker": "Engr. Emiterio C. Hernandez",
+      "status": "active",
+      "added_by": "Juvy S. Manalo",
+      "added_date": "2025-05-07",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
+    },
+    {
+      "title_id": "248",
+      "option": "External",
+      "title": "The First Labor Relations Professionals\\' Conference (16 hrs) - May 15-16, 2025",
+      "venue": "The Golden Phoenix - Hotel Manila",
+      "speaker": "Engr. Melanie Banayos, Atty.Rizzie May stia- Alburo, Atty. Alvin Liao Alburro, Atty. Willie Santiago, Atty. Alvin Manuel, Atty. Ismael Sarangaya Jr.",
+      "status": "active",
+      "added_by": "Juvy S. Manalo",
+      "added_date": "2025-05-19",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
+    },
+    {
+      "title_id": "249",
+      "option": "External",
+      "title": "LLDA CEES - Continuing Environmental Education",
+      "venue": "Eurotel Vivaldi 8 AM - 12 NN",
+      "speaker": "Engr. Jonas Emmanuel Maronilla",
+      "status": "active",
+      "added_by": "Jo Ann J. Del Rosario",
+      "added_date": "2025-05-19",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
+    },
+    {
+      "title_id": "250",
+      "option": "External",
+      "title": "Sales and Marketing Strategies Batch 3 - May 28, 2025",
+      "venue": "Classic Savory SM Annex",
+      "speaker": "Jennifer Catindig",
+      "status": "active",
+      "added_by": "Juvy S. Manalo",
+      "added_date": "2025-05-29",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
+    },
+    {
+      "title_id": "251",
+      "option": "Internal",
+      "title": "Online BROMT Batch 71 - May 6, 13, 14, 20, 21, 22 and 27, 2025 ",
+      "venue": "Online Training ",
+      "speaker": "Jo Ann del Rosario, Juvy manalo, May Ane Castillo, Veronica Engalla",
+      "status": "active",
+      "added_by": "Juvy S. Manalo",
+      "added_date": "2025-05-29",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
+    },
+    {
+      "title_id": "252",
+      "option": "Internal",
+      "title": "Basic First Aid",
+      "venue": "Zoom Webinar",
+      "speaker": "Dr. Abigail Lee-Ting",
+      "status": "active",
+      "added_by": "Jo Ann J. Del Rosario",
+      "added_date": "2025-06-02",
+      "modify_by": "",
+      "modify_date": "1900-01-01"
     }
   ]
 }

@@ -113918,32 +113918,6 @@
       "modify_by": null,
       "modify_date": null,
       "not_willing": null
-    },
-    {
-      "auto_id": "8816",
-      "employee_id2": "0014602",
-      "brand_id2": "BND0003",
-      "dose": "First Dose",
-      "date": "2025-05-13",
-      "status": "DONE",
-      "added_by": "Administrator",
-      "added_date": "2025-05-20 11:46:28",
-      "modify_by": null,
-      "modify_date": null,
-      "not_willing": null
-    },
-    {
-      "auto_id": "8817",
-      "employee_id2": "0014602",
-      "brand_id2": "BND0003",
-      "dose": "Second Dose",
-      "date": "2025-05-22",
-      "status": "DONE",
-      "added_by": "Administrator",
-      "added_date": "2025-05-20 11:46:57",
-      "modify_by": null,
-      "modify_date": null,
-      "not_willing": null
     }
   ]
 }
