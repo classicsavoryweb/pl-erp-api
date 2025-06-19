@@ -119,4 +119,26 @@ class DashboardController extends Controller
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
+
+    public function getAllEmployeeExpiringContracts(Request $request) {
+        try {
+            $perPage = $request->per_page ?? 10;
+
+            $startingDay = Carbon::now()->subDays(7);
+            $endingDay = Carbon::now()->addDays(19);
+
+            $employees = Employee::with([
+                'current_position',
+                'current_branch',
+                'latest_contract'
+            ])->whereHas('latest_contract', function ($query) use($startingDay, $endingDay) {
+                $query->where("status", "active");
+            })->where("status", "active")
+            ->paginate($perPage);
+
+            return $this->sendResponse($employees);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
 }
