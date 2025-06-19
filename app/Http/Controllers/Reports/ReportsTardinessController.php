@@ -69,6 +69,12 @@ class ReportsTardinessController extends Controller
                 $tardiness = $tardiness->where("status", $request->status);
             }
 
+            if ($request->has(['branch_id'])) {
+                $tardiness = $tardiness->whereHas("employee", function ($query) use ($request) {
+                    $query->where("branch_id", $request->branch_id);
+                });
+            }
+
             $tardiness = $tardiness->with([
                 "tardiness_sanction",
                 "employee"
