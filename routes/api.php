@@ -16,6 +16,7 @@ use App\Http\Controllers\Employees\EmployeePositionControlller;
 use App\Http\Controllers\Employees\EmployeeRequirementsController;
 use App\Http\Controllers\Employees\EmployeeTrainingController;
 use App\Http\Controllers\Employees\EmployeeVaccinationController;
+use App\Http\Controllers\Employees\RequirementsAttachmentController;
 use App\Http\Controllers\Maintenance\ActingCapacityMaintenanceController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BankAccountTypeController;
@@ -196,6 +197,8 @@ Route::middleware('auth:sanctum')->group( function () {
     //requirements
     Route::get("/get-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "getEmployeeRequirements"]);
     Route::middleware(["permission:can_perform_employee_requirements"])->post("/create-or-edit-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "updateOrCreateRequirements"]);
+    Route::middleware(["permission:can_perform_employee_requirements"])->post("/upload-requirements-attachments/{employee_number}", [RequirementsAttachmentController::class, "uploadAttachments"]);
+    Route::middleware(["permission:can_perform_employee_requirements"])->get("/get-requirements-attachments/{employee_number}", [RequirementsAttachmentController::class, "getAttachments"]);
     //trainings history
     Route::get("/get-employee-trainings/{employee_number}", [EmployeeTrainingController::class, "getEmployeeTrainings"]);
     Route::middleware(["permission:can_perform_employee_training_titles"])->post("/add-employee-training-title/{employee_number}", [EmployeeTrainingController::class, "addTrainingTitle"]);
