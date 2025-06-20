@@ -75,9 +75,26 @@ class EmployeeOffensesControlller extends Controller
             ]);
 
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $employee->offenses()->create([
-                ...$request->all()
+            $offense = $employee->offenses()->create([
+                ...$request->except(["attachment"])
             ]);
+
+            if ($request->hasFile("attachment")) {
+                $file = $request->file("attachment");
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/Files Per Employee/" . $employee->employee_number;
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+
+                $offense->update([
+                    "attachment" => $filePath,
+                    "attachment_file_name" => $file->getClientOriginalName(),
+                ]);
+            }
 
             DB::commit();
             return $this->sendResponse(["message" => "Offense added successfully."]);
