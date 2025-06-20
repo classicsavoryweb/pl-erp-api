@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Tardiness extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
     protected $table = "tardiness";
     protected $fillable = [
         "employee_id",
@@ -29,5 +31,14 @@ class Tardiness extends Model
 
     public function tardiness_sanction() {
         return $this->hasOne(TardinessSanction::class, "id", "tardiness_sanction_id");
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Employee Tardiness')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

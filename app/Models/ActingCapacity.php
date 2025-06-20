@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class ActingCapacity extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = "acting_capacity";
 
@@ -79,5 +81,12 @@ class ActingCapacity extends Model
         return $this->hasOne(Employee::class, "employee_number", "oic_employee_number");
     }
 
-
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Employee Acting Position')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 }
