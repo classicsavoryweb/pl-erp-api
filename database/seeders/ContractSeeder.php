@@ -24,7 +24,7 @@ class ContractSeeder extends Seeder
             $employee = Employee::where("employee_number", $contract["employee_id"])->first();
 
             if ($employee) {
-                $status = "active";
+                $status = $contract['contract_status'];
                 if ($employee->status === "active") {
                     if ($employee->employee_status->description === "Regular") {
                         $status = "inactive";
@@ -35,6 +35,8 @@ class ContractSeeder extends Seeder
                     ) {
                         $status = "inactive";
                     }
+                } else {
+                    $status = "inactive";
                 }
 
                 Contract::create([

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActingCapacity;
 use App\Models\Branch;
+use App\Models\Contract;
 use App\Models\Employee;
 use App\Models\Tardiness;
 use Illuminate\Http\Request;
@@ -127,13 +128,25 @@ class DashboardController extends Controller
             $startingDay = Carbon::now()->subDays(7);
             $endingDay = Carbon::now()->addDays(19);
 
-            $employees = Employee::with([
-                'current_position',
-                'current_branch',
-                'latest_contract'
-            ])->whereHas('latest_contract', function ($query) use($startingDay, $endingDay) {
+            // $employees = Employee::with([
+            //     'current_position',
+            //     'current_branch',
+            //     'latest_contract'
+            // ])->whereHas('latest_contract', function ($query) use($startingDay, $endingDay) {
+            //     $query->where("status", "active");
+            // })->where("status", "active")
+            // ->orderBy("date_hired", "ASC")
+            // ->paginate($perPage);
+            $employees = Contract::with([
+                "employee",
+                "employee.current_position",
+                "employee.current_branch"
+            ])
+            ->whereHas("employee", function ($query) {
                 $query->where("status", "active");
-            })->where("status", "active")
+            })
+            ->where("status", "active")
+            ->orderBy("contract_end_date", "ASC")
             ->paginate($perPage);
 
             return $this->sendResponse($employees);
