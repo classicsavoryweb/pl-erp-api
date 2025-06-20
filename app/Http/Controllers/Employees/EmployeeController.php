@@ -156,6 +156,9 @@ class EmployeeController extends Controller
                         )->orWhere(function ($query) use ($keyword) {
                                 $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
                             }
+                        )->orWhere(function ($query) use ($keyword) {
+                                $query->where(DB::raw("CONCAT_WS(' ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                            }
                         );
                     });
                 } else {
@@ -224,10 +227,15 @@ class EmployeeController extends Controller
             $perPage = $request->per_page ??10;
 
             $employee = Employee::where("employee_number", $employeeNumber)->first();
-            $activities = Activity::with("causer")
-                ->forSubject($employee)
-                ->orderBy("created_at", "DESC")
-                ->paginate($perPage);
+            $activities = Activity::with('causer')
+            ->where(function ($query) use ($employee) {
+                $query->where(function ($q) use ($employee) {
+                    $q->where('subject_type', Employee::class)
+                    ->where('subject_id', $employee->id);
+                })->orWhere('properties->attributes->employee_id', $employee->id);
+            })
+            ->orderBy('created_at', 'DESC')
+            ->paginate($perPage);
 
             return $this->sendResponse($activities);
         } catch (Exception $e) {
@@ -364,10 +372,23 @@ class EmployeeController extends Controller
 
             if (!empty($request->dependents) && count($request->dependents) > 0) {
                 foreach($request->dependents as $dependant) {
-                    $employee->dependents()->updateOrCreate([
-                        "employee_number" => $employee->employee_number,
-                        ...$dependant
-                    ]);
+                    if ( isset($dependant["id"]) ) {
+                        $employee->dependents()
+                        ->where("id", $dependant["id"])
+                        ->update([
+                            "employee_number" => $employee->employee_number,
+                            "employee_id" => $employee->id,
+                            "dependent_name" => $dependant["dependent_name"],
+                            "birthday" => $dependant["birthday"],
+                        ]);
+                    } else {
+                        $employee->dependents()->create([
+                            "employee_number" => $employee->employee_number,    
+                            "employee_id" => $employee->id,
+                            "dependent_name" => $dependant["dependent_name"],
+                            "birthday" => $dependant["birthday"],
+                        ]);
+                    }
                 }
             }
 
