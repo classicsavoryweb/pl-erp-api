@@ -26,7 +26,7 @@ class ActingCapacitySeeder extends Seeder
             ->where("employee_number", $acting["employeeID"])
             ->first();
             $position = Position::find(ltrim($acting["recommendedpositionID"], '0'));
-            $branch = Branch::where("branch_number", $acting["branchID"])->first();
+            $branch = Branch::find($employee->branch_id);
             $actor = "";
 
             $oicNumber = $branch->branch_head_employee_number;

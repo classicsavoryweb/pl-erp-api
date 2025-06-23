@@ -328,6 +328,16 @@ class ActingCapacityController extends Controller
 
             $employee = Employee::where("employee_number", Auth::user()->employee_number)->first();
             $actingCapacity = ActingCapacity::find($id);
+
+            $promotedEmployee = Employee::find($actingCapacity->employee_id);
+            $effectivityDate = Carbon::parse($request->effectivity_date);
+            $latestPosition = Carbon::parse($promotedEmployee->latest_position->date_started);
+            if (!$effectivityDate->isAfter($latestPosition) ) {
+                return $this->sendError([
+                    "message" => "Effectivity date must be after ".$latestPosition->format("M d, Y")
+                ]);
+            }
+
             $actingCapacity->update([
                 "effectivity_date" => $request->effectivity_date,
                 "bond_amount" => $request->bond_amount,

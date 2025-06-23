@@ -173,6 +173,11 @@ class Employee extends Model
         return $this->hasOne(Contract::class)->latestOfMany();
     }
 
+    public function latest_position()
+    {
+        return $this->hasOne(EmployeePosition::class)->latestOfMany("date_started");
+    }
+
     public function user() {
         return $this->belongsTo(User::class, "employee_number", "employee_number");
     }
