@@ -26,6 +26,8 @@ class EmployeeOffense extends Model
         'attachment_file_name',
         'remarks',
         'tardiness_id',
+        'voided',
+        'void_reason'
     ];
 
     protected $table = "employee_offenses";
