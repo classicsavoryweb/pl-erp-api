@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Employees;
 
 use App\Exports\Employees\EmployeeContractsExport;
 use App\Http\Controllers\Controller;
+use App\Models\EmployeeStatus;
 use App\Models\Rate;
 use Illuminate\Http\Request;
 use App\Models\Contract;
@@ -85,9 +86,34 @@ class EmployeeContractControlller extends Controller
             ]);
             $employee = Employee::where("employee_number", $employee_number)->first();
             $employee->contracts()->where("id", $request->id)->update([
-                ...$request->all()
+                "contract_start_date" => $request->contract_start_date,
+                "contract_end_date" => $request->contract_end_date,
+                "status" => $request->status,
+                "remarks" => $request->remarks ?? null,
             ]);
-            
+
+            if ($request->status === "inactive") {
+                if ($request->has("employee_status")) {
+                    $employee->status = $request->employee_status;
+                }
+                if ($request->has("employment_status")) {
+                    $employee->employee_status_id = $request->employment_status;
+                }
+                if ($request->has("regularization_date")) {
+                    $employee->regularization_date = $request->regularization_date;
+                }
+                if ($request->has("separation_reason")) {
+                    $separationReason = EmployeeStatus::find($request->separation_reason);
+                    $employee->separation_reason = $separationReason->description;
+                }
+                if ($request->has("separation_date")) {
+                    $employee->separation_date = $request->separation_date;
+                }
+                if ($employee->isDirty()) {
+                    $employee->save();
+                }
+            }
+
             DB::commit();
             return $this->sendResponse(["message" => "Contract updated successfully"]);
         } catch (Exception $e) {
