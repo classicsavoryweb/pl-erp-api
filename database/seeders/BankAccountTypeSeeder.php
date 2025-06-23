@@ -15,12 +15,12 @@ class BankAccountTypeSeeder extends Seeder
     {
         BankAccountType::create([
             "description" => "Cash Card",
-            "number_length" => "16",
+            "number_length" => "12",
             "status" => "active"
         ]);
         BankAccountType::create([
             "description" => "Savings Account",
-            "number_length" => "12",
+            "number_length" => "16",
             "status" => "active"
         ]);
     }
