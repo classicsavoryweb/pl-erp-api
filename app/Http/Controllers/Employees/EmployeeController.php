@@ -40,9 +40,9 @@ class EmployeeController extends Controller
                 "contract_duration" => "required",
             ]);
 
-            $employeeCount = Employee::count();
+            $employeeCount = Employee::latest()->first();
             $company = env('COMPANY_NAME');
-            $employeeNumber = str_pad(++$employeeCount, 7, '0', STR_PAD_LEFT);
+            $employeeNumber = str_pad($employeeCount->id + 1, 7, '0', STR_PAD_LEFT);
             $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration"]);
