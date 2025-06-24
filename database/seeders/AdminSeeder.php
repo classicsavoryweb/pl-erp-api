@@ -51,5 +51,14 @@ class AdminSeeder extends Seeder
             'role_id' => $adminRole->id,
             'status' => 'active'
         ]);
+        User::firstOrCreate([
+            'employee_number' => '0014705',
+            'first_name' => 'KRISTOFFER',
+            'last_name' => 'CABIGON',
+            'email' => 'kristoffercabigon@gmail.com',
+            'password' => bcrypt('password'),
+            'role_id' => $adminRole->id,
+            'status' => 'active'
+        ]);
     }
 }
