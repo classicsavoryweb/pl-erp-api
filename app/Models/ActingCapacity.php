@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ActingCapacity extends Model
 {
@@ -37,6 +38,21 @@ class ActingCapacity extends Model
         "oic_employee_number",
         "branch_assignment_id"
     ];
+
+    protected $appends = ['latest_end_date',];
+
+    protected function latestEndDate(): Attribute
+    {
+        $endDate = $this->end_date;
+
+        if ($this->extensions()->count() > 0) {
+            $latest = $this->extensions()->orderBy("end_date", "DESC")->first();
+            $endDate = $latest->end_date;
+        }
+        return Attribute::get(
+            fn () => $endDate
+        );
+    }
 
     public function employee() {
         return $this->belongsTo(Employee::class);

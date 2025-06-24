@@ -154,16 +154,22 @@ class ActingCapacityController extends Controller
     public function getActingCapacity(Request $request, $id) {
         try {
             $actingCapacity = ActingCapacity::with([
-                "employee.employee_status",
                 "attachments",
                 "current_position",
                 "recommended_position",
-                "branch",
                 "extensions",
                 "reject",
                 "confirm",
                 "generate",
-                "branch_assignment"
+                "employee.employee_status",
+                "employee.current_branch",
+                "employee.current_position",
+                "branch",
+                "branch.group_head",
+                "branch.branch_oic",
+                "branch_assignment",
+                "oic",
+                "extensions"
             ])->find($id);
 
             $storage = Storage::disk("hr_system_folder");
@@ -207,7 +213,6 @@ class ActingCapacityController extends Controller
             $latestExtension = $actingCapacity->extensions()->latest()->first();
             if ($latestExtension) {
                 $actingCapacity->end_date = $latestExtension->end_date;
-
             }
 
             $station = $actingCapacity->current_position->station->name;
