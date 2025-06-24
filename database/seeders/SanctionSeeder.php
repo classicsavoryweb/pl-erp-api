@@ -22,7 +22,12 @@ class SanctionSeeder extends Seeder
             ],
             [
             "auto_id"=> "2",
-            "description"=> "Written Memo",
+            "description"=> "Reminder Memo",
+            "suspension_days"=> "0"
+            ],
+            [
+            "auto_id"=> "2",
+            "description"=> "Final Reminder Memo",
             "suspension_days"=> "0"
             ],
             [
