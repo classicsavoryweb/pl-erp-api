@@ -129,7 +129,7 @@ class ReportCoeRequestsController extends Controller
             $salary_amount = 0.00;
             $salary = $position->salary()->first();
 
-            if ($salary !== "minimum") {
+            if ( strtolower($salary->rate_category) !== "minimum") {
                 $salary_amount = $salary->basic_salary ?? 0;
             } else {
                 $rate = Rate::where("code", $branch->rate_code)->first();
@@ -177,6 +177,7 @@ class ReportCoeRequestsController extends Controller
                 "coe_reason" => $coeRequest->coe_reason,
                 "leave_from" => Carbon::parse($coeRequest->leave_from)->format('F j, Y'),
                 "leave_to" => Carbon::parse($coeRequest->leave_to)->format('F j, Y'),
+                "employment_status" => $employee->employee_status->description
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);

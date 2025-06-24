@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeeStatus;
+use App\Models\Station;
 use Illuminate\Http\Request;
 use Exception;
 use Carbon\Carbon;
@@ -35,12 +36,40 @@ class ReportsEmploymentStatusController extends Controller
             $groupHead = Employee::with(["current_position"])
             ->where("employee_number", $branch->group_head_employee_number)->first();
 
+            $branch_station = Station::find($employees[0]->station_id);
+            $recommendedBy = $branchOIC;
+            $notedBy = $groupHead;
+            $notedBy1 = null;
+            $station = strtolower($branch_station->name);
+            if ($station === "back of the house") {
+                $recommendedBy = $groupHead;
+
+                $notedBy = Employee::with(["current_position"])
+                ->where("employee_number", "0007413")
+                ->first();
+            }
+            if ($station === "front of the house") {
+                $recommendedBy = $groupHead;
+
+                $notedBy1 = Employee::with(["current_position"])
+                ->where("employee_number", "639")
+                ->first();
+                $notedBy = Employee::with(["current_position"])
+                ->where("employee_number", "M003")
+                ->first();
+            }
+
             return $this->sendResponse([
                 "branch_oic" => $branchOIC,
                 "group_head" => $groupHead,
                 "date" => now()->toDateString(),
                 "branch" => $branch,
                 "data" => $employees,
+                "month" => Carbon::parse("01-".$request->month."-".$request->year)->format("F"),
+                "year" => $request->year,
+                "recommended_by" => $recommendedBy,
+                "noted_by" => $notedBy,
+                "noted_by_1" => $notedBy1,
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
