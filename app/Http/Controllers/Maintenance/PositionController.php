@@ -45,7 +45,7 @@ class PositionController extends Controller
 
     public function getPositions (Request $request) {
         try {
-            $positions = Position::where("status", "active")->get();
+            $positions = Position::with(['station'])->where("status", "active")->get();
             return $this->sendResponse(["positions" => $positions]);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
