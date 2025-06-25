@@ -52,7 +52,10 @@ class ReportCoeRequestsController extends Controller
                 $coeRequests = $coeRequests->whereBetween('date_requested', [$request->date_from, $request->date_to]);
             }
 
-            $coeRequests = $coeRequests->with(["employee"])
+            $coeRequests = $coeRequests->with([
+                "employee",
+                "employee.employee_status"
+            ])
             ->orderBy("created_at", "DESC")
             ->paginate($perPage);
 
@@ -90,12 +93,11 @@ class ReportCoeRequestsController extends Controller
                 "include_salary" => "required",
                 "coe_format" => "required",
                 "coe_reason" => "required",
-                "status" => "required",
             ]);
 
             CoeRequest::where("id", $id)
             ->update([
-                ...$request->all()
+                ...$request->except(["employee", "employee_number"])
             ]);
 
             return $this->sendResponse(["message" => "COE Request updated successfully"]);
