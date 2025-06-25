@@ -111,7 +111,7 @@ class ReportCoeRequestsController extends Controller
             $coeRequest = CoeRequest::where("id", $id)->first();
             $employee = $coeRequest->employee()->first();
             $position = $employee->current_position()->first();
-            $branch = $employee->current_branch()->first();
+            $branch = $employee->home_branch()->first();
             $positions = $employee->positions()->get();
 
             $positions = $positions->sortBy(function ($position) {
