@@ -28,6 +28,7 @@ use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PositionController;
 use App\Http\Controllers\Maintenance\RateController;
 use App\Http\Controllers\Maintenance\SalaryPositionController;
+use App\Http\Controllers\Maintenance\SanctionsController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
@@ -158,6 +159,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-acting-capacity-reasons", [ActingCapacityMaintenanceController::class, "exportActingCapacityReasons"]);
     Route::middleware(["permission:can_perform_acting_capacity_reasons"])->post("/create-acting-capacity-reason", [ActingCapacityMaintenanceController::class, "createActingCapacityReason"]);
     Route::middleware(["permission:can_perform_acting_capacity_reasons"])->post("/edit-acting-capacity-reason/{id}", [ActingCapacityMaintenanceController::class, "editActingCapacityReason"]);
+    //sanctions
+    Route::get("/get-all-sanctions", [SanctionsController::class, "getAllSanctions"]);
+    Route::get("/get-sanctions", [SanctionsController::class, "getSanctions"]);
+    Route::get("/export-all-sanctions", [SanctionsController::class, "exportSanctions"]);
+    Route::middleware(["permission:can_perform_sanctions"])->post("/create-sanction", [SanctionsController::class, "createSanction"]);
+    Route::middleware(["permission:can_perform_sanctions"])->post("/edit-sanction/{id}", [SanctionsController::class, "editSanction"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
