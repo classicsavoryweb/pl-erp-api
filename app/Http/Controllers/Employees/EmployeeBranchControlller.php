@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Employees;
 use App\Exports\Employees\EmployeeBranchesExport;
 use App\Http\Controllers\Controller;
 use App\Models\ActingCapacity;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use App\Models\BranchEmployee;
 use App\Models\Employee;
 use Exception;
 use DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class EmployeeBranchControlller extends Controller
 {
@@ -68,6 +71,35 @@ class EmployeeBranchControlller extends Controller
 
             DB::commit();
             return $this->sendResponse(["message" => "Branch added successfully"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function deleteEmployeeBranch($id) {
+        try {
+            DB::beginTransaction();
+
+            $branch = BranchEmployee::find($id);
+            $employee = Employee::find($branch->employee_id);
+            $fetchedBranch = Branch::find($branch->branch_id);
+
+            activity()
+            ->useLog('Employee Branch Assignment')
+            ->performedOn($employee)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                "attributes" => $fetchedBranch
+            ])
+            ->log('Assigned branch deleted');
+
+            $branch->delete();
+            $employee->update([
+                "branch_id" => $employee->latest_branch->branch_id
+            ]);
+            DB::commit();
+            return $this->sendResponse(["message" => "Branch deleted successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);

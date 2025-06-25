@@ -183,6 +183,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //branches history
     Route::get("/get-employee-branches/{employee_number}", [EmployeeBranchControlller::class, "getEmployeeBranchHistory"]);
     Route::get("/export-employee-branches/{employee_number}", [EmployeeBranchControlller::class, "exportEmployeeBranchHistory"]);
+    Route::get("/delete-employee-branches/{id}", [EmployeeBranchControlller::class, "deleteEmployeeBranch"]);
     Route::middleware(["permission:can_perform_employee_branches"])->post("/add-employee-branch/{employee_number}", [EmployeeBranchControlller::class, "addBranch"]);
     Route::middleware(["permission:can_perform_employee_branches"])->post("/edit-employee-branch/{employee_number}", [EmployeeBranchControlller::class, "editBranch"]);
     //contracts history

@@ -173,6 +173,11 @@ class Employee extends Model
         return $this->hasOne(Contract::class)->latestOfMany();
     }
 
+    public function latest_branch()
+    {
+        return $this->hasOne(BranchEmployee::class)->latestOfMany("date_assigned");
+    }
+
     public function latest_position()
     {
         return $this->hasOne(EmployeePosition::class)->latestOfMany("date_started");
