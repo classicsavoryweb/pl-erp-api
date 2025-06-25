@@ -46,8 +46,8 @@ class SanctionsController extends Controller
 
     public function getSanctions(Request $request) {
         try {
-            $description = Sanction::where("status", "active")->get();
-            return $this->sendResponse(["description" => $description]);
+            $sanctions = Sanction::where("status", "active")->get();
+            return $this->sendResponse(["sanctions" => $sanctions]);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
