@@ -23,6 +23,8 @@ class Tardiness extends Model
         "status",
         "da_status",
         "nte_status",
+        "da_date_sent",
+        "nte_date_sent"
     ];
 
     public function employee() {

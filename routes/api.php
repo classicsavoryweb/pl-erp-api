@@ -196,6 +196,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:can_perform_employee_offenses"])->post("/edit-employee-offense/{employee_number}", [EmployeeOffensesControlller::class, "editOffense"]);
     //requirements
     Route::get("/get-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "getEmployeeRequirements"]);
+    Route::get("/export-employee-attachments/{employee_number}", [RequirementsAttachmentController::class, "exportRequirements"]);
     Route::middleware(["permission:can_perform_employee_requirements"])->post("/create-or-edit-employee-requirements/{employee_number}", [EmployeeRequirementsController::class, "updateOrCreateRequirements"]);
     Route::middleware(["permission:can_perform_employee_requirements"])->post("/upload-requirements-attachments/{employee_number}", [RequirementsAttachmentController::class, "uploadAttachments"]);
     Route::middleware(["permission:can_perform_employee_requirements"])->get("/get-requirements-attachments/{employee_number}", [RequirementsAttachmentController::class, "getAttachments"]);

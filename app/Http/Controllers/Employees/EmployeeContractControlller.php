@@ -136,11 +136,15 @@ class EmployeeContractControlller extends Controller
             $salary_amount = 0.00;
             $salary = $position->salary()->first();
 
-            if ($salary->rate_category !== "minimum") {
-                $salary_amount = ($salary->basic_salary / 26) / 8;
+            if ($salary) {
+                if ($salary->rate_category !== "minimum") {
+                    $salary_amount = ($salary->basic_salary / 26) / 8;
+                } else {
+                    $rate = Rate::where("code", $branch->rate_code)->first();
+                    $salary_amount = $rate->minimum / 8;
+                }
             } else {
-                $rate = Rate::where("code", $branch->rate_code)->first();
-                $salary_amount = $rate->minimum / 8;
+                return $this->sendError(["message" => "Salary position not existing" ]);
             }
 
             $previousContract = $employee->contracts()

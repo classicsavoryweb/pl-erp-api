@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use DB;
-
+use ZipArchive;
+use Str;
 class RequirementsAttachmentController extends Controller
 {
     public function uploadAttachments(Request $request, $employee_number){
@@ -73,6 +74,41 @@ class RequirementsAttachmentController extends Controller
             return $this->sendResponse(["attachments" => $attachments]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function exportRequirements($employee_number) {
+        try {
+            $employee = Employee::where("employee_number", $employee_number)->first();
+            $attachments = RequirementsAttachment::where("employee_id", $employee->id)->get();
+            $storage = Storage::disk("hr_system_folder");
+
+            $zipFileName = $employee_number.'-REQUIREMENTS-DOCUMENTS.zip';
+            $zipPath = storage_path("app/temp/$zipFileName");
+
+            if (!file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+
+            $zip = new ZipArchive;
+            if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+                foreach ($attachments as $file) {
+                    if ($storage->exists($file->file_path)) {
+                        $zip->addFromString(
+                            basename($file->file_path),
+                            $storage->get($file->file_path)
+                        );
+                    }
+                }
+                $zip->close();
+
+                return response()->download($zipPath)->deleteFileAfterSend(true);
+            } else {
+                return $this->sendError(["message" => "Zipping files error encountered" ]);
+            }
+
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }

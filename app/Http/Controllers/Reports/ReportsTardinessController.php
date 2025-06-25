@@ -58,11 +58,12 @@ class ReportsTardinessController extends Controller
                 }
             }
 
-            if ($request->has(["date_from", "date_to"])) {
-                $start = Carbon::parse($request->date_from)->format('Ym');
-                $end = Carbon::parse($request->date_to)->format('Ym');
+            if ($request->has(["year"])) {
+                $tardiness = $tardiness->where("year", $request->year);
+            }
 
-                $tardiness = $tardiness->whereRaw("CONCAT(year, LPAD(month, 2, '0')) BETWEEN ? AND ?", [$start, $end]);
+            if ($request->has(["month"])) {
+                $tardiness = $tardiness->where("month",(int)$request->month);
             }
 
             if ($request->has(["status"])) {
@@ -77,7 +78,8 @@ class ReportsTardinessController extends Controller
 
             $tardiness = $tardiness->with([
                 "tardiness_sanction",
-                "employee"
+                "employee",
+                "employee.current_branch",
             ])
             ->orderBy("id","DESC");
 
@@ -351,7 +353,8 @@ class ReportsTardinessController extends Controller
             }
 
             $tardiness->update([
-                "nte_status" => "Sent"
+                "nte_status" => "Sent",
+                "nte_date_sent" => now()
             ]);
             
             DB::commit();
@@ -440,7 +443,8 @@ class ReportsTardinessController extends Controller
             }
 
             $tardiness->update([
-                "da_status" => "Sent"
+                "da_status" => "Sent",
+                "da_date_sent" => now()
             ]);
             
             DB::commit();

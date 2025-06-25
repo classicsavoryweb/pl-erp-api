@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActingCapacity;
 use App\Models\ActingCapacityAttachments;
 use App\Models\ActingCapacityExtension;
+use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use Exception;
@@ -215,19 +216,31 @@ class ActingCapacityController extends Controller
                 $actingCapacity->end_date = $latestExtension->end_date;
             }
 
-            $station = $actingCapacity->current_position->station->name;
+            $station = $actingCapacity->recommended_position->station->name;
             $type = "english";
             $withRecommendation = false;
+            $recommendedBy = null;
+            $approvedBy = null;
+            $branch = Branch::find($actingCapacity->branch_assignment_id);
+
             if ( strtolower($station) === "back of the house") {
                 $type = "tagalog";
+                $approvedBy = Employee::where("employee_number", "0007413")->first();
             } else if (strtolower($station) === "head office") {
                 $withRecommendation = true;
+                $approvedBy = Employee::where("employee_number", $branch->group_head_employee_number)->first();
+                $recommendedBy = Employee::where("employee_number", $branch->branch_head_employee_number)->first();
+            } else {
+                $approvedBy = Employee::where("employee_number", "639")->first();
             }
 
             return $this->sendResponse([
                 "acting_capacity" => $actingCapacity,
                 "with_recommendation" => $withRecommendation,
-                'type' => $type
+                'type' => $type,
+                "recommended_by" => $recommendedBy,
+                "approved_by" => $approvedBy,
+                "station" => $station
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
