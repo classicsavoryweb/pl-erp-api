@@ -10,7 +10,7 @@ class Sanction extends Model
     use HasFactory;
 
     protected $table = "sanctions";
-    protected $fillable = ["description", "suspension_days"];
+    protected $fillable = ["description", "suspension_days", "status"];
 
     public function employee_offense() {
         return $this->belongsTo(EmployeeOffense::class);
