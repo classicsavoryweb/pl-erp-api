@@ -77,7 +77,7 @@ class EmployeeBranchControlller extends Controller
         }
     }
 
-    public function deleteEmployeeBranch($id) {
+    public function deleteEmployeeBranch(Request $request, $id) {
         try {
             DB::beginTransaction();
 
@@ -90,7 +90,12 @@ class EmployeeBranchControlller extends Controller
             ->performedOn($employee)
             ->causedBy(auth()->user())
             ->withProperties([
-                "attributes" => $fetchedBranch
+                "attributes" => [
+                    "branch_name" => $fetchedBranch->name,
+                    "short_name" => $fetchedBranch->short_name,
+                    "date_assigned" => $branch->date_assigned,
+                    "reason_for_deletion" => $request->reason
+                ]
             ])
             ->log('Assigned branch deleted');
 
