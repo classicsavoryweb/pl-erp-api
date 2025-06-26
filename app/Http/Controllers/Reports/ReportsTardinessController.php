@@ -350,7 +350,7 @@ class ReportsTardinessController extends Controller
                 $storage->put($filePath, file_get_contents($file));
                 $pathName = $storage->path($filePath);
 
-                Mail::to($employee->email)
+                Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($branch->branch_email)
                 ->send(new NTEMail($pathName));
             }
@@ -440,7 +440,7 @@ class ReportsTardinessController extends Controller
                 $storage->put($filePath, file_get_contents($file));
                 $pathName = $storage->path($filePath);
 
-                Mail::to($employee->email)
+                Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($branch->branch_email)
                 ->send(new NODMail($pathName));
             }

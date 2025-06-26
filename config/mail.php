@@ -34,15 +34,25 @@ return [
     */
 
     'mailers' => [
-        'smtp' => [
+        'HR_MAILER' => [
             'transport' => 'smtp',
-            'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
-            'port' => env('MAIL_PORT', 587),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
+            'host' => env('HR_MAIL_HOST', 'smtp.mailgun.org'),
+            'port' => env('HR_MAIL_PORT', 587),
+            'encryption' => env('HR_MAIL_ENCRYPTION', 'tls'),
+            'username' => env('HR_MAIL_USERNAME'),
+            'password' => env('HR_MAIL_PASSWORD'),
             'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN'),
+            'local_domain' => env('HR_MAIL_EHLO_DOMAIN'),
+        ],
+        'PAYROLL_MAILER' => [
+            'transport' => 'smtp',
+            'host' => env('PAYROLL_MAIL_HOST', 'smtp.mailgun.org'),
+            'port' => env('PAYROLL_MAIL_PORT', 587),
+            'encryption' => env('PAYROLL_MAIL_ENCRYPTION', 'tls'),
+            'username' => env('PAYROLL_MAIL_USERNAME'),
+            'password' => env('PAYROLL_MAIL_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('PAYROLL_MAIL_EHLO_DOMAIN'),
         ],
 
         'ses' => [
