@@ -221,24 +221,6 @@ class EmployeeController extends Controller
     public function exportEmployee (Request $request) {
         $request["export"] = true;
 
-        $defaultFields = [
-            [
-                "label" => "Full Name",
-                "value" => "full_name",
-            ],
-            [
-                "label" => "Employee Number",
-                "value" => "employee_number",
-            ],
-            [
-                "label" => "Employee Number 2",
-                "value" => "employee_number_2",
-            ],
-        ];
-
-        $customFields = $request->input('fields', []);
-        $request["fields"] = array_merge($defaultFields, $customFields);
-
         return $this->getAllEmployees($request);
     }
 
