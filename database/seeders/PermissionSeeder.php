@@ -64,6 +64,9 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_view_acting_capacity"]);
         Permission::firstOrCreate(["name" => "can_export_acting_capacity"]);
         Permission::firstOrCreate(["name" => "can_perform_acting_capacity"]);
+        Permission::firstOrCreate(["name" => "can_generate_acting_capacity"]);
+        Permission::firstOrCreate(["name" => "can_approve_acting_capacity"]);
+        Permission::firstOrCreate(["name" => "can_reject_acting_capacity"]);
 
         Permission::firstOrCreate(["name" => "can_view_employee_branches"]);
         Permission::firstOrCreate(["name" => "can_perform_employee_branches"]);
@@ -95,10 +98,14 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "can_perform_all_records_vaccination"]);
         Permission::firstOrCreate(["name" => "can_view_all_records_coe_requests"]);
         Permission::firstOrCreate(["name" => "can_perform_all_records_coe_requests"]);
+        Permission::firstOrCreate(["name" => "can_cancel_all_records_coe_requests"]);
+        Permission::firstOrCreate(["name" => "can_approve_all_records_coe_requests"]);
         Permission::firstOrCreate(["name" => "can_view_all_records_employment_status"]);
         Permission::firstOrCreate(["name" => "can_perform_all_records_employment_status"]);
         Permission::firstOrCreate(["name" => "can_view_all_records_tardiness"]);
         Permission::firstOrCreate(["name" => "can_perform_all_records_tardiness"]);
         Permission::firstOrCreate(["name" => "can_import_all_records_tardiness"]);
+        Permission::firstOrCreate(["name" => "can_approve_all_records_tardiness"]);
+        Permission::firstOrCreate(["name" => "can_void_all_records_tardiness"]);
     }
 }

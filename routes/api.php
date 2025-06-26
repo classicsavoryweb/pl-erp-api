@@ -226,9 +226,9 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-acf/{id}", [ActingCapacityController::class, "getACFDetails"]);
     Route::middleware(["permission:can_perform_acting_capacity"])->post("/add-acting-capacity", [ActingCapacityController::class, "addNewActingCapacity"]);
     Route::middleware(["permission:can_perform_acting_capacity"])->post("/edit-acting-capacity", [ActingCapacityController::class, "editActingCapacity"]);
-    Route::middleware(["permission:can_perform_acting_capacity"])->post("/generate-confirmation-promotion/{id}", [ActingCapacityController::class, "generateConfirmationDocuments"]);
-    Route::middleware(["permission:can_perform_acting_capacity"])->post("/reject-promotion/{id}", [ActingCapacityController::class, "rejectPromotion"]);
-    Route::middleware(["permission:can_perform_acting_capacity"])->post("/confirm-promotion/{id}", [ActingCapacityController::class, "confirmPromotion"]);
+    Route::middleware(["permission:can_generate_acting_capacity"])->post("/generate-confirmation-promotion/{id}", [ActingCapacityController::class, "generateConfirmationDocuments"]);
+    Route::middleware(["permission:can_reject_acting_capacity"])->post("/reject-promotion/{id}", [ActingCapacityController::class, "rejectPromotion"]);
+    Route::middleware(["permission:can_approve_acting_capacity"])->post("/confirm-promotion/{id}", [ActingCapacityController::class, "confirmPromotion"]);
 
     //REPORTS MODULE
     //employee offenses
@@ -243,16 +243,16 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-reports-coe-request/{id}", [ReportCoeRequestsController::class, "getCoeRequest"]);
     Route::middleware(["permission:can_perform_all_records_coe_requests"])->post("/add-reports-coe-request", [ReportCoeRequestsController::class, "createCoeRequest"]);
     Route::middleware(["permission:can_perform_all_records_coe_requests"])->post("/edit-reports-coe-request/{id}", [ReportCoeRequestsController::class, "editCoeRequest"]);
-    Route::middleware(["permission:can_perform_all_records_coe_requests"])->get("/cancel-reports-coe-request/{id}", [ReportCoeRequestsController::class, "cancelCoeRequest"]);
-    Route::middleware(["permission:can_perform_all_records_coe_requests"])->get("/approve-reports-coe-request/{id}", [ReportCoeRequestsController::class, "approveCoeRequest"]);
+    Route::middleware(["permission:can_cancel_all_records_coe_requests"])->get("/cancel-reports-coe-request/{id}", [ReportCoeRequestsController::class, "cancelCoeRequest"]);
+    Route::middleware(["permission:can_approve_all_records_coe_requests"])->get("/approve-reports-coe-request/{id}", [ReportCoeRequestsController::class, "approveCoeRequest"]);
     //tardiness
     Route::get("/get-all-reports-tardiness", [ReportsTardinessController::class, "getAllReportsTardiness"]);
     Route::get("/export-reports-tardiness", [ReportsTardinessController::class, "exportTardiness"]);
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/void-reports-tardiness/{id}", [ReportsTardinessController::class, "voidTardiness"]);
-    Route::middleware(["permission:can_perform_all_records_tardiness"])->get("/approve-reports-tardiness/{id}", [ReportsTardinessController::class, "approveTardiness"]);
+    Route::middleware(["permission:can_approve_all_records_tardiness"])->get("/approve-reports-tardiness/{id}", [ReportsTardinessController::class, "approveTardiness"]);
     Route::middleware(["permission:can_import_all_records_tardiness"])->post("/import-reports-tardiness", [ReportsTardinessController::class, "importTardinessExcel"]);
     Route::get("/get-tardiness-details/{id}", [ReportsTardinessController::class, "getTardinessDetails"]);
-    Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/approve-reports-all-tardiness", [ReportsTardinessController::class, "approveBulkTardiness"]);
+    Route::middleware(["permission:can_approve_all_records_tardiness"])->post("/approve-reports-all-tardiness", [ReportsTardinessController::class, "approveBulkTardiness"]);
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/edit-reports-minutes-tardiness", [ReportsTardinessController::class, "editMinutesOfTardiness"]);
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/send-report-tardiness-nte/{id}", [ReportsTardinessController::class, "sendNTE"]);
     Route::middleware(["permission:can_perform_all_records_tardiness"])->post("/send-report-tardiness-nod/{id}", [ReportsTardinessController::class, "sendNOD"]);
