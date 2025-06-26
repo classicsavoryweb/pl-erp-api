@@ -205,7 +205,9 @@ class EmployeeController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $employees = $employees->get();
-                return Excel::download(new EmployeeTrackingExport($employees), "employees.xls");
+                $headers = collect($request->fields)->pluck('label')->toArray();
+                $columns = collect($request->fields)->pluck('value')->toArray();
+                return Excel::download(new EmployeeTrackingExport($employees, $headers, $columns), "employees.xls");
             }
 
             $employees = $employees->paginate($perPage);
@@ -218,6 +220,24 @@ class EmployeeController extends Controller
 
     public function exportEmployee (Request $request) {
         $request["export"] = true;
+
+        $defaultFields = [
+            [
+                "label" => "Full Name",
+                "value" => "full_name",
+            ],
+            [
+                "label" => "Employee Number",
+                "value" => "employee_number",
+            ],
+            [
+                "label" => "Employee Number 2",
+                "value" => "employee_number_2",
+            ],
+        ];
+
+        $customFields = $request->input('fields', []);
+        $request["fields"] = array_merge($defaultFields, $customFields);
 
         return $this->getAllEmployees($request);
     }
