@@ -40,19 +40,6 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
     {
         return $this->employees->map(function ($employee) {
             $row = [];
-            // return [
-            //     $employee->employee_number,
-            //     $employee->employee_number_2,
-            //     $employee->last_name,
-            //     $employee->middle_name,
-            //     $employee->first_name,
-            //     $employee->email,
-            //     $employee->current_position->description ?? '',
-            //     $employee->current_branch->name ?? '',
-            //     $employee->date_hired,
-            //     $employee->employee_status->description ?? "",
-            //     $employee->status,
-            // ];
 
             foreach ($this->columns as $column) {
                 $value = $this->getNestedProperty($employee, $column);
