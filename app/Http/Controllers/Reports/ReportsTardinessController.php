@@ -45,6 +45,9 @@ class ReportsTardinessController extends Controller
                                 "%$keyword%"
                             )->orWhere(function ($q) use ($keyword) {
                                 $q->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                            })
+                            ->orWhere(function ($query) use ($keyword) {
+                                $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
                             });
                         });
                     } else {

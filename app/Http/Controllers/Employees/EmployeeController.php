@@ -157,7 +157,7 @@ class EmployeeController extends Controller
                                 $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
                             }
                         )->orWhere(function ($query) use ($keyword) {
-                                $query->where(DB::raw("CONCAT_WS(' ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                                $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
                             }
                         );
                     });
@@ -269,6 +269,9 @@ class EmployeeController extends Controller
                         "%$keyword%"
                     )->orWhere(function ($query) use ($keyword) {
                             $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                        }
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
                         }
                     );
                 });
