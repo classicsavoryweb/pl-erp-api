@@ -174,6 +174,14 @@ class EmployeeController extends Controller
                 }
             }
 
+            if ($request->has(["sortColumn", "sort"])) {
+                if ($request->sortColumn === "full_name") {
+                    $employees = $employees->orderBy("last_name", $request->sort);
+                } else {
+                    $employees = $employees->orderBy($request->sortColumn, $request->sort);
+                }
+            }
+
             if ($request->has(["branch_id"])) {
                 $employees = $employees->where("branch_id", $request->branch_id);
             }
