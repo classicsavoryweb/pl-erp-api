@@ -334,7 +334,12 @@ class EmployeeController extends Controller
             }
 
             $pathName = "";
-            if ($request->hasFile("image")) {
+
+            if ($employee->image) {
+                $pathName = $employee->image;
+            }
+
+            if ($request->hasFile("image") && $request->file('image')->isValid()) {
                 $file = $request->file("image");
 
                 $storage = Storage::disk("hr_system_folder");
