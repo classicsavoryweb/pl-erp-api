@@ -60,8 +60,13 @@ class Employee extends Model
 
     protected $table = "employees";
 
-    protected $appends = ['full_name', "position", "proper_full_name", "formal_full_name", "age"];
-
+    protected $appends = [
+        'full_name',
+        "position",
+        "proper_full_name",
+        "formal_full_name",
+        "age",
+    ];
 
     protected function fullName(): Attribute
     {
