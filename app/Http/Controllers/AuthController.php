@@ -23,22 +23,26 @@ class AuthController extends Controller
             }
 
             $role = Role::find($user->role_id);
-            $user->syncRoles($role);
-            $employee->role_name = $role->name;
-            $token = $user->createToken(
-                 $user->email,
-            $role->permissions->pluck("name")->toArray(),
-            now()->addHours(12)
-            );
+            if ($role) {
+                $user->syncRoles($role);
+                $employee->role_name = $role->name;
+                $token = $user->createToken(
+                     $user->email,
+                $role->permissions->pluck("name")->toArray(),
+                now()->addHours(12)
+                );
+    
+                activity()->causedBy($user)->useLog("Login")->log('user logged in');
+    
+                return $this->sendResponse([
+                    "message" => "Logged in successfully",
+                    "user" => $employee,
+                    "token" => $token->plainTextToken,
+                    "permissions" => $role->permissions->pluck("name")->toArray()
+                ]);
+            }
 
-            activity()->causedBy($user)->useLog("Login")->log('user logged in');
-
-            return $this->sendResponse([
-                "message" => "Logged in successfully",
-                "user" => $employee,
-                "token" => $token->plainTextToken,
-                "permissions" => $role->permissions->pluck("name")->toArray()
-            ]);
+            return $this->sendError(["message" => "Role not existing" ]);
 
         } else {
 
