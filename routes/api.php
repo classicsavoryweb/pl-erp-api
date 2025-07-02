@@ -33,6 +33,7 @@ use App\Http\Controllers\Maintenance\ScheduleTypeController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
+use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
 use App\Http\Controllers\Reports\ReportsHealthSafetyController;
 use App\Http\Controllers\Reports\ReportsOffensesController;
@@ -165,6 +166,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-sanctions", [SanctionsController::class, "exportSanctions"]);
     Route::middleware(["permission:perform_sanctions"])->post("/create-sanction", [SanctionsController::class, "createSanction"]);
     Route::middleware(["permission:perform_sanctions"])->post("/edit-sanction/{id}", [SanctionsController::class, "editSanction"]);
+    //schedule masterlist
+    Route::get("/get-all-schedule-masterlist", [ScheduleMasterlistController::class, "getAllScheduleMasterlist"]);
+    Route::get("/get-schedule-masterlist", [ScheduleMasterlistController::class, "getScheduleMasterlist"]);
+    Route::get("/export-all-schedule-masterlist", [ScheduleMasterlistController::class, "exportScheduleMasterlist"]);
+    Route::middleware(["permission:perform_schedule_masterlist"])->post("/create-schedule-masterlist", [ScheduleMasterlistController::class, "createScheduleMasterlist"]);
+    Route::middleware(["permission:perform_schedule_masterlist"])->post("/edit-schedule-masterlist/{id}", [ScheduleMasterlistController::class, "editScheduleMasterlist"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);

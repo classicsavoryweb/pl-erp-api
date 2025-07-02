@@ -30,5 +30,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(TardinessSanctionSeeder::class);
         $this->call(ActingCapacityReasonSeeder::class);
         $this->call(ScheduleTypeSeeder::class);
+        $this->call(ScheduleMasterlistSeeder::class);
     }
 }
