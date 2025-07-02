@@ -26,6 +26,7 @@ class AuthController extends Controller
             if ($role) {
                 $user->syncRoles($role);
                 $employee->role_name = $role->name;
+                $employee->employment_status = $employee->employee_status->description;
                 $token = $user->createToken(
                      $user->email,
                 $role->permissions->pluck("name")->toArray(),
