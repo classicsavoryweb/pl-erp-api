@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Employees;
 
 use App\Exports\Employees\EmployeePositionsExport;
 use App\Http\Controllers\Controller;
+use App\Models\Position;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
@@ -49,8 +50,10 @@ class EmployeePositionControlller extends Controller
                 "date_started" => "required"
             ]);
             $employee = Employee::where("employee_number", $employee_number)->first();
+            $position = Position::find($request->position_id);
             $employee->update([
-                "position_id" => $request->position_id,
+                "position_id" => $position->id,
+                "station_id" => $position->station_id,
             ]);
             $employee->positions()->attach($request->position_id, [
                 ...$request->all()

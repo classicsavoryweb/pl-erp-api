@@ -111,7 +111,7 @@ class ReportCoeRequestsController extends Controller
             $coeRequest = CoeRequest::where("id", $id)->first();
             $employee = $coeRequest->employee()->first();
             $position = $employee->current_position()->first();
-            $branch = $employee->current_branch()->first();
+            $branch = $employee->home_branch()->first();
             $positions = $employee->positions()->get();
 
             $positions = $positions->sortBy(function ($position) {
@@ -131,11 +131,16 @@ class ReportCoeRequestsController extends Controller
             $salary_amount = 0.00;
             $salary = $position->salary()->first();
 
-            if ( strtolower($salary->rate_category) !== "minimum") {
-                $salary_amount = $salary->basic_salary ?? 0;
-            } else {
-                $rate = Rate::where("code", $branch->rate_code)->first();
-                $salary_amount = $rate->minimum * 26;
+            if ($coeRequest->include_salary === "Yes") {
+                if (!$salary) {
+                    return $this->sendError(["message" => "Salary not existing"]);
+                }
+                if ( strtolower($salary->rate_category) !== "minimum") {
+                    $salary_amount = $salary->basic_salary ?? 0;
+                } else {
+                    $rate = Rate::where("code", $branch->rate_code)->first();
+                    $salary_amount = $rate->minimum * 26;
+                }
             }
 
             $result = [];

@@ -71,7 +71,6 @@ class EmployeeOffensesControlller extends Controller
                 'date_served_ao' => "required",
                 'suspension_dates' => "required",
                 'date_served_da' => "required",
-                'remarks' => "required",
             ]);
 
             $employee = Employee::where("employee_number", $employee_number)->first();
@@ -119,7 +118,6 @@ class EmployeeOffensesControlller extends Controller
                 'date_served_ao' => "required",
                 'suspension_dates' => "required",
                 'date_served_da' => "required",
-                'remarks' => "required",
             ]);
 
             $employee = Employee::where("employee_number", $employee_number)->first();

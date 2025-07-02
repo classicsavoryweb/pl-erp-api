@@ -46,8 +46,8 @@ class SanctionsController extends Controller
 
     public function getSanctions(Request $request) {
         try {
-            $description = Sanction::where("status", "active")->get();
-            return $this->sendResponse(["description" => $description]);
+            $sanctions = Sanction::where("status", "active")->get();
+            return $this->sendResponse(["sanctions" => $sanctions]);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
@@ -58,12 +58,14 @@ class SanctionsController extends Controller
         try {
             $request->validate([
                 "description" => "required|unique:sanctions",
+                "rank" => "required|unique:sanctions",
                 "suspension_days" => "required",
                 "status" => "required",
             ]);
 
             Sanction::create([
                 "description" => $request->description,
+                "rank" => $request->rank,
                 "suspension_days" => $request->suspension_days,
                 "status" => $request->status,
             ]);
@@ -79,12 +81,14 @@ class SanctionsController extends Controller
         try {
             $request->validate([
                 "description" => "required|unique:sanctions,description,".$id,
+                "rank" => "required",
                 "suspension_days" => "required",
                 "status" => "required",
             ]);
 
             Sanction::where("id", $id)->update([
                 "description" => $request->description,
+                "rank" => $request->rank,
                 "suspension_days" => $request->suspension_days,
                 "status" => $request->status,
             ]);

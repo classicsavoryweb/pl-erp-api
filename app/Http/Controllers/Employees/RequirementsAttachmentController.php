@@ -56,9 +56,11 @@ class RequirementsAttachmentController extends Controller
 
     public function getAttachments(Request $request, $employee_number) {
         try {
+            $perPage = $request->per_page ?? 10;
+
             DB::beginTransaction();
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $attachments = RequirementsAttachment::where("employee_id", $employee->id)->get();
+            $attachments = RequirementsAttachment::where("employee_id", $employee->id)->paginate($perPage);
             $storage = Storage::disk("hr_system_folder");
 
             if ($attachments) {
@@ -71,7 +73,7 @@ class RequirementsAttachmentController extends Controller
             }
 
             DB::commit();
-            return $this->sendResponse(["attachments" => $attachments]);
+            return $this->sendResponse($attachments);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);

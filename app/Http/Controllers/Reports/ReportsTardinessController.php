@@ -45,6 +45,9 @@ class ReportsTardinessController extends Controller
                                 "%$keyword%"
                             )->orWhere(function ($q) use ($keyword) {
                                 $q->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                            })
+                            ->orWhere(function ($query) use ($keyword) {
+                                $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
                             });
                         });
                     } else {
@@ -347,7 +350,7 @@ class ReportsTardinessController extends Controller
                 $storage->put($filePath, file_get_contents($file));
                 $pathName = $storage->path($filePath);
 
-                Mail::to($employee->email)
+                Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($branch->branch_email)
                 ->send(new NTEMail($pathName));
             }
@@ -437,7 +440,7 @@ class ReportsTardinessController extends Controller
                 $storage->put($filePath, file_get_contents($file));
                 $pathName = $storage->path($filePath);
 
-                Mail::to($employee->email)
+                Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($branch->branch_email)
                 ->send(new NODMail($pathName));
             }

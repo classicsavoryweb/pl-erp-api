@@ -127,7 +127,7 @@ class EmployeeContractControlller extends Controller
             $contract = Contract::find($id);
             $employee = $contract->employee()->first();
             $position = $employee->current_position()->first();
-            $branch = $employee->current_branch()->first();
+            $branch = $employee->home_branch()->first();
 
             $date1 = Carbon::parse($contract->contract_start_date);
             $date2 = Carbon::parse($contract->contract_end_date);

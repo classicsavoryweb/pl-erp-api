@@ -18,12 +18,12 @@ class HRRoleSeeder extends Seeder
         $roles = json_decode($jsonData, true);
 
         foreach ($roles['roles'] as $role) {
-            $roleName = Role::create([
+            $roleName = Role::firstOrCreate([
                 "name" => $role["name"],
                 "guard_name" => "web" 
             ]);
 
-            $permissions = collect($role["permissions"])->pluck("id")->toArray();
+            $permissions = collect($role["permissions"])->pluck("name")->toArray();
 
             $roleName->syncPermissions($permissions);
         }

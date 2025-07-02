@@ -157,7 +157,7 @@ class EmployeeController extends Controller
                                 $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
                             }
                         )->orWhere(function ($query) use ($keyword) {
-                                $query->where(DB::raw("CONCAT_WS(' ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                                $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
                             }
                         );
                     });
@@ -171,6 +171,14 @@ class EmployeeController extends Controller
                     } else {
                         $employees = $employees->where($column, 'LIKE', "%$keyword%");
                     }
+                }
+            }
+
+            if ($request->has(["sortColumn", "sort"])) {
+                if ($request->sortColumn === "full_name") {
+                    $employees = $employees->orderBy("last_name", $request->sort);
+                } else {
+                    $employees = $employees->orderBy($request->sortColumn, $request->sort);
                 }
             }
 
@@ -205,7 +213,9 @@ class EmployeeController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $employees = $employees->get();
-                return Excel::download(new EmployeeTrackingExport($employees), "employees.xls");
+                $headers = collect($request->fields)->pluck('label')->toArray();
+                $columns = collect($request->fields)->pluck('value')->toArray();
+                return Excel::download(new EmployeeTrackingExport($employees, $headers, $columns), "employees.xls");
             }
 
             $employees = $employees->paginate($perPage);
@@ -270,6 +280,9 @@ class EmployeeController extends Controller
                     )->orWhere(function ($query) use ($keyword) {
                             $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
                         }
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                        }
                     );
                 });
             }
@@ -321,7 +334,12 @@ class EmployeeController extends Controller
             }
 
             $pathName = "";
-            if ($request->hasFile("image")) {
+
+            if ($employee->image) {
+                $pathName = $employee->image;
+            }
+
+            if ($request->hasFile("image") && $request->file('image')->isValid()) {
                 $file = $request->file("image");
 
                 $storage = Storage::disk("hr_system_folder");

@@ -60,8 +60,13 @@ class Employee extends Model
 
     protected $table = "employees";
 
-    protected $appends = ['full_name', "position", "proper_full_name", "formal_full_name", "age"];
-
+    protected $appends = [
+        'full_name',
+        "position",
+        "proper_full_name",
+        "formal_full_name",
+        "age",
+    ];
 
     protected function fullName(): Attribute
     {
@@ -84,7 +89,7 @@ class Employee extends Model
 
     protected function properFullName(): Attribute
     {
-        $fullName = strtolower($this->first_name . '. ' . $this->last_name);
+        $fullName = strtolower($this->first_name . ' ' . $this->last_name);
         if ($this->middle_name) {
             $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
             $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
@@ -171,6 +176,11 @@ class Employee extends Model
     public function latest_contract()
     {
         return $this->hasOne(Contract::class)->latestOfMany();
+    }
+
+    public function latest_branch()
+    {
+        return $this->hasOne(BranchEmployee::class)->latestOfMany("date_assigned");
     }
 
     public function latest_position()

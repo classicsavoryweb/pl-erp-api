@@ -27,50 +27,64 @@ class ReportsEmploymentStatusController extends Controller
             })
             ->where('employee_status_id', $status->id)
             ->where('branch_id', $request->branch_id)
-            ->orderBy('created_at', 'desc')
             ->where("status", "active")
+            ->orderBy('created_at', 'desc')
             ->get();
 
-            $branchOIC = Employee::with(["current_position"])
-            ->where("employee_number", $branch->branch_head_employee_number)->first();
-            $groupHead = Employee::with(["current_position"])
-            ->where("employee_number", $branch->group_head_employee_number)->first();
+            if ($employees->count() > 0) {
+                $branchOIC = Employee::with(["current_position"])
+                ->where("employee_number", $branch->branch_head_employee_number)->first();
+                $groupHead = Employee::with(["current_position"])
+                ->where("employee_number", $branch->group_head_employee_number)->first();
+                $groupedEmployees = $employees->groupBy("station_id");
+                $data = [];
 
-            $branch_station = Station::find($employees[0]->station_id);
-            $recommendedBy = $branchOIC;
-            $notedBy = $groupHead;
-            $notedBy1 = null;
-            $station = strtolower($branch_station->name);
-            if ($station === "back of the house") {
-                $recommendedBy = $groupHead;
+                foreach($groupedEmployees as $group) {
+                    $branch_station = Station::find($group[0]->station_id);
+                    $recommendedBy = $branchOIC;
+                    $notedBy = $groupHead;
+                    $notedBy1 = null;
+                    $station = strtolower($branch_station->name);
+                    if ($station === "back of the house") {
+                        $recommendedBy = $groupHead;
 
-                $notedBy = Employee::with(["current_position"])
-                ->where("employee_number", "0007413")
-                ->first();
+                        $notedBy = Employee::with(["current_position"])
+                        ->where("employee_number", "0007413")
+                        ->first();
+                    }
+                    if ($station === "front of the house") {
+                        $recommendedBy = $groupHead;
+
+                        $notedBy1 = Employee::with(["current_position"])
+                        ->where("employee_number", "639")
+                        ->first();
+                        $notedBy = Employee::with(["current_position"])
+                        ->where("employee_number", "M003")
+                        ->first();
+                    }
+
+                    $data[] = [
+                        "branch_oic" => $branchOIC,
+                        "group_head" => $groupHead,
+                        "date" => now()->toDateString(),
+                        "branch" => $branch,
+                        "data" => $group,
+                        "month" => Carbon::parse("01-".$request->month."-".$request->year)->format("F"),
+                        "year" => $request->year,
+                        "recommended_by" => $recommendedBy,
+                        "noted_by" => $notedBy,
+                        "noted_by_1" => $notedBy1,
+                    ];
+                }
+
+                return $this->sendResponse([
+                    "employees" => $employees,
+                    "data" => $data
+                ]);
             }
-            if ($station === "front of the house") {
-                $recommendedBy = $groupHead;
 
-                $notedBy1 = Employee::with(["current_position"])
-                ->where("employee_number", "639")
-                ->first();
-                $notedBy = Employee::with(["current_position"])
-                ->where("employee_number", "M003")
-                ->first();
-            }
+            return $this->sendError(["message" => "No employees found"]);
 
-            return $this->sendResponse([
-                "branch_oic" => $branchOIC,
-                "group_head" => $groupHead,
-                "date" => now()->toDateString(),
-                "branch" => $branch,
-                "data" => $employees,
-                "month" => Carbon::parse("01-".$request->month."-".$request->year)->format("F"),
-                "year" => $request->year,
-                "recommended_by" => $recommendedBy,
-                "noted_by" => $notedBy,
-                "noted_by_1" => $notedBy1,
-            ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }

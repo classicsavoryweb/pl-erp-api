@@ -17,27 +17,33 @@ class AuthController extends Controller
             "password" => $request->password
         ])) {
             $user = Auth::user();
-
+            $employee = $user->employee;
             if (!$user->isActive()) {
                 return $this->sendError(["message" => "Your account is inactive"]);
             }
 
             $role = Role::find($user->role_id);
-            $user->syncRoles($role);
-            $token = $user->createToken(
-                 $user->email,
-            $role->permissions->pluck("name")->toArray(),
-            now()->addHours(12)
-            );
+            if ($role) {
+                $user->syncRoles($role);
+                $employee->role_name = $role->name;
+                $employee->employment_status = $employee->employee_status->description;
+                $token = $user->createToken(
+                     $user->email,
+                $role->permissions->pluck("name")->toArray(),
+                now()->addHours(12)
+                );
+    
+                activity()->causedBy($user)->useLog("Login")->log('user logged in');
+    
+                return $this->sendResponse([
+                    "message" => "Logged in successfully",
+                    "user" => $employee,
+                    "token" => $token->plainTextToken,
+                    "permissions" => $role->permissions->pluck("name")->toArray()
+                ]);
+            }
 
-            activity()->causedBy($user)->useLog("Login")->log('user logged in');
-
-            return $this->sendResponse([
-                "message" => "Logged in successfully",
-                "user" => $user,
-                "token" => $token->plainTextToken,
-                "permissions" => $role->permissions->pluck("name")->toArray()
-            ]);
+            return $this->sendError(["message" => "Role not existing" ]);
 
         } else {
 
