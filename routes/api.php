@@ -29,6 +29,7 @@ use App\Http\Controllers\Maintenance\PositionController;
 use App\Http\Controllers\Maintenance\RateController;
 use App\Http\Controllers\Maintenance\SalaryPositionController;
 use App\Http\Controllers\Maintenance\SanctionsController;
+use App\Http\Controllers\Maintenance\ScheduleTypeController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
@@ -229,7 +230,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:generate_acting_capacity"])->post("/generate-confirmation-promotion/{id}", [ActingCapacityController::class, "generateConfirmationDocuments"]);
     Route::middleware(["permission:reject_acting_capacity"])->post("/reject-promotion/{id}", [ActingCapacityController::class, "rejectPromotion"]);
     Route::middleware(["permission:approve_acting_capacity"])->post("/confirm-promotion/{id}", [ActingCapacityController::class, "confirmPromotion"]);
-
+    //schedule type
+    Route::get("/get-all-schedule-type", [ScheduleTypeController::class, "getAllScheduleTypes"]);
+    Route::get("/get-schedule-type", [ScheduleTypeController::class, "getScheduleTypes"]);
+    Route::middleware(["permission:perform_schedule_type"])->post("/add-schedule-type", [ScheduleTypeController::class, "createScheduleType"]);
+    Route::middleware(["permission:perform_schedule_type"])->post("/edit-schedule-type/{id}", [ScheduleTypeController::class, "editScheduleType"]);
+    
     //REPORTS MODULE
     //employee offenses
     Route::get("/get-all-reports-offenses", [ReportsOffensesController::class, "getAllEmployeeOffenses"]);
@@ -259,7 +265,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-reports-nte-details/{id}", [ReportsTardinessController::class, "getNTEDetails"]);
     //employment status
     Route::middleware(["permission:perform_all_records_employment_status"])->get("/get-employment-status-report", [ReportsEmploymentStatusController::class, "getEmploymentStatusReports"]);
-
+    
 });
 
 
