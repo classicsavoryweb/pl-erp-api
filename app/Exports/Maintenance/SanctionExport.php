@@ -20,6 +20,7 @@ class SanctionExport implements FromCollection, WithHeadings
         return $this->sanctions->map(function ($sanction) {
             return [
                 $sanction->description,
+                $sanction->rank,
                 $sanction->suspension_days,
                 $sanction->status,
             ];
@@ -30,6 +31,7 @@ class SanctionExport implements FromCollection, WithHeadings
     {
         return [
             'Description',
+            'Rank',
             'Suspension Days',
             'Status',
         ];
