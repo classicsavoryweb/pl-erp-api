@@ -12,6 +12,8 @@ use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
 use App\Models\Position;
+use App\Models\ScheduleDetail;
+use App\Models\ScheduleType;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
@@ -38,6 +40,9 @@ class EmployeeController extends Controller
                 "birthday" => "required",
                 "contact_number" => "required",
                 "contract_duration" => "required",
+                "flexible_schedule" => "required",
+                "schedule_type" => "required",
+                "incentive_leave" => "required",
             ]);
 
             $employeeCount = Employee::latest()->first();
@@ -45,7 +50,7 @@ class EmployeeController extends Controller
             $employeeNumber = str_pad($employeeCount->id + 1, 7, '0', STR_PAD_LEFT);
             $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
-            $fields = $request->except(["contract_duration"]);
+            $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave"]);
             $position = Position::find($request->position_id);
             $biometricsNumber = "";
 
@@ -99,6 +104,13 @@ class EmployeeController extends Controller
                 "remarks" => "1st contract",
                 "status" => "active"
             ]);
+            $scheduleType = ScheduleType::where("name", $request->schedule_type)->first();
+            ScheduleDetail::create([
+                "employee_id" => $employee->id,
+                "incentive_leave" => $request->incentive_leave,
+                "schedule_type_id" => $scheduleType->id,
+                "flexible_schedule" => $request->flexible_schedule
+            ]);
             
             DB::commit();
             return $this->sendResponse(["message" => "Employee added successfully." ]);
@@ -121,10 +133,16 @@ class EmployeeController extends Controller
                 "positions",
                 "education",
                 "dependents",
-                "contracts"
+                "contracts",
+                "schedule",
+                "schedule.schedule_type"
             ])->where("employee_number", $employee_number)
             ->first();
+
             $employee->age = Carbon::parse($employee->birthday)->age;
+            $employee->schedule_type = $employee->schedule->schedule_type->name ?? "";
+            $employee->incentive_leave = $employee->schedule->incentive_leave ?? "";
+            $employee->flexible_schedule = $employee->schedule->flexible_schedule ?? "";
 
             $storage = Storage::disk("hr_system_folder");
             if ($employee->image) {
@@ -331,6 +349,24 @@ class EmployeeController extends Controller
                 $educationData['employee_id'] = $employee->id;
                 $educationData['employee_number'] = $employee->employee_number;
                 $education = EducationHistory::create($educationData);
+            }
+
+            $scheduleType = ScheduleType::where("name", $request->schedule_type)->first();
+
+            if ($employee->schedule) {
+                $schedule = ScheduleDetail::where("employee_id",$employee->id)->first();
+                $schedule->update([
+                    "schedule_type_id" => $scheduleType->id,
+                    "flexible_schedule" => $request->flexible_schedule,
+                    "incentive_leave" => $request->incentive_leave
+                ]);
+            } else {
+                ScheduleDetail::create([
+                    "employee_id" => $employee->id,
+                    "schedule_type_id" => $scheduleType->id,
+                    "flexible_schedule" => $request->flexible_schedule,
+                    "incentive_leave" => $request->incentive_leave
+                ]);
             }
 
             $pathName = "";

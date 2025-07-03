@@ -14,4 +14,8 @@ class ScheduleType extends Model
         "name",
         "status"
     ];
+
+    public function schedule() {
+        return $this->belongsTo(ScheduleDetail::class);
+    }
 }

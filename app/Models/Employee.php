@@ -122,6 +122,10 @@ class Employee extends Model
         );
     }
 
+    public function schedule() {
+        return $this->hasOne(ScheduleDetail::class, "employee_id", "id");
+    }
+
     public function employee_status() {
         return $this->hasOne(EmployeeStatus::class,'id','employee_status_id');
     }
