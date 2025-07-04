@@ -4280,6 +4280,10 @@ class PositionSeeder extends Seeder
                 $schedule = "Normal Schedule";
             }
 
+            if ($position["status"] === "inactive") {
+              $schedule = "N/A";
+            }
+
             Position::create([
                 "description" => $position["position_descr"],
                 "rank" => $position["rank"],

@@ -22,6 +22,7 @@ class PositionExport implements FromCollection, WithHeadings
                 $position->description,
                 $position->station->name,
                 $position->rank,
+                $position->schedule_type,
                 $position->status,
             ];
         });
@@ -33,6 +34,7 @@ class PositionExport implements FromCollection, WithHeadings
             'Description',
             'Station',
             'Rank',
+            "Schedule Type",
             'Status',
         ];
     }
