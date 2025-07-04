@@ -10,6 +10,6 @@ class ScheduleMasterlist extends Model
     use HasFactory;
 
     protected $table = "schedule_masterlist";
-    protected $fillable = ["start_time", "end_time", "selection", "classification", "time_break", "reg_hours", "days", "required"];
+    protected $fillable = ["start_time", "end_time", "selection", "classification", "time_break", "total_hours", "days", "required"];
 
 }

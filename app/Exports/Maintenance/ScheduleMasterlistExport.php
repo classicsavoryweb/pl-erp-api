@@ -24,7 +24,7 @@ class ScheduleMasterlistExport implements FromCollection, WithHeadings
                 $sanction->selection,
                 $sanction->classification,
                 $sanction->time_break,
-                $sanction->reg_hours,
+                $sanction->total_hours,
                 $sanction->days,
             ];
         });

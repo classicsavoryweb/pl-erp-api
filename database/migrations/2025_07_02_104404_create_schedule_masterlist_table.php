@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string("selection");
             $table->string("classification");
             $table->string("time_break");
-            $table->string("reg_hours");
+            $table->string("total_hours");
             $table->string("days");
             $table->string("required")->nullable();
             $table->timestamps();
