@@ -42,7 +42,7 @@ class ScheduleMasterlistController extends Controller
 
     public function getScheduleMasterlist(Request $request) {
         try {
-            $schedule_masterlist = ScheduleMasterlist::where("classification", "others")->get();
+            $schedule_masterlist = all();
             return $this->sendResponse(["schedule_masterlist" => $schedule_masterlist]);
         } catch(Exception $e) {
 
@@ -84,7 +84,7 @@ class ScheduleMasterlistController extends Controller
     public function editScheduleMasterlist(Request $request, $id) {
         try {
             $request->validate([
-                "start_time" => "required|unique:schedule_masterlist,start_time,".$id,
+                "start_time" => "required|schedule_masterlist,start_time,".$id,
                 "end_time" => "required",
                 "selection" => "required",
                 "classification" => "required",
@@ -105,7 +105,7 @@ class ScheduleMasterlistController extends Controller
                 "required" => $request->required,
             ]);
 
-            return $this->sendResponse(["message" => "Sanction updated succesfully"]);
+            return $this->sendResponse(["message" => "Schedule updated succesfully"]);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
