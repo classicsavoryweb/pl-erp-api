@@ -40,9 +40,6 @@ class EmployeeController extends Controller
                 "birthday" => "required",
                 "contact_number" => "required",
                 "contract_duration" => "required",
-                "flexible_schedule" => "required",
-                "schedule_type" => "required",
-                "incentive_leave" => "required",
             ]);
 
             $employeeCount = Employee::latest()->first();
@@ -104,13 +101,16 @@ class EmployeeController extends Controller
                 "remarks" => "1st contract",
                 "status" => "active"
             ]);
-            $scheduleType = ScheduleType::where("name", $request->schedule_type)->first();
-            ScheduleDetail::create([
-                "employee_id" => $employee->id,
-                "incentive_leave" => $request->incentive_leave,
-                "schedule_type_id" => $scheduleType->id,
-                "flexible_schedule" => $request->flexible_schedule
-            ]);
+
+            if ($request->type === "Direct") {
+                $scheduleType = ScheduleType::where("name", $request->schedule_type)->first();
+                ScheduleDetail::create([
+                    "employee_id" => $employee->id,
+                    "incentive_leave" => $request->incentive_leave,
+                    "schedule_type_id" => $scheduleType->id,
+                    "flexible_schedule" => $request->flexible_schedule
+                ]);
+            }
             
             DB::commit();
             return $this->sendResponse(["message" => "Employee added successfully." ]);
