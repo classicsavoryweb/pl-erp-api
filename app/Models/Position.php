@@ -13,7 +13,8 @@ class Position extends Model
         "description",
         "rank",
         "status",
-        "station_id"
+        "station_id",
+        "schedule_type"
     ];
 
     public function station() {

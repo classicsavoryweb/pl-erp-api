@@ -4268,11 +4268,24 @@ class PositionSeeder extends Seeder
         ];
 
         foreach($positions as $position) {
+
+            $schedule = "Others";
+            if ( strtolower($position["station"]) === "head office") {
+                if (in_array($position["position_descr"], ['Stockman', 'Technician', 'Driver', 'Repair & Maintenance Staff'])) {
+                    $schedule = "Normal Schedule";
+                } else {
+                    $schedule = "Compressed Schedule";
+                }
+            } else {
+                $schedule = "Normal Schedule";
+            }
+
             Position::create([
                 "description" => $position["position_descr"],
                 "rank" => $position["rank"],
                 "status" => $position["status"],
-                "station_id" => $position["station_id"]
+                "station_id" => $position["station_id"],
+                "schedule_type" => $schedule
             ]);
         };
     }

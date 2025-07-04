@@ -58,7 +58,8 @@ class PositionController extends Controller
                 "description" => "required|unique:positions",
                 "rank" => "required",
                 "status" => "required",
-                "station_id" => "required"
+                "station_id" => "required",
+                "schedule_type" => "required",
             ]);
 
             Position::create([
@@ -66,6 +67,7 @@ class PositionController extends Controller
                 "rank" => $request->rank,
                 "status" => $request->status,
                 "station_id" => $request->station_id,
+                "schedule_type" => $request->schedule_type,
             ]);
 
             return $this->sendResponse(["message" => "Position saved successfully"]);
@@ -80,7 +82,8 @@ class PositionController extends Controller
                 "description" => "required|unique:positions,description,".$id,
                 "rank" => "required",
                 "status" => "required",
-                "station_id" => "required"
+                "station_id" => "required",
+                "schedule_type" => "required",
             ]);
 
             Position::where("id", $id)
@@ -89,6 +92,7 @@ class PositionController extends Controller
                 "rank" => $request->rank,
                 "status" => $request->status,
                 "station_id" => $request->station_id,
+                "schedule_type" => $request->schedule_type,
             ]);
 
             return $this->sendResponse(["message" => "Position saved successfully"]);
