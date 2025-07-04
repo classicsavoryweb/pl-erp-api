@@ -92,7 +92,7 @@ class HolidayController extends Controller
         try {
             DB::beginTransaction();
             $request->validate([
-                "date" => "required|unique:holidays,date,".$id,
+                "date" => "required",
                 "holiday_type" => "required",
                 "branch_id" => "required|array",
                 "description" => "required",

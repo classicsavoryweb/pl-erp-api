@@ -25,7 +25,7 @@ class ScheduleMasterlistSeeder extends Seeder
                 "selection" => $schedule_detail["selection"],
                 "classification" => $schedule_detail["classification"],
                 "time_break" => $schedule_detail["time_break"],
-                "reg_hours" => $schedule_detail["reg_hours"],
+                "total_hours" => $schedule_detail["reg_hours"],
                 "days" => $schedule_detail["days"],
                 "required" => $schedule_detail["required"],
             ]);

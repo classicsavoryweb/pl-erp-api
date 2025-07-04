@@ -42,7 +42,7 @@ class ScheduleMasterlistController extends Controller
 
     public function getScheduleMasterlist(Request $request) {
         try {
-            $schedule_masterlist = all();
+            $schedule_masterlist = ScheduleMasterlist::all();
             return $this->sendResponse(["schedule_masterlist" => $schedule_masterlist]);
         } catch(Exception $e) {
 
@@ -58,7 +58,7 @@ class ScheduleMasterlistController extends Controller
                 "selection" => "required",
                 "classification" => "required",
                 "time_break" => "required",
-                "reg_hours" => "required",
+                "total_hours" => "required",
                 "days" => "required",
                 "required" => "required"
             ]);
@@ -69,7 +69,7 @@ class ScheduleMasterlistController extends Controller
                 "selection" => $request->selection,
                 "classification" => $request->classification,
                 "time_break" => $request->time_break,
-                "reg_hours" => $request->reg_hours,
+                "total_hours" => $request->total_hours,
                 "days" => $request->days,
                 "required" => $request->required,
             ]);
@@ -84,12 +84,12 @@ class ScheduleMasterlistController extends Controller
     public function editScheduleMasterlist(Request $request, $id) {
         try {
             $request->validate([
-                "start_time" => "required|schedule_masterlist,start_time,".$id,
+                "start_time" => "required|unique:schedule_masterlist,start_time,".$id,
                 "end_time" => "required",
                 "selection" => "required",
                 "classification" => "required",
                 "time_break" => "required",
-                "reg_hours" => "required",
+                "total_hours" => "required",
                 "days" => "required",
                 "required" => "required"
             ]);
@@ -100,7 +100,7 @@ class ScheduleMasterlistController extends Controller
                 "selection" => $request->selection,
                 "classification" => $request->classification,
                 "time_break" => $request->time_break,
-                "reg_hours" => $request->reg_hours,
+                "total_hours" => $request->total_hours,
                 "days" => $request->days,
                 "required" => $request->required,
             ]);
