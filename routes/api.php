@@ -34,6 +34,7 @@ use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
+use App\Http\Controllers\Maintenance\HolidayController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
 use App\Http\Controllers\Reports\ReportsHealthSafetyController;
 use App\Http\Controllers\Reports\ReportsOffensesController;
@@ -172,6 +173,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-schedule-masterlist", [ScheduleMasterlistController::class, "exportScheduleMasterlist"]);
     Route::middleware(["permission:perform_schedule_masterlist"])->post("/create-schedule-masterlist", [ScheduleMasterlistController::class, "createScheduleMasterlist"]);
     Route::middleware(["permission:perform_schedule_masterlist"])->post("/edit-schedule-masterlist/{id}", [ScheduleMasterlistController::class, "editScheduleMasterlist"]);
+    //holidays
+    Route::get("/get-all-holidays", [HolidayController::class, "getAllHolidays"]);
+    Route::get("/get-holiday", [HolidayController::class, "getHoliday"]);
+    Route::get("/export-all-holidays", [HolidayController::class, "exportHolidays"]);
+    Route::middleware(["permission:perform_holidays"])->post("/create-holiday", [HolidayController::class, "createHoliday"]);
+    Route::middleware(["permission:perform_holidays"])->post("/edit-holiday/{id}", [HolidayController::class, "editHoliday"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);

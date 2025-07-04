@@ -49,4 +49,11 @@ class Branch extends Model
     public function group_head() {
         return $this->hasOne(Employee::class, "employee_number", "group_head_employee_number");
     }
+
+    public function holidays() {
+        return $this->belongsToMany(Holiday::class)
+        ->using(BranchHoliday::class)
+        ->withPivot("branch_id", "holiday_id",)
+        ->withTimestamps();
+    }
 }
