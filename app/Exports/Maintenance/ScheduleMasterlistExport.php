@@ -8,24 +8,25 @@ use Illuminate\Database\Eloquent\Collection;
 
 class ScheduleMasterlistExport implements FromCollection, WithHeadings
 {
-    protected Collection $sanctions;
+    protected Collection $schedule_masterlist;
 
-    public function __construct(Collection $sanctions)
+    public function __construct(Collection $schedule_masterlist)
     {
-        $this->sanctions = $sanctions;
+        $this->schedule_masterlist = $schedule_masterlist;
     }
 
     public function collection()
     {
-        return $this->sanctions->map(function ($sanction) {
+        return $this->schedule_masterlist->map(function ($schedule) {
             return [
-                $sanction->start_time,
-                $sanction->end_time,
-                $sanction->selection,
-                $sanction->classification,
-                $sanction->time_break,
-                $sanction->total_hours,
-                $sanction->days,
+                $schedule->start_time,
+                $schedule->end_time,
+                $schedule->selection,
+                $schedule->classification,
+                $schedule->time_break,
+                $schedule->total_hours,
+                $schedule->days,
+                $schedule->status,
             ];
         });
     }
@@ -39,7 +40,8 @@ class ScheduleMasterlistExport implements FromCollection, WithHeadings
             'Classification',
             'Break Hours',
             'Total Hours',
-            'Days'
+            'Days',
+            'Status'
         ];
     }
 }

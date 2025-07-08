@@ -26,6 +26,10 @@ class ScheduleMasterlistController extends Controller
                 return Excel::download(new ScheduleMasterlistExport($schedule_masterlist), "schedule_masterlist.xls");
             }
 
+            if ($request->has(["status"])) {
+                $schedule_masterlist = $schedule_masterlist->where("status", $request->status);
+            }
+
             $schedule_masterlist = $schedule_masterlist->paginate($perPage);
             return $this->sendResponse($schedule_masterlist);
         } catch(Exception $e) {
@@ -60,7 +64,8 @@ class ScheduleMasterlistController extends Controller
                 "time_break" => "required",
                 "total_hours" => "required",
                 "days" => "required",
-                "required" => "required"
+                "required" => "required",
+                "status" => "required",
             ]);
 
             ScheduleMasterlist::create([
@@ -72,6 +77,7 @@ class ScheduleMasterlistController extends Controller
                 "total_hours" => $request->total_hours,
                 "days" => $request->days,
                 "required" => $request->required,
+                "status" => $request->status,
             ]);
 
             return $this->sendResponse(["message" => "Schedule created succesfully"]);
@@ -84,14 +90,15 @@ class ScheduleMasterlistController extends Controller
     public function editScheduleMasterlist(Request $request, $id) {
         try {
             $request->validate([
-                "start_time" => "required|unique:schedule_masterlist,start_time,".$id,
+                "start_time" => "required",
                 "end_time" => "required",
                 "selection" => "required",
                 "classification" => "required",
                 "time_break" => "required",
                 "total_hours" => "required",
                 "days" => "required",
-                "required" => "required"
+                "required" => "required",
+                "status" => "required",
             ]);
 
             ScheduleMasterlist::where("id", $id)->update([
@@ -103,6 +110,7 @@ class ScheduleMasterlistController extends Controller
                 "total_hours" => $request->total_hours,
                 "days" => $request->days,
                 "required" => $request->required,
+                "status" => $request->status,
             ]);
 
             return $this->sendResponse(["message" => "Schedule updated succesfully"]);
