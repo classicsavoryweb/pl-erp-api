@@ -28,7 +28,7 @@ class HolidayController extends Controller
             
             if ($request->has(["export"]) && $request->export) {
                 $holidays = $holidays->get();
-                return Excel::download(new HolidayExport($holidays), "status.xls");
+                return Excel::download(new HolidayExport($holidays), "holidays.xls");
             }
 
             $holidays = $holidays->orderBy("date", "DESC")

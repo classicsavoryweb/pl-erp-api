@@ -121,5 +121,6 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "perform_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "view_transactions_actual_time"]);
         Permission::firstOrCreate(["name" => "perform_transactions_actual_time"]);
+        Permission::firstOrCreate(["name" => "import_all_transactions_schedule_time"]);
     }
 }

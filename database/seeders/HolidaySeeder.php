@@ -27,7 +27,6 @@ class HolidaySeeder extends Seeder
         foreach ($uniqueHolidayDetails as $holidayDetail) {
             $branch = '';
             $holidayType = '';
-            $short_name = '';
             $description = '';
             $date = $holidayDetail["date"];
             if (isset($holidayDetail['holiday1'])) {
