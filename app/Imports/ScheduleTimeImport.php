@@ -18,9 +18,16 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
     public function collection(Collection $collection)
     {
         foreach ($collection as $row) {
-        $employee = Employee::where("biometric_number", $row["employee_id"])->first();
+            $employee = Employee::where("biometric_number", $row["employee_id"])->first();
 
-        $formattedDate = is_numeric($row["date"]) ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d') : $row["date"];
+            $formattedDate = is_numeric($row["date"]) ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d') : $row["date"];
+            $checkIn = is_numeric($row["check_in"])
+                ? Date::excelToDateTimeObject($row["check_in"])->format('H:i:s')
+                : date('H:i:s', strtotime($row["check_in"]));
+
+            $checkOut = is_numeric($row["check_out"])
+                ? Date::excelToDateTimeObject($row["check_out"])->format('H:i:s')
+                : date('H:i:s', strtotime($row["check_out"]));
 
             if ($employee) {
                 ScheduleTime::create([
@@ -28,8 +35,8 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
                     "biometric_number" => $row["employee_id"],
                     "date" => $formattedDate,
                     "timetable" => $row["timetable"],
-                    "check_in" => $row["check_in"],
-                    "check_out" => $row["check_out"],
+                    "check_in" => $checkIn,
+                    "check_out" => $checkOut,
                 ]);
             }
         }
