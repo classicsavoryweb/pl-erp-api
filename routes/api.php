@@ -35,6 +35,7 @@ use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
 use App\Http\Controllers\Maintenance\HolidayController;
+use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
 use App\Http\Controllers\Reports\ReportsHealthSafetyController;
 use App\Http\Controllers\Reports\ReportsOffensesController;
@@ -179,6 +180,13 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-holidays", [HolidayController::class, "exportHolidays"]);
     Route::middleware(["permission:perform_holidays"])->post("/create-holiday", [HolidayController::class, "createHoliday"]);
     Route::middleware(["permission:perform_holidays"])->post("/edit-holiday/{id}", [HolidayController::class, "editHoliday"]);
+
+    //TRANSACTIONS MODULE
+    //schedule time
+    Route::get("/get-all-transactions-schedule-time", [ScheduleTimeController::class, "getAllTransactionsScheduleTime"]);
+    Route::get("/get-transactions-schedule-time", [ScheduleTimeController::class, "getTransactionsScheduleTime"]);
+    Route::get("/export-all-transactions-schedule-time", [ScheduleTimeController::class, "exportAllTransactionsScheduleTime"]);
+    Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/import-transactions-schedule-time", [ScheduleTimeController::class, "importTransactionsScheduleTimeExcel"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);

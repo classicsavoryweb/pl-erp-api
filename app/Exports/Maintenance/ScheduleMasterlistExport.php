@@ -38,7 +38,7 @@ class ScheduleMasterlistExport implements FromCollection, WithHeadings
             'Selection',
             'Classification',
             'Break Hours',
-            'Scheduled Hours',
+            'Total Hours',
             'Days'
         ];
     }
