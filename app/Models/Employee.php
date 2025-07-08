@@ -117,8 +117,12 @@ class Employee extends Model
 
     protected function position(): Attribute
     {
+        $position = $this->current_position->description;
+        if ($this->oic_status === "OIC") {
+            $position = $this->current_position->description." - ".$this->oic_status;
+        }
         return Attribute::get(
-            fn () => "{$this->current_position->description}-{$this->oic_status}"
+            fn () => $position
         );
     }
 
@@ -226,6 +230,10 @@ class Employee extends Model
 
     public function acting_capacities() {
         return $this->hasMany(ActingCapacity::class, "employee_id", "id");
+    }
+
+    public function attendance() {
+        return $this->hasMany(BiotimeLog::class, "employee_id", "id");
     }
 
     public function diagnosis() {

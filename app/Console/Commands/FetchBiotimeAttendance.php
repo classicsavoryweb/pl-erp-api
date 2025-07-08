@@ -1,0 +1,252 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\BiotimeLog;
+use App\Models\Employee;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
+use Log;
+
+class FetchBiotimeAttendance extends Command
+{
+    protected $signature = 'app:fetch-biotime-attendance';
+
+    protected $description = 'Fetch the attendance in the biotime device';
+
+    public function handle()
+    {
+        $url = env('BIOMETRICS_ATTENDANCE_LINK');
+        $user = env('BIOMETRICS_USERNAME');
+        $password = env('BIOMETRICS_PASSWORD');
+        $employees = Employee::where("status", "active")
+        ->where("type", "Direct")
+        ->get();
+
+        $now = Carbon::now();
+        $startTime = $now->copy()
+        ->subMonth()
+        ->startOfMonth()
+        ->addDays(10)
+        ->startOfDay();
+        $endTime = $now->copy()
+        ->startOfMonth()
+        ->addDays(24)
+        ->endOfDay();
+        $dayOfMonth = Carbon::now()->day;
+
+        if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); //26
+            $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); //10
+        } else {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
+            $endTime = $now->copy()->startOfMonth()->addDays(24)->endOfDay(); //25
+        }
+
+        $failedEmployees = [];
+
+        foreach($employees as $employee) {
+            try {
+                $response = Http::withBasicAuth($user, $password)
+                ->withHeaders([
+                    "Accept" => "application/json",
+                    "Content-Type" => "application/json"
+                ])
+                ->timeout(60)
+                ->get($url,[
+                    "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    "emp_code" => $employee->biometric_number,
+                ]);
+                
+                Log::info(now() ." LOGGING ATTENDANCE OF ". $employee->employee_number);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $attendanceLogs = $data['data'];
+
+                    foreach ($attendanceLogs as $log) {
+                        $parsedDate = Carbon::parse($log["punch_time"]);
+                        $date = $parsedDate->toDateString();
+                        $time = $parsedDate->toTimeString();
+
+                        if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('05:00:00'))) {
+                            $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
+                            if ($latest) {
+                                $latest->punches()->create([
+                                    "punch_time" => $time,
+                                    "date" => $date
+                                ]);
+                            } else {
+                                $bio1 = BiotimeLog::where("employee_id", $employee->id)
+                                ->where("date", $date)
+                                ->first();
+
+                                if ($bio1) {
+
+                                    $punch = $bio1->punches()
+                                    ->where("punch_time", $time)
+                                    ->Where("date", $date)
+                                    ->first();
+
+                                    if (!$punch) {
+                                        $bio1->punches()->create([
+                                            "punch_time" => $time,
+                                            "date" => $date
+                                        ]);
+                                    }
+                                } else {
+                                    $bio = BiotimeLog::create([
+                                        "employee_id" => $employee->id,
+                                        "biometric_number" => $employee->biometric_number,
+                                        "date" => $date,
+                                    ]);
+
+                                    $bio->punches()->create([
+                                        "punch_time" => $time,
+                                        "date" => $date
+                                    ]);
+                                }
+                            }
+
+                        } else {
+                            $attendance = BiotimeLog::where("employee_id", $employee->id)
+                            ->where("date", $date)
+                            ->first();
+
+                            if ($attendance) {
+                                $punch = $attendance->punches()
+                                ->where("punch_time", $time)
+                                ->Where("date", $date)
+                                ->first();
+    
+                                if (!$punch) {
+                                    $attendance->punches()->create([
+                                        "punch_time" => $time,
+                                        "date" => $date
+                                    ]);
+                                }
+                            } else {
+                                $bio = BiotimeLog::create([
+                                    "employee_id" => $employee->id,
+                                    "biometric_number" => $employee->biometric_number,
+                                    "date" => $date,
+                                ]);
+                                $bio->punches()->create([
+                                    "punch_time" => $time,
+                                    "date" => $date
+                                ]);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                $failedEmployees[] = $employee;
+                Log::error(now() ." ERROR LOGGING ATTENDANCE OF ". $employee->employee_number ." ERROR MESSAGE: ". $e->getMessage());
+            }
+        }
+
+        // retry failed fetches
+        foreach($failedEmployees as $employee) {
+            try {
+                $response = Http::withBasicAuth($user, $password)
+                ->withHeaders([
+                    "Accept" => "application/json",
+                    "Content-Type" => "application/json"
+                ])
+                ->timeout(60)
+                ->get($url,[
+                    "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    "emp_code" => $employee->biometric_number,
+                ]);
+                
+                Log::info(now() ." LOGGING ATTENDANCE OF ". $employee->employee_number);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $attendanceLogs = $data['data'];
+
+                    foreach ($attendanceLogs as $log) {
+                        $parsedDate = Carbon::parse($log["punch_time"]);
+                        $date = $parsedDate->toDateString();
+                        $time = $parsedDate->toTimeString();
+
+                        if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('05:00:00'))) {
+                            $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
+                            if ($latest) {
+                                $latest->punches()->create([
+                                    "punch_time" => $time,
+                                    "date" => $date
+                                ]);
+                            } else {
+                                $bio1 = BiotimeLog::where("employee_id", $employee->id)
+                                ->where("date", $date)
+                                ->first();
+
+                                if ($bio1) {
+
+                                    $punch = $bio1->punches()
+                                    ->where("punch_time", $time)
+                                    ->Where("date", $date)
+                                    ->first();
+
+                                    if (!$punch) {
+                                        $bio1->punches()->create([
+                                            "punch_time" => $time,
+                                            "date" => $date
+                                        ]);
+                                    }
+                                } else {
+                                    $bio = BiotimeLog::create([
+                                        "employee_id" => $employee->id,
+                                        "biometric_number" => $employee->biometric_number,
+                                        "date" => $date,
+                                    ]);
+
+                                    $bio->punches()->create([
+                                        "punch_time" => $time,
+                                        "date" => $date
+                                    ]);
+                                }
+                            }
+
+                        } else {
+                            $attendance = BiotimeLog::where("employee_id", $employee->id)
+                            ->where("date", $date)
+                            ->first();
+
+                            if ($attendance) {
+                                $punch = $attendance->punches()
+                                ->where("punch_time", $time)
+                                ->Where("date", $date)
+                                ->first();
+    
+                                if (!$punch) {
+                                    $attendance->punches()->create([
+                                        "punch_time" => $time,
+                                        "date" => $date
+                                    ]);
+                                }
+                            } else {
+                                $bio = BiotimeLog::create([
+                                    "employee_id" => $employee->id,
+                                    "biometric_number" => $employee->biometric_number,
+                                    "date" => $date,
+                                ]);
+                                $bio->punches()->create([
+                                    "punch_time" => $time,
+                                    "date" => $date
+                                ]);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                Log::error(now() ." ERROR RETRIED LOGGING ATTENDANCE OF ". $employee->employee_number ." ERROR MESSAGE: ". $e->getMessage());
+            }
+        }
+    }
+}
