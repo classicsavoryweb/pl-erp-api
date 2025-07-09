@@ -21,9 +21,8 @@ class HolidayExport implements FromCollection, WithHeadings
             return [
                 $sanction->date,
                 $sanction->holiday_type,
-                $sanction->short_name,
-                $sanction->branch_id,
                 $sanction->description,
+                $sanction->required_days,
             ];
         });
     }
@@ -33,9 +32,8 @@ class HolidayExport implements FromCollection, WithHeadings
         return [
             'Date',
             'Holiday Type',
-            'Short Name',
-            'Branch ID',
             'Description',
+            'Required Days',
         ];
     }
 }

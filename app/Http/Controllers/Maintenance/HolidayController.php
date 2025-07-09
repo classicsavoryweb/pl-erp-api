@@ -25,6 +25,10 @@ class HolidayController extends Controller
             if ($request->has(["date_from", "date_to"])) {
                 $holidays = $holidays->whereBetween('date', [$request->date_from, $request->date_to]);
             }
+
+            if ($request->has(["holiday_type"])) {
+                $holidays = $holidays->where("holiday_type", $request->holiday_type);
+            }
             
             if ($request->has(["export"]) && $request->export) {
                 $holidays = $holidays->get();
