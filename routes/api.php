@@ -43,6 +43,7 @@ use App\Http\Controllers\Reports\ReportsTardinessController;
 use App\Http\Controllers\Reports\ReportsVaccinationController;
 use App\Http\Controllers\Reports\ReportCoeRequestsController;
 use App\Http\Controllers\Transactions\ActualTimeController;
+use App\Http\Controllers\Transactions\TimeKeepingController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -282,7 +283,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //employment status
     Route::middleware(["permission:perform_all_records_employment_status"])->get("/get-employment-status-report", [ReportsEmploymentStatusController::class, "getEmploymentStatusReports"]);
     
-     //TRANSACTIONS MODULE
+    //TRANSACTIONS MODULE
     //schedule time
     Route::get("/get-all-transactions-schedule-time", [ScheduleTimeController::class, "getAllTransactionsScheduleTime"]);
     Route::get("/get-transactions-schedule-time", [ScheduleTimeController::class, "getTransactionsScheduleTime"]);
@@ -290,6 +291,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/import-transactions-schedule-time", [ScheduleTimeController::class, "importTransactionsScheduleTimeExcel"]);
     //actual logs
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
+    //time keeping
+    Route::middleware(["permission:perform_transactions_time_keeping"])->post("/generate-time-keeping", [TimeKeepingController::class, "generateTimeKeeping"]);
+    Route::get("/get-all-time-keeping", [TimeKeepingController::class, "getAllTimeKeeping"]);
+
 });
 
 

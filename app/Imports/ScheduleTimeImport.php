@@ -20,7 +20,10 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
         foreach ($collection as $row) {
             $employee = Employee::where("biometric_number", $row["employee_id"])->first();
 
-            $formattedDate = is_numeric($row["date"]) ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d') : $row["date"];
+            $formattedDate = is_numeric($row["date"])
+                ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d')
+                : date('Y-m-d', strtotime($row["date"]));
+
             $checkIn = is_numeric($row["check_in"])
                 ? Date::excelToDateTimeObject($row["check_in"])->format('H:i:s')
                 : date('H:i:s', strtotime($row["check_in"]));

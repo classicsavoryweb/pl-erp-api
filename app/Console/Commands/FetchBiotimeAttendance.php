@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Log;
+use DB;
 
 class FetchBiotimeAttendance extends Command
 {
@@ -49,6 +50,7 @@ class FetchBiotimeAttendance extends Command
 
         foreach($employees as $employee) {
             try {
+                DB::beginTransaction();
                 $response = Http::withBasicAuth($user, $password)
                 ->withHeaders([
                     "Accept" => "application/json",
@@ -60,8 +62,6 @@ class FetchBiotimeAttendance extends Command
                     "end_time" => $endTime->format('Y-m-d H:i:s'),
                     "emp_code" => $employee->biometric_number,
                 ]);
-                
-                Log::info(now() ." LOGGING ATTENDANCE OF ". $employee->employee_number);
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -76,7 +76,7 @@ class FetchBiotimeAttendance extends Command
                             $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
                             if ($latest) {
                                 $latest->punches()->create([
-                                    "punch_time" => $time,
+                                    "punch_time" => $log["punch_time"],
                                     "date" => $date
                                 ]);
                             } else {
@@ -87,13 +87,13 @@ class FetchBiotimeAttendance extends Command
                                 if ($bio1) {
 
                                     $punch = $bio1->punches()
-                                    ->where("punch_time", $time)
+                                    ->whereTime("punch_time", $time)
                                     ->Where("date", $date)
                                     ->first();
 
                                     if (!$punch) {
                                         $bio1->punches()->create([
-                                            "punch_time" => $time,
+                                            "punch_time" => $log["punch_time"],
                                             "date" => $date
                                         ]);
                                     }
@@ -105,7 +105,7 @@ class FetchBiotimeAttendance extends Command
                                     ]);
 
                                     $bio->punches()->create([
-                                        "punch_time" => $time,
+                                        "punch_time" => $log["punch_time"],
                                         "date" => $date
                                     ]);
                                 }
@@ -118,13 +118,13 @@ class FetchBiotimeAttendance extends Command
 
                             if ($attendance) {
                                 $punch = $attendance->punches()
-                                ->where("punch_time", $time)
+                                ->whereTime("punch_time", $time)
                                 ->Where("date", $date)
                                 ->first();
     
                                 if (!$punch) {
                                     $attendance->punches()->create([
-                                        "punch_time" => $time,
+                                        "punch_time" => $log["punch_time"],
                                         "date" => $date
                                     ]);
                                 }
@@ -135,14 +135,17 @@ class FetchBiotimeAttendance extends Command
                                     "date" => $date,
                                 ]);
                                 $bio->punches()->create([
-                                    "punch_time" => $time,
+                                    "punch_time" => $log["punch_time"],
                                     "date" => $date
                                 ]);
                             }
                         }
                     }
                 }
+
+                DB::commit();
             } catch (Exception $e) {
+                DB::rollBack();
                 $failedEmployees[] = $employee;
                 Log::error(now() ." ERROR LOGGING ATTENDANCE OF ". $employee->employee_number ." ERROR MESSAGE: ". $e->getMessage());
             }
@@ -151,6 +154,7 @@ class FetchBiotimeAttendance extends Command
         // retry failed fetches
         foreach($failedEmployees as $employee) {
             try {
+                DB::beginTransaction();
                 $response = Http::withBasicAuth($user, $password)
                 ->withHeaders([
                     "Accept" => "application/json",
@@ -162,8 +166,6 @@ class FetchBiotimeAttendance extends Command
                     "end_time" => $endTime->format('Y-m-d H:i:s'),
                     "emp_code" => $employee->biometric_number,
                 ]);
-                
-                Log::info(now() ." LOGGING ATTENDANCE OF ". $employee->employee_number);
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -178,7 +180,7 @@ class FetchBiotimeAttendance extends Command
                             $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
                             if ($latest) {
                                 $latest->punches()->create([
-                                    "punch_time" => $time,
+                                    "punch_time" => $log["punch_time"],
                                     "date" => $date
                                 ]);
                             } else {
@@ -189,13 +191,13 @@ class FetchBiotimeAttendance extends Command
                                 if ($bio1) {
 
                                     $punch = $bio1->punches()
-                                    ->where("punch_time", $time)
+                                    ->whereTime("punch_time", $time)
                                     ->Where("date", $date)
                                     ->first();
 
                                     if (!$punch) {
                                         $bio1->punches()->create([
-                                            "punch_time" => $time,
+                                            "punch_time" => $log["punch_time"],
                                             "date" => $date
                                         ]);
                                     }
@@ -207,7 +209,7 @@ class FetchBiotimeAttendance extends Command
                                     ]);
 
                                     $bio->punches()->create([
-                                        "punch_time" => $time,
+                                        "punch_time" => $log["punch_time"],
                                         "date" => $date
                                     ]);
                                 }
@@ -220,13 +222,13 @@ class FetchBiotimeAttendance extends Command
 
                             if ($attendance) {
                                 $punch = $attendance->punches()
-                                ->where("punch_time", $time)
+                                ->whereTime("punch_time", $time)
                                 ->Where("date", $date)
                                 ->first();
     
                                 if (!$punch) {
                                     $attendance->punches()->create([
-                                        "punch_time" => $time,
+                                        "punch_time" => $log["punch_time"],
                                         "date" => $date
                                     ]);
                                 }
@@ -237,14 +239,16 @@ class FetchBiotimeAttendance extends Command
                                     "date" => $date,
                                 ]);
                                 $bio->punches()->create([
-                                    "punch_time" => $time,
+                                    "punch_time" => $log["punch_time"],
                                     "date" => $date
                                 ]);
                             }
                         }
                     }
                 }
+                DB::commit();
             } catch (Exception $e) {
+                DB::rollBack();
                 Log::error(now() ." ERROR RETRIED LOGGING ATTENDANCE OF ". $employee->employee_number ." ERROR MESSAGE: ". $e->getMessage());
             }
         }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string("biometric_number");
             $table->string("date");
             $table->string("remarks")->nullable();
+            $table->boolean("is_transferred")->default(false);
             $table->timestamps();
         });
     }

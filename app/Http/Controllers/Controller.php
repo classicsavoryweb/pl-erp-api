@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use NumberFormatter;
+use Carbon\Carbon;
 
 class Controller extends BaseController
 {
@@ -49,5 +50,32 @@ class Controller extends BaseController
         $centavosPart = str_pad($centavos, 2, '0', STR_PAD_RIGHT);
         $formattedAmount = number_format($amount, 2, '.', ',');
         return "{$words} & {$centavosPart}/100 ({$formattedAmount})";
+    }
+
+    public function getCurrentCutoff() {
+        $now = Carbon::now();
+        $startTime = $now->copy()
+        ->subMonth()
+        ->startOfMonth()
+        ->addDays(10)
+        ->startOfDay();
+        $endTime = $now->copy()
+        ->startOfMonth()
+        ->addDays(24)
+        ->endOfDay();
+        $dayOfMonth = Carbon::now()->day;
+
+        if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); //26
+            $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); //10
+        } else {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
+            $endTime = $now->copy()->startOfMonth()->addDays(24)->endOfDay(); //25
+        }
+
+        return [
+            "start_time" => $startTime->toDateString(),
+            "end_time" => $endTime->toDateString()
+        ];
     }
 }

@@ -14,7 +14,8 @@ class BiotimeLog extends Model
         "employee_id",
         "biometric_number",
         "date",
-        "remarks"
+        "remarks",
+        "is_transferred"
     ];
 
     protected $table = "biotime_logs";

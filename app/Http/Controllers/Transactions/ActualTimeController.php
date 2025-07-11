@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Transactions;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\BiotimeLog;
 use Exception;
 use Illuminate\Http\Request;
