@@ -6,6 +6,10 @@ use App\Models\Branch;
 use DateTime;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Http;
+use DB;
+use Log;
+
 
 class BranchSeeder extends Seeder
 {
@@ -19,6 +23,10 @@ class BranchSeeder extends Seeder
         $jsonData = file_get_contents($jsonPath);
         $branches = json_decode($jsonData, true);
         $unique_branches = array_map("unserialize", array_unique(array_map("serialize", $branches["tbl_branch"])));
+
+        $user = env('BIOMETRICS_USERNAME');
+        $password = env('BIOMETRICS_PASSWORD');
+        $url = 'http://120.28.114.47:9090/iclock/api/terminals/';
 
         foreach($unique_branches as $branch) {
             Branch::create([
@@ -41,6 +49,28 @@ class BranchSeeder extends Seeder
                 'mancom_employee_number' => $branch["mancomID"],
                 'mancom' => $branch["mancomName"],
             ]);
+        }
+
+        $response = Http::withBasicAuth($user, $password)
+            ->withHeaders([
+                "Accept" => "application/json",
+                "Content-Type" => "application/json"
+            ])
+            ->timeout(60)
+            ->get($url);
+
+        if ($response->successful()) {
+            $resp = $response->json();
+            $terminals = $resp["data"];
+
+            foreach($terminals as $terminal) {
+                $branch = Branch::where("short_name", $terminal["area_name"])->first();
+                if ($branch && $branch->status === "active") {
+                    $branch->update([
+                        "device_name" => $terminal["sn"]
+                    ]);
+                }
+            }
         }
     }
 }

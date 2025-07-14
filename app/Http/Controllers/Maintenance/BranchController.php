@@ -66,6 +66,8 @@ class BranchController extends Controller
             $request->validate([
                 "name" => "required|unique:branches,name",
                 "status" => "required",
+                "travel_time" => "required",
+                "device_name" => "required",
                 "short_name" => "required|unique:branches,short_name",
                 "address" => "required",
                 "location" => "required",
@@ -94,6 +96,8 @@ class BranchController extends Controller
                 "name" => $request->name,
                 "branch_number" => $branchNumber,
                 "status" => $request->status,
+                "travel_time" => $request->travel_time,
+                "device_name" => $request->device_name,
                 "short_name" => $request->short_name,
                 "address" => $request->address,
                 "location" => $request->location,
@@ -123,6 +127,8 @@ class BranchController extends Controller
             $request->validate([
                 "name" => "required|unique:branches,name,".$id,
                 "status" => "required",
+                "travel_time" => "required",
+                "device_name" => "required",
                 "branch_number" => "required|unique:branches,branch_number,".$id,
                 "short_name" => "required|unique:branches,short_name,".$id,
                 "address" => "required",
@@ -147,6 +153,8 @@ class BranchController extends Controller
             Branch::where("id", $id)->update([
                 "name" => $request->name,
                 "status" => $request->status,
+                "travel_time" => $request->travel_time,
+                "device_name" => $request->device_name,
                 "short_name" => $request->short_name,
                 "branch_number" => $request->branch_number,
                 "address" => $request->address,

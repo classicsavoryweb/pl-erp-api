@@ -31,6 +31,8 @@ class BranchExport implements FromCollection, WithHeadings
                 $branch->group_head,
                 $branch->kitchen_oic,
                 $branch->mancom,
+                $branch->travel_time,
+                $branch->device_name,
                 $branch->status,
             ];
         });
@@ -50,6 +52,8 @@ class BranchExport implements FromCollection, WithHeadings
             'Group Head',
             'Kitchen OIC',
             'Mancom',
+            'Travel Time',
+            'Device Name',
             'Status',
         ];
     }
