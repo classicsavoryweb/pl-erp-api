@@ -8,21 +8,21 @@ use Illuminate\Database\Eloquent\Collection;
 
 class HolidayExport implements FromCollection, WithHeadings
 {
-    protected Collection $sanctions;
+    protected Collection $holidays;
 
-    public function __construct(Collection $sanctions)
+    public function __construct(Collection $holidays)
     {
-        $this->sanctions = $sanctions;
+        $this->holidays = $holidays;
     }
 
     public function collection()
     {
-        return $this->sanctions->map(function ($sanction) {
+        return $this->holidays->map(function ($holiday) {
             return [
-                $sanction->date,
-                $sanction->holiday_type,
-                $sanction->description,
-                $sanction->required_days,
+                $holiday->date,
+                $holiday->holiday_type,
+                $holiday->description,
+                $holiday->required_days,
             ];
         });
     }

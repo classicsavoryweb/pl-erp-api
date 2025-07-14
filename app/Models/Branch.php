@@ -13,6 +13,8 @@ class Branch extends Model
         "name",
         "branch_number",
         "status",
+        "travel_time",
+        "device_name",
         "short_name",
         "address",
         "location",
