@@ -47,8 +47,19 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 ->where("end_time", $actualSchedule->check_out)
                 ->first();
 
+                $isCancelledOff = false;
+                if ($schedule->selection === "REST DAY") {
+                    $isCancelledOff = true;
+                }
+
                 $scheduleStart = Carbon::parse($log->date. " " .$schedule->start_time);
                 $scheduleEnd = Carbon::parse($log->date. " " .$schedule->end_time);
+
+                if ($actualSchedule->check_out === "00:00:00") {
+                    $date = $date = Carbon::parse($log->date)->addDay()->format('Y-m-d');
+                    $scheduleEnd = Carbon::parse($date. " " .$schedule->end_time);
+                }
+
                 $scheduledBreak = Carbon::parse($log->date." ".$schedule->time_break);
                 $scheduledBreakInMinutes = ($scheduledBreak->hour * 60) + $scheduledBreak->minute;
 
@@ -110,7 +121,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     }
                 }
 
-                if ($log->punches()->count() === 4) {
+                if (
+                    $log->punches()->count() === 4 &&
+                    strtolower($schedule->selection) !== "flex"
+                ) {
                     $breakOut = $log->punches()
                     ->whereNot("id", $firstPunch->id)
                     ->orderBy("punch_time", "ASC")
@@ -129,7 +143,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     }
                 }
 
-                if ($log->punches()->count() === 3) {
+                if (
+                    $log->punches()->count() === 3 &&
+                    strtolower($schedule->selection) !== "flex"
+                ) {
                     $secondPunch = $log->punches()
                     ->whereNot("id", [$firstPunch->id, $lastPunch->id])
                     ->orderBy("punch_time", "ASC")
@@ -176,7 +193,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     }
                 }
 
-                if ($log->punches()->count() === 2) {
+                if (
+                    $log->punches()->count() === 2 &&
+                    strtolower($schedule->selection) !== "flex"
+                ) {
                     if ($workHours >= 4 && $workHours <= 5) {
                         $workHours = $schedule->total_hours / 2;
                     } else if ($workHours >= 6) {
@@ -225,8 +245,9 @@ class TransferLogsToTimeKeeping implements ShouldQueue
 
                 $tenPM = Carbon::parse($log->date." ".'22:00:00');
                 if ($scheduleEnd->greaterThan($tenPM) && $parsedLastPunch->greaterThan($tenPM)) {
-                    $nightDiffSeconds = $parsedLastPunch->diffInSeconds($tenPM);
+                    $nightDiffSeconds = $scheduleEnd->diffInSeconds($tenPM);
                     $nightDiffHours = $nightDiffSeconds / 3600;
+                    $nightDiffOt = $overtime;
                 }
 
                 if ($tenPM->greaterThan($scheduleEnd) && $parsedLastPunch->greaterThan($tenPM)) {
@@ -253,6 +274,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         "special_holiday_hours" => $specialHolidayHours,
                         "special_holiday_overtime" => $specialHolidayOvertime,
                         "undertime" => $undertime,
+                        "is_cancelled_off" => $isCancelledOff,
                     ]);
     
                     $log->update([

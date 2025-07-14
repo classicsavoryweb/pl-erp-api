@@ -29,7 +29,10 @@ class TimeKeeping extends Model
         "special_holiday_overtime",
         "undertime",
         "tardiness",
-        "remarks"
+        "remarks",
+        "is_cancelled_off",
+        "travel_time",
+        "overtime_status"
     ];
 
     public function employee() {

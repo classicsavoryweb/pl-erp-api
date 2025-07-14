@@ -176,7 +176,7 @@ class FetchBiotimeAttendance extends Command
                         $date = $parsedDate->toDateString();
                         $time = $parsedDate->toTimeString();
 
-                        if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('05:00:00'))) {
+                        if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
                             $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
                             if ($latest) {
                                 $latest->punches()->create([
