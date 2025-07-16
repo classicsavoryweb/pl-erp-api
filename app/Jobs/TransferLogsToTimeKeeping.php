@@ -89,6 +89,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 
                 if ($tardiness >= 120) {
                     $workHours = $schedule->total_hours / 2;
+                    $tardiness = 0;
                 }
 
                 $legalHoliday = "No";
