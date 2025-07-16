@@ -42,7 +42,7 @@ class FetchBiotimeAttendance extends Command
             $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); //26
             $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); //10
         } else {
-            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
+            $startTime = $now->copy()->startOfMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
             $endTime = $now->copy()->startOfMonth()->addDays(24)->endOfDay(); //25
         }
 

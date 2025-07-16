@@ -13,25 +13,26 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Carbon\Carbon;
-
+use Log;
 class TransferLogsToTimeKeeping implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $branchId;
+    protected $cutOff;
 
-    public function __construct(string $branchId)
+    public function __construct(string $branchId, $cutoff)
     {
         $this->branchId = $branchId;
+        $this->cutOff = $cutoff;
     }
 
     public function handle(): void
     {
-        $currentCutOff = $this->getCurrentCutoff();
         $schedules = ScheduleTime::whereHas("employee", function($query) {
             $query->where("branch_id", $this->branchId);
         })
-        ->whereBetween("date", $currentCutOff)
+        ->whereBetween("date", $this->cutOff)
         ->get();
 
         foreach($schedules as $actualSchedule) {
@@ -43,8 +44,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
             ->first();
 
             if ($log) {
-                $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
-                ->where("end_time", $actualSchedule->check_out)
+                $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
                 ->first();
 
                 $isCancelledOff = false;
@@ -55,7 +55,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 $scheduleStart = Carbon::parse($log->date. " " .$schedule->start_time);
                 $scheduleEnd = Carbon::parse($log->date. " " .$schedule->end_time);
 
-                if ($actualSchedule->check_out === "00:00:00") {
+                if ($scheduleEnd->isBefore($scheduleStart)) {
                     $date = $date = Carbon::parse($log->date)->addDay()->format('Y-m-d');
                     $scheduleEnd = Carbon::parse($date. " " .$schedule->end_time);
                 }
@@ -91,11 +91,6 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     $workHours = $schedule->total_hours / 2;
                 }
 
-                if ($workHours < $schedule->total_hours) {
-                    $parsedEndTime = Carbon::parse($log->date." ".$schedule->end_time);
-                    $undertime = $parsedEndTime->diffInMinutes($parsedLastPunch);
-                }
-
                 $legalHoliday = "No";
                 $specialHoliday = "No";
                 $legalHolidayHours = 0;
@@ -105,6 +100,11 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 $undertime = 0;
                 $nightDiffHours = 0;
                 $nightDiffOt = 0;
+
+                if ($workHours < $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd)) {       
+                    $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
+                }
+
 
                 if ($holiday) {
                     $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";
@@ -125,21 +125,20 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     $log->punches()->count() === 4 &&
                     strtolower($schedule->selection) !== "flex"
                 ) {
-                    $breakOut = $log->punches()
-                    ->whereNot("id", $firstPunch->id)
+                    $breaks = $log->punches()
+                    ->whereNot("id", [$firstPunch->id, $lastPunch->id])
                     ->orderBy("punch_time", "ASC")
-                    ->first();
-                    $breakIn = $log->punches()
-                    ->whereNot("id", $lastPunch->id)
-                    ->orderBy("punch_time", "DESC")
-                    ->first();
+                    ->get();
 
-                    $parsedBreakOut = Carbon::parse($breakOut->punch_time);
-                    $parsedBreakIn = Carbon::parse($breakIn->punch_time);
+                    $parsedBreakOut = Carbon::parse($breaks[0]->punch_time);
+                    $parsedBreakIn = Carbon::parse($breaks[1]->punch_time);
                     $breakDuration = $parsedBreakOut->diffInMinutes($parsedBreakIn);
 
                     if ($breakDuration > $scheduledBreakInMinutes) {
-                        $tardiness += $breakDuration - $scheduledBreakInMinutes;
+                        Log::info($parsedBreakOut);
+                        Log::info($parsedBreakIn);
+
+                        $tardiness += ($breakDuration - $scheduledBreakInMinutes);
                     }
                 }
 
@@ -209,7 +208,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     $log->punches()->count() > 4 &&
                     strtolower($schedule->selection) !== "flex"
                 ) {
-                    $punches = $log->punches()->orderBy("punch_time", "ASC")->get();
+
+                    $punches = $log->punches()->orderBy("punch_time", "ASC")
+                    ->whereNot("id", [$firstPunch->id, $lastPunch->id])
+                    ->get();
 
                     $durations = [];
                     
@@ -241,6 +243,9 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         $tardiness += $closest['duration'] - $scheduledBreakInMinutes;
                     }
 
+                    if ($log->punches()->count() >= 6) {
+                        $tardiness = 0;
+                    }
                 }
 
                 $tenPM = Carbon::parse($log->date." ".'22:00:00');
@@ -253,6 +258,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 if ($tenPM->greaterThan($scheduleEnd) && $parsedLastPunch->greaterThan($tenPM)) {
                     $nightDiffOtSeconds = $parsedLastPunch->diffInSeconds($tenPM);
                     $nightDiffOt = $nightDiffOtSeconds / 3600;
+                }
+
+                if ($schedule->selection == "NO SCHEDULE" || strtolower($schedule->selection) === "flex") {
+                    $tardiness = 0;
                 }
                 
                 if ($log->punches()->count() > 1) {
@@ -291,22 +300,15 @@ class TransferLogsToTimeKeeping implements ShouldQueue
 
     public function getCurrentCutoff() {
         $now = Carbon::now();
-        $startTime = $now->copy()
-        ->subMonth()
-        ->startOfMonth()
-        ->addDays(10)
-        ->startOfDay();
-        $endTime = $now->copy()
-        ->startOfMonth()
-        ->addDays(24)
-        ->endOfDay();
+        $startTime = "";
+        $endTime = "";
         $dayOfMonth = Carbon::now()->day;
 
         if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
             $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); //26
             $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); //10
         } else {
-            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
+            $startTime = $now->copy()->startOfMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
             $endTime = $now->copy()->startOfMonth()->addDays(24)->endOfDay(); //25
         }
 

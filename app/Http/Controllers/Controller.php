@@ -54,22 +54,15 @@ class Controller extends BaseController
 
     public function getCurrentCutoff() {
         $now = Carbon::now();
-        $startTime = $now->copy()
-        ->subMonth()
-        ->startOfMonth()
-        ->addDays(10)
-        ->startOfDay();
-        $endTime = $now->copy()
-        ->startOfMonth()
-        ->addDays(24)
-        ->endOfDay();
+        $startTime = "";
+        $endTime = "";
         $dayOfMonth = Carbon::now()->day;
 
         if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
             $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); //26
             $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); //10
         } else {
-            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
+            $startTime = $now->copy()->startOfMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
             $endTime = $now->copy()->startOfMonth()->addDays(24)->endOfDay(); //25
         }
 

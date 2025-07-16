@@ -18,7 +18,9 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
     public function collection(Collection $collection)
     {
         foreach ($collection as $row) {
-            $employee = Employee::where("biometric_number", $row["employee_id"])->first();
+            $employee = Employee::where("biometric_number", $row["employee_id"])
+            ->where("status", "active")
+            ->first();
 
             $formattedDate = is_numeric($row["date"])
                 ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d')

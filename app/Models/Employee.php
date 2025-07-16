@@ -240,6 +240,10 @@ class Employee extends Model
         return $this->hasMany(TimeKeeping::class, "employee_id", "id");
     }
 
+    public function timekeeping_summary() {
+        return $this->hasMany(TimeKeepingSummary::class, "employee_id", "id");
+    }
+
     public function diagnosis() {
         return $this->belongsToMany(Diagnosis::class)
         ->using(EmployeeHealthSafety::class)
