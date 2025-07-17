@@ -68,7 +68,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $regular_days += .5;
                     }
 
-                    if ($regular_days > 13 && $employee->current_position->timekeeping_type === "") {
+                    if ($regular_days > 13 && $employee->current_position->timekeeping_type === "Monthly") {
                         $regular_days = 13;
                     }
 
