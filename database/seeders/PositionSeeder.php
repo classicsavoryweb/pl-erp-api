@@ -4284,12 +4284,19 @@ class PositionSeeder extends Seeder
               $schedule = "N/A";
             }
 
+            if (in_array($position["position_descr"], ['Ala Carte Cook', 'All Around Cook', 'Assisstant Head Cook Trainee', 'Cashier', 'Chicken Cook', 'Cook Trainee', 'Food Preparation Staff', 'Part-Time Cashier', 'Part-Time Team Member', 'Senior Cashier', 'Team Leader', 'Team Member', 'Driver', 'Stockman', 'Technician', 'Repair & Maintenance Staff', 'Janitor/Maintenance Staff', 'Production Team Leader'])) {
+                $timekeeping = "Daily";
+            } else {
+                $timekeeping = "Monthly";
+            }
+
             Position::create([
                 "description" => $position["position_descr"],
                 "rank" => $position["rank"],
                 "status" => $position["status"],
                 "station_id" => $position["station_id"],
-                "schedule_type" => $schedule
+                "schedule_type" => $schedule,
+                "timekeeping_type"=> $timekeeping,
             ]);
         };
     }

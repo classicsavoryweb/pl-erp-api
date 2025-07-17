@@ -40,4 +40,9 @@ class Adjustment extends Model
         "schedule_timeout",
         "cutoff_counter",
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, "employee_id", "biometric_number",);
+    }
 }
