@@ -239,6 +239,9 @@ class Employee extends Model
     public function timekeeping() {
         return $this->hasMany(TimeKeeping::class, "employee_id", "id");
     }
+    public function adjustments() {
+        return $this->hasMany(Adjustment::class, "employee_id", "biometric_number");
+    }
 
     public function timekeeping_summary() {
         return $this->hasMany(TimeKeepingSummary::class, "employee_id", "id");

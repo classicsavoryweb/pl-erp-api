@@ -19,8 +19,9 @@ class ScheduleTimeExport implements FromCollection, WithHeadings
     {
         return $this->schedule_time->map(function ($schedule) {
             return [
-                $schedule->employee_id,
+                $schedule->employee->full_name,
                 $schedule->biometric_number,
+                $schedule->employee->current_branch->name,
                 $schedule->date,
                 $schedule->timetable,
                 $schedule->check_in,
@@ -32,8 +33,9 @@ class ScheduleTimeExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Employee ID',
+            'Name',
             'Biometric Number',
+            'Branch',
             'Date',
             'Timetable',
             'Check In',
