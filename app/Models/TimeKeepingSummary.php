@@ -27,7 +27,8 @@ class TimeKeepingSummary extends Model
         "travel_time",
         "adjustment_amount",
         "remarks",
-        "tardiness"
+        "tardiness",
+        "branch_id"
     ];
 
     public function lates() {
@@ -36,5 +37,9 @@ class TimeKeepingSummary extends Model
 
     public function employee() {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function branch() {
+        return $this->hasOne(Branch::class, "id", "branch_id");
     }
 }

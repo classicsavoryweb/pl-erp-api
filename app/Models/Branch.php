@@ -52,6 +52,18 @@ class Branch extends Model
         return $this->hasOne(Employee::class, "employee_number", "group_head_employee_number");
     }
 
+    public function schedule_time() {
+        return $this->belongsTo(ScheduleTime::class);
+    }
+
+    public function time_keeping() {
+        return $this->belongsTo(TimeKeeping::class);
+    }
+
+    public function time_keeping_summary() {
+        return $this->belongsTo(TimeKeepingSummary::class);
+    }
+
     public function holidays() {
         return $this->belongsToMany(Holiday::class)
         ->using(BranchHoliday::class)

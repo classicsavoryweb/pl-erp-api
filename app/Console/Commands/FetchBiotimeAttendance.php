@@ -147,7 +147,6 @@ class FetchBiotimeAttendance extends Command
             } catch (Exception $e) {
                 DB::rollBack();
                 $failedEmployees[] = $employee;
-                Log::error(now() ." ERROR LOGGING ATTENDANCE OF ". $employee->employee_number ." ERROR MESSAGE: ". $e->getMessage());
             }
         }
 
@@ -249,7 +248,6 @@ class FetchBiotimeAttendance extends Command
                 DB::commit();
             } catch (Exception $e) {
                 DB::rollBack();
-                Log::error(now() ." ERROR RETRIED LOGGING ATTENDANCE OF ". $employee->employee_number ." ERROR MESSAGE: ". $e->getMessage());
             }
         }
     }

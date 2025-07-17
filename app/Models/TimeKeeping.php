@@ -32,10 +32,15 @@ class TimeKeeping extends Model
         "remarks",
         "is_cancelled_off",
         "travel_time",
-        "overtime_status"
+        "overtime_status",
+        "branch_id"
     ];
 
     public function employee() {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function branch() {
+        return $this->hasOne(Branch::class, "id", "branch_id");
     }
 }

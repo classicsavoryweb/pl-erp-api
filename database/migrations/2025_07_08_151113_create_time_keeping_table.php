@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string("employee_id");
             $table->string("biometric_number");
-            $table->string("biotime_log_id");
+            $table->string("biotime_log_id")->nullable();
             $table->string("schedule_time_id");
             $table->string("date");
             $table->string("worked_hours");

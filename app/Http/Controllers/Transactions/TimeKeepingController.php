@@ -71,9 +71,7 @@ class TimeKeepingController extends Controller
                 : $currentCutOff['end_time'];
 
             $timeKeeping = TimeKeeping::with(["employee"])
-            ->whereHas("employee", function ($query) use($request) {
-                $query->where("branch_id", $request->branch_id);
-            })
+            ->where("branch_id", $request->branch_id)
             ->whereBetween("date", [$start_time, $end_time])
             ->paginate($perPage);
 
@@ -103,9 +101,7 @@ class TimeKeepingController extends Controller
                 : $currentCutOff['end_time'];
 
             $timeKeeping = TimeKeepingSummary::with(["employee", "lates"])
-            ->whereHas("employee", function ($query) use($request) {
-                $query->where("branch_id", $request->branch_id);
-            })
+            ->where("timekeeping_summary.branch_id", $request->branch_id)
             ->where("cut-off", $start_time.'-'.$end_time)
             ->join("employees", "timekeeping_summary.employee_id", "=", "employees.id")
             ->orderBy("employees.last_name", "ASC")
@@ -142,7 +138,9 @@ class TimeKeepingController extends Controller
                 "end_time" => $end_time
             ];
 
-            $employees = Employee::where("branch_id", $request->branch_id)
+            $employees = Employee::whereHas("timekeeping", function ($query) use ($request) {
+                $query->where("branch_id", $request->branch_id);
+            })
             ->where("status", "active")
             ->get();
 

@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\ScheduleTime;
 use Illuminate\Support\Collection;
@@ -12,7 +13,7 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
 {
     public function headingRow(): int
     {
-        return 2; 
+        return 1; 
     }
 
     public function collection(Collection $collection)
@@ -34,6 +35,8 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
                 ? Date::excelToDateTimeObject($row["check_out"])->format('H:i:s')
                 : date('H:i:s', strtotime($row["check_out"]));
 
+            $branch = Branch::where("short_name", $row["department"])->first();
+
             if ($employee) {
                 ScheduleTime::create([
                     'employee_id' => $employee->id,
@@ -42,6 +45,7 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
                     "timetable" => $row["timetable"],
                     "check_in" => $checkIn,
                     "check_out" => $checkOut,
+                    "branch_id" => $branch->id
                 ]);
             }
         }

@@ -59,13 +59,11 @@ class ScheduleTimeController extends Controller
             }
 
             if ($request->has(['branch_id'])) {
-                $schedule_time = $schedule_time->whereHas("employee", function ($query) use ($request) {
-                    $query->where("branch_id", $request->branch_id);
-                });
+                $schedule_time = $schedule_time->where("branch_id", $request->branch_id);
             }
 
             $schedule_time = $schedule_time
-            ->with(["employee", "employee.current_branch"])
+            ->with(["employee", "employee.current_branch", "branch"])
             ->paginate($perPage);
 
             return $this->sendResponse($schedule_time);
