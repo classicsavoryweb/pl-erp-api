@@ -102,11 +102,14 @@ class TimeKeepingController extends Controller
                 ? $year . '-' . $request->cutoff["end_time"]
                 : $currentCutOff['end_time'];
 
-            $timeKeeping = TimeKeepingSummary::with(["employee"])
+            $timeKeeping = TimeKeepingSummary::with(["employee", "lates"])
             ->whereHas("employee", function ($query) use($request) {
                 $query->where("branch_id", $request->branch_id);
             })
             ->where("cut-off", $start_time.'-'.$end_time)
+            ->join("employees", "timekeeping_summary.employee_id", "=", "employees.id")
+            ->orderBy("employees.last_name", "ASC")
+            ->select("timekeeping_summary.*")
             ->paginate($perPage);
 
             return $this->sendResponse($timeKeeping);

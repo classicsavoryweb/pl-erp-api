@@ -30,7 +30,7 @@ class TimeKeepingSummary extends Model
         "tardiness"
     ];
 
-    public function latest() {
+    public function lates() {
         return $this->hasMany(LateTimeKeepingSummary::class, "timekeeping_summary_id", "id");
     }
 

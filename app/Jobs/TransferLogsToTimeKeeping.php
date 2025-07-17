@@ -52,12 +52,12 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     $isCancelledOff = true;
                 }
 
-                $scheduleStart = Carbon::parse($log->date. " " .$schedule->start_time);
-                $scheduleEnd = Carbon::parse($log->date. " " .$schedule->end_time);
+                $scheduleStart = Carbon::parse($log->date. " " .$schedule->start_time)->seconds(0);
+                $scheduleEnd = Carbon::parse($log->date. " " .$schedule->end_time)->seconds(0);
 
                 if ($scheduleEnd->isBefore($scheduleStart)) {
                     $date = $date = Carbon::parse($log->date)->addDay()->format('Y-m-d');
-                    $scheduleEnd = Carbon::parse($date. " " .$schedule->end_time);
+                    $scheduleEnd = Carbon::parse($date. " " .$schedule->end_time)->seconds(0);
                 }
 
                 $scheduledBreak = Carbon::parse($log->date." ".$schedule->time_break);
@@ -68,8 +68,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 $firstPunch = $log->punches()->orderBy("punch_time", "ASC")->first();
                 $lastPunch = $log->punches()->orderBy("punch_time", "DESC")->first();
 
-                $parsedFirstPunch = Carbon::parse($firstPunch->punch_time);
-                $parsedLastPunch = Carbon::parse($lastPunch->punch_time);
+                $parsedFirstPunch = Carbon::parse($firstPunch->punch_time)->seconds(0);
+                $parsedLastPunch = Carbon::parse($lastPunch->punch_time)->seconds(0);
                 $diffInSeconds = $parsedLastPunch ->diffInSeconds($parsedFirstPunch);
                 $decimalHours = $diffInSeconds / 3600;
                 $workHours = $decimalHours;
@@ -131,8 +131,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     ->orderBy("punch_time", "ASC")
                     ->get();
 
-                    $parsedBreakOut = Carbon::parse($breaks[0]->punch_time);
-                    $parsedBreakIn = Carbon::parse($breaks[1]->punch_time);
+                    $parsedBreakOut = Carbon::parse($breaks[0]->punch_time)->seconds(0);
+                    $parsedBreakIn = Carbon::parse($breaks[1]->punch_time)->seconds(0);
                     $breakDuration = $parsedBreakOut->diffInMinutes($parsedBreakIn);
 
                     if ($breakDuration > $scheduledBreakInMinutes) {
@@ -151,7 +151,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     ->whereNot("id", [$firstPunch->id, $lastPunch->id])
                     ->orderBy("punch_time", "ASC")
                     ->first();
-                    $parsedSecondPunch = Carbon::parse($secondPunch->punch_time);
+                    $parsedSecondPunch = Carbon::parse($secondPunch->punch_time)->seconds(0);
 
                     $breakOutGap = $scheduleStart->diffInMinutes($parsedSecondPunch);
                     $breakInGap = $parsedSecondPunch->diffInMinutes($scheduleEnd);
@@ -219,8 +219,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     for ($i = 0; $i < $punches->count() - 1; $i++) {
                         $currentPunch = $punches[$i];
                         $nextPunch = $punches[$i + 1];
-                        $duration = Carbon::parse($currentPunch->punch_time)
-                            ->diffInMinutes(Carbon::parse($nextPunch->punch_time));
+                        $duration = Carbon::parse($currentPunch->punch_time)->seconds(0)
+                            ->diffInMinutes(Carbon::parse($nextPunch->punch_time)->seconds(0));
 
                         $durations[] = [
                             "duration" => $duration,
@@ -256,7 +256,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     $nightDiffOt = $overtime;
                 }
 
-                if ($tenPM->greaterThan($scheduleEnd) && $parsedLastPunch->greaterThan($tenPM)) {
+                if ($tenPM->greaterThanOrEqualTo($scheduleEnd) && $parsedLastPunch->greaterThan($tenPM)) {
                     $nightDiffOtSeconds = $parsedLastPunch->diffInSeconds($tenPM);
                     $nightDiffOt = $nightDiffOtSeconds / 3600;
                 }
