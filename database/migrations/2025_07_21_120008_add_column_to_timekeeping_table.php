@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('timekeeping', function (Blueprint $table) {
+        Schema::table('time_keeping', function (Blueprint $table) {
             $table->string("approved_overtime")->nullable()->default(0);
-            $table->string("remarks")->nullable();
         });
     }
 
