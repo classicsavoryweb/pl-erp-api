@@ -54,9 +54,10 @@ class OvertimeImport implements ToCollection, WithHeadingRow
             $status = ucfirst($row["status"]);
             if ($status === 'Paid') {
                 $status = 'Approved';
-            } elseif ($status === 'Unpaid') {
+            } else {
                 $status = 'Unapproved';
             }
+
 
             Overtime::create([
                 "date_filed" => $formattedDateFiled,
