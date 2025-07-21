@@ -3,13 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Branch;
-use DateTime;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
-use DB;
-use Log;
-
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class BranchSeeder extends Seeder
 {
@@ -72,5 +69,6 @@ class BranchSeeder extends Seeder
                 }
             }
         }
+        
     }
 }

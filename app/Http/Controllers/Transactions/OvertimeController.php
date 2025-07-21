@@ -6,17 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Exports\Transactions\OvertimeExport;
 use App\Jobs\ProcessOvertimeImport;
-use App\Models\BiotimeLog;
-use App\Models\TimeKeeping;
-use App\Models\ScheduleTime;
+use App\Models\Overtime;
 use App\Models\Employee;
 use Exception;
 use DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
-use Carbon\Carbon;
 
 class OvertimeController extends Controller
 {
@@ -24,7 +20,7 @@ class OvertimeController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $overtime = TimeKeeping::query();
+            $overtime = Overtime::query();
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
@@ -47,22 +43,26 @@ class OvertimeController extends Controller
                             });
                         });
                     } else {
-                        $overtime = $overtime->whereHas($relation, function ($query) use ($relatedColumn, $keyword) {
+                        $relations = explode('.', $column);
+                        $relatedColumn = array_pop($relations); 
+                        $relationPath = implode('.', $relations); 
+
+                        $overtime = $overtime->whereHas($relationPath, function ($query) use ($relatedColumn, $keyword) {
                             $query->where($relatedColumn, 'LIKE', "%$keyword%");
                         });
                     }
-
                 } else {
                     $overtime = $overtime->where($column, 'LIKE', "%$keyword%");
                 }
             }
 
+
             if ($request->has(["status"])) {
-                $overtime = $overtime->where("overtime_status", $request->status);
+                $overtime = $overtime->where("status", $request->status);
             }
 
             if ($request->has(["date_from", "date_to"])) {
-                $overtime = $overtime->whereBetween('date', [$request->date_from, $request->date_to]);
+                $overtime = $overtime->whereBetween('date_filed', [$request->date_from, $request->date_to]);
             }
 
             if ($request->has(['branch_id'])) {
@@ -74,6 +74,7 @@ class OvertimeController extends Controller
             $overtime = $overtime->with([
                 "employee",
                 "employee.current_branch",
+                "employee.current_position",
             ])
             ->orderBy("id","DESC");
 
@@ -98,7 +99,7 @@ class OvertimeController extends Controller
 
     public function getOvertime(Request $request) {
         try {
-            $overtime = TimeKeeping::where("overtime_status", "approved")->get();
+            $overtime = Overtime::where("status", "paid")->get();
             return $this->sendResponse(["overtime" => $overtime]);
         } catch(Exception $e) {
 
@@ -106,7 +107,7 @@ class OvertimeController extends Controller
         }
     }
 
-    public function approveBulkOvertime(Request $request) {
+    public function payBulkOvertime(Request $request) {
         try {
             DB::beginTransaction();
             $request->validate([
@@ -114,49 +115,49 @@ class OvertimeController extends Controller
             ]);
 
             foreach($request->overtime_id as $overtime) {
-                $timekeeping = Timekeeping::find($overtime);
+                $unique_overtime = Overtime::find($overtime);
 
-                $timekeeping->update([
-                    "overtime_status" => "Approved"
+                $unique_overtime->update([
+                    "status" => "Paid"
                 ]);
             }
 
             DB::commit();
-            return $this->sendResponse(["message" => "Selected overtime approved successfully"]);
+            return $this->sendResponse(["message" => "Selected overtime paid successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
-    public function approveOvertime (Request $request, $id) {
+    public function payOvertime ($id) {
         try {
             DB::beginTransaction();
-            $timekeeping = TimeKeeping::find($id);
+            $overtime = Overtime::find($id);
 
-            $timekeeping->update([
-                "overtime_status" => "Approved"
+            $overtime->update([
+                "status" => "Paid"
             ]);
 
             DB::commit();
-            return $this->sendResponse(["message" => "Overtime approved successfully"]);
+            return $this->sendResponse(["message" => "Overtime paid successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
-    public function unapproveOvertime (Request $request, $id) {
+    public function unpayOvertime ($id) {
         try {
             DB::beginTransaction();
-            $timekeeping = TimeKeeping::find($id);
+            $overtime = Overtime::find($id);
 
-            $timekeeping->update([
-                "overtime_status" => "Unapproved"
+            $overtime->update([
+                "status" => "Unpaid"
             ]);
 
             DB::commit();
-            return $this->sendResponse(["message" => "Overtime unapproved successfully"]);
+            return $this->sendResponse(["message" => "Overtime unpaid successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
@@ -166,33 +167,23 @@ class OvertimeController extends Controller
     // public function createOvertime(Request $request) {
     //     try {
     //         $request->validate([
-    //             "date"=> "required",
-    //             "regular_overtime"=> "required",
-    //             "night_diff_overtime"=> "required",
-    //             "legal_holiday_overtime"=> "required",
-    //             "special_holiday_overtime"=> "required",
-    //             "overtime_status"=> "required",
+    //             "overtime_date"=> "required",
+    //             "purpose"=> "required",
+    //             "total_hours"=> "required",
+    //             "status"=> "required",
     //         ]);
 
     //         $employee = Employee::where("employee_number", $request->employee_number)->first();
 
     //         $employee_id = $employee->id;
 
-    //         $biotime_log_id = BiotimeLog::where("employee_id", $employee_id)->first();
-
-    //         $schedule_time_id = ScheduleTime::where("employee_id", $employee_id)->first();
-
-    //         Timekeeping::create([
-    //             "employee_id"=> $employee_id,
-    //             "biometric_number"=> $employee->biometric_number,
-    //             "biotime_log_id"=> $biotime_log_id,
-    //             "schedule_time_id"=> $schedule_time_id,
-    //             "date"=> $request->date,
-    //             "regular_overtime"=> $request->regular_overtime,
-    //             "night_diff_overtime"=> $request->nigh_diff_overtime,
-    //             "legal_holiday_overtime"=> $request->legal_holiday_overtime,
-    //             "special_holiday_overtime"=> $request->special_holiday_overtime,
-    //             "overtime_status"=> $request->overtime_status 
+    //         Overtime::create([
+    //             "date_filed"=> $request->date_filed,
+    //             "biometrics_id"=> $employee->biometric_number,
+    //             "overtime_date"=> $request->overtime_date,
+    //             "purpose"=> $request->purpose,
+    //             "total_hours"=> $request->total_hours,
+    //             "status"=> $request->status,
     //         ]);
 
     //     } catch(Exception $e) {
@@ -204,24 +195,23 @@ class OvertimeController extends Controller
         try {
             DB::beginTransaction();
             $request->validate([
-                "date"=> "required",
-                "regular_overtime"=> "required",
-                "night_diff_overtime"=> "required",
-                "legal_holiday_overtime"=> "required",
-                "special_holiday_overtime"=> "required",
+                "overtime_date"=> "required",
+                "purpose"=> "required",
+                "total_hours"=> "required",
+                "status"=> "required",
             ]);
 
             $employee = Employee::where("id", $request->employee_id)->first();
 
-            $timekeeping = Timekeeping::find( $request->id);
+            $overtime = Overtime::find( $request->id);
 
-            $timekeeping->update([
-                "employee_id"=> $employee->id,
-                "date"=> $request->date,
-                "regular_overtime"=> $request->regular_overtime,
-                "night_diff_overtime"=> $request->night_diff_overtime,
-                "legal_holiday_overtime"=> $request->legal_holiday_overtime,
-                "special_holiday_overtime"=> $request->special_holiday_overtime,
+            $overtime->update([
+                "date_filed"=> $request->date_filed,
+                "biometrics_id"=> $employee->biometric_number,
+                "overtime_date"=> $request->overtime_date,
+                "purpose"=> $request->purpose,
+                "total_hours"=> $request->total_hours,
+                "status"=> $request->status,
             ]);
 
             DB::commit();
@@ -251,8 +241,8 @@ class OvertimeController extends Controller
                 $storage->put($filePath, file_get_contents($file));
                 
                 ProcessOvertimeImport::dispatch($filePath);
+                return $this->sendResponse(["message" => "Excel file imported successfully"]);
             }
-            return $this->sendResponse(["message" => "Excel file imported successfully"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
