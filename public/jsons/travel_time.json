@@ -1,0 +1,480 @@
+{
+    "travel_time": [
+        {
+        "branches": "1EC",
+        "time_travelled": 1
+        },
+        {
+        "branches": "ANG",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "ANX",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "BAG",
+        "time_travelled": 6.5
+        },
+        {
+        "branches": "BAT",
+        "time_travelled": 4
+        },
+        {
+        "branches": "BAY",
+        "time_travelled": 1
+        },
+        {
+        "branches": "BCR",
+        "time_travelled": 1.5
+        },
+        {
+        "branches": "BFH",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "BIC",
+        "time_travelled": 2
+        },
+        {
+        "branches": "BTG",
+        "time_travelled": 5
+        },
+        {
+        "branches": "BWG",
+        "time_travelled": 3
+        },
+        {
+        "branches": "CAL",
+        "time_travelled": 3
+        },
+        {
+        "branches": "CGC",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "CLA",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "CLN",
+        "time_travelled": 1.5
+        },
+        {
+        "branches": "CMW",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "CNC",
+        "time_travelled": 1
+        },
+        {
+        "branches": "CPS",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "CSP",
+        "time_travelled": 3
+        },
+        {
+        "branches": "CUB",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "DAG",
+        "time_travelled": 5.5
+        },
+        {
+        "branches": "DSM",
+        "time_travelled": 3.5
+        },
+        {
+        "branches": "ERM",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "FES",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "FSH",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "FVW",
+        "time_travelled": 1
+        },
+        {
+        "branches": "GAL",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "GAP",
+        "time_travelled": 5
+        },
+        {
+        "branches": "GH2",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "GHT",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "GRA",
+        "time_travelled": 2
+        },
+        {
+        "branches": "GWY",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "HMS",
+        "time_travelled": 2
+        },
+        {
+        "branches": "IMU",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "JAZ",
+        "time_travelled": 1
+        },
+        {
+        "branches": "LAS",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "LIP",
+        "time_travelled": 3
+        },
+        {
+        "branches": "LUC",
+        "time_travelled": 5
+        },
+        {
+        "branches": "MAG",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "MAN",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "MAR",
+        "time_travelled": 1
+        },
+        {
+        "branches": "MAT",
+        "time_travelled": 1.5
+        },
+        {
+        "branches": "MEG2",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "MKT",
+        "time_travelled": 1.5
+        },
+        {
+        "branches": "MKY",
+        "time_travelled": 2
+        },
+        {
+        "branches": "MLL",
+        "time_travelled": 2
+        },
+        {
+        "branches": "MMT",
+        "time_travelled": 2
+        },
+        {
+        "branches": "MOA",
+        "time_travelled": 1
+        },
+        {
+        "branches": "MOL",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "MRL",
+        "time_travelled": 2
+        },
+        {
+        "branches": "MSG",
+        "time_travelled": 1
+        },
+        {
+        "branches": "MUN",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "NED",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "NOV",
+        "time_travelled": 1
+        },
+        {
+        "branches": "OAY",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "PAM",
+        "time_travelled": 2
+        },
+        {
+        "branches": "PAS",
+        "time_travelled": 1
+        },
+        {
+        "branches": "PAV",
+        "time_travelled": 3
+        },
+        {
+        "branches": "RAN",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "RIM",
+        "time_travelled": 2
+        },
+        {
+        "branches": "RLP",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "RNV",
+        "time_travelled": 1
+        },
+        {
+        "branches": "RSL",
+        "time_travelled": 4.5
+        },
+        {
+        "branches": "RSM",
+        "time_travelled": 2
+        },
+        {
+        "branches": "RSP",
+        "time_travelled": 3
+        },
+        {
+        "branches": "RSR",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "SAN",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "SCB",
+        "time_travelled": 4
+        },
+        {
+        "branches": "SCC",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "SCO",
+        "time_travelled": 4
+        },
+        {
+        "branches": "SCT2",
+        "time_travelled": 2
+        },
+        {
+        "branches": "SEO",
+        "time_travelled": 1.5
+        },
+        {
+        "branches": "SER",
+        "time_travelled": 4
+        },
+        {
+        "branches": "SIM",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "SJO",
+        "time_travelled": 2
+        },
+        {
+        "branches": "SLM",
+        "time_travelled": 1
+        },
+        {
+        "branches": "SLR",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "SOL",
+        "time_travelled": 3
+        },
+        {
+        "branches": "SPA",
+        "time_travelled": 3.5
+        },
+        {
+        "branches": "SRS",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "SSM",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "SST",
+        "time_travelled": 4
+        },
+        {
+        "branches": "STM",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "TAN",
+        "time_travelled": 3.5
+        },
+        {
+        "branches": "TAY",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "TEL",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "TER",
+        "time_travelled": 1
+        },
+        {
+        "branches": "TLC",
+        "time_travelled": 3.5
+        },
+        {
+        "branches": "TMS",
+        "time_travelled": 3.5
+        },
+        {
+        "branches": "TOL",
+        "time_travelled": 3
+        },
+        {
+        "branches": "TTB",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "TZA",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "UCC",
+        "time_travelled": 1
+        },
+        {
+        "branches": "URD",
+        "time_travelled": 5
+        },
+        {
+        "branches": "VLZ",
+        "time_travelled": 1
+        },
+        {
+        "branches": "VMS",
+        "time_travelled": 3
+        },
+        {
+        "branches": "WCM",
+        "time_travelled": 3
+        },
+        {
+        "branches": "WDM",
+        "time_travelled": 3
+        },
+        {
+        "branches": "WNE",
+        "time_travelled": "-"
+        },
+        {
+        "branches": "WSM",
+        "time_travelled": 2
+        },
+        {
+        "branches": "WSR",
+        "time_travelled": 2.5
+        },
+        {
+        "branches": "COS",
+        "time_travelled": 11
+        },
+        {
+        "branches": "DAE",
+        "time_travelled": 10
+        },
+        {
+        "branches": "LAU",
+        "time_travelled": 7.5
+        },
+        {
+        "branches": "LGP",
+        "time_travelled": 11.5
+        },
+        {
+        "branches": "NAG",
+        "time_travelled": 9.5
+        },
+        {
+        "branches": "SLG",
+        "time_travelled": 13
+        },
+        {
+        "branches": "SOR",
+        "time_travelled": 15
+        },
+        {
+        "branches": "TGG",
+        "time_travelled": 11
+        },
+        {
+        "branches": "CDO2",
+        "time_travelled": 0
+        },
+        {
+        "branches": "CSN",
+        "time_travelled": 0
+        },
+        {
+        "branches": "DAV",
+        "time_travelled": 0
+        },
+        {
+        "branches": "GMD",
+        "time_travelled": 0
+        },
+        {
+        "branches": "ILO",
+        "time_travelled": 0
+        },
+        {
+        "branches": "LNG",
+        "time_travelled": 0
+        },
+        {
+        "branches": "PRI",
+        "time_travelled": 0
+        },
+        {
+        "branches": "SCE",
+        "time_travelled": 0
+        },
+        {
+        "branches": "SEA",
+        "time_travelled": 0
+        },
+        {
+        "branches": "SIL",
+        "time_travelled": 0
+        }
+    ]
+}

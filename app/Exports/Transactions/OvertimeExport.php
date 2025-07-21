@@ -19,15 +19,14 @@ class OvertimeExport implements FromCollection, WithHeadings
     {
         return $this->overtime->map(function ($unique_overtime) {
             return [
+                $unique_overtime->date_filed,
                 $unique_overtime->employee->full_name,
-                $unique_overtime->biometric_number,
                 $unique_overtime->employee->current_branch->name,
-                $unique_overtime->date,
-                $unique_overtime->regular_overtime,
-                $unique_overtime->legal_holiday_overtime,
-                $unique_overtime->special_holiday_overtime,
-                $unique_overtime->night_diff_overtime,
-                $unique_overtime->overtime_status,
+                $unique_overtime->employee->current_position->description,
+                $unique_overtime->overtime_date,
+                $unique_overtime->purpose,
+                $unique_overtime->total_hours,
+                $unique_overtime->status,
             ];
         });
     }
@@ -35,15 +34,14 @@ class OvertimeExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
+            'Date Filed',
             'Name',
-            'Biometric Number',
             'Branch',
-            'Date',
-            'Regular Overtime',
-            'Legal Holiday Overtime',
-            'Special Holiday Overtime',
-            'Night Diff Overtime',
-            'Overtime Status',
+            'Position',
+            'Overtime Date',
+            'Total Hours',
+            'Purpose',
+            'Status',
         ];
     }
 }

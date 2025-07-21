@@ -3,13 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Branch;
-use DateTime;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
-use DB;
-use Log;
-
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class BranchSeeder extends Seeder
 {
@@ -70,6 +67,22 @@ class BranchSeeder extends Seeder
                         "device_name" => $terminal["sn"]
                     ]);
                 }
+            }
+        }
+
+        $jsonPath = public_path('jsons/travel_time.json');
+        $jsonData = file_get_contents($jsonPath);
+        $travelled_time = json_decode($jsonData, true);
+        $unique_travelled_time = array_map("unserialize", array_unique(array_map("serialize", $travelled_time["travel_time"])));
+
+        foreach ($unique_travelled_time as $travel_time) {
+
+            $branch = Branch::where("short_name", $travel_time["branches"])->first();
+
+            if ($branch) {
+                $branch->update([
+                    "travel_time" => $travel_time["time_travelled"]
+                ]);
             }
         }
     }
