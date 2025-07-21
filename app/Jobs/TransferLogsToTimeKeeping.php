@@ -47,12 +47,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 ->first();
 
                 $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)->first();
+                $travel_time = 0;
 
                 if ($log) {
                     $isCancelledOff = false;
-                    if ($schedule->selection === "REST DAY") {
-                        $isCancelledOff = true;
-                    }
 
                     $scheduleStart = Carbon::parse($log->date. " " .$schedule->start_time)->seconds(0);
                     $scheduleEnd = Carbon::parse($log->date. " " .$schedule->end_time)->seconds(0);
@@ -69,31 +67,13 @@ class TransferLogsToTimeKeeping implements ShouldQueue
 
                     $firstPunch = $log->punches()->orderBy("punch_time", "ASC")->first();
                     $lastPunch = $log->punches()->orderBy("punch_time", "DESC")->first();
-
                     $parsedFirstPunch = Carbon::parse($firstPunch->punch_time)->seconds(0);
                     $parsedLastPunch = Carbon::parse($lastPunch->punch_time)->seconds(0);
                     $diffInSeconds = $parsedLastPunch ->diffInSeconds($parsedFirstPunch);
                     $decimalHours = $diffInSeconds / 3600;
-                    $workHours = $decimalHours;
+
+                    $workHours += $decimalHours;
                     $tardiness = 0;
-
-                    if (strtolower($schedule->selection) !== "flex") {
-                        $tardiness += $scheduleStart->diffInMinutes($parsedFirstPunch, false) > 0 
-                            ? $scheduleStart->diffInMinutes($parsedFirstPunch, false) 
-                            : 0;
-                    }
-
-                    $overtime = $workHours - $schedule->total_hours >= 1 ? $workHours - $schedule->total_hours : 0;
-                    
-                    $holiday = Holiday::whereHas("branches", function($query) use ($employee) {
-                        $query->where("branches.id", $this->branchId);
-                    })->where("date", $log->date)->first();
-                    
-                    if ($tardiness >= 120) {
-                        $workHours = $schedule->total_hours / 2;
-                        $tardiness = 0;
-                    }
-
                     $legalHoliday = "No";
                     $specialHoliday = "No";
                     $legalHolidayHours = 0;
@@ -104,23 +84,92 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     $nightDiffHours = 0;
                     $nightDiffOt = 0;
 
-                    if ($workHours < $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd)) {       
-                        $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
+                    if (strtolower($schedule->selection) !== "flex") {
+                        $tardiness += $scheduleStart->diffInMinutes($parsedFirstPunch, false) > 0 
+                            ? $scheduleStart->diffInMinutes($parsedFirstPunch, false) 
+                            : 0;
                     }
 
 
+                    //overtime computation
+                    $overtimeWorkedHours = $scheduleStart->diffInHours($parsedLastPunch);
+                    $overtime = $overtimeWorkedHours - $schedule->total_hours >= 1 ? $overtimeWorkedHours - $schedule->total_hours : 0;
+
+                    if ($schedule->selection === "REST DAY") {
+                        $isCancelledOff = true;
+                        $overtime = $workHours;
+                    }
+                    
+                    $holiday = Holiday::whereHas("branches", function($query) use ($employee) {
+                        $query->where("branches.id", $this->branchId);
+                    })->where("date", $log->date)->first();
+                    
+                    if ($tardiness >= 120) {
+                        $workHours = $schedule->total_hours / 2;
+                        $tardiness = 0;
+                    }
+
+                    //undertime computation
+                    if ($workHours < $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd) && $workHours > ($schedule->total_hours / 2)) {       
+                        $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
+                    }
+                    if ($workHours < ($schedule->total_hours / 2)) {
+                        $halfScheduleTime = $scheduleStart->copy()->addMinutes($scheduleStart->diffInMinutes($scheduleEnd) / 2);
+                        $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true);
+                    }
+
+                    //holiday computation
                     if ($holiday) {
                         $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";
                         $specialHoliday = $holiday->holiday_type === "SH" ? "Yes" : "No";
-                        
+
+                        $holidayWorkingHours = $scheduleStart->diffInSeconds($parsedLastPunch);
+                        $holidayWorkedHours = $holidayWorkingHours - ($scheduledBreakInMinutes * 60);
+                        $totalHolidayWorkedHours = $holidayWorkedHours / 3600;
+
                         if ($legalHoliday === "Yes") {
-                            $legalHolidayHours = $workHours;
+                            $legalHolidayHours = $totalHolidayWorkedHours;
                             $legalHolidayOvertime = $overtime;
                         }
 
                         if ($specialHoliday === "Yes") {
-                            $specialHolidayHours = $workHours;
+                            $specialHolidayHours = $totalHolidayWorkedHours;
                             $specialHolidayOvertime = $overtime;
+                        }
+
+                        $overtime = 0;
+                    }
+
+                    if (
+                        $schedule->selection === "Spot Audit" ||
+                        $schedule->selection === "MEI 08:00 TO 06:30" ||
+                        $schedule->selection === "MEI 09:00 TO 19:30" ||
+                        $schedule->selection === "Flex" ||
+                        $schedule->selection === "Flex 1" ||
+                        $schedule->selection === "Flex 2"
+                    ) {
+                        $punches = $log->punches()->orderBy("punch_time", "ASC")->get();
+                        $firstPunch = $punches[0];
+
+                        $punchWithTravelTime = $punches->first(function ($punch) {
+                            return $punch->branch && $punch->branch->travel_time;
+                        });
+
+                        if ($firstPunch->branch_id === null) {
+                            $travel_time = $punchWithTravelTime->branch->travel_time ?? 0;
+                        } else {
+                            $travel_time = $punchWithTravelTime->branch->travel_time ? $punchWithTravelTime->branch->travel_time * 2 :  0;
+                        }
+
+                        $workHours += (int) $travel_time;
+                        $undertime = 0;
+                        $tardiness = 0;
+                        $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
+                        if ($totalWorkedHours < 9.5 && $totalWorkedHours >= 7 ) {
+                            $totalWorkedHours = 9.5;
+                        }
+                        if ($totalWorkedHours > 9.5) {
+                            $overtime = $totalWorkedHours - 9.5 < 1 ? 0 : $totalWorkedHours - 9.5;
                         }
                     }
 
@@ -262,6 +311,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
 
                     if ($schedule->selection == "NO SCHEDULE" || strtolower($schedule->selection) === "flex") {
                         $tardiness = 0;
+
+                        if ($schedule->selection == "NO SCHEDULE") {
+                            $overtime = $decimalHours;
+                        }
                     }
                     
                     if ($log->punches()->count() > 1) {
@@ -284,7 +337,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                             "special_holiday_overtime" => $specialHolidayOvertime,
                             "undertime" => $undertime,
                             "is_cancelled_off" => $isCancelledOff,
-                            "branch_id" => $this->branchId
+                            "branch_id" => $this->branchId,
+                            "travel_time" => $travel_time
                         ]);
         
                         $log->update([
@@ -320,6 +374,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
 
             DB::commit();
         } catch (Exception $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
         }
     }

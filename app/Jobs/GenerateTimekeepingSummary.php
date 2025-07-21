@@ -62,9 +62,13 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
                     ->first();
 
+                    if ($schedule->selection === "SUSPENSION") {
+                        continue;
+                    }
+
                     if ($schedule->total_hours / 2 < $timeKeep->worked_hours && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
-                    } else if (($schedule->total_hours / 2 == $timeKeep->worked_hours || $schedule->total_hours / 2 > $timeKeep->worked_hours ) && !$timeKeep->is_cancelled_off) {
+                    } else if (($schedule->total_hours / 2 == $timeKeep->worked_hours || $schedule->total_hours / 2 > $timeKeep->worked_hours ) && $schedule->worked_hours > 0 && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
                     }
 
@@ -118,6 +122,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($timeKeep->undertime > 0) {
                         $undertime += (int) $timeKeep->undertime;
+                    }
+
+                    if ($timeKeep->travel_time > 0) {
+                        $travel_time += (int) $timeKeep->travel_time;
                     }
                 }
 

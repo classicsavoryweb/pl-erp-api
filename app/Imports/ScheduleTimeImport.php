@@ -13,7 +13,7 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
 {
     public function headingRow(): int
     {
-        return 1; 
+        return 2; 
     }
 
     public function collection(Collection $collection)
@@ -45,7 +45,7 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
                     "timetable" => $row["timetable"],
                     "check_in" => $checkIn,
                     "check_out" => $checkOut,
-                    "branch_id" => $branch->id
+                    "branch_id" => $branch->id ?? $employee->branch_id
                 ]);
             }
         }

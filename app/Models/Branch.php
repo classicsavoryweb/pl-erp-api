@@ -60,6 +60,10 @@ class Branch extends Model
         return $this->belongsTo(TimeKeeping::class);
     }
 
+    public function biotime_punch() {
+        return $this->belongsTo(BiotimePunch::class);
+    }
+
     public function time_keeping_summary() {
         return $this->belongsTo(TimeKeepingSummary::class);
     }

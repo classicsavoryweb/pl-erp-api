@@ -13,12 +13,17 @@ class BiotimePunch extends Model
         "biotime_log_id",
         "date",
         "punch_time",
-        "remarks"
+        "remarks",
+        "branch_id"
     ];
 
     protected $table="biotime_punches";
 
     public function biotime() {
         return $this->belongsTo(BiotimeLog::class);
+    }
+
+    public function branch() {
+        return $this->hasOne(Branch::class, "id", "branch_id");
     }
 }

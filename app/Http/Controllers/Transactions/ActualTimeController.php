@@ -70,7 +70,8 @@ class ActualTimeController extends Controller
 
             $bioTimeLogs = $bioTimeLogs->with([
                 "employee",
-                "punches"
+                "punches",
+                "punches.branch"
             ])
             ->paginate($perPage);
 
