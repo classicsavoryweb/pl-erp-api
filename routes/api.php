@@ -299,9 +299,9 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_transactions_overtime"])->post("/create-overtime", [OvertimeController::class, "createOvertime"]);
     Route::middleware(["permission:perform_transactions_overtime"])->post("/edit-overtime/{id}", [OvertimeController::class, "editOvertime"]);
     Route::middleware(["permission:import_all_transactions_overtime"])->post("/import-overtime", [OvertimeController::class, "importOvertimeExcel"]);
-    Route::middleware(["permission:pay_all_transactions_overtime"])->get("/pay-overtime/{id}", [OvertimeController::class, "payOvertime"]);
-    Route::middleware(["permission:pay_all_transactions_overtime"])->post("/pay-all-overtime", [OvertimeController::class, "payBulkOvertime"]);
-    Route::middleware(["permission:unpay_all_transactions_overtime"])->get("/unpay-overtime/{id}", [OvertimeController::class, "unpayOvertime"]);
+    Route::middleware(["permission:approve_all_transactions_overtime"])->get("/approve-overtime/{id}", [OvertimeController::class, "approveOvertime"]);
+    Route::middleware(["permission:approve_all_transactions_overtime"])->post("/approve-all-overtime", [OvertimeController::class, "approveBulkOvertime"]);
+    Route::middleware(["permission:unapprove_all_transactions_overtime"])->get("/unapprove-overtime/{id}", [OvertimeController::class, "unapproveOvertime"]);
     //time keeping
     Route::middleware(["permission:perform_transactions_time_keeping"])->post("/generate-time-keeping", [TimeKeepingController::class, "generateTimeKeeping"]);
     Route::get("/get-all-time-keeping", [TimeKeepingController::class, "getAllTimeKeeping"]);

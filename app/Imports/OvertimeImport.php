@@ -30,6 +30,8 @@ class OvertimeImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
+            $employee_id = $employee->id;
+
             $biometric_number = $employee->biometric_number;
 
             $formattedDateFiled = is_numeric($row["date_filed"])
@@ -49,14 +51,24 @@ class OvertimeImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
+            $status = ucfirst($row["status"]);
+            if ($status === 'Paid') {
+                $status = 'Approved';
+            } else {
+                $status = 'Unapproved';
+            }
+
+
             Overtime::create([
                 "date_filed" => $formattedDateFiled,
+                "employee_id"=> $employee_id,
                 "biometrics_id" => $biometric_number,
                 "overtime_date" => $formattedOvertimeDate,
                 "purpose" => $row["purpose"],
                 "total_hours" => $row["total_hours"],
-                "status" => ucfirst($row["status"]),
+                "status" => $status,
             ]);
         }
     }
 }
+
