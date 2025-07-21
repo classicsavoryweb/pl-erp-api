@@ -69,6 +69,21 @@ class BranchSeeder extends Seeder
                 }
             }
         }
-        
+
+        $jsonPath = public_path('jsons/travel_time.json');
+        $jsonData = file_get_contents($jsonPath);
+        $travelled_time = json_decode($jsonData, true);
+        $unique_travelled_time = array_map("unserialize", array_unique(array_map("serialize", $travelled_time["travel_time"])));
+
+        foreach ($unique_travelled_time as $travel_time) {
+
+            $branch = Branch::where("short_name", $travel_time["branches"])->first();
+
+            if ($branch) {
+                $branch->update([
+                    "travel_time" => $travel_time["time_travelled"]
+                ]);
+            }
+        }
     }
 }
