@@ -99,7 +99,7 @@ class OvertimeController extends Controller
 
     public function getOvertime(Request $request) {
         try {
-            $overtime = Overtime::where("status", "paid")->get();
+            $overtime = Overtime::where("status", "approved")->get();
             return $this->sendResponse(["overtime" => $overtime]);
         } catch(Exception $e) {
 
@@ -107,7 +107,7 @@ class OvertimeController extends Controller
         }
     }
 
-    public function payBulkOvertime(Request $request) {
+    public function approvedBulkOvertime(Request $request) {
         try {
             DB::beginTransaction();
             $request->validate([
@@ -118,46 +118,46 @@ class OvertimeController extends Controller
                 $unique_overtime = Overtime::find($overtime);
 
                 $unique_overtime->update([
-                    "status" => "Paid"
+                    "status" => "Approved"
                 ]);
             }
 
             DB::commit();
-            return $this->sendResponse(["message" => "Selected overtime paid successfully"]);
+            return $this->sendResponse(["message" => "Selected overtime approved successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
-    public function payOvertime ($id) {
+    public function approveOvertime ($id) {
         try {
             DB::beginTransaction();
             $overtime = Overtime::find($id);
 
             $overtime->update([
-                "status" => "Paid"
+                "status" => "Approved"
             ]);
 
             DB::commit();
-            return $this->sendResponse(["message" => "Overtime paid successfully"]);
+            return $this->sendResponse(["message" => "Overtime approved successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
-    public function unpayOvertime ($id) {
+    public function unapprovedOvertime ($id) {
         try {
             DB::beginTransaction();
             $overtime = Overtime::find($id);
 
             $overtime->update([
-                "status" => "Unpaid"
+                "status" => "Unapproved"
             ]);
 
             DB::commit();
-            return $this->sendResponse(["message" => "Overtime unpaid successfully"]);
+            return $this->sendResponse(["message" => "Overtime unapproved successfully"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
@@ -207,6 +207,7 @@ class OvertimeController extends Controller
 
             $overtime->update([
                 "date_filed"=> $request->date_filed,
+                "employee_id"=> $employee->id,
                 "biometrics_id"=> $employee->biometric_number,
                 "overtime_date"=> $request->overtime_date,
                 "purpose"=> $request->purpose,
