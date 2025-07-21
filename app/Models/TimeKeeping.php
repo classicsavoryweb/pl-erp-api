@@ -33,7 +33,8 @@ class TimeKeeping extends Model
         "is_cancelled_off",
         "travel_time",
         "overtime_status",
-        "branch_id"
+        "branch_id",
+        "approved_overtime"
     ];
 
     public function employee() {
