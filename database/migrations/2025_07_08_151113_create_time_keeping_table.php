@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string("special_holiday_overtime")->nullable();
             $table->string("tardiness")->nullable();
             $table->string("undertime")->nullable();
-            $table->string("remarks")->nullable();
+            $table->longText("remarks")->nullable();
             $table->timestamps();
         });
     }

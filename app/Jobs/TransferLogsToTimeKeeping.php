@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\BiotimeLog;
 use App\Models\Holiday;
+use App\Models\Overtime;
 use App\Models\ScheduleMasterlist;
 use App\Models\ScheduleTime;
 use App\Models\TimeKeeping;
@@ -33,7 +34,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
     {
         try {
             DB::beginTransaction();
-            
+
             $schedules = ScheduleTime::where("branch_id", $this->branchId)
             ->whereBetween("date", $this->cutOff)
             ->get();
@@ -85,8 +86,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     $nightDiffOt = 0;
 
                     if (strtolower($schedule->selection) !== "flex") {
-                        $tardiness += $scheduleStart->diffInMinutes($parsedFirstPunch, false) > 0 
-                            ? $scheduleStart->diffInMinutes($parsedFirstPunch, false) 
+                        $tardiness += $scheduleStart->diffInMinutes($parsedFirstPunch, false) > 0
+                            ? $scheduleStart->diffInMinutes($parsedFirstPunch, false)
                             : 0;
                     }
 
@@ -99,18 +100,18 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         $isCancelledOff = true;
                         $overtime = $workHours;
                     }
-                    
+
                     $holiday = Holiday::whereHas("branches", function($query) use ($employee) {
                         $query->where("branches.id", $this->branchId);
                     })->where("date", $log->date)->first();
-                    
+
                     if ($tardiness >= 120) {
                         $workHours = $schedule->total_hours / 2;
                         $tardiness = 0;
                     }
 
                     //undertime computation
-                    if ($workHours < $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd) && $workHours > ($schedule->total_hours / 2)) {       
+                    if ($workHours < $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd) && $workHours > ($schedule->total_hours / 2)) {
                         $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
                     }
                     if ($workHours < ($schedule->total_hours / 2)) {
@@ -263,7 +264,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         ->get();
 
                         $durations = [];
-                        
+
                         for ($i = 0; $i < $punches->count() - 1; $i++) {
                             $currentPunch = $punches[$i];
                             $nextPunch = $punches[$i + 1];
@@ -298,13 +299,15 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     }
 
                     $tenPM = Carbon::parse($log->date." ".'22:00:00');
-                    if ($scheduleEnd->greaterThan($tenPM) && $parsedLastPunch->greaterThan($tenPM)) {
+                    //FLEX TO BE CHANGED
+                    if (($scheduleEnd->greaterThan($tenPM) && $parsedLastPunch->greaterThan($tenPM)) || strtolower($schedule->selection) === "flex" ) {
                         $nightDiffSeconds = $scheduleEnd->diffInSeconds($tenPM);
                         $nightDiffHours = $nightDiffSeconds / 3600;
                         $nightDiffOt = $overtime;
                     }
 
-                    if ($tenPM->greaterThanOrEqualTo($scheduleEnd) && $parsedLastPunch->greaterThan($tenPM)) {
+                    //FLEX TO BE CHANGED
+                    if (($tenPM->greaterThanOrEqualTo($scheduleEnd) && $parsedLastPunch->greaterThan($tenPM)) || strtolower($schedule->selection) === "flex" ) {
                         $nightDiffOtSeconds = $parsedLastPunch->diffInSeconds($tenPM);
                         $nightDiffOt = $nightDiffOtSeconds / 3600;
                     }
@@ -316,8 +319,36 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                             $overtime = $decimalHours;
                         }
                     }
-                    
+
                     if ($log->punches()->count() > 1) {
+
+                        $overtimeApplied = Overtime::where("employee_id", $employee->id)
+                        ->where("overtime_date", $log->date)
+                        ->first();
+
+                        $generalOvertime = $overtime;
+                        $approvedOvertime = 0;
+                        $remarks = null;
+                        if ($legalHoliday === "Yes") {
+                            $generalOvertime = $legalHolidayHours;
+                        }
+                        if ($specialHoliday === "Yes") {
+                            $generalOvertime = $specialHolidayHours;
+                        }
+
+                        if ($overtimeApplied) {
+                            if ($overtimeApplied->total_hours > $generalOvertime) {
+                                $approvedOvertime = $overtimeApplied->total_hours;
+                                $overtimeApplied->update([
+                                    "status" => "Approved"
+                                ]);
+                            } else {
+                                $remarks = $remarks === null
+                                    ? "Approved overtime is higher than the computed overtime from the system."
+                                    : "\nApproved overtime is higher than the computed overtime from the system.";
+                            }
+                        }
+
                         TimeKeeping::create([
                             "employee_id" => $employee->id,
                             "biometric_number" => $employee->biometric_number,
@@ -338,9 +369,11 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                             "undertime" => $undertime,
                             "is_cancelled_off" => $isCancelledOff,
                             "branch_id" => $this->branchId,
-                            "travel_time" => $travel_time
+                            "travel_time" => $travel_time,
+                            "approved_overtime" => $approvedOvertime,
+                            "remarks" => $remarks
                         ]);
-        
+
                         $log->update([
                             "is_transferred" => true
                         ]);
@@ -367,10 +400,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                             "undertime" => 0,
                             "is_cancelled_off" => false,
                             "branch_id" => $this->branchId
-                        ]);                  
+                        ]);
                     }
                 }
-            } 
+            }
 
             DB::commit();
         } catch (Exception $e) {

@@ -88,10 +88,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         ];
                     }
 
-                    if ($timeKeep->regular_overtime > 0) {
-                        $regular_overtime += (floor($timeKeep->regular_overtime * 2) / 2);
-                    }
-
                     if ($timeKeep->special_holiday_hours > 0) {
                         $special_holiday += (floor($timeKeep->special_holiday_hours * 2) / 2);
                     }
@@ -104,19 +100,31 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $legal_holiday_overtime += (floor($timeKeep->legal_holiday_overtime * 2) / 2);
                     }
 
-                    if ($timeKeep->special_holiday_overtime > 0) {
-                        $special_holiday_overtime += (floor($timeKeep->special_holiday_overtime * 2) / 2);
-                    }
+                    // if ($timeKeep->regular_overtime > 0) {
+                    //     $regular_overtime += (floor($timeKeep->regular_overtime * 2) / 2);
+                    // }
 
-                    if ($timeKeep->legal_holiday_overtime > 0) {
-                        $legal_holiday_overtime += (floor($timeKeep->legal_holiday_overtime * 2) / 2);
+                    // if ($timeKeep->special_holiday_overtime > 0) {
+                    //     $special_holiday_overtime += (floor($timeKeep->special_holiday_overtime * 2) / 2);
+                    // }
+
+                    // if ($timeKeep->legal_holiday_overtime > 0) {
+                    //     $legal_holiday_overtime += (floor($timeKeep->legal_holiday_overtime * 2) / 2);
+                    // }
+
+                    if ($timeKeep->legal_holiday === "Yes") {
+                        $legal_holiday_overtime += $timeKeep->approved_overtime;
+                    } else if ($timeKeep->special_holiday === "Yes") {
+                        $special_holiday_overtime += $timeKeep->approved_overtime;
+                    } else {
+                        $regular_overtime += $timeKeep->approved_overtime;
                     }
 
                     if ($timeKeep->night_diff_hours > 0) {
                         $night_differential += (floor($timeKeep->night_diff_hours * 2) / 2);
                     }
 
-                    if ($timeKeep->night_diff_overtime > 0) {
+                    if ($timeKeep->night_diff_overtime > 0 && $timeKeep->night_diff_overtime < $timeKeep->approved_overtime) {
                         $night_differential_overtime += (floor($timeKeep->night_diff_overtime * 2) / 2);
                     }
 
