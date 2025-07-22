@@ -46,13 +46,13 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "view_salary_positions"]);
         Permission::firstOrCreate(["name" => "perform_salary_positions"]);
         Permission::firstOrCreate(["name" => "view_bank_account_types"]);
-        Permission::firstOrCreate(["name" => "perform_bank_account_types"]);        
+        Permission::firstOrCreate(["name" => "perform_bank_account_types"]);
         Permission::firstOrCreate(["name" => "view_vaccine_brand"]);
-        Permission::firstOrCreate(["name" => "perform_vaccine_brand"]);  
+        Permission::firstOrCreate(["name" => "perform_vaccine_brand"]);
         Permission::firstOrCreate(["name" => "view_coe_reasons"]);
         Permission::firstOrCreate(["name" => "perform_coe_reasons"]);
         Permission::firstOrCreate(["name" => "view_acting_capacity_reasons"]);
-        Permission::firstOrCreate(["name" => "perform_acting_capacity_reasons"]); 
+        Permission::firstOrCreate(["name" => "perform_acting_capacity_reasons"]);
         Permission::firstOrCreate(["name" => "view_sanctions"]);
         Permission::firstOrCreate(["name" => "perform_sanctions"]);
         Permission::firstOrCreate(["name" => "view_schedule_type"]);
@@ -127,8 +127,8 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "perform_transactions_time_keeping_summary"]);
         Permission::firstOrCreate(["name" => "view_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "perform_transactions_overtime"]);
-        Permission::firstOrCreate(["name" => "view_transactions_incorrect_logs"]);
-        Permission::firstOrCreate(["name" => "perform_transactions_incorrect_logs"]);
+        Permission::firstOrCreate(["name" => "view_transactions_adjustments"]);
+        Permission::firstOrCreate(["name" => "perform_transactions_adjustments"]);
         Permission::firstOrCreate(["name" => "import_all_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "pay_all_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "unpay_all_transactions_overtime"]);

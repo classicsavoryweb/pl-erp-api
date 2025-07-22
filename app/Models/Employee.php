@@ -66,12 +66,80 @@ class Employee extends Model
         "proper_full_name",
         "formal_full_name",
         "age",
+        "monthly_salary",
+        "daily_salary"
     ];
 
     protected function fullName(): Attribute
     {
         return Attribute::get(
             fn () => "{$this->last_name}, {$this->first_name} {$this->middle_name}"
+        );
+    }
+
+    protected function monthlySalary(): Attribute
+    {
+        $monthlySalary = 0;
+
+        $scheduleType = $this->schedule->schedule_type->name ?? "N/A";
+        $salaryPosition = $this->current_position->salary;
+        $rateCode = $this->home_branch->rate_code;
+
+        if ($scheduleType == "Compressed Schedule") {
+            if ($salaryPosition->rate_category === "MINIMUM") {
+                $minimumRate = Rate::where("code", $rateCode)->first();
+
+                $monthlySalary = $minimumRate->minimum * 26;
+            } else {
+                $monthlySalary = $salaryPosition->basic_salary;
+            }
+        }
+
+        if ($scheduleType == "Normal Schedule") {
+            if ($salaryPosition->rate_category === "MINIMUM") {
+                $minimumRate = Rate::where("code", $rateCode)->first();
+
+                $monthlySalary = $minimumRate->minimum * 26;
+            } else {
+                $monthlySalary = $salaryPosition->basic_salary;
+            }
+        }
+
+        return Attribute::get(
+            fn () => $monthlySalary
+        );
+    }
+
+    protected function dailySalary(): Attribute
+    {
+        $dailySalary = 0;
+
+        $scheduleType = $this->schedule->schedule_type->name ?? "N/A";
+        $salaryPosition = $this->current_position->salary;
+        $rateCode = $this->home_branch->rate_code;
+
+        if ($scheduleType == "Compressed Schedule") {
+            if ($salaryPosition->rate_category === "MINIMUM") {
+                $minimumRate = Rate::where("code", $rateCode)->first();
+
+                $dailySalary = ($minimumRate->minimum * 26) / 22;
+            } else {
+                $dailySalary = $salaryPosition->basic_salary / 22;
+            }
+        }
+
+        if ($scheduleType == "Normal Schedule") {
+            if ($salaryPosition->rate_category === "MINIMUM") {
+                $minimumRate = Rate::where("code", $rateCode)->first();
+
+                $dailySalary = $minimumRate->minimum;
+            } else {
+                $dailySalary = $salaryPosition->basic_salary / 26;
+            }
+        }
+
+        return Attribute::get(
+            fn () => $dailySalary
         );
     }
 
@@ -168,7 +236,7 @@ class Employee extends Model
     public function dependents() {
         return $this->hasMany(Dependents::class, 'employee_id','id');
     }
-    
+
     public function bank_details() {
         return $this->hasMany(BankDetail::class,'employee_id','id');
     }
