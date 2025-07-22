@@ -253,7 +253,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-schedule-type", [ScheduleTypeController::class, "getScheduleTypes"]);
     Route::middleware(["permission:perform_schedule_type"])->post("/add-schedule-type", [ScheduleTypeController::class, "createScheduleType"]);
     Route::middleware(["permission:perform_schedule_type"])->post("/edit-schedule-type/{id}", [ScheduleTypeController::class, "editScheduleType"]);
-    
+
     //REPORTS MODULE
     //employee offenses
     Route::get("/get-all-reports-offenses", [ReportsOffensesController::class, "getAllEmployeeOffenses"]);
@@ -283,7 +283,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-reports-nte-details/{id}", [ReportsTardinessController::class, "getNTEDetails"]);
     //employment status
     Route::middleware(["permission:perform_all_records_employment_status"])->get("/get-employment-status-report", [ReportsEmploymentStatusController::class, "getEmploymentStatusReports"]);
-    
+
     //TRANSACTIONS MODULE
     //schedule time
     Route::get("/get-all-transactions-schedule-time", [ScheduleTimeController::class, "getAllTransactionsScheduleTime"]);
@@ -292,6 +292,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/import-transactions-schedule-time", [ScheduleTimeController::class, "importTransactionsScheduleTimeExcel"]);
     //actual logs
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
+    Route::middleware(["permission:perform_transactions_actual_time"])->post("/edit-biotime-punch/{id}", [ActualTimeController::class, "editBiotimePunch"]);
     //overtime
     Route::get("/get-all-overtime", [OvertimeController::class, "getAllOvertime"]);
     Route::get("/get-overtime", [OvertimeController::class, "getOvertime"]);

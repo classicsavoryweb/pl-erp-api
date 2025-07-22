@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Transactions;
 use App\Http\Controllers\Controller;
 use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\BiotimeLog;
+use App\Models\BiotimePunch;
 use Exception;
 use Illuminate\Http\Request;
 use Str;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 class ActualTimeController extends Controller
 {
@@ -77,6 +79,42 @@ class ActualTimeController extends Controller
 
             return $this->sendResponse($bioTimeLogs);
         } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function editBiotimePunch(Request $request, $bioTimeID) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "punches" => "required",
+            ]);
+
+            $user = Auth::user();
+            $biotime = BiotimeLog::find($bioTimeID);
+
+            if ($biotime) {
+                foreach ($request->punches as $punch) {
+                    if (isset($punch["id"])) {
+                        $biotime->punches()
+                        ->where("id", $punch["id"])
+                        ->update([
+                            "punch_time" => $punch["punch_time"],
+                        ]);
+                    } else {
+                        $biotime->punches()->create([
+                            "date" => $biotime->date,
+                            "punch_time" => $punch["punch_time"],
+                            "remarks" => "Added by ".$user->full_name
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Biotime punches saved successfully."]);
+        } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }

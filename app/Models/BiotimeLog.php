@@ -45,6 +45,6 @@ class BiotimeLog extends Model
     }
 
     public function punches() {
-        return $this->hasMany(BiotimePunch::class, "biotime_log_id", "id");
+        return $this->hasMany(BiotimePunch::class, "biotime_log_id", "id")->orderBy("punch_time", "asc");
     }
 }
