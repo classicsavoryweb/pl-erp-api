@@ -164,33 +164,6 @@ class OvertimeController extends Controller
         }
     }
 
-    // public function createOvertime(Request $request) {
-    //     try {
-    //         $request->validate([
-    //             "overtime_date"=> "required",
-    //             "purpose"=> "required",
-    //             "total_hours"=> "required",
-    //             "status"=> "required",
-    //         ]);
-
-    //         $employee = Employee::where("employee_number", $request->employee_number)->first();
-
-    //         $employee_id = $employee->id;
-
-    //         Overtime::create([
-    //             "date_filed"=> $request->date_filed,
-    //             "biometrics_id"=> $employee->biometric_number,
-    //             "overtime_date"=> $request->overtime_date,
-    //             "purpose"=> $request->purpose,
-    //             "total_hours"=> $request->total_hours,
-    //             "status"=> $request->status,
-    //         ]);
-
-    //     } catch(Exception $e) {
-    //         return $this->sendError(["message"=> $e->getMessage()]);
-    //     }
-    // }
-
     public function editOvertime(Request $request) {
         try {
             DB::beginTransaction();

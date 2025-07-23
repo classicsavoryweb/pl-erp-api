@@ -12,7 +12,8 @@ use App\Models\TimeKeepingSummary;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
-use Log;
+use DB;
+use Str;
 
 class TimeKeepingController extends Controller
 {
@@ -70,10 +71,45 @@ class TimeKeepingController extends Controller
                 ? $year . '-' . $request->cutoff["end_time"]
                 : $currentCutOff['end_time'];
 
-            $timeKeeping = TimeKeeping::with(["employee", "employee.current_position"])
+            $timeKeepingQuery = TimeKeeping::with(["employee", "employee.current_position"])
             ->where("branch_id", $request->branch_id)
-            ->whereBetween("date", [$start_time, $end_time])
-            ->paginate($perPage);
+            ->whereBetween("date", [$start_time, $end_time]);
+
+            if ($request->has(["column_type", "key_word"])) {
+                $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if (Str::contains($column, '.')) {
+                    [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                    if ($relatedColumn == "full_name") {
+                        $timeKeepingQuery = $timeKeepingQuery->whereHas($relation, function ($query) use ($keyword) {
+                            $query->whereAny(
+                                ["first_name", "last_name", "middle_name"],
+                                'LIKE',
+                                "%$keyword%"
+                            )->orWhere(function ($q) use ($keyword) {
+                                $q->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                            })
+                            ->orWhere(function ($query) use ($keyword) {
+                                $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                            });
+                        });
+                    } else {
+                        $relations = explode('.', $column);
+                        $relatedColumn = array_pop($relations); 
+                        $relationPath = implode('.', $relations); 
+
+                        $timeKeepingQuery = $timeKeepingQuery->whereHas($relationPath, function ($query) use ($relatedColumn, $keyword) {
+                            $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                        });
+                    }
+                } else {
+                    $timeKeepingQuery = $timeKeepingQuery->where($column, 'LIKE', "%$keyword%");
+                }
+            }
+
+            $timeKeeping = $timeKeepingQuery->paginate($perPage);
 
             return $this->sendResponse($timeKeeping);
         } catch(Exception $e) {
@@ -100,15 +136,50 @@ class TimeKeepingController extends Controller
                 ? $year . '-' . $request->cutoff["end_time"]
                 : $currentCutOff['end_time'];
 
-            $timeKeeping = TimeKeepingSummary::with(["employee", "lates", "employee.current_position"])
+            $timeKeepingSummaryQuery = TimeKeepingSummary::with(["employee", "lates", "employee.current_position"])
             ->where("timekeeping_summary.branch_id", $request->branch_id)
             ->where("cut-off", $start_time.'-'.$end_time)
             ->join("employees", "timekeeping_summary.employee_id", "=", "employees.id")
             ->orderBy("employees.last_name", "ASC")
-            ->select("timekeeping_summary.*")
-            ->paginate($perPage);
+            ->select("timekeeping_summary.*");
+            
+            if ($request->has(["column_type", "key_word"])) {
+                $column = $request->column_type;
+                $keyword = $request->key_word;
 
-            return $this->sendResponse($timeKeeping);
+                if (Str::contains($column, '.')) {
+                    [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                    if ($relatedColumn == "full_name") {
+                        $timeKeepingSummaryQuery = $timeKeepingSummaryQuery->whereHas($relation, function ($query) use ($keyword) {
+                            $query->whereAny(
+                                ["first_name", "last_name", "middle_name"],
+                                'LIKE',
+                                "%$keyword%"
+                            )->orWhere(function ($q) use ($keyword) {
+                                $q->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                            })
+                            ->orWhere(function ($query) use ($keyword) {
+                                $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                            });
+                        });
+                    } else {
+                        $relations = explode('.', $column);
+                        $relatedColumn = array_pop($relations); 
+                        $relationPath = implode('.', $relations); 
+
+                        $timeKeepingSummaryQuery = $timeKeepingSummaryQuery->whereHas($relationPath, function ($query) use ($relatedColumn, $keyword) {
+                            $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                        });
+                    }
+                } else {
+                    $timeKeepingSummaryQuery = $timeKeepingSummaryQuery->where($column, 'LIKE', "%$keyword%");
+                }
+            }
+
+            $timeKeepingSummary = $timeKeepingSummaryQuery->paginate($perPage);
+
+            return $this->sendResponse($timeKeepingSummary);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
