@@ -17,7 +17,7 @@ class ScheduleTimeController extends Controller
 {
     public function getAllTransactionsScheduleTime(Request $request) {
         try {
-            $perPage = $request->perPage ?? 10;
+            $perPage = $request->per_page ?? 10;
 
             $schedule_time = ScheduleTime::query();
             

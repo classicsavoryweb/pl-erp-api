@@ -11,7 +11,7 @@ class ScheduleTypeController extends Controller
 {
     public function getAllScheduleTypes(Request $request) {
         try {
-            $perPage = $request->perPage ?? 10;
+            $perPage = $request->per_page ?? 10;
 
             $scheduleType = ScheduleType::query();
             if ($request->has(["column_type", "key_word"])) {

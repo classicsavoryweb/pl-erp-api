@@ -14,7 +14,7 @@ class SanctionsController extends Controller
 {
     public function getAllSanctions(Request $request) {
         try {
-            $perPage = $request->perPage ?? 10;
+            $perPage = $request->per_page ?? 10;
 
             $sanctions = Sanction::query();
             if ($request->has(["column_type", "key_word"])) {
