@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Carbon\Carbon;
+use Exception;
 
 class Employee extends Model
 {
@@ -85,29 +86,35 @@ class Employee extends Model
         $salaryPosition = $this->current_position->salary;
         $rateCode = $this->home_branch->rate_code;
 
-        if ($scheduleType == "Compressed Schedule") {
-            if ($salaryPosition->rate_category === "MINIMUM") {
-                $minimumRate = Rate::where("code", $rateCode)->first();
+        try {
+            if ($scheduleType == "Compressed Schedule") {
+                if ($salaryPosition->rate_category === "MINIMUM") {
+                    $minimumRate = Rate::where("code", $rateCode)->first();
 
-                $monthlySalary = $minimumRate->minimum * 26;
-            } else {
-                $monthlySalary = $salaryPosition->basic_salary;
+                    $monthlySalary = $minimumRate->minimum * 26;
+                } else {
+                    $monthlySalary = $salaryPosition->basic_salary;
+                }
             }
-        }
 
-        if ($scheduleType == "Normal Schedule") {
-            if ($salaryPosition->rate_category === "MINIMUM") {
-                $minimumRate = Rate::where("code", $rateCode)->first();
+            if ($scheduleType == "Normal Schedule") {
+                if ($salaryPosition->rate_category === "MINIMUM") {
+                    $minimumRate = Rate::where("code", $rateCode)->first();
 
-                $monthlySalary = $minimumRate->minimum * 26;
-            } else {
-                $monthlySalary = $salaryPosition->basic_salary;
+                    $monthlySalary = $minimumRate->minimum * 26;
+                } else {
+                    $monthlySalary = $salaryPosition->basic_salary;
+                }
             }
-        }
 
-        return Attribute::get(
-            fn () => $monthlySalary
-        );
+            return Attribute::get(
+                fn () => $monthlySalary
+            );
+        } catch (Exception $e) {
+            return Attribute::get(
+                fn () => $monthlySalary
+            );
+        }
     }
 
     protected function dailySalary(): Attribute
@@ -117,30 +124,35 @@ class Employee extends Model
         $scheduleType = $this->schedule->schedule_type->name ?? "N/A";
         $salaryPosition = $this->current_position->salary;
         $rateCode = $this->home_branch->rate_code;
-
-        if ($scheduleType == "Compressed Schedule") {
-            if ($salaryPosition->rate_category === "MINIMUM") {
-                $minimumRate = Rate::where("code", $rateCode)->first();
-
-                $dailySalary = ($minimumRate->minimum * 26) / 22;
-            } else {
-                $dailySalary = $salaryPosition->basic_salary / 22;
+        try {
+            if ($scheduleType == "Compressed Schedule") {
+                if ($salaryPosition->rate_category === "MINIMUM") {
+                    $minimumRate = Rate::where("code", $rateCode)->first();
+    
+                    $dailySalary = ($minimumRate->minimum * 26) / 22;
+                } else {
+                    $dailySalary = $salaryPosition->basic_salary / 22;
+                }
             }
-        }
-
-        if ($scheduleType == "Normal Schedule") {
-            if ($salaryPosition->rate_category === "MINIMUM") {
-                $minimumRate = Rate::where("code", $rateCode)->first();
-
-                $dailySalary = $minimumRate->minimum;
-            } else {
-                $dailySalary = $salaryPosition->basic_salary / 26;
+    
+            if ($scheduleType == "Normal Schedule") {
+                if ($salaryPosition->rate_category === "MINIMUM") {
+                    $minimumRate = Rate::where("code", $rateCode)->first();
+    
+                    $dailySalary = $minimumRate->minimum;
+                } else {
+                    $dailySalary = $salaryPosition->basic_salary / 26;
+                }
             }
-        }
 
-        return Attribute::get(
-            fn () => $dailySalary
-        );
+            return Attribute::get(
+                fn () => $dailySalary
+            );
+        } catch (Exception $e) {
+            return Attribute::get(
+                fn () => $dailySalary
+            );
+        }
     }
 
     protected function age(): Attribute

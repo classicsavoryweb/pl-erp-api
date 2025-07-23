@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\BiotimeLog;
 use App\Models\BiotimePunch;
+use App\Models\Employee;
 use Exception;
 use Illuminate\Http\Request;
 use Str;
@@ -79,6 +80,53 @@ class ActualTimeController extends Controller
 
             return $this->sendResponse($bioTimeLogs);
         } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function createBiotimeLog(Request $request) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "punches" => "required",
+                "employee_number" => "required",
+                "branch_id" => "required",
+                "date" => "required"
+            ]);
+
+            $user = Auth::user();
+            $employee = Employee::where("employee_number", $request->employee_number)->first();
+
+            if ($employee) {
+                $isExisting = $employee->attendance()->where("date", $request->date)->first();
+
+                if ($isExisting) {
+                    DB::rollBack();
+                    return $this->sendError(["message" => "Biotime log is already existing"]);
+                } else {
+                    $biotime = BiotimeLog::create([
+                        "employee_id" => $employee->id,
+                        "biometric_number" => $employee->biometric_number,
+                        "date" => $request->date,
+                        "remarks" => "Added by ".$user->full_name,
+                        "is_transferred" => 0
+                    ]);
+ 
+                    foreach ($request->punches as $punch) {
+                        $biotime->punches()->create([
+                            "date" => $biotime->date,
+                            "punch_time" => $punch["punch_time"],
+                            "remarks" => "Added by ".$user->full_name,
+                            "branch_id" => $request->branch_id
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Biotime logs saved successfully."]);
+        } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
