@@ -14,7 +14,7 @@ class ScheduleMasterlistController extends Controller
 {
     public function getAllScheduleMasterlist(Request $request) {
         try {
-            $perPage = $request->perPage ?? 10;
+            $perPage = $request->per_page ?? 10;
 
             $schedule_masterlist = ScheduleMasterlist::query();
             if ($request->has(["column_type", "key_word"])) {

@@ -58,7 +58,7 @@ class TimeKeepingController extends Controller
                 "cutoff" => "required",
                 "year" => "required",
             ]);
-            $perPage = $request->perPage ?? 10;
+            $perPage = $request->per_page ?? 10;
             $currentCutOff = $this->getCurrentCutoff();
             $year = $request->year ?? Carbon::now()->year;
 
@@ -88,7 +88,7 @@ class TimeKeepingController extends Controller
                 "cutoff" => "required",
                 "year" => "required",
             ]);
-            $perPage = $request->perPage ?? 10;
+            $perPage = $request->per_page ?? 10;
             $currentCutOff = $this->getCurrentCutoff();
             $year = $request->year ?? Carbon::now()->year;
 

@@ -14,7 +14,7 @@ class HolidayController extends Controller
 {
     public function getAllHolidays(Request $request) {
         try {
-            $perPage = $request->perPage ?? 10;
+            $perPage = $request->per_page ?? 10;
 
             $holidays = Holiday::query();
 

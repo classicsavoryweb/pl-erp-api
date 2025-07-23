@@ -107,7 +107,7 @@ class OvertimeController extends Controller
         }
     }
 
-    public function approvedBulkOvertime(Request $request) {
+    public function approveBulkOvertime(Request $request) {
         try {
             DB::beginTransaction();
             $request->validate([
@@ -147,7 +147,7 @@ class OvertimeController extends Controller
         }
     }
 
-    public function unapprovedOvertime ($id) {
+    public function unapproveOvertime ($id) {
         try {
             DB::beginTransaction();
             $overtime = Overtime::find($id);
