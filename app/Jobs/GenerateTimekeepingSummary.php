@@ -66,9 +66,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         continue;
                     }
 
-                    if ($schedule->total_hours / 2 < $timeKeep->worked_hours && !$timeKeep->is_cancelled_off) {
+                    if ($schedule->total_hours == $timeKeep->final_worked_hours && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
-                    } else if (($schedule->total_hours / 2 == $timeKeep->worked_hours || $schedule->total_hours / 2 > $timeKeep->worked_hours ) && $schedule->worked_hours > 0 && !$timeKeep->is_cancelled_off) {
+                    } else if ( $schedule->total_hours / 2 == $timeKeep->final_worked_hours  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
                     }
 
@@ -77,7 +77,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($timeKeep->is_cancelled_off) {
-                        $cancelled_off += (floor($timeKeep->is_cancelled_off * 2) / 2);
+                        $cancelled_off += $timeKeep->is_cancelled_off;
                     }
 
                     if ($timeKeep->tardiness > 0) {
@@ -89,43 +89,35 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($timeKeep->special_holiday_hours > 0) {
-                        $special_holiday += (floor($timeKeep->special_holiday_hours * 2) / 2);
+                        $special_holiday += $timeKeep->special_holiday_hours;
                     }
 
                     if ($timeKeep->legal_holiday_hours > 0) {
-                        $legal_holiday+= (floor($timeKeep->legal_holiday_hours * 2) / 2);
+                        $legal_holiday+= $timeKeep->legal_holiday_hours;
                     }
-
-                    if ($timeKeep->legal_holiday_overtime > 0) {
-                        $legal_holiday_overtime += (floor($timeKeep->legal_holiday_overtime * 2) / 2);
-                    }
-
-                    // if ($timeKeep->regular_overtime > 0) {
-                    //     $regular_overtime += (floor($timeKeep->regular_overtime * 2) / 2);
-                    // }
-
-                    // if ($timeKeep->special_holiday_overtime > 0) {
-                    //     $special_holiday_overtime += (floor($timeKeep->special_holiday_overtime * 2) / 2);
-                    // }
 
                     // if ($timeKeep->legal_holiday_overtime > 0) {
-                    //     $legal_holiday_overtime += (floor($timeKeep->legal_holiday_overtime * 2) / 2);
+                    //     $legal_holiday_overtime += $timeKeep->legal_holiday_overtime;
                     // }
+                    $totalOT = $timeKeep->approved_overtime;
+                    if ($employee->current_branch->type === "Branch") {
+                        $totalOT = floor($timeKeep->approved_overtime);
+                    }
 
                     if ($timeKeep->legal_holiday === "Yes") {
-                        $legal_holiday_overtime += $timeKeep->approved_overtime;
+                        $legal_holiday_overtime += $totalOT;
                     } else if ($timeKeep->special_holiday === "Yes") {
-                        $special_holiday_overtime += $timeKeep->approved_overtime;
+                        $special_holiday_overtime += $totalOT;
                     } else {
-                        $regular_overtime += $timeKeep->approved_overtime;
+                        $regular_overtime += $totalOT;
                     }
 
                     if ($timeKeep->night_diff_hours > 0) {
-                        $night_differential += (floor($timeKeep->night_diff_hours * 2) / 2);
+                        $night_differential += $timeKeep->night_diff_hours;
                     }
 
-                    if ($timeKeep->night_diff_overtime > 0 && $timeKeep->night_diff_overtime < $timeKeep->approved_overtime) {
-                        $night_differential_overtime += (floor($timeKeep->night_diff_overtime * 2) / 2);
+                    if ($timeKeep->night_diff_overtime > 0 && $timeKeep->night_diff_overtime <= $totalOT) {
+                        $night_differential_overtime += $timeKeep->night_diff_overtime;
                     }
 
                     if ($timeKeep->undertime > 0) {
@@ -135,6 +127,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     if ($timeKeep->travel_time > 0) {
                         $travel_time += (int) $timeKeep->travel_time;
                     }
+                }
+
+                $isExisting = TimeKeepingSummary::where("cut-off", $cutOff['start_time']."-".$cutOff['end_time'])
+                ->where("employee_id", $employee->id)
+                ->first();
+
+                if ($isExisting) {
+                    $isExisting->delete();
                 }
 
                 $timeKeepingSummary = TimeKeepingSummary::create([

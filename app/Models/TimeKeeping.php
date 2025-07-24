@@ -34,7 +34,8 @@ class TimeKeeping extends Model
         "travel_time",
         "overtime_status",
         "branch_id",
-        "approved_overtime"
+        "approved_overtime",
+        "final_worked_hours"
     ];
 
     public function employee() {

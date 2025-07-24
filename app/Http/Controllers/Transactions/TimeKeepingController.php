@@ -34,19 +34,8 @@ class TimeKeepingController extends Controller
                 ? $year . '-' . $request->cutoff["end_time"]
                 : $currentCutOff['end_time'];
 
-            $attendance = BiotimeLog::whereHas("employee", function($query) use ($request) {
-                $query->where("branch_id", $request->branch_id);
-            })
-            ->whereBetween("date", [$start_time, $end_time])
-            ->where("is_transferred", false)
-            ->get();
-
-            if ($attendance->count() > 0) {
-                TransferLogsToTimeKeeping::dispatch($request->branch_id, [$start_time, $end_time]);
-                return $this->sendResponse(["message" => "Logs are in queue for processing."]);
-            } else {
-                return $this->sendError(["message" => "Logs are missing or already generated." ]);
-            }
+            TransferLogsToTimeKeeping::dispatch($request->branch_id, [$start_time, $end_time]);
+            return $this->sendResponse(["message" => "Logs are in queue for processing."]);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
