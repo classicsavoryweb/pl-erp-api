@@ -22,6 +22,7 @@ class BranchExport implements FromCollection, WithHeadings
             return [
                 $branch->name,
                 $branch->short_name,
+                $branch->type,
                 $branch->date_open,
                 $branch->location,
                 $branch->company,
@@ -43,6 +44,7 @@ class BranchExport implements FromCollection, WithHeadings
         return [
             'Branch Name',
             'Short Name',
+            'Type',
             'Date Opened',
             'Location',
             'Company',
