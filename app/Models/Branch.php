@@ -16,6 +16,7 @@ class Branch extends Model
         "travel_time",
         "device_name",
         "short_name",
+        "type",
         "address",
         "location",
         "date_open",

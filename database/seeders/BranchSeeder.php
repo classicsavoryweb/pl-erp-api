@@ -26,6 +26,14 @@ class BranchSeeder extends Seeder
         $url = 'http://120.28.114.47:9090/iclock/api/terminals/';
 
         foreach($unique_branches as $branch) {
+
+            $type = $branch["area"];
+            if ($type === 'Head Office') {
+            $type = 'Head Office';
+            } else {
+                $type = 'Branch';
+            }
+
             Branch::create([
                 "name" => $branch["branch_name"],
                 "branch_number" => $branch["branch_id2"],
@@ -45,6 +53,7 @@ class BranchSeeder extends Seeder
                 'kitchen_oic' => $branch["kitchenName"],
                 'mancom_employee_number' => $branch["mancomID"],
                 'mancom' => $branch["mancomName"],
+                'type' => $type
             ]);
         }
 
@@ -85,5 +94,7 @@ class BranchSeeder extends Seeder
                 ]);
             }
         }
+
+        
     }
 }
