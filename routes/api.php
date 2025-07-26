@@ -307,9 +307,11 @@ Route::middleware('auth:sanctum')->group( function () {
     //time keeping
     Route::middleware(["permission:perform_transactions_time_keeping"])->post("/generate-time-keeping", [TimeKeepingController::class, "generateTimeKeeping"]);
     Route::get("/get-all-time-keeping", [TimeKeepingController::class, "getAllTimeKeeping"]);
+    Route::middleware(["permission:export_all_transactions_time_keeping"])->get("/export-all-time-keeping", [TimeKeepingController::class, "exportAllTimeKeeping"]);
     //time keeping summary
     Route::middleware(["permission:perform_transactions_time_keeping_summary"])->post("/generate-time-keeping-summary", [TimeKeepingController::class, "generateTimeKeepingSummary"]);
     Route::get("/get-all-time-keeping-summary", [TimeKeepingController::class, "getAllTimeKeepingSummary"]);
+    Route::middleware(["permission:export_all_transactions_time_keeping_summary"])->get("/export-all-time-keeping-summary", [TimeKeepingController::class, "exportAllTimeKeepingSummary"]);
 });
 
 
