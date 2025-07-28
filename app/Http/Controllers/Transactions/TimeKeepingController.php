@@ -9,11 +9,15 @@ use App\Models\BiotimeLog;
 use App\Models\Employee;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
+use App\Exports\Transactions\TimeKeepingExport;
+use App\Exports\Transactions\TimeKeepingSummaryExport;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use DB;
 use Str;
+use Log;
 
 class TimeKeepingController extends Controller
 {
@@ -98,12 +102,23 @@ class TimeKeepingController extends Controller
                 }
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $timeKeepingQuery = $timeKeepingQuery->get();
+                return Excel::download(new TimeKeepingExport($timeKeepingQuery), "time_keeping.xls");
+            }
+
             $timeKeeping = $timeKeepingQuery->paginate($perPage);
 
             return $this->sendResponse($timeKeeping);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllTimekeeping(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllTimeKeeping($request);
     }
 
     public function getAllTimeKeepingSummary(Request $request) {
@@ -166,6 +181,11 @@ class TimeKeepingController extends Controller
                 }
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $timeKeepingSummaryQuery = $timeKeepingSummaryQuery->get();
+                return Excel::download(new TimeKeepingSummaryExport($timeKeepingSummaryQuery), "time_keeping_summary.xls");
+            }
+
             $timeKeepingSummary = $timeKeepingSummaryQuery->paginate($perPage);
 
             return $this->sendResponse($timeKeepingSummary);
@@ -210,6 +230,12 @@ class TimeKeepingController extends Controller
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllTimekeepingSummary(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllTimeKeepingSummary($request);
     }
 
     public function getTimeKeeping(Request $request) {

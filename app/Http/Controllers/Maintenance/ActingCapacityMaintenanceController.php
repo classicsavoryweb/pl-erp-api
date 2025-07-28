@@ -41,7 +41,7 @@ class ActingCapacityMaintenanceController extends Controller
     public function exportActingCapacityReasons(Request $request) {
         $request["export"] = true;
 
-        return $this->getAllActingCapacityReason($request);
+        return $this->getAllActingCapacityReasons($request);
     }
 
     public function getActingCapacityReasons(Request $request) {

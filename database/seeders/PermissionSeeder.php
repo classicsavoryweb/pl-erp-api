@@ -123,8 +123,10 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "import_all_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "view_transactions_time_keeping"]);
         Permission::firstOrCreate(["name" => "perform_transactions_time_keeping"]);
+        Permission::firstOrCreate(["name" => "export_all_transactions_time_keeping"]);
         Permission::firstOrCreate(["name" => "view_transactions_time_keeping_summary"]);
         Permission::firstOrCreate(["name" => "perform_transactions_time_keeping_summary"]);
+        Permission::firstOrCreate(["name" => "export_all_transactions_time_keeping_summary"]);
         Permission::firstOrCreate(["name" => "view_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "perform_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "view_transactions_adjustments"]);
