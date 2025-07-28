@@ -142,7 +142,7 @@ class EmployeeOffensesControlller extends Controller
             $employee->offenses()->where("id", $request->id)->update([
                 "attachment" => $pathName,
                 "attachment_file_name" => $originalFileName,
-                ...$request->except("attachment", "attachment_file_name")
+                ...$request->except("attachment", "attachment_file_name", "attached_file")
             ]);
 
             DB::commit();

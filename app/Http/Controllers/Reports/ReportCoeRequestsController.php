@@ -52,6 +52,10 @@ class ReportCoeRequestsController extends Controller
                 $coeRequests = $coeRequests->whereBetween('date_requested', [$request->date_from, $request->date_to]);
             }
 
+            if ($request->has(["status"])) {
+                $coeRequests = $coeRequests->where("status", $request->status);
+            }
+
             $coeRequests = $coeRequests->with([
                 "employee",
                 "employee.employee_status"
