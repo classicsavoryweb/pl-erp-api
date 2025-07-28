@@ -35,6 +35,7 @@ use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
 use App\Http\Controllers\Maintenance\HolidayController;
+use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
 use App\Http\Controllers\Reports\ReportsHealthSafetyController;
@@ -307,9 +308,17 @@ Route::middleware('auth:sanctum')->group( function () {
     //time keeping
     Route::middleware(["permission:perform_transactions_time_keeping"])->post("/generate-time-keeping", [TimeKeepingController::class, "generateTimeKeeping"]);
     Route::get("/get-all-time-keeping", [TimeKeepingController::class, "getAllTimeKeeping"]);
+    Route::get("/get-time-keeping", [TimeKeepingController::class, "getTimeKeeping"]);
     //time keeping summary
     Route::middleware(["permission:perform_transactions_time_keeping_summary"])->post("/generate-time-keeping-summary", [TimeKeepingController::class, "generateTimeKeepingSummary"]);
     Route::get("/get-all-time-keeping-summary", [TimeKeepingController::class, "getAllTimeKeepingSummary"]);
+    //adjustments
+    Route::get("/get-all-adjustments", [AdjustmentController::class, "getAllAdjustments"]);
+    Route::middleware("permission:approve_transactions_adjustments")->get("/approve-adjustments/{id}", [AdjustmentController::class, "approveAdjustments"]);
+    Route::middleware("permission:unapprove_transactions_adjustments")->get("/unapprove-adjustments/{id}", [AdjustmentController::class, "unapproveAdjustments"]);
+    Route::middleware("permission:perform_transactions_adjustments")->post("/create-adjustments", [AdjustmentController::class, "createAdjustments"]);
+    Route::middleware("permission:perform_transactions_adjustments")->post("/edit-adjustments/{id}", [AdjustmentController::class, "editAdjustments"]);
+
 });
 
 

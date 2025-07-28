@@ -11,38 +11,33 @@ class Adjustment extends Model
 
     protected $table = "adjustments";
     protected $fillable = [
-        "cutoff_period", 
-        "employee_id", 
-        "branch", 
-        "reg_days",
-        "cancelled_rd",
-        "adjust_taxable",
-        "remarks",
+        "employee_id",
+        "biometric_number",
         "date",
-        "status",
-        "new_timein",
-        "new_breakout",
-        "new_breakin",
-        "new_timeout",
+        "days",
+        "cancelled_rd",
+        "taxable_amount",
         "amount_paid",
-        "should_be_paid",
-        "adjustment_type",
-        "added_date",
-        "added_by",
-        "approved_date",
-        "approved_by",
-        "load_status",
-        "load_date",
-        "unapproved_date",
-        "unapproved_by",
+        "correct_amount_paid",
         "actual_schedule",
-        "schedule_timein",
-        "schedule_timeout",
-        "cutoff_counter",
+        "type",
+        "status",
+        "remarks",
+        "added_by",
+        "added_at",
+        "approved_by",
+        "approved_at",
+        "unapproved_by",
+        "unapproved_at",
+        "timekeeping_summary_id",
     ];
 
-    public function employee()
-    {
-        return $this->belongsTo(Employee::class, "employee_id", "biometric_number",);
+    public function employee() {
+        return $this->belongsTo(Employee::class);
     }
+
+    public function timekeeping_summary() {
+        return $this->belongsTo(TimeKeepingSummary::class, "timekeeping_summary_id", "id");
+    }
+
 }

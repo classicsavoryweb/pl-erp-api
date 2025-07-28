@@ -71,4 +71,40 @@ class Controller extends BaseController
             "end_time" => $endTime->toDateString()
         ];
     }
+
+    public function getCutOffForDate($date){
+        $carbonDate = Carbon::parse($date);
+        $day = $carbonDate->day;
+
+        $cutOff1 = [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+        $cutOff2 = [26,27,28,29,30,31,1,2,3,4,5,6,7,8,9,10];
+        if (in_array($day, $cutOff2)) {
+            if ($day <= 10) { 
+                $startTime = $carbonDate->copy()->setDay(26)->subMonth()->startOfDay();
+                $endTime = $carbonDate->copy()->setDay(10)->endOfDay();
+            } else {
+                $startTime = $carbonDate->copy()->setDay(26)->startOfDay();
+                $endTime = $carbonDate->copy()->setDay(10)->addMonth()->endOfDay();
+            }
+        } else {
+            $startTime = $carbonDate->copy()->setDay(11)->startOfDay();
+            $endTime = $carbonDate->copy()->setDay(25)->endOfDay();
+        }
+
+        return [
+            'start_time' => $startTime->toDateString(),
+            'end_time' => $endTime->toDateString(),
+        ];
+    }
+
+    public function formatHours($hours) {
+        $formattedHours = $hours;
+
+        if ($formattedHours < 1 && $formattedHours > 0) {
+            $formattedHours = .5;
+        } else {
+            $formattedHours = floor($hours / 0.5) * 0.5;
+        }   
+        return $formattedHours;
+    }
 }

@@ -45,4 +45,16 @@ class TimeKeeping extends Model
     public function branch() {
         return $this->hasOne(Branch::class, "id", "branch_id");
     }
+
+    public function biotime_log() {
+        return $this->belongsTo(BiotimeLog::class, "biotime_log_id", "id");
+    }
+
+    public function schedule() {
+        return $this->hasOne(ScheduleTime::class, "id", "schedule_time_id");
+    }
+
+    public function payment() {
+        return $this->hasOne(TimeKeepingPayment::class, "timekeeping_id", "id");
+    }
 }

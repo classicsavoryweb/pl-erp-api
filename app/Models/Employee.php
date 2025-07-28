@@ -68,7 +68,8 @@ class Employee extends Model
         "formal_full_name",
         "age",
         "monthly_salary",
-        "daily_salary"
+        "daily_salary",
+        "cut_off_base_salary",
     ];
 
     protected function fullName(): Attribute
@@ -87,24 +88,12 @@ class Employee extends Model
         $rateCode = $this->home_branch->rate_code;
 
         try {
-            if ($scheduleType == "Compressed Schedule") {
-                if ($salaryPosition->rate_category === "MINIMUM") {
-                    $minimumRate = Rate::where("code", $rateCode)->first();
+            if ($salaryPosition->rate_category === "MINIMUM") {
+                $minimumRate = Rate::where("code", $rateCode)->first();
 
-                    $monthlySalary = $minimumRate->minimum * 26;
-                } else {
-                    $monthlySalary = $salaryPosition->basic_salary;
-                }
-            }
-
-            if ($scheduleType == "Normal Schedule") {
-                if ($salaryPosition->rate_category === "MINIMUM") {
-                    $minimumRate = Rate::where("code", $rateCode)->first();
-
-                    $monthlySalary = $minimumRate->minimum * 26;
-                } else {
-                    $monthlySalary = $salaryPosition->basic_salary;
-                }
+                $monthlySalary = $minimumRate->minimum * 26;
+            } else {
+                $monthlySalary = $salaryPosition->basic_salary;
             }
 
             return Attribute::get(
@@ -113,6 +102,31 @@ class Employee extends Model
         } catch (Exception $e) {
             return Attribute::get(
                 fn () => $monthlySalary
+            );
+        }
+    }
+
+    protected function cutOffBaseSalary(): Attribute
+    {
+        $salary = 0;
+        $salaryPosition = $this->current_position->salary;
+        $rateCode = $this->home_branch->rate_code;
+
+        try {
+            if ($salaryPosition->rate_category === "MINIMUM") {
+                $minimumRate = Rate::where("code", $rateCode)->first();
+
+                $salary = ($minimumRate->minimum * 26) / 2;
+            } else {
+                $salary = $salaryPosition->basic_salary / 2;
+            }
+
+            return Attribute::get(
+                fn () => $salary
+            );
+        } catch (Exception $e) {
+            return Attribute::get(
+                fn () => $salary
             );
         }
     }
@@ -350,6 +364,49 @@ class Employee extends Model
             "quarantine_period_to",
         )
         ->withTimestamps();
+    }
+
+    // public function getCutOffWorkDays($cutOff) {
+    //     $days = 0;
+    //     $schedules = ScheduleTime::where("employee_id", $this->id)
+    //     ->whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+    //     ->get();
+
+    //     $notCountedSchedule = ["NO SCHEDULE", "REST DAY", "LEAVE", "INCENTIVE_LEAVE"];
+    //     foreach ($schedules as $schedule) {
+    //         if (!in_array($schedule->timetable, $notCountedSchedule)) {
+    //             $days += 1;
+    //         }
+    //     }
+
+    //     return $days;
+    // }
+
+    public function getCutOffWorkDays($cutOff)
+    {
+        $notCountedSchedule = ["NO SCHEDULE", "REST DAY", "LEAVE", "INCENTIVE_LEAVE"];
+
+        return ScheduleTime::where("employee_id", $this->id)
+            ->whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+            ->whereNotIn("timetable", $notCountedSchedule)
+            ->count();
+    }
+
+    public function payPerDay($cutOff){
+        $payPerDay = 0;
+
+        if ($this->current_position->timekeeping_type === "Monthly") {
+            $days = $this->getCutOffWorkDays($cutOff);
+            $cutOffBaseSalary = $this->cut_off_base_salary;
+
+            if ($days > 0) {
+                $payPerDay = round($cutOffBaseSalary / $days, 2);
+            }
+        } else {
+            $payPerDay = $this->daily_salary;
+        }
+
+        return $payPerDay;
     }
 
     public function getActivitylogOptions(): LogOptions

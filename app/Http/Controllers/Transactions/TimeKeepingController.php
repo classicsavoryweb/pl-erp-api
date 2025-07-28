@@ -60,7 +60,7 @@ class TimeKeepingController extends Controller
                 ? $year . '-' . $request->cutoff["end_time"]
                 : $currentCutOff['end_time'];
 
-            $timeKeepingQuery = TimeKeeping::with(["employee", "employee.current_position"])
+            $timeKeepingQuery = TimeKeeping::with(["employee", "employee.current_position", "payment"])
             ->where("branch_id", $request->branch_id)
             ->whereBetween("date", [$start_time, $end_time]);
 
@@ -208,6 +208,19 @@ class TimeKeepingController extends Controller
 
             return $this->sendResponse(["message" => "Timekeeping are in queue for processing."]);
         } catch(Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getTimeKeeping(Request $request) {
+        try {
+            $employee = Employee::where("employee_number", $request->employee_number)->first();
+            $timeKeeping = TimeKeeping::with("biotime_log", "biotime_log.punches", "schedule" )
+                ->where("date", $request->date)
+                ->where("employee_id", $employee->id)
+                ->first();
+            return $this->sendResponse($timeKeeping);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }

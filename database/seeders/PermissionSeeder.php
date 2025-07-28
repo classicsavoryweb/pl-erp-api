@@ -129,6 +129,8 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "perform_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "view_transactions_adjustments"]);
         Permission::firstOrCreate(["name" => "perform_transactions_adjustments"]);
+        Permission::firstOrCreate(["name" => "approve_transactions_adjustments"]);
+        Permission::firstOrCreate(["name" => "unapprove_transactions_adjustments"]);
         Permission::firstOrCreate(["name" => "import_all_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "approve_all_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "unapprove_all_transactions_overtime"]);

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::table('time_keeping', function (Blueprint $table) {
             $table->boolean("is_cancelled_off")->after("undertime")->default(false);
             $table->string("travel_time")->after("undertime")->default(0);
-            $table->string("overtime_status")->after("undertime")->nullable();
         });
     }
 
