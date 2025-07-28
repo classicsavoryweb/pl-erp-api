@@ -45,6 +45,10 @@ class ReportsVaccinationController extends Controller
                 }
             }
 
+            if ($request->has(["status"])) {
+                $vaccines = $vaccines->where("status", $request->status);
+            }
+
             if ($request->has(["date_from", "date_to"])) {
                 $vaccines = $vaccines->whereBetween('date', [$request->date_from, $request->date_to]);
             }

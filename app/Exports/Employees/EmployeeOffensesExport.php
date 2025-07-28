@@ -39,6 +39,6 @@ class EmployeeOffensesExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ['Employee Number','Full Name', "Transgression", "Repetition","Summary", "Category", "Sub Category" , "Description", "Sanction", "Date Committed", "Offense Action", "Date Served AO", "Date Served DA", "Remarks"];
+        return ['Employee Number','Full Name', "Transgression", "Repetition","Summary", "Category", "Sub Category" , "Description", "Sanction", "Date Committed", "Offense Action", "Date Served AO", "Date Served DA", "Suspension Dates", "Remarks"];
     }
 }
