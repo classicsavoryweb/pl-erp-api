@@ -111,14 +111,31 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
         return $headings;
     }
 
+    private function getExcelColumnLetter($colIndex) {
+        $colName = '';
+        while ($colIndex >= 0) {
+            $colName = chr($colIndex % 26 + 65) . $colName;
+            $colIndex = floor($colIndex / 26) - 1;
+        }
+        return $colName;
+    }
+
     public function styles(Worksheet $sheet)
     {
         $headings = $this->headings();
 
-        $columns = range('A', chr(65 + count($headings) - 1)); 
+        $maxColIndex = count($headings) - 1;
+        $lastColumnLetter = $this->getExcelColumnLetter($maxColIndex);
+        $columns = [];
+        for ($i = 0; $i <= $maxColIndex; $i++) {
+            $columns[] = $this->getExcelColumnLetter($i);
+        }
+
         $maxLengths = array_fill_keys($columns, 0);
 
         $rows = $this->timekeeping;
+        
+        $expectedLateColumns = 11;
 
         foreach ($rows as $index => $unique_timekeeping) {
             $rowNumber = $index + 2;
@@ -143,30 +160,30 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
             ];
 
             $totalLateMins = $unique_timekeeping->tardiness;
-            $lateColumns = [];
-            $lateCount = count($unique_timekeeping->lates);
+            $lateColumnsData = [];
+            $actualLateCount = count($unique_timekeeping->lates);
 
-            for ($i = 0; $i < $lateCount; $i++) {
+            for ($i = 0; $i < $actualLateCount; $i++) {
                 $late = $unique_timekeeping->lates[$i];
-                $lateColumns["Late " . ($i + 1)] = $late->date . " / " . $late->late_minutes . " minutes";
+                $lateColumnsData[] = $late->date . " / " . $late->late_minutes . " minutes";
             }
 
-            for ($i = $lateCount; $i < count($headings) - 17 - 1; $i++) {
-                $lateColumns["Late " . ($i + 1)] = "-";
+            for ($i = $actualLateCount; $i < $expectedLateColumns; $i++) {
+                $lateColumnsData[] = "-";
             }
 
-            $data = array_merge($data, $lateColumns);
+            $data = array_merge($data, $lateColumnsData);
             $data[] = $totalLateMins;
             $data[] = $unique_timekeeping->remarks;
 
             foreach ($columns as $colIndex => $col) {
                 if (isset($data[$colIndex])) {
                     $cellValue = (string) $data[$colIndex];
-                    $maxLengths[$col] = max($maxLengths[$col], strlen($cellValue)); 
+                    $maxLengths[$col] = max($maxLengths[$col], strlen($cellValue));
                 }
             }
 
-            $sheet->getStyle('A' . $rowNumber . ':' . $columns[count($columns) - 1] . $rowNumber)->applyFromArray([
+            $sheet->getStyle('A' . $rowNumber . ':' . $lastColumnLetter . $rowNumber)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -175,24 +192,27 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
                 ]
             ]);
 
-            if ($unique_timekeeping->employee->current_position->timekeeping_type == 'Monthly') {
-                $sheet->getStyle('D' . $rowNumber)->applyFromArray([
-                    'fill' => [
-                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => '48c4cc']
-                    ]
-                ]);
-            } elseif ($unique_timekeeping->employee->current_position->timekeeping_type == 'Daily') {
-                $sheet->getStyle('D' . $rowNumber)->applyFromArray([
-                    'fill' => [
-                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['rgb' => 'FFFFFF']
-                    ]
-                ]);
+            if (isset($unique_timekeeping->employee->current_position->timekeeping_type)) {
+                if ($unique_timekeeping->employee->current_position->timekeeping_type == 'Monthly') {
+                    $sheet->getStyle('D' . $rowNumber)->applyFromArray([
+                        'fill' => [
+                            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => '48c4cc']
+                        ]
+                    ]);
+                } elseif ($unique_timekeeping->employee->current_position->timekeeping_type == 'Daily') {
+                    $sheet->getStyle('D' . $rowNumber)->applyFromArray([
+                        'fill' => [
+                            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'FFFFFF']
+                        ]
+                    ]);
+                }
             }
         }
 
-        $sheet->getStyle('A1:' . $columns[count($columns) - 1] . '1')->applyFromArray([
+        $headerRange = 'A1:' . $lastColumnLetter . '1';
+        $sheet->getStyle($headerRange)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -206,12 +226,9 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
 
         for ($i = 0; $i < count($columns); $i++) {
             $col = $columns[$i];
-
             $headerCell = $sheet->getCell($col . '1');
             $headerLength = strlen($headerCell->getValue()) > 15 ? strlen($headerCell->getValue()) : 20;
-
             $maxContentLength = max($maxLengths[$col], $headerLength);
-
             $sheet->getColumnDimension($col)->setWidth($maxContentLength + 2);
         }
     }
