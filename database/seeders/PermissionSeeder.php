@@ -20,6 +20,8 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "view_users"]);
         Permission::firstOrCreate(["name" => "perform_users"]);
         Permission::firstOrCreate(["name" => "view_activity_logs"]);
+        Permission::firstOrCreate(["name" => "perform_database_backups"]);
+        Permission::firstOrCreate(["name" => "view_database_backups"]);
         // Permission::firstOrCreate(["name" => "view_settings"]);
         // Permission::firstOrCreate(["name" => "perform_settings"]);
 

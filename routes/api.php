@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityLogsController;
+use App\Http\Controllers\Admin\DatabaseBackupsController;
 use App\Http\Controllers\Admin\RolesPermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
@@ -70,6 +71,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get('/get-all-users', [UserController::class, "getAllUsers"]);
     Route::middleware(["permission:perform_users"])->post('/create-user', [AuthController::class, 'createUser']);
     Route::middleware(["permission:perform_users"])->post("/edit-user/{id}", [UserController::class,"editUser"]);
+    //database backup
+    Route::get("/get-all-database-backups", [DatabaseBackupsController::class, "getAllDatabaseBackups"]);
+    Route::middleware(["permission:perform_database_backups"])->post("/create-database-backup", [DatabaseBackupsController::class,"createDatabaseBackup"]);
+    Route::middleware(["permission:perform_database_backups"])->get('/download-sql-file/{filename}', [DatabaseBackupsController::class, 'downloadSqlFile']);
 
     // MAINTENANCE MODULE
     //stations
