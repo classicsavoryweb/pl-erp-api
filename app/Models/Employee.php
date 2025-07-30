@@ -139,7 +139,7 @@ class Employee extends Model
         $salaryPosition = $this->current_position->salary;
         $rateCode = $this->home_branch->rate_code;
         try {
-            if ($scheduleType == "Compressed Schedule") {
+            if ($scheduleType === "Compressed Schedule") {
                 if ($salaryPosition->rate_category === "MINIMUM") {
                     $minimumRate = Rate::where("code", $rateCode)->first();
     
@@ -149,7 +149,7 @@ class Employee extends Model
                 }
             }
     
-            if ($scheduleType == "Normal Schedule") {
+            if ($scheduleType === "Normal Schedule") {
                 if ($salaryPosition->rate_category === "MINIMUM") {
                     $minimumRate = Rate::where("code", $rateCode)->first();
     
@@ -333,6 +333,10 @@ class Employee extends Model
     public function timekeeping() {
         return $this->hasMany(TimeKeeping::class, "employee_id", "id");
     }
+
+    public function adjustment_timekeeping() {
+        return $this->hasMany(AdjustmentTimeKeeping::class, "employee_id", "id");
+    }
     public function adjustments() {
         return $this->hasMany(Adjustment::class, "employee_id", "biometric_number");
     }
@@ -390,23 +394,6 @@ class Employee extends Model
             ->whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
             ->whereNotIn("timetable", $notCountedSchedule)
             ->count();
-    }
-
-    public function payPerDay($cutOff){
-        $payPerDay = 0;
-
-        if ($this->current_position->timekeeping_type === "Monthly") {
-            $days = $this->getCutOffWorkDays($cutOff);
-            $cutOffBaseSalary = $this->cut_off_base_salary;
-
-            if ($days > 0) {
-                $payPerDay = round($cutOffBaseSalary / $days, 2);
-            }
-        } else {
-            $payPerDay = $this->daily_salary;
-        }
-
-        return $payPerDay;
     }
 
     public function getActivitylogOptions(): LogOptions

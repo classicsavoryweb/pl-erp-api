@@ -76,8 +76,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $regular_days = 13;
                     }
 
-                    if ($timeKeep->is_cancelled_off) {
-                        $cancelled_off += $timeKeep->is_cancelled_off;
+                    if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0) {
+                        $cancelled_off += $timeKeep->cancelled_off_hours;
                     }
 
                     if ($timeKeep->tardiness > 0) {
@@ -96,9 +96,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $legal_holiday+= $timeKeep->legal_holiday_hours;
                     }
 
-                    // if ($timeKeep->legal_holiday_overtime > 0) {
-                    //     $legal_holiday_overtime += $timeKeep->legal_holiday_overtime;
-                    // }
                     $totalOT = $timeKeep->approved_overtime;
                     if ($employee->current_branch->type === "Branch") {
                         $totalOT = floor($timeKeep->approved_overtime);

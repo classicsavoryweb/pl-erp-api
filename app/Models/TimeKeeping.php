@@ -35,11 +35,12 @@ class TimeKeeping extends Model
         "overtime_status",
         "branch_id",
         "approved_overtime",
-        "final_worked_hours"
+        "final_worked_hours",
+        "cancelled_off_hours"
     ];
 
     public function employee() {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class, "employee_id", "id");
     }
 
     public function branch() {

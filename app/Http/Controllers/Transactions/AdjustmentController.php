@@ -9,16 +9,16 @@ use App\Models\AdjustmentPunch;
 use App\Models\AdjustmentTimeKeeping;
 use App\Models\BiotimeLog;
 use App\Models\Employee;
-use App\Models\Holiday;
-use App\Models\Overtime;
 use App\Models\ScheduleMasterlist;
 use App\Models\TimeKeeping;
+use App\Models\TimeKeepingPayment;
 use Illuminate\Http\Request;
 use Str;
 use DB;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Log;
 
 class AdjustmentController extends Controller
 {
@@ -80,7 +80,6 @@ class AdjustmentController extends Controller
 
             $adjustments = $adjustments->with([
                 "employee",
-                "time_keeping"
             ])
             ->paginate($perPage);
 
@@ -112,7 +111,7 @@ class AdjustmentController extends Controller
                 ->first();
 
                 $schedule = ScheduleMasterlist::where("selection", $request->schedule)->first();
-                
+
                 $isExisting = Adjustment::where("employee_id", $employee->id)
                 ->where("date", $request->date)
                 ->where("status", "Approved")
@@ -133,7 +132,7 @@ class AdjustmentController extends Controller
                         "adjustment_id" => $adjustment->id,
                         "punch_time" => $punch["punch_time"],
                         "date" => $request->date,
-                        "branch_id" => $punch["branch_id"]
+                        "branch_id" => $log->branch_id
                     ]);
                 }
 
@@ -146,48 +145,48 @@ class AdjustmentController extends Controller
                 }
 
                 $updatedPunches = AdjustmentPunch::where("date", $request->date)
-                ->where("adjustment_id", $adjustment->id)
+                ->where("adjustment_id", $adjustment->id)   
                 ->orderBy("punch_time", "ASC")
                 ->get();
-
-                $adjustmentCutOff = $this->getCutOff($request->date);
-                $payment = $employee->payPerDay($adjustmentCutOff);
 
                 $this->timeKeepingService->computeTimeKeeping(
                     $log->branch_id,
                     $log,
                     $updatedPunches,
-                    $schedule,
+                    $schedule->selection,
                     $employee,
                     new AdjustmentTimeKeeping()
                 );
-                
-                // $adjustment->update([
-                //     "days" => $days,
-                //     "cancelled_rd" => $cancelled_rd,
-                //     "taxable_amount" => $taxable_amount,
-                //     "amount_paid" => $amount_paid,
-                //     "correct_amount_paid" => $correct_amount_paid,
-                //     "actual_schedule" => $schedule->selection,
-                //     "type" => $request->type,
-                //     "status" => "Pending",
-                //     "added_by" => Auth::user()->id,
-                //     "added_at" => now(),
-                // ]);
+
+                $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("biotime_log_id", $log->id)
+                ->first();
+                $this->timeKeepingService->computePayment($adjustmentTimeKeeping, $schedule->selection, true);
+                $adjustmentPayment = TimeKeepingPayment::where("adjustment_timekeeping_id", $adjustmentTimeKeeping->id)->first();
+                $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
+
+                $cancelled_off = $adjustmentPayment->cancelled_off - $originalPayment->cancelled_off;
+                $days = 0;
+
+                if ($adjustmentPayment && !$originalPayment) {
+                    $days += 1;
+                }
+                $adjustment->update([
+                    "days" => $days,
+                    "cancelled_rd" => $cancelled_off,
+                    "taxable_amount" => round($adjustmentPayment->total_amount - $originalPayment->total_amount, 2) ,
+                    "amount_paid" => round($originalPayment->total_amount, 2),
+                    "correct_amount_paid" => round($adjustmentPayment->total_amount, 2),
+                    "actual_schedule" => $schedule->selection,
+                    "type" => $request->type,
+                    "status" => "Pending",
+                    "added_by" => Auth::user()->id,
+                    "added_at" => now(),
+                ]);
             }
             DB::commit();
+            return $this->sendResponse(["message" => ""]);
         } catch (Exception $e) {
-            DB::rollBack();
-            return $this->sendError(["message" => $e->getMessage()]);
-        }
-    }
-
-    public function editAdjustments(Request $request, $id) {
-        try {
-            DB::beginTransaction();
-
-            DB::commit();
-        } catch (Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
@@ -196,8 +195,20 @@ class AdjustmentController extends Controller
     public function approveAdjustments(Request $request, $id) {
         try {
             DB::beginTransaction();
+            $adjustment = Adjustment::find($id);
 
-            DB::commit();
+            if ($adjustment) {
+                $adjustment->update([
+                    "status" => "Approved",
+                    "approved_by" => Auth::user()->id,
+                    "approved_at" => now(),
+                ]);
+                DB::commit();
+                return $this->sendResponse(["message" => "Adjustment approved successfully"]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Adjustment not found"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
@@ -207,8 +218,21 @@ class AdjustmentController extends Controller
     public function unapproveAdjustments(Request $request, $id) {
         try {
             DB::beginTransaction();
+            $adjustment = Adjustment::find($id);
 
-            DB::commit();
+            if ($adjustment) {
+                $adjustment->update([
+                    "status" => "Unapproved",
+                    "unapproved_by" => Auth::user()->id,
+                    "unapproved_at" => now(),
+                ]);
+
+                DB::commit();
+                return $this->sendResponse(["message" => "Adjustment unapproved successfully"]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Adjustment not found"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);

@@ -49,27 +49,25 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 ->where("employee_id", $employee->id)
                 ->first();
 
-                if ($log) {
-                    $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
-    
-                    $this->timeKeepingService->computeTimeKeeping(
-                        $this->branchId,
-                        $log,
-                        $bioTimePunches,
-                        $actualSchedule,
-                        $employee,
-                        new TimeKeeping()
-                    );
-    
-                    $employeeTimeKeepings = TimeKeeping::where("employee_id", $employee->id)
-                    ->whereBetween("date", $this->cutOff)
-                    ->get();
-    
-                    foreach($employeeTimeKeepings as $employeeTimeKeeping) {
-                        $actualSchedule = $employeeTimeKeeping->schedule->timetable;
-                        $this->timeKeepingService->computePayment($employeeTimeKeeping, $actualSchedule);
-                    }
-                }
+                $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
+
+                $this->timeKeepingService->computeTimeKeeping(
+                    $this->branchId,
+                    $log,
+                    $bioTimePunches,
+                    $actualSchedule->timetable,
+                    $employee,
+                    new TimeKeeping()
+                );
+            }
+            
+            $timeKeepings = TimeKeeping::where("branch_id", $this->branchId)
+            ->whereBetween("date", $this->cutOff)
+            ->get();
+
+            foreach($timeKeepings as $timeKeep) {
+                $actualSchedule = $timeKeep->schedule->timetable;
+                $this->timeKeepingService->computePayment($timeKeep, $actualSchedule);
             }
 
             DB::commit();

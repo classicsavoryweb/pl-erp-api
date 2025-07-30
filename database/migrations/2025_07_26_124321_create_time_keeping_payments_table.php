@@ -13,11 +13,21 @@ return new class extends Migration
     {
         Schema::create('time_keeping_payments', function (Blueprint $table) {
             $table->id();
-            $table->string("timekeeping_id");
+            $table->string("timekeeping_id")->nullable();
+            $table->string("adjustment_timekeeping_id")->nullable();
             $table->string("base_amount")->nullable();
             $table->string("tardiness_deduction")->nullable();
             $table->string("undertime_deduction")->nullable();
+            $table->string("cancelled_off")->nullable();
+            $table->string("regular_overtime")->nullable();
+            $table->string("night_differential")->nullable();
+            $table->string("night_differential_overtime")->nullable();
+            $table->string("legal_holiday")->nullable();
+            $table->string("special_holiday")->nullable();
+            $table->string("legal_holiday_overtime")->nullable();
+            $table->string("special_holiday_overtime")->nullable();
             $table->string("total_amount")->nullable();
+            $table->string("type")->nullable();
             $table->timestamps();
         });
     }
