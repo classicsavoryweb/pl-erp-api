@@ -10,6 +10,7 @@ use App\Models\AdjustmentTimeKeeping;
 use App\Models\BiotimeLog;
 use App\Models\Employee;
 use App\Models\ScheduleMasterlist;
+use App\Models\ScheduleTime;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingPayment;
 use Illuminate\Http\Request;
@@ -165,8 +166,7 @@ class AdjustmentController extends Controller
                     new AdjustmentTimeKeeping()
                 );
 
-                $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("biotime_log_id", $log->id)
-                ->first();
+                $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("biotime_log_id", $log->id)->first();
                 $this->timeKeepingService->computePayment($adjustmentTimeKeeping, $schedule->selection, true);
                 $adjustmentPayment = TimeKeepingPayment::where("adjustment_timekeeping_id", $adjustmentTimeKeeping->id)->first();
                 $originalPayment = null;
@@ -175,10 +175,15 @@ class AdjustmentController extends Controller
                     $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
                 }
 
-                $cancelled_off = $adjustmentPayment->cancelled_off - ($originalPayment->cancelled_off ?? 0);
+                $cancelled_off = $adjustmentTimeKeeping->cancelled_off_hours - ($oldTimeKeeping->cancelled_off_hours ?? 0);
                 $days = 0;
+
                 if ($adjustmentPayment && !$originalPayment) {
-                    if (!in_array($schedule->selection, ["REST DAY", "NO SCHEDULE"])) {
+                    $submittedScheduleTime = ScheduleTime::where("date", $request->date)
+                    ->where("employee_id", $employee->id)
+                    ->first();
+
+                    if (!in_array($submittedScheduleTime->timetable, ["REST DAY", "NO SCHEDULE"])) {
                         $days += 1;
                     }
                 }
