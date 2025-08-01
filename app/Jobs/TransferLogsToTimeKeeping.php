@@ -49,16 +49,18 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 ->where("employee_id", $employee->id)
                 ->first();
 
-                $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
-
-                $this->timeKeepingService->computeTimeKeeping(
-                    $this->branchId,
-                    $log,
-                    $bioTimePunches,
-                    $actualSchedule->timetable,
-                    $employee,
-                    new TimeKeeping()
-                );
+                if ($log) {
+                    $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
+    
+                    $this->timeKeepingService->computeTimeKeeping(
+                        $this->branchId,
+                        $log,
+                        $bioTimePunches,
+                        $actualSchedule->timetable,
+                        $employee,
+                        new TimeKeeping()
+                    );
+                }
             }
             
             $timeKeepings = TimeKeeping::where("branch_id", $this->branchId)

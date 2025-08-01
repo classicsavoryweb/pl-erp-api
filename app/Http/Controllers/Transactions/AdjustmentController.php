@@ -97,7 +97,8 @@ class AdjustmentController extends Controller
                 "employee_number" => "required",
                 "date" => "required",
                 "schedule" => "required",
-                "type" => "required"
+                "type" => "required",
+                "branch_id" => "required",
             ]);
 
             $employee = Employee::where("employee_number", $request->employee_number)->first();
@@ -107,9 +108,15 @@ class AdjustmentController extends Controller
                 ->where("date", $request->date)
                 ->first();
                 $log = BiotimeLog::where("employee_id", $employee->id)
-                ->where("date", $request->date)
-                ->first();
-
+                    ->where("date", $request->date)
+                    ->first();
+                if (!$log) {
+                    $log = (object) [
+                        "id" => 0,
+                        "date" => $request->date,
+                        "timetable" => $request->schedule,
+                    ];
+                }
                 $schedule = ScheduleMasterlist::where("selection", $request->schedule)->first();
 
                 $isExisting = Adjustment::where("employee_id", $employee->id)
@@ -132,7 +139,7 @@ class AdjustmentController extends Controller
                         "adjustment_id" => $adjustment->id,
                         "punch_time" => $punch["punch_time"],
                         "date" => $request->date,
-                        "branch_id" => $log->branch_id
+                        "branch_id" => $request->branch_id
                     ]);
                 }
 
@@ -150,7 +157,7 @@ class AdjustmentController extends Controller
                 ->get();
 
                 $this->timeKeepingService->computeTimeKeeping(
-                    $log->branch_id,
+                    $request->branch_id,
                     $log,
                     $updatedPunches,
                     $schedule->selection,
@@ -162,19 +169,27 @@ class AdjustmentController extends Controller
                 ->first();
                 $this->timeKeepingService->computePayment($adjustmentTimeKeeping, $schedule->selection, true);
                 $adjustmentPayment = TimeKeepingPayment::where("adjustment_timekeeping_id", $adjustmentTimeKeeping->id)->first();
-                $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
+                $originalPayment = null;
 
-                $cancelled_off = $adjustmentPayment->cancelled_off - $originalPayment->cancelled_off;
-                $days = 0;
-
-                if ($adjustmentPayment && !$originalPayment) {
-                    $days += 1;
+                if ($oldTimeKeeping) {
+                    $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
                 }
+
+                $cancelled_off = $adjustmentPayment->cancelled_off - ($originalPayment->cancelled_off ?? 0);
+                $days = 0;
+                if ($adjustmentPayment && !$originalPayment) {
+                    if (!in_array($schedule->selection, ["REST DAY", "NO SCHEDULE"])) {
+                        $days += 1;
+                    }
+                }
+
+                $taxable_amount = $adjustmentPayment->total_amount - ($originalPayment->total_amount ?? 0);
+                $amount_paid = $originalPayment->total_amount ?? 0;
                 $adjustment->update([
                     "days" => $days,
                     "cancelled_rd" => $cancelled_off,
-                    "taxable_amount" => round($adjustmentPayment->total_amount - $originalPayment->total_amount, 2) ,
-                    "amount_paid" => round($originalPayment->total_amount, 2),
+                    "taxable_amount" => round($taxable_amount, 2) ,
+                    "amount_paid" => round($amount_paid, 2),
                     "correct_amount_paid" => round($adjustmentPayment->total_amount, 2),
                     "actual_schedule" => $schedule->selection,
                     "type" => $request->type,
@@ -184,7 +199,7 @@ class AdjustmentController extends Controller
                 ]);
             }
             DB::commit();
-            return $this->sendResponse(["message" => ""]);
+            return $this->sendResponse(["message" => "Adjustment created successfully"]);
         } catch (Exception $e) {
             Log::error($e);
             DB::rollBack();
