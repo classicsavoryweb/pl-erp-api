@@ -183,8 +183,12 @@ class AdjustmentController extends Controller
                     ->where("employee_id", $employee->id)
                     ->first();
 
-                    if (!in_array($submittedScheduleTime->timetable, ["REST DAY", "NO SCHEDULE"])) {
+                    if ($submittedScheduleTime->timetable && !in_array($submittedScheduleTime->timetable, ["REST DAY", "NO SCHEDULE"])) {
                         $days += 1;
+                    } else {
+                        if (!$submittedScheduleTime) {
+                            $days += 1;
+                        }
                     }
                 }
 
@@ -249,6 +253,27 @@ class AdjustmentController extends Controller
 
                 DB::commit();
                 return $this->sendResponse(["message" => "Adjustment unapproved successfully"]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Adjustment not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function voidAdjustments(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+            $adjustment = Adjustment::find($id);
+
+            if ($adjustment) {
+                $adjustment->update([
+                    "status" => "Voided",
+                ]);
+                DB::commit();
+                return $this->sendResponse(["message" => "Adjustment voided successfully"]);
             }
 
             DB::rollBack();
