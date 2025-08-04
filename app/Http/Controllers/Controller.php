@@ -72,6 +72,26 @@ class Controller extends BaseController
         ];
     }
 
+    public function getPreviousCutOff() {
+        $now = Carbon::now();
+        $startTime = "";
+        $endTime = "";
+        $dayOfMonth = $now->day;
+
+        if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(10)->startOfDay(); // 11
+            $endTime = $now->copy()->subMonth()->startOfMonth()->addDays(24)->endOfDay(); // 25
+        } else {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); // 26
+            $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); // 10
+        }
+
+        return [
+            "start_time" => $startTime->toDateString(),
+            "end_time" => $endTime->toDateString()
+        ];
+    }
+
     public function getCutOffForDate($date){
         $carbonDate = Carbon::parse($date);
         $day = $carbonDate->day;
