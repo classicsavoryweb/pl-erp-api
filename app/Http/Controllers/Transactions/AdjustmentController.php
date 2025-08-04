@@ -108,6 +108,11 @@ class AdjustmentController extends Controller
                 $oldTimeKeeping = TimeKeeping::where("employee_id", $employee->id)
                 ->where("date", $request->date)
                 ->first();
+
+                if (!$oldTimeKeeping) {
+                    return $this->sendError(["message" => "Timekeeping not found"]);
+                }
+
                 $log = BiotimeLog::where("employee_id", $employee->id)
                     ->where("date", $request->date)
                     ->first();
@@ -121,9 +126,9 @@ class AdjustmentController extends Controller
                 $schedule = ScheduleMasterlist::where("selection", $request->schedule)->first();
 
                 $isExisting = Adjustment::where("employee_id", $employee->id)
-                ->where("date", $request->date)
-                ->where("status", "Approved")
-                ->first();
+                    ->where("date", $request->date)
+                    ->whereIn("status", ["Pending", "Approved"])
+                    ->first();
 
                 if ($isExisting) {
                     return $this->sendError(["message" => "Adjustments already existing."]);
