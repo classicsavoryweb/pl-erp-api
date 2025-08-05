@@ -20,6 +20,13 @@ class TimeKeepingService
         ->where("employee_id", $employee->id)
         ->where("date", $log->date)
         ->first();
+
+        if (!$scheduleTime) {
+            $scheduleTime = ScheduleTime::where("employee_id", $employee->id)
+            ->where("date", $log->date)
+            ->first();
+        }
+
         $travel_time = 0;
 
         $isCancelledOff = false;
@@ -346,7 +353,7 @@ class TimeKeepingService
             if ($schedule->selection === "REST DAY") {
                 $isCancelledOff = true;
                 $overtime = 0;
-                $cancelled_off_hours = $decimalHours;
+                $cancelled_off_hours = round($decimalHours, 2);
             }
 
             $isExisting = $model->where("employee_id", $employee->id)

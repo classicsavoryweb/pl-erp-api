@@ -58,11 +58,9 @@ class FetchBiotimeAttendance extends Command
                 ])
                 ->timeout(60)
                 ->get($url,[
-                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    "end_time" => $endTime->format('Y-m-d H:i:s'),
                     "emp_code" => $employee->biometric_number,
-                    "start_time" => "2025-05-01 00:00:00",
-                    "end_time" => "2025-06-30 23:59:59",
                     "page_size" => 100000
                 ]);
 
@@ -166,11 +164,9 @@ class FetchBiotimeAttendance extends Command
                 ])
                 ->timeout(60)
                 ->get($url,[
-                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    "end_time" => $endTime->format('Y-m-d H:i:s'),
                     "emp_code" => $employee->biometric_number,
-                    "start_time" => "2025-05-01 00:00:00",
-                    "end_time" => "2025-06-30 23:59:59",
                     "page_size" => 100000
                 ]);
 

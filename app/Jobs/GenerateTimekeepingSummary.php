@@ -138,6 +138,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 $adjustments_tardiness = 0;
                 $adjustments_undertime = 0;
                 $adjustments_days = 0;
+                $adjustments_cancelled_off = 0;
 
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut-off" => $cutOff['start_time']."-".$cutOff['end_time'],
@@ -175,7 +176,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         if ($adjustment_amount > 0) {
                             $adjustment_amount += $adjustment->taxable_amount;
                         }
+
+                        if ($adjustment->cancelled_rd > 0) {
+                            $adjustments_cancelled_off += $adjustment->cancelled_rd;
+                        }
                     }
+
 
                     $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("date", $adjustment->date)
                     ->where("employee_id", $employee->id)
@@ -202,6 +208,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 $tardiness += $adjustments_tardiness;
                 $undertime += $adjustments_undertime;
                 $regular_days += $adjustments_days;
+                $cancelled_off += round($adjustments_cancelled_off, 2);
 
                 if ($withAdjustments) {
                     $timeKeepingSummary->update([
@@ -209,6 +216,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "undertime" => $undertime,
                         "regular_days" => $regular_days,
                         "adjustment_amount" => $adjustment_amount,
+                        "cancelled_off" => $this->formatHours($cancelled_off),
                         "remarks" => "With adjustments"
                     ]);
                 }
@@ -228,21 +236,30 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
     public function getPreviousCutOff($date) {
         $now = Carbon::parse($date);
-        $startTime = "";
-        $endTime = "";
-        $dayOfMonth = $now->day;
+        $day = $now->day;
 
-        if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
-            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(10)->startOfDay(); // 11
-            $endTime = $now->copy()->subMonth()->startOfMonth()->addDays(24)->endOfDay(); // 25
+        if ($day >= 1 && $day <= 15) {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25);
+            $endTime = $now->copy()->startOfMonth()->addDays(9);
         } else {
-            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); // 26
-            $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); // 10
+            $startTime = $now->copy()->startOfMonth()->addDays(10);
+            $endTime = $now->copy()->startOfMonth()->addDays(24);
         }
 
         return [
             "start_time" => $startTime->toDateString(),
             "end_time" => $endTime->toDateString()
         ];
+    }
+
+    private function formatHours($hours) {
+        $formattedHours = $hours;
+
+        if ($formattedHours < 1 && $formattedHours > 0) {
+            $formattedHours = .5;
+        } else {
+            $formattedHours = floor($hours / 0.5) * 0.5;
+        }   
+        return $formattedHours;
     }
 }
