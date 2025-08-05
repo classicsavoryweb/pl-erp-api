@@ -2,11 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Models\Adjustment;
+use App\Models\AdjustmentTimeKeeping;
 use App\Models\LateTimeKeepingSummary;
 use App\Models\ScheduleMasterlist;
 use App\Models\ScheduleTime;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -28,9 +31,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $this->currentCutOff = $currentCutOff;
     }
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
         $cutOff = $this->currentCutOff;
@@ -134,6 +134,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $isExisting->delete();
                 }
 
+                //checking adjustments
+                $adjustments_tardiness = 0;
+                $adjustments_undertime = 0;
+                $adjustments_days = 0;
+
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut-off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
@@ -150,8 +155,63 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     "undertime" => $undertime,
                     "travel_time" => $travel_time,
                     "tardiness" => $tardiness,
-                    "branch_id" => $timeKeepings[0]->branch_id
+                    "branch_id" => $timeKeepings[0]->branch_id,
+                    "adjustment_amount" => $adjustment_amount
                 ]);
+
+                $previousCutOff = $this->getPreviousCutOff($cutOff["start_time"]);
+
+                $adjustments = Adjustment::whereBetween("date", [$previousCutOff['start_time'], $previousCutOff['end_time']])
+                ->where("employee_id", $employee->id)
+                ->where("status", "Approved")
+                ->get();
+
+                $withAdjustments = false;
+
+                foreach($adjustments as $adjustment) {
+                    if ($adjustment->days > 0) {
+                        $adjustments_days += $adjustment->days;
+                    } else {
+                        if ($adjustment_amount > 0) {
+                            $adjustment_amount += $adjustment->taxable_amount;
+                        }
+                    }
+
+                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("date", $adjustment->date)
+                    ->where("employee_id", $employee->id)
+                    ->first();
+
+                    if ($adjustmentTimeKeeping) {
+                        if ($adjustmentTimeKeeping->undertime > 0) {
+                            $adjustments_undertime += $adjustmentTimeKeeping->undertime;
+                        }
+
+                        if ($adjustmentTimeKeeping->tardiness > 0) {
+                            $adjustments_tardiness += $adjustmentTimeKeeping->tardiness;
+                        }
+                    }
+
+                    $adjustment->update([
+                        "status" => "Reflected",
+                        "timekeeping_summary_id" => $timeKeepingSummary->id
+                    ]);
+
+                    $withAdjustments = true;
+                }
+
+                $tardiness += $adjustments_tardiness;
+                $undertime += $adjustments_undertime;
+                $regular_days += $adjustments_days;
+
+                if ($withAdjustments) {
+                    $timeKeepingSummary->update([
+                        "tardiness" => $tardiness,
+                        "undertime" => $undertime,
+                        "regular_days" => $regular_days,
+                        "adjustment_amount" => $adjustment_amount,
+                        "remarks" => "With adjustments"
+                    ]);
+                }
 
                 if (count($lateDate) > 0) {
                     foreach($lateDate as $late) {
@@ -164,5 +224,25 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
             }
         }
+    }
+
+    public function getPreviousCutOff($date) {
+        $now = Carbon::parse($date);
+        $startTime = "";
+        $endTime = "";
+        $dayOfMonth = $now->day;
+
+        if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(10)->startOfDay(); // 11
+            $endTime = $now->copy()->subMonth()->startOfMonth()->addDays(24)->endOfDay(); // 25
+        } else {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); // 26
+            $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); // 10
+        }
+
+        return [
+            "start_time" => $startTime->toDateString(),
+            "end_time" => $endTime->toDateString()
+        ];
     }
 }
