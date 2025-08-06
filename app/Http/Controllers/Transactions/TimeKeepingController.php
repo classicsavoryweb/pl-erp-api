@@ -11,6 +11,7 @@ use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
 use App\Exports\Transactions\TimeKeepingExport;
 use App\Exports\Transactions\TimeKeepingSummaryExport;
+use Illuminate\Support\Facades\Artisan;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -21,6 +22,12 @@ use Log;
 
 class TimeKeepingController extends Controller
 {
+    public function triggerFetchBiotimeLogs(Request $request) {
+        Artisan::call('app:fetch-biotime-attendance');
+
+        return $this->sendResponse(["message" => "Fetching biotime"]);
+    }
+
     public function generateTimeKeeping(Request $request) {
         try {
             $request->validate([

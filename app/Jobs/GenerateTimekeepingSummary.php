@@ -72,6 +72,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $regular_days += .5;
                     }
 
+                    if ($schedule->selection === "INCENTIVE LEAVE") {
+                        $regular_days += 1;
+                    }
+
                     if ($regular_days > 13 && $employee->current_position->timekeeping_type === "Monthly") {
                         $regular_days = 13;
                     }
