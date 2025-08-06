@@ -7,8 +7,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Database\Eloquent\Collection;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles
+class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, WithColumnFormatting
 {
     protected Collection $timekeeping;
 
@@ -45,9 +47,8 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles
 
     private function formatNumber($value)
     {
-        return $value == 0 ? '-' : number_format($value, 2, '.', '');
+        return $value == 0 ? '' : number_format((float)$value, 2, '.', '');
     }
-
 
     public function headings(): array
     {
@@ -73,11 +74,31 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles
         ];
     }
 
+    public function columnFormats(): array
+    {
+        return [
+            'F' => NumberFormat::FORMAT_NUMBER_0,
+            'G' => NumberFormat::FORMAT_NUMBER_0,
+            'H' => NumberFormat::FORMAT_NUMBER_0,
+            'I' => NumberFormat::FORMAT_NUMBER_0,
+            'J' => NumberFormat::FORMAT_NUMBER_0,
+            'K' => NumberFormat::FORMAT_NUMBER_0,
+            'L' => NumberFormat::FORMAT_NUMBER_0,
+            'M' => NumberFormat::FORMAT_NUMBER_0,
+            'N' => NumberFormat::FORMAT_NUMBER_0,
+            'O' => NumberFormat::FORMAT_NUMBER_0,
+            'P' => NumberFormat::FORMAT_NUMBER_0,
+            'Q' => NumberFormat::FORMAT_NUMBER_0,
+            'R' => NumberFormat::FORMAT_NUMBER_0,
+        ];
+    }
+
     public function styles(Worksheet $sheet)
     {
         $headings = $this->headings();
         $columns = range('A', 'R');
-
+        $rowCount = $this->timekeeping->count() + 1;
+        $sheet->getStyle('A1:R' . $rowCount)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $maxLengths = array_fill_keys($columns, 0);
 
         foreach ($columns as $colIndex => $col) {
@@ -85,7 +106,7 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles
         }
 
         $rows = $this->timekeeping;
-
+        
         foreach ($rows as $index => $unique_timekeeping) {
             $rowNumber = $index + 2;
             $data = [

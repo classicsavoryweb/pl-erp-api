@@ -5,11 +5,13 @@ namespace App\Exports\Transactions;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyles
+class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyles, WithColumnFormatting
 {
     protected Collection $timekeeping;
 
@@ -54,7 +56,7 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
                     $late = $unique_timekeeping->lates[$i];
                     $lateColumns["late " . ($i + 1)] = $late->date . " / " . $late->late_minutes . " minutes";
                 } else {
-                    $lateColumns["late " . ($i + 1)] = "-";
+                    $lateColumns["late " . ($i + 1)] = "";
                 }
             }
 
@@ -70,7 +72,7 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
 
     private function formatNumber($value)
     {
-        return $value == 0 ? '-' : number_format($value, 2, '.', '');
+        return $value == 0 ? '' : number_format($value, 2, '.', '');
     }
 
     public function headings(): array
@@ -119,13 +121,44 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
         }
         return $colName;
     }
+    
+    public function columnFormats(): array
+    {
+        $formats = [];
+        $headings = $this->headings();
+        $numericHeadings = [
+            'Regular Days',
+            'Taxable Adjustment Amount',
+            'Special Leave Days',
+            'Cancelled Off Hours',
+            'Special Holiday Hours',
+            'Legal Holiday Hours',
+            'Regular Overtime Hours',
+            'Night Diff Hours',
+            'Night Diff Overtime Hours',
+            'Legal Holiday Overtime Hours',
+            'Special Holiday Overtime Hours',
+            'Undertime Minutes',
+            'Total Late Minutes',
+        ];
+        foreach ($headings as $idx => $heading) {
+            $colLetter = $this->getExcelColumnLetter($idx);
+            if (in_array($heading, $numericHeadings) || preg_match('/^Late \\d+$/', $heading)) {
+                $formats[$colLetter] = NumberFormat::FORMAT_NUMBER_0;
+            }
+        }
+        return $formats;
+    }
 
     public function styles(Worksheet $sheet)
     {
         $headings = $this->headings();
-
         $maxColIndex = count($headings) - 1;
         $lastColumnLetter = $this->getExcelColumnLetter($maxColIndex);
+        $rowCount = $this->timekeeping->count() + 1;
+
+        $sheet->getStyle('A1:' . $lastColumnLetter . $rowCount)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
         $columns = [];
         for ($i = 0; $i <= $maxColIndex; $i++) {
             $columns[] = $this->getExcelColumnLetter($i);
