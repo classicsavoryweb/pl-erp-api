@@ -315,6 +315,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-time-keeping", [TimeKeepingController::class, "getAllTimeKeeping"]);
     Route::middleware(["permission:export_all_transactions_time_keeping"])->get("/export-all-time-keeping", [TimeKeepingController::class, "exportAllTimeKeeping"]);
     Route::get("/get-time-keeping", [TimeKeepingController::class, "getTimeKeeping"]);
+    Route::get("/trigger-fetch-biotime", [TimeKeepingController::class, "triggerFetchBiotimeLogs"]);
     //time keeping summary
     Route::middleware(["permission:perform_transactions_time_keeping_summary"])->post("/generate-time-keeping-summary", [TimeKeepingController::class, "generateTimeKeepingSummary"]);
     Route::get("/get-all-time-keeping-summary", [TimeKeepingController::class, "getAllTimeKeepingSummary"]);

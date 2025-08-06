@@ -49,9 +49,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 ->where("employee_id", $employee->id)
                 ->first();
 
-                if ($log) {
+                if (isset($log)) {
                     $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
-    
                     $this->timeKeepingService->computeTimeKeeping(
                         $this->branchId,
                         $log,
@@ -60,6 +59,31 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         $employee,
                         new TimeKeeping()
                     );
+                } else {
+                    if ($actualSchedule->timetable == "INCENTIVE LEAVE") {
+                        TimeKeeping::create([
+                            "employee_id" => $employee->id,
+                            "biometric_number" => $employee->biometric_number,
+                            "biotime_log_id" => null,
+                            "schedule_time_id" => $actualSchedule->id,
+                            "date" => $actualSchedule->date,
+                            "worked_hours" => 0,
+                            "legal_holiday" => 0,
+                            "special_holiday" => 0,
+                            "regular_overtime" => 0,
+                            "tardiness" => 0,
+                            "night_diff_hours" => 0,
+                            "night_diff_overtime" => 0,
+                            "legal_holiday_hours" => 0,
+                            "legal_holiday_overtime" => 0,
+                            "special_holiday_hours" => 0,
+                            "special_holiday_overtime" => 0,
+                            "undertime" => 0,
+                            "is_cancelled_off" => false,
+                            "branch_id" => $this->branchId,
+                            "final_worked_hours" => 0
+                        ]);
+                    }
                 }
             }
             
