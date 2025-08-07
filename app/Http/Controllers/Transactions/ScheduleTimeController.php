@@ -89,7 +89,8 @@ class ScheduleTimeController extends Controller
         }
     }
 
-    public function importTransactionsScheduleTimeExcel (Request $request) {
+    public function validateImportTransactionsScheduleTimeExcel(Request $request)
+    {
         try {
             $request->validate([
                 "schedule_time_file" => "required"
@@ -99,6 +100,7 @@ class ScheduleTimeController extends Controller
                 $storage = Storage::disk("hr_system_folder");
                 $directory = "/imports";
                 $file = $request->file("schedule_time_file");
+
                 if (!$storage->exists($directory)) {
                     $storage->makeDirectory($directory);
                 }
@@ -106,12 +108,78 @@ class ScheduleTimeController extends Controller
                 $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
                 $filePath = $directory . '/' . $fileName;
                 $storage->put($filePath, file_get_contents($file));
-                
+
+                $dataRows = Excel::toArray([], $file);
+                $dataRows = array_slice($dataRows[0], 2); 
+
+                $restDayCounts = [];
+                $incentiveLeaveCounts = [];
+
+                $leaveCounts = [
+                    'REST DAY' => &$restDayCounts,
+                    'INCENTIVE LEAVE' => &$incentiveLeaveCounts
+                ];
+
+                foreach ($dataRows as $index => $row) {
+                    $employeeId = $row[0] ?? null;
+                    $timetable  = $row[5] ?? null;
+
+                    if (isset($leaveCounts[strtoupper(trim($timetable))])) {
+                        $leaveType = strtolower(trim($timetable));
+                        $leaveCounts[$leaveType][$employeeId] = ($leaveCounts[$leaveType][$employeeId] ?? 0) + 1;
+
+                        if ($leaveCounts[$leaveType][$employeeId] >= 3) {
+                            return $this->sendError([
+                                "message" => "Employee with 3 or more $leaveType exists.",
+                                "file_path" => $filePath
+                            ]);
+                        }
+                    }
+                }
+            }
+            
+            return $this->sendResponse([
+                "message" => "Excel file validated successfully",
+                "file_path" => $filePath
+            ]);
+        } catch (\Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function importTransactionsScheduleTimeExcel(Request $request) {
+        try {
+            $request->validate([
+                "schedule_time_file" => "required_without:file_path|file",  
+                "file_path" => "required_without:schedule_time_file|string" 
+            ]);
+
+            $filePath = null;
+
+            if ($request->hasFile("schedule_time_file")) {
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/imports";
+                $file = $request->file("schedule_time_file");
+
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+
+            } elseif ($request->has("file_path")) {
+                $filePath = $request->file_path;
+            }
+
+            if ($filePath) {
                 ProcessScheduleTimeImport::dispatch($filePath);
             }
+
             return $this->sendResponse(["message" => "Excel file imported successfully"]);
         } catch (Exception $e) {
-            return $this->sendError(["message" => $e->getMessage() ]);
+            return $this->sendError(["message" => $e->getMessage()]);
         }
     }
 }
