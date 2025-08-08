@@ -295,6 +295,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-transactions-schedule-time", [ScheduleTimeController::class, "getAllTransactionsScheduleTime"]);
     Route::get("/get-transactions-schedule-time", [ScheduleTimeController::class, "getTransactionsScheduleTime"]);
     Route::get("/export-all-transactions-schedule-time", [ScheduleTimeController::class, "exportAllTransactionsScheduleTime"]);
+    Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/validate-import-transactions-schedule-time", [ScheduleTimeController::class, "validateImportTransactionsScheduleTimeExcel"]);
     Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/import-transactions-schedule-time", [ScheduleTimeController::class, "importTransactionsScheduleTimeExcel"]);
     //actual logs
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
