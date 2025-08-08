@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Services;
+
+use App\Models\BiotimeLog;
 use App\Models\Holiday;
 use App\Models\Overtime;
 use App\Models\ScheduleMasterlist;
@@ -10,6 +12,8 @@ use App\Models\TimeKeepingPayment;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Carbon\CarbonInterface;
+
 
 class TimeKeepingService
 {
@@ -104,7 +108,6 @@ class TimeKeepingService
         if ($holiday) {
             $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";
             $specialHoliday = $holiday->holiday_type === "SH" ? "Yes" : "No";
-
             $holidayWorkingHours = $scheduleStart->diffInSeconds($parsedLastPunch);
             $holidayWorkedHours = $holidayWorkingHours - ($scheduledBreakInMinutes * 60);
             $totalHolidayWorkedHours = $holidayWorkedHours / 3600;
@@ -184,7 +187,7 @@ class TimeKeepingService
             $breakOutGap = $scheduleStart->diffInMinutes($parsedSecondPunch);
             $breakInGap = $parsedSecondPunch->diffInMinutes($scheduleEnd);
 
-            // NO CLOCK IN CORRECT
+            // NO CLOCK IN
             if (
                 $scheduleStart->diffInHours($parsedFirstPunch) > 3 &&
                 $parsedFirstPunch->diffInHours($parsedSecondPunch) <= 2
@@ -196,6 +199,7 @@ class TimeKeepingService
             if (
                 $scheduleStart->diffInHours($parsedFirstPunch) <= 3 &&
                 $parsedFirstPunch->diffInHours($parsedSecondPunch) > 3 &&
+                $scheduleEnd->diffInHours($parsedLastPunch) < 3 &&
                 $breakOutGap > $breakInGap
             ) {
                 $tardiness = $scheduleStart->diffInMinutes($parsedSecondPunch) - $scheduledBreakInMinutes;
@@ -205,6 +209,7 @@ class TimeKeepingService
             if (
                 $parsedSecondPunch->diffInHours($parsedLastPunch) > 3 &&
                 $parsedSecondPunch->diffInMinutes($parsedLastPunch) > $scheduledBreakInMinutes &&
+                $scheduleEnd->diffInHours($parsedLastPunch) < 3 &&
                 $breakInGap > $breakOutGap
             ) {
                 $tardiness = $parsedSecondPunch->diffInMinutes($scheduleEnd) - $scheduledBreakInMinutes;
@@ -349,7 +354,6 @@ class TimeKeepingService
                 ]);
             }
 
-            
             if ($schedule->selection === "REST DAY") {
                 $isCancelledOff = true;
                 $overtime = 0;
@@ -369,17 +373,37 @@ class TimeKeepingService
                 $isExisting->delete();
             }
 
+            $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
             if (
                 ($workHours >= $schedule->total_hours - 3.5 || $undertime < 240 ) &&
                 !$isCancelledOff
             ) {
-                $finalWorkHours = $schedule->total_hours;
+                $finalWorkHours = $hours;
             } else if (
                 $workHours < $schedule->total_hours - 3.5 &&
                 $workHours >= $schedule->total_hours / 2 &&
                 !$isCancelledOff
             ) {
-                $finalWorkHours = $schedule->total_hours / 2;
+                $finalWorkHours = $hours / 2;
+            }
+
+            if ($holiday) {
+                if ($workHours >= $schedule->total_hours) {
+                    if ($legalHoliday === "Yes") {
+                        $legalHolidayHours = $hours;
+                    } else if ($specialHoliday === "Yes") {
+                        $specialHolidayHours = $hours;
+                    }
+                } else {
+                    $holidayHours = $workHours > $hours ? $hours : $workHours;
+                    if ($legalHoliday === "Yes") {
+                        $legalHolidayHours = $holidayHours;
+                        $finalWorkHours = $hours; 
+                    } else if ($specialHoliday === "Yes") {
+                        $specialHolidayHours = $holidayHours;
+                        $finalWorkHours = $hours;
+                    }
+                }
             }
 
             $model->create([
@@ -577,5 +601,132 @@ class TimeKeepingService
             $formattedHours = floor($hours / 0.5) * 0.5;
         }   
         return $formattedHours;
+    }
+
+    public function payHoliday($date, $employee, $cutOff) {
+        $shouldPay = false;
+        $holidayDate = Carbon::parse($date);
+        $weekDateRange = $this->getCustomWeekRange($date, $cutOff);
+        $schedules = ScheduleTime::where("employee_id", $employee->id)
+        ->whereBetween("date", [$weekDateRange["start"], $weekDateRange["end"] ])
+        ->get();
+
+        //head office
+        if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+            $hasLeaveOrSuspension = $schedules->contains(function ($schedule) {
+                return in_array($schedule->timetable, ['LEAVE', 'SUSPENSION']);
+            });
+            $otherSchedules = $schedules->filter(function ($schedule) {
+                if (!in_array($schedule->timetable, ["LEAVE", "SUSPENSION", "REST DAY"])) {
+                    return $schedule;
+                }
+            });
+
+            if ($hasLeaveOrSuspension) {
+                $shouldPay = false;
+            }
+            $pay = true;
+            foreach ($otherSchedules as $schedule) {
+                $log = BiotimeLog::where("date", $schedule->date)
+                ->where("employee_id", $employee->id)
+                ->first();
+
+                if (!$log && $schedule->timetable !== "NO SCHEDULE") {
+                    $pay = false;
+                }
+            }
+
+            if ($pay) {
+                $shouldPay = true;
+            }
+        }
+
+        //branch
+        if ($employee->schedule->schedule_type->name === "Normal Schedule") {
+            $previousDate = $holidayDate->copy()->subDay()->toDateString();
+            $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+            $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+
+            if ($previousDateSchedule && $previousDateSchedule->timetable === "REST DAY") {
+                $currentDate = Carbon::parse($previousDate);
+                $previousDate = $currentDate->copy()->subDay()->toDateString();
+                $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+                $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+
+                if ($hasLog) {
+                    $shouldPay = true;
+                } else {
+                    $shouldPay = false;
+                }
+
+            } else if ($previousDateSchedule && $previousDateSchedule->timetable === "INCENTIVE LEAVE") {
+                $shouldPay = true;
+            } else {
+                if ($hasLog) {
+                    $shouldPay = true;
+                } else {
+                    $shouldPay = false;
+                }
+            }
+        }
+
+        return $shouldPay;
+    }
+
+    private function getCustomWeekRange($date, $cutOff)
+    {
+        $holidayDate = Carbon::parse($date);
+        $startOfWeek = $holidayDate->copy()->startOfWeek(CarbonInterface::MONDAY);
+        $endOfWeek = $holidayDate->copy()->endOfWeek(CarbonInterface::SUNDAY);
+
+        $startDate = Carbon::parse($cutOff["start_time"]);
+        $endDate = Carbon::parse($cutOff["end_time"]);
+
+        if ($startOfWeek->lt($startDate)) {
+            $startOfWeek = $startDate;
+        }
+        if ($endOfWeek->gt($endDate)) {
+            $endOfWeek = $endDate;
+        }
+
+        return [
+            "start" => $startOfWeek,
+            "end" => $endOfWeek
+        ];
+    }
+
+    public function isCompleteAttendanceThisCutOff($employee, $cutOff) {
+        $isComplete = true;
+
+        $schedules = ScheduleTIme::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+        ->where("employee_id",$employee->id)
+        ->get();
+
+        //has leave or suspension
+        $hasLeaveOrSuspension = $schedules->contains(function ($schedule) {
+            return in_array($schedule->timetable, ['LEAVE', 'SUSPENSION']);
+        });
+
+        $otherSchedules = $schedules->filter(function ($schedule) {
+            if (!in_array($schedule->timetable, ["LEAVE", "SUSPENSION", "REST DAY", "NO SCHEDULE"])) {
+                return $schedule;
+            }
+        });
+        
+        if ($hasLeaveOrSuspension) {
+            $isComplete = false;
+        }
+
+        foreach($otherSchedules as $schedule) {
+            $timeKeeping = TimeKeeping::where("date", $schedule->date)
+            ->where("employee_id", $employee->id)
+            ->first();
+
+            if (!$timeKeeping) {
+                $isComplete = false;
+            }
+        }
+
+        return $isComplete;
     }
 }

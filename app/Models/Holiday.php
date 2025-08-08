@@ -10,7 +10,7 @@ class Holiday extends Model
     use HasFactory;
 
     protected $table = "holidays";
-    protected $fillable = ["date", "holiday_type", "description", "required_days"];
+    protected $fillable = ["date", "holiday_type", "description", "required_days", "required_for"];
 
     public function branches() {
         return $this->belongsToMany(Branch::class)

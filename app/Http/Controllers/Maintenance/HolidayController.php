@@ -71,7 +71,8 @@ class HolidayController extends Controller
                 "holiday_type" => "required",
                 "branch_id" => "required|array",
                 "description" => "required",
-                "required_days" => "required"
+                "required_days" => "required",
+                "required_for" => "required"
             ]);
 
             $holiday = Holiday::create([
@@ -79,6 +80,7 @@ class HolidayController extends Controller
                 "holiday_type" => $request->holiday_type,
                 "description" => $request->description,
                 "required_days" => $request->required_days,
+                "required_for" => $request->required_for,
             ]);
 
             $holiday->branches()->attach($request->branch_id);
@@ -100,7 +102,8 @@ class HolidayController extends Controller
                 "holiday_type" => "required",
                 "branch_id" => "required|array",
                 "description" => "required",
-                "required_days" => "required"
+                "required_days" => "required",
+                "required_for" => "required"
             ]);
 
             $holiday = Holiday::find( $id);
@@ -109,7 +112,8 @@ class HolidayController extends Controller
                 "date" => $request->date,
                 "holiday_type" => $request->holiday_type,
                 "description" => $request->description,
-                "required_days" => $request->required_days
+                "required_days" => $request->required_days,
+                "required_for" => $request->required_for,
             ]);
 
             $holiday->branches()->attach($request->branch_id);

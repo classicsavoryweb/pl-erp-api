@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Http\Services\TimeKeepingService;
 use App\Models\Adjustment;
 use App\Models\AdjustmentTimeKeeping;
+use App\Models\Holiday;
 use App\Models\LateTimeKeepingSummary;
 use App\Models\ScheduleMasterlist;
 use App\Models\ScheduleTime;
@@ -22,6 +24,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected $employees;
     protected $currentCutOff;
+    protected $timeKeepingService;
     /**
      * Create a new job instance.
      */
@@ -29,6 +32,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
     {
         $this->employees = $employees;
         $this->currentCutOff = $currentCutOff;
+        $this->timeKeepingService = new TimeKeepingService();
     }
 
     public function handle(): void
@@ -59,25 +63,39 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 foreach ($timeKeepings as $timeKeep) {
                     $actualSchedule = ScheduleTime::find($timeKeep->schedule_time_id);
                     $employee = $actualSchedule->employee;
+                    $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
                     $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
                     ->first();
+
+                    $holidayIsPaid = false;
+                    
+                    $holiday = Holiday::where("date", $actualSchedule->date)
+                    ->whereHas("branches", function ($query) use($actualSchedule) {
+                        return $query->where("branch_id", $actualSchedule->branch_id);
+                    })
+                    ->first();
+
+                    if ($holiday) {
+                        $holidayIsPaid = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff);
+                        Log::info($employee->full_name." - ".$holidayIsPaid." - ".$timeKeep->date);
+                    }
 
                     if ($schedule->selection === "SUSPENSION") {
                         continue;
                     }
 
-                    if ($schedule->total_hours == $timeKeep->final_worked_hours && !$timeKeep->is_cancelled_off) {
+                    if ($hours == $timeKeep->final_worked_hours && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
-                    } else if ( $schedule->total_hours / 2 == $timeKeep->final_worked_hours  && !$timeKeep->is_cancelled_off) {
+                    } else if ( $hours / 2 == $timeKeep->final_worked_hours  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
+                    }
+
+                    if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
+                        $regular_days += 1;
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {
                         $regular_days += 1;
-                    }
-
-                    if ($regular_days > 13 && $employee->current_position->timekeeping_type === "Monthly") {
-                        $regular_days = 13;
                     }
 
                     if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0) {
@@ -91,24 +109,24 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             "late_minutes" => $timeKeep->tardiness
                         ];
                     }
-
+;
                     if ($timeKeep->special_holiday_hours > 0) {
-                        $special_holiday += $timeKeep->special_holiday_hours;
+                        $special_holiday += $holidayIsPaid ? $timeKeep->special_holiday_hours : 0;
                     }
 
                     if ($timeKeep->legal_holiday_hours > 0) {
-                        $legal_holiday+= $timeKeep->legal_holiday_hours;
+                        $legal_holiday+= $holidayIsPaid ? $timeKeep->legal_holiday_hours : 0;
                     }
 
                     $totalOT = $timeKeep->approved_overtime;
                     if ($employee->current_branch->type === "Branch") {
                         $totalOT = floor($timeKeep->approved_overtime);
                     }
-
-                    if ($timeKeep->legal_holiday === "Yes") {
-                        $legal_holiday_overtime += $totalOT;
-                    } else if ($timeKeep->special_holiday === "Yes") {
-                        $special_holiday_overtime += $totalOT;
+                    
+                    if ($timeKeep->legal_holiday === "Yes" && $holidayIsPaid) {
+                        $legal_holiday_overtime += $totalOT > $timeKeep->legal_holiday_overtime ? $timeKeep->legal_holiday_overtime : $totalOT;
+                    } else if ($timeKeep->special_holiday === "Yes" && $holidayIsPaid ) {
+                        $special_holiday_overtime += $totalOT > $timeKeep->special_holiday_overtime ? $timeKeep->special_holiday_overtime : $totalOT;
                     } else {
                         $regular_overtime += $totalOT;
                     }
@@ -130,9 +148,27 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 }
 
+
+                
+
                 $isExisting = TimeKeepingSummary::where("cut-off", $cutOff['start_time']."-".$cutOff['end_time'])
                 ->where("employee_id", $employee->id)
                 ->first();
+
+                if ($regular_days > 13 && $employee->current_position->timekeeping_type === "Monthly") {
+                    $regular_days = 13;
+                }
+
+                if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $this->currentCutOff)) {
+                    if ($employee->current_position->timekeeping_type === "Monthly") {
+                        if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+                            $regular_days = 11;
+                        }
+                        if ($employee->schedule->schedule_type->name === "Normal Schedule") {
+                            $regular_days = 13;
+                        }
+                    }
+                }
 
                 if ($isExisting) {
                     $isExisting->delete();

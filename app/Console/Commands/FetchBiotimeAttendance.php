@@ -50,7 +50,6 @@ class FetchBiotimeAttendance extends Command
 
         foreach($employees as $employee) {
             try {
-                DB::beginTransaction();
                 $response = Http::withBasicAuth($user, $password)
                 ->withHeaders([
                     "Accept" => "application/json",
@@ -58,15 +57,18 @@ class FetchBiotimeAttendance extends Command
                 ])
                 ->timeout(60)
                 ->get($url,[
-                    "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    "start_time" => "2025-06-10 00:00:00",
+                    "end_time" => "2025-06-30 23:59:59",
                     "emp_code" => $employee->biometric_number,
-                    "page_size" => 100000
+                    "page_size" => 10000000000
                 ]);
-
+                Log::info("CURRENT: ".$employee->full_name);
                 if ($response->successful()) {
                     $data = $response->json();
                     $attendanceLogs = $data['data'];
+                    Log::info("LOGGING: ".$employee->full_name);
                     foreach ($attendanceLogs as $log) {
                         $parsedDate = Carbon::parse($log["punch_time"]);
                         $date = $parsedDate->toDateString();
@@ -145,18 +147,15 @@ class FetchBiotimeAttendance extends Command
                         }
                     }
                 }
-
-                DB::commit();
             } catch (Exception $e) {
-                DB::rollBack();
                 $failedEmployees[] = $employee;
+                Log::info($e->getMessage());
             }
         }
 
         // retry failed fetches
         foreach($failedEmployees as $employee) {
             try {
-                DB::beginTransaction();
                 $response = Http::withBasicAuth($user, $password)
                 ->withHeaders([
                     "Accept" => "application/json",
@@ -164,10 +163,12 @@ class FetchBiotimeAttendance extends Command
                 ])
                 ->timeout(60)
                 ->get($url,[
-                    "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    "start_time" => "2025-06-10 00:00:00",
+                    "end_time" => "2025-06-30 23:59:59",
                     "emp_code" => $employee->biometric_number,
-                    "page_size" => 100000
+                    "page_size" => 10000000000
                 ]);
 
                 if ($response->successful()) {
@@ -255,9 +256,8 @@ class FetchBiotimeAttendance extends Command
                         }
                     }
                 }
-                DB::commit();
             } catch (Exception $e) {
-                DB::rollBack();
+                Log::info($e->getMessage());
             }
         }
     }
