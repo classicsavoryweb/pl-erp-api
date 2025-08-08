@@ -77,7 +77,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($holiday) {
                         $holidayIsPaid = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff);
-                        Log::info($employee->full_name." - ".$holidayIsPaid." - ".$timeKeep->date);
+                        Log::info($employee->full_name." - ".$timeKeep->date." - ".$holidayIsPaid);
                     }
 
                     if ($schedule->selection === "SUSPENSION") {
@@ -109,7 +109,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             "late_minutes" => $timeKeep->tardiness
                         ];
                     }
-;
+
                     if ($timeKeep->special_holiday_hours > 0) {
                         $special_holiday += $holidayIsPaid ? $timeKeep->special_holiday_hours : 0;
                     }
@@ -147,9 +147,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $travel_time += (int) $timeKeep->travel_time;
                     }
                 }
-
-
-                
 
                 $isExisting = TimeKeepingSummary::where("cut-off", $cutOff['start_time']."-".$cutOff['end_time'])
                 ->where("employee_id", $employee->id)

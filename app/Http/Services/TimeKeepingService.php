@@ -54,6 +54,7 @@ class TimeKeepingService
         $parsedFirstPunch = Carbon::parse($firstPunch->punch_time)->seconds(0);
         $parsedLastPunch = Carbon::parse($lastPunch->punch_time)->seconds(0);
         $diffInSeconds = $parsedLastPunch->diffInSeconds($parsedFirstPunch);
+        $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
         $decimalHours = $diffInSeconds / 3600;
 
         $workHours += $decimalHours;
@@ -91,6 +92,7 @@ class TimeKeepingService
         })->where("date", $log->date)->first();
 
         if ($tardiness >= 120) {
+            Log::info($employee->full_name." - ".$log->date." SHOULD BE HALF DAY");
             $workHours = $schedule->total_hours / 2;
             $tardiness = 0;
         }
@@ -373,7 +375,6 @@ class TimeKeepingService
                 $isExisting->delete();
             }
 
-            $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
             if (
                 ($workHours >= $schedule->total_hours - 3.5 || $undertime < 240 ) &&
                 !$isCancelledOff

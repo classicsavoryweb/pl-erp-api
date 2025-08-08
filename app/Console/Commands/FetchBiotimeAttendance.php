@@ -25,6 +25,7 @@ class FetchBiotimeAttendance extends Command
         $password = env('BIOMETRICS_PASSWORD');
         $employees = Employee::where("status", "active")
         ->where("type", "Direct")
+        // ->where("branch_id", 35)
         ->get();
 
         $now = Carbon::now();
@@ -56,11 +57,12 @@ class FetchBiotimeAttendance extends Command
                     "Content-Type" => "application/json"
                 ])
                 ->timeout(60)
+                ->retry(3)
                 ->get($url,[
-                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
-                    "start_time" => "2025-06-10 00:00:00",
-                    "end_time" => "2025-06-30 23:59:59",
+                    "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    // "start_time" => "2025-05-26 00:00:00",
+                    // "end_time" => "2025-06-25 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
@@ -162,11 +164,12 @@ class FetchBiotimeAttendance extends Command
                     "Content-Type" => "application/json"
                 ])
                 ->timeout(60)
+                ->retry(3)
                 ->get($url,[
-                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
-                    "start_time" => "2025-06-10 00:00:00",
-                    "end_time" => "2025-06-30 23:59:59",
+                    "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    // "start_time" => "2025-05-26 00:00:00",
+                    // "end_time" => "2025-06-25 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
