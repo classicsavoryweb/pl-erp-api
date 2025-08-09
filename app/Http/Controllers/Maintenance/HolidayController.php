@@ -116,7 +116,7 @@ class HolidayController extends Controller
                 "required_for" => $request->required_for,
             ]);
 
-            $holiday->branches()->attach($request->branch_id);
+            $holiday->branches()->sync($request->branch_id);
             DB::commit();
             return $this->sendResponse(["message" => "Holiday updated successfully"]);
         } catch (Exception $e) {
