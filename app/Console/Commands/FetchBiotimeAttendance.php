@@ -25,7 +25,6 @@ class FetchBiotimeAttendance extends Command
         $password = env('BIOMETRICS_PASSWORD');
         $employees = Employee::where("status", "active")
         ->where("type", "Direct")
-        // ->where("branch_id", 35)
         ->get();
 
         $now = Carbon::now();
@@ -61,8 +60,6 @@ class FetchBiotimeAttendance extends Command
                 ->get($url,[
                     "start_time" => $startTime->format('Y-m-d H:i:s'),
                     "end_time" => $endTime->format('Y-m-d H:i:s'),
-                    // "start_time" => "2025-05-26 00:00:00",
-                    // "end_time" => "2025-06-25 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
@@ -168,22 +165,19 @@ class FetchBiotimeAttendance extends Command
                 ->get($url,[
                     "start_time" => $startTime->format('Y-m-d H:i:s'),
                     "end_time" => $endTime->format('Y-m-d H:i:s'),
-                    // "start_time" => "2025-05-26 00:00:00",
-                    // "end_time" => "2025-06-25 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
-
+                Log::info("RETRY CURRENT: ".$employee->full_name);
                 if ($response->successful()) {
                     $data = $response->json();
                     $attendanceLogs = $data['data'];
-
+                    Log::info("RETRY LOGGING: ".$employee->full_name);
                     foreach ($attendanceLogs as $log) {
                         $parsedDate = Carbon::parse($log["punch_time"]);
                         $date = $parsedDate->toDateString();
                         $time = $parsedDate->toTimeString();
                         $branch = Branch::where("device_name", $log["terminal_sn"])->first();
-
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
                             $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
                             if ($latest) {

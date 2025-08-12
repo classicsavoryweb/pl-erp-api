@@ -91,10 +91,11 @@ class TimeKeepingService
             $query->where("branches.id", $branchId);
         })->where("date", $log->date)->first();
 
+        $shouldBeHalfDay = false;
         if ($tardiness >= 120) {
-            Log::info($employee->full_name." - ".$log->date." SHOULD BE HALF DAY");
             $workHours = $schedule->total_hours / 2;
             $tardiness = 0;
+            $shouldBeHalfDay = true;
         }
 
         //undertime computation
@@ -377,12 +378,12 @@ class TimeKeepingService
 
             if (
                 ($workHours >= $schedule->total_hours - 3.5 || $undertime < 240 ) &&
-                !$isCancelledOff
+                !$isCancelledOff &&
+                !$shouldBeHalfDay
             ) {
                 $finalWorkHours = $hours;
             } else if (
-                $workHours < $schedule->total_hours - 3.5 &&
-                $workHours >= $schedule->total_hours / 2 &&
+                (($workHours < $schedule->total_hours - 3.5 && $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
                 !$isCancelledOff
             ) {
                 $finalWorkHours = $hours / 2;
@@ -398,8 +399,7 @@ class TimeKeepingService
                 } else {
                     $holidayHours = $workHours > $hours ? $hours : $workHours;
                     if ($legalHoliday === "Yes") {
-                        $legalHolidayHours = $holidayHours;
-                        $finalWorkHours = $hours; 
+                        $legalHolidayHours = $hours; 
                     } else if ($specialHoliday === "Yes") {
                         $specialHolidayHours = $holidayHours;
                         $finalWorkHours = $hours;

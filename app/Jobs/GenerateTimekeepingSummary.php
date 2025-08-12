@@ -77,7 +77,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($holiday) {
                         $holidayIsPaid = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff);
-                        Log::info($employee->full_name." - ".$timeKeep->date." - ".$holidayIsPaid);
                     }
 
                     if ($schedule->selection === "SUSPENSION") {
@@ -86,8 +85,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($hours == $timeKeep->final_worked_hours && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
+                        Log::info($employee->full_name ." - ". $timeKeep->date." +1 ");
                     } else if ( $hours / 2 == $timeKeep->final_worked_hours  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
+                        Log::info($employee->full_name ." - ". $timeKeep->date." +.5 ");
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
@@ -159,7 +160,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $this->currentCutOff)) {
                     if ($employee->current_position->timekeeping_type === "Monthly") {
                         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                            $regular_days = 11;
+                            if ($regular_days > 11 && $regular_days - 11 > 0 && $regular_days - 11 < 1) {
+                                $regular_days = 10.5;
+                            } else {
+                                $regular_days = 11;
+                            }
                         }
                         if ($employee->schedule->schedule_type->name === "Normal Schedule") {
                             $regular_days = 13;
