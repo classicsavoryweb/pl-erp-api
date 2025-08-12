@@ -301,6 +301,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
     Route::middleware(["permission:perform_transactions_actual_time"])->post("/edit-biotime-punch/{id}", [ActualTimeController::class, "editBiotimePunch"]);
     Route::middleware(["permission:perform_transactions_actual_time"])->post("/create-biotime-punch", [ActualTimeController::class, "createBiotimeLog"]);
+    Route::middleware(["permission:import_transactions_actual_time"])->post("/import-biotime-logs", [ActualTimeController::class, "importTransactionsActualTimeLogs"]);
     //overtime
     Route::get("/get-all-overtime", [OvertimeController::class, "getAllOvertime"]);
     Route::get("/get-overtime", [OvertimeController::class, "getOvertime"]);

@@ -94,7 +94,6 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "perform_employee_vaccination"]);
         Permission::firstOrCreate(["name" => "view_employee_audit_logs"]);
 
-
         //all records module
         // Permission::firstOrCreate(["name" => "view_all_records_health_and_safety"]);
         // Permission::firstOrCreate(["name" => "perform_all_records_health_and_safety"]);
@@ -122,6 +121,7 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "perform_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "view_transactions_actual_time"]);
         Permission::firstOrCreate(["name" => "perform_transactions_actual_time"]);
+        Permission::firstOrCreate(["name" => "import_transactions_actual_time"]);
         Permission::firstOrCreate(["name" => "import_all_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "view_transactions_time_keeping"]);
         Permission::firstOrCreate(["name" => "perform_transactions_time_keeping"]);

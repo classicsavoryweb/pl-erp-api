@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Transactions;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessActualTimeImport;
 use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\BiotimeLog;
 use App\Models\BiotimePunch;
 use App\Models\Employee;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Str;
 use DB;
 use Illuminate\Support\Facades\Auth;
@@ -163,6 +165,41 @@ class ActualTimeController extends Controller
             return $this->sendResponse(["message" => "Biotime punches saved successfully."]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function importTransactionsActualTimeLogs(Request $request) {
+        try {
+            $request->validate([
+                "actual_log_file" => "required",
+            ]);
+
+            $filePath = null;
+
+            if ($request->hasFile("actual_log_file")) {
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/imports";
+                $file = $request->file("actual_log_file");
+
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+
+            } elseif ($request->has("file_path")) {
+                $filePath = $request->file_path;
+            }
+
+            if ($filePath) {
+                ProcessActualTimeImport::dispatch($filePath);
+            }
+
+            return $this->sendResponse(["message" => "Excel file imported successfully"]);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
