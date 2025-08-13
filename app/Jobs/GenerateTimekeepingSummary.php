@@ -43,20 +43,20 @@ class GenerateTimekeepingSummary implements ShouldQueue
             ->whereBetween("date", $cutOff)
             ->get();
 
-            $regular_days = 0; //done
-            $special_leave= 0; //manual
-            $cancelled_off= 0; //
-            $special_holiday= 0; //done
-            $legal_holiday= 0; //done
-            $regular_overtime= 0; //done
-            $night_differential= 0; //done
-            $night_differential_overtime= 0; //done
-            $legal_holiday_overtime= 0; //done
-            $special_holiday_overtime= 0; // done
+            $regular_days = 0;
+            $special_leave= 0;
+            $cancelled_off= 0;
+            $special_holiday= 0;
+            $legal_holiday= 0;
+            $regular_overtime= 0;
+            $night_differential= 0;
+            $night_differential_overtime= 0;
+            $legal_holiday_overtime= 0;
+            $special_holiday_overtime= 0;
             $undertime= 0;
             $adjustment_amount = 0;
             $travel_time= 0;
-            $tardiness = 0; // done
+            $tardiness = 0;
             $lateDate = [];
 
             if ($timeKeepings->count() > 0) {
