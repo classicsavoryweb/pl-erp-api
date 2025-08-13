@@ -125,4 +125,15 @@ class Controller extends BaseController
         }   
         return $formattedHours;
     }
+
+    public function excelDateToDateString($excelDate) {
+        if (is_numeric($excelDate)) {
+            $unixDate = ($excelDate - 25569) * 86400;
+            return gmdate("Y-m-d", $unixDate);
+        }
+        if (strtotime($excelDate) !== false) {
+            return date('Y-m-d', strtotime($excelDate));
+        }
+        return $excelDate;
+    }
 }

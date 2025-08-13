@@ -6,6 +6,7 @@ use App\Exports\Transactions\ScheduleTimeExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessScheduleTimeImport;
 use App\Models\ScheduleTime;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use DB;
@@ -109,40 +110,142 @@ class ScheduleTimeController extends Controller
                 $filePath = $directory . '/' . $fileName;
                 $storage->put($filePath, file_get_contents($file));
 
-                $dataRows = Excel::toArray([], $file);
-                $dataRows = array_slice($dataRows[0], 2); 
-
                 $restDayCounts = [];
                 $incentiveLeaveCounts = [];
+                $employeeDetails = [];
+                $restDaysPerWeek = [];
 
                 $leaveCounts = [
                     'REST DAY' => &$restDayCounts,
                     'INCENTIVE LEAVE' => &$incentiveLeaveCounts
                 ];
 
+                $restDayDatesByEmployee = [];
+                $incentiveLeaveDatesByEmployee = [];
+
+                $currentCutoff = $this->getCutOffForDate(now());
+                
+                if ($currentCutoff['start_time'] === now()->copy()->startOfMonth()->addDays(10)->toDateString()) {
+                    $previousCutoff = $this->getPreviousCutOff(now());
+
+                    $priorLeaves = ScheduleTime::whereBetween('date', [$previousCutoff['start_time'], $previousCutoff['end_time']])
+                        ->whereIn('timetable', ['REST DAY', 'INCENTIVE LEAVE'])
+                        ->get()
+                        ->groupBy('biometric_number');
+
+                    foreach ($priorLeaves as $employeeId => $entries) {
+                        foreach ($entries as $entry) {
+                            $leaveType = strtoupper(trim($entry->timetable));
+
+                            $employeeDetails[$employeeId] = [
+                                'employee_id' => $employeeId,
+                                'rest_day_count' => 0,
+                                'incentive_leave_count' => 0,
+                            ];
+
+                            if ($leaveType === 'REST DAY') {
+                                $restDayCounts[$employeeId] = ($restDayCounts[$employeeId] ?? 0) + 1;
+                                $employeeDetails[$employeeId]['rest_day_count'] = $restDayCounts[$employeeId];
+                                $restDayDatesByEmployee[$employeeId][] = date('n/j', strtotime($entry->date));
+                            } elseif ($leaveType === 'INCENTIVE LEAVE') {
+                                $incentiveLeaveCounts[$employeeId] = ($incentiveLeaveCounts[$employeeId] ?? 0) + 1;
+                                $employeeDetails[$employeeId]['incentive_leave_count'] = $incentiveLeaveCounts[$employeeId];
+                                $incentiveLeaveDatesByEmployee[$employeeId][] = date('n/j', strtotime($entry->date));
+                            }
+                        }
+                    }
+                }
+
+                $dataRows = Excel::toArray([], $file);
+                $dataRows = array_slice($dataRows[0], 2); 
+
                 foreach ($dataRows as $index => $row) {
                     $employeeId = $row[0] ?? null;
+                    $dateRaw = $row[4] ?? null;
+                    $date = $this->excelDateToDateString($dateRaw);
+                    $timetable  = $row[5] ?? null;
+                    $leaveType = strtoupper(trim($timetable));
+                    if ($employeeId && $date && $leaveType === 'REST DAY') {
+                        $restDayDatesByEmployee[$employeeId][] = date('n/j', strtotime($date));
+                    }
+                    if ($employeeId && $date && $leaveType === 'INCENTIVE LEAVE') {
+                        $incentiveLeaveDatesByEmployee[$employeeId][] = date('n/j', strtotime($date));
+                    }
+                }
+
+                foreach ($dataRows as $index => $row) {
+                    $employeeId = $row[0] ?? null;
+                    $dateRaw = $row[4] ?? null;
+                    $date = $this->excelDateToDateString($dateRaw);
                     $timetable  = $row[5] ?? null;
 
+                    if (strtoupper(trim($timetable)) === 'REST DAY' && $employeeId && $date) {
+                        $week = date('o-W', strtotime($date));
+                        $restDaysPerWeek[$employeeId][$week][] = $date;
+                    }
+
                     if (isset($leaveCounts[strtoupper(trim($timetable))])) {
-                        $leaveType = strtolower(trim($timetable));
+                        $leaveType = strtoupper(trim($timetable));
                         $leaveCounts[$leaveType][$employeeId] = ($leaveCounts[$leaveType][$employeeId] ?? 0) + 1;
 
-                        if ($leaveCounts[$leaveType][$employeeId] >= 3) {
-                            return $this->sendError([
-                                "message" => "Employee with 3 or more $leaveType exists.",
-                                "file_path" => $filePath
-                            ]);
+                        $employeeDetails[$employeeId] = [
+                            'employee_id' => $employeeId,
+                            'rest_day_count' => 0,
+                            'incentive_leave_count' => 0,
+                        ];
+
+                        if ($leaveType === 'REST DAY') {
+                            $employeeDetails[$employeeId]['rest_day_count'] = $leaveCounts[$leaveType][$employeeId];
+                        } elseif ($leaveType === 'INCENTIVE LEAVE') {
+                            $employeeDetails[$employeeId]['incentive_leave_count'] = $leaveCounts[$leaveType][$employeeId];
                         }
+                    }
+                }
+
+                $employeesWithMultipleRestDays = [];
+
+                foreach ($restDaysPerWeek as $employeeId => $weeks) {
+                    foreach ($weeks as $week => $dates) {
+                        if (count($dates) > 1) {
+                            $employee = Employee::where('biometric_number', $employeeId)->first();
+                            $employeeName = $employee->full_name;
+                            $formattedDates = array_map(function($d) {
+                                $ts = strtotime($d);
+                                return $ts ? date('n/j', $ts) : $d;
+                            }, $dates);
+                            $employeesWithMultipleRestDays[] = [
+                                'employee_id' => $employeeId,
+                                'employee_name' => $employeeName,
+                                'rest_day_dates' => $formattedDates,
+                            ];
+                        }
+                    }
+                }
+
+                $employeesWithExcessiveLeaves = [];
+                
+                foreach ($employeeDetails as $employeeId => $details) {
+                    if ($details['rest_day_count'] >= 3 || $details['incentive_leave_count'] >= 3) {
+                        $employee = Employee::where('biometric_number', $employeeId)->first();
+                        $employeeName = $employee->full_name;
+                        $employeesWithExcessiveLeaves[] = [
+                            'employee_id' => $employeeId,
+                            'employee_name' => $employeeName,
+                            'rest_day_count' => $details['rest_day_count'],
+                            'incentive_leave_count' => $details['incentive_leave_count'],
+                            'rest_day_dates' => $restDayDatesByEmployee[$employeeId] ?? [],
+                            'incentive_leave_dates' => $incentiveLeaveDatesByEmployee[$employeeId] ?? [],
+                        ];
                     }
                 }
             }
             
             return $this->sendResponse([
-                "message" => "Excel file validated successfully",
-                "file_path" => $filePath
+                "file_path" => $filePath,
+                "employees_with_excessive_leaves" => $employeesWithExcessiveLeaves,
+                "employees_with_multiple_rest_days_per_week" => $employeesWithMultipleRestDays,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
@@ -151,10 +254,12 @@ class ScheduleTimeController extends Controller
         try {
             $request->validate([
                 "schedule_time_file" => "required_without:file_path|file",  
-                "file_path" => "required_without:schedule_time_file|string" 
+                "file_path" => "required_without:schedule_time_file|string",
+                "excluded_employee_ids" => "array"
             ]);
 
             $filePath = null;
+            $excludedEmployeeIds = $request->input('excluded_employee_ids', []);
 
             if ($request->hasFile("schedule_time_file")) {
                 $storage = Storage::disk("hr_system_folder");
@@ -174,7 +279,7 @@ class ScheduleTimeController extends Controller
             }
 
             if ($filePath) {
-                ProcessScheduleTimeImport::dispatch($filePath);
+                ProcessScheduleTimeImport::dispatch($filePath, $excludedEmployeeIds);
             }
 
             return $this->sendResponse(["message" => "Excel file imported successfully"]);

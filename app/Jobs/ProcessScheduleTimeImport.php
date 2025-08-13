@@ -16,10 +16,12 @@ class ProcessScheduleTimeImport implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $scheduleTimeFilePath;
+    protected $excludedEmployeeIds;
 
-    public function __construct(string $scheduleTimeFilePath)
+    public function __construct(string $scheduleTimeFilePath, array $excludedEmployeeIds = [])
     {
         $this->scheduleTimeFilePath = $scheduleTimeFilePath;
+        $this->excludedEmployeeIds = $excludedEmployeeIds;
     }
 
     public function handle(Excel $excel): void
@@ -29,7 +31,7 @@ class ProcessScheduleTimeImport implements ShouldQueue
         if ($storage->exists($this->scheduleTimeFilePath)) {
             $filePath = $storage->path($this->scheduleTimeFilePath);
 
-            $excel->import(new ScheduleTimeImport, $filePath);
+            $excel->import(new ScheduleTimeImport($this->excludedEmployeeIds), $filePath);
         }
     }
 }
