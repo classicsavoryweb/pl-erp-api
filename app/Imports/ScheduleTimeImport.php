@@ -9,8 +9,16 @@ use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+
 class ScheduleTimeImport implements ToCollection, WithHeadingRow
 {
+    protected $excludedEmployeeIds;
+
+    public function __construct(array $excludedEmployeeIds = [])
+    {
+        $this->excludedEmployeeIds = $excludedEmployeeIds;
+    }
+
     public function headingRow(): int
     {
         return 2; 
@@ -18,10 +26,18 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
 
     public function collection(Collection $collection)
     {
+        $excludedCount = 0;
+        $importedCount = 0;
+
         foreach ($collection as $row) {
             $employee = Employee::where("biometric_number", $row["employee_id"])
             ->where("status", "active")
             ->first();
+
+            if ($employee && in_array($employee->biometric_number, $this->excludedEmployeeIds)) {
+                $excludedCount++;
+                continue;
+            }
 
             $formattedDate = is_numeric($row["date"])
                 ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d')
@@ -47,6 +63,7 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
                     "check_out" => $checkOut,
                     "branch_id" => $branch->id ?? $employee->branch_id
                 ]);
+                $importedCount++;
             }
         }
     }

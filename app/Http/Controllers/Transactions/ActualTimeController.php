@@ -100,11 +100,24 @@ class ActualTimeController extends Controller
             $employee = Employee::where("employee_number", $request->employee_number)->first();
 
             if ($employee) {
-                $isExisting = $employee->attendance()->where("date", $request->date)->first();
+                $isExisting = $employee->attendance()->whereDate('date', $request->date)->first();
 
                 if ($isExisting) {
-                    DB::rollBack();
-                    return $this->sendError(["message" => "Biotime log is already existing"]);
+                    if ($request->has('overwrite') && $request->overwrite) {
+                        $isExisting->punches()->delete();
+                        $isExisting->delete();
+                        
+                        $biotime = BiotimeLog::create([
+                            "employee_id" => $employee->id,
+                            "biometric_number" => $employee->biometric_number,
+                            "date" => $request->date,
+                            "remarks" => "Overwritten by ".$user->full_name,
+                            "is_transferred" => 0
+                        ]);
+                    } else {
+                        DB::rollBack();
+                        return $this->sendError(["message" => "Existing"]);
+                    }
                 } else {
                     $biotime = BiotimeLog::create([
                         "employee_id" => $employee->id,
@@ -113,18 +126,17 @@ class ActualTimeController extends Controller
                         "remarks" => "Added by ".$user->full_name,
                         "is_transferred" => 0
                     ]);
- 
-                    foreach ($request->punches as $punch) {
-                        $biotime->punches()->create([
-                            "date" => $biotime->date,
-                            "punch_time" => $punch["punch_time"],
-                            "remarks" => "Added by ".$user->full_name,
-                            "branch_id" => $request->branch_id
-                        ]);
-                    }
+                }
+
+                foreach ($request->punches as $punch) {
+                    $biotime->punches()->create([
+                        "date" => $biotime->date,
+                        "punch_time" => $punch["punch_time"],
+                        "remarks" => "Added by ".$user->full_name,
+                        "branch_id" => $request->branch_id
+                    ]);
                 }
             }
-
             DB::commit();
             return $this->sendResponse(["message" => "Biotime logs saved successfully."]);
         } catch (Exception $e) {
