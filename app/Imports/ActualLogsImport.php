@@ -6,6 +6,7 @@ use App\Models\BiotimeLog;
 use App\Models\Branch;
 use App\Models\Employee;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -21,12 +22,15 @@ class ActualLogsImport implements ToCollection, WithHeadingRow
     {
         foreach ($collection as $index => $row) {
             $punches = array_map("trim", explode(",",$row['time']));
-            $date = $row['date'];
             $employee = Employee::where("biometric_number", $row["employee_id"])->first();
             // $branch = Branch::where("short_name", $row["department"])->first();
             $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
             $parsedDate = Carbon::parse($punches[0]);
             $time = $parsedDate->toTimeString();
+
+            $date = is_numeric($row["date"])
+                ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d')
+                : date('Y-m-d', strtotime($row["date"]));
 
             if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
                 $latest->punches()->create([
