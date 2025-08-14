@@ -90,7 +90,7 @@ class ActualLogsExport implements FromCollection, WithHeadings, WithStyles, With
             'font' => [
                 'bold' => true,
                 'name' => 'Arial',
-                'size' => 10
+                'size' => 11
             ],
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
@@ -106,7 +106,7 @@ class ActualLogsExport implements FromCollection, WithHeadings, WithStyles, With
         $sheet->getStyle('A2:' . $lastColumnLetter . $rowCount)->applyFromArray([
             'font' => [
                 'name' => 'Arial',
-                'size' => 10
+                'size' => 11
             ],
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
