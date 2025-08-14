@@ -170,25 +170,26 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
                 } else {
-                    if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                        $absent = 0;
-                        $schedules = ScheduleTime::where("employee_id", $employee->id)
-                        ->whereBetween("date", [$cutOff['start_time'],$cutOff['end_time']])
-                        ->get();
+                    $absent = 0;
+                    $schedules = ScheduleTime::where("employee_id", $employee->id)
+                    ->whereBetween("date", [$cutOff['start_time'],$cutOff['end_time']])
+                    ->get();
 
-                        foreach ($schedules as $sched) {
-                            if (!in_array($sched->timetable,["REST DAY", "NO SCHEDULE"])) {
-                                $logs = BiotimeLog::where("date", $sched->date)
-                                ->where("employee_id", $employee->id)
-                                ->first();
-
-                                if (!$logs) {
-                                    $absent += 1;
-                                }
+                    foreach ($schedules as $sched) {
+                        if (!in_array($sched->timetable,["REST DAY", "NO SCHEDULE"])) {
+                            $logs = BiotimeLog::where("date", $sched->date)
+                            ->where("employee_id", $employee->id)
+                            ->first();
+                            if (!$logs) {
+                                $absent += 1;
                             }
                         }
+                    }
 
+                    if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
                         $regular_days = 11 - $absent;
+                    } else if ($employee->current_position->timekeeping_type === "Monthly") {
+                        $regular_days = 13 - $absent;
                     }
                 }
 
