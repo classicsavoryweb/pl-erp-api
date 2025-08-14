@@ -54,13 +54,13 @@ class ScheduleTimeController extends Controller
                 $schedule_time = $schedule_time->whereBetween('date', [$request->date_from, $request->date_to]);
             }
 
+            if ($request->has(['branch_id'])) {
+                $schedule_time = $schedule_time->where("branch_id", $request->branch_id);
+            }
+
             if ($request->has(["export"]) && $request->export) {
                 $schedule_time = $schedule_time->get();
                 return Excel::download(new ScheduleTimeExport($schedule_time), "schedule_time.xls");
-            }
-
-            if ($request->has(['branch_id'])) {
-                $schedule_time = $schedule_time->where("branch_id", $request->branch_id);
             }
 
             $schedule_time = $schedule_time

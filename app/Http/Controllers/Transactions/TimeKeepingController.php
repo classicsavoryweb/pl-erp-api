@@ -147,12 +147,12 @@ class TimeKeepingController extends Controller
                 ? $year . '-' . $request->cutoff["end_time"]
                 : $currentCutOff['end_time'];
 
-            $timeKeepingSummaryQuery = TimeKeepingSummary::with(["employee", "lates", "employee.current_position"])
-            ->where("timekeeping_summary.branch_id", $request->branch_id)
-            ->where("cut-off", $start_time.'-'.$end_time)
-            ->join("employees", "timekeeping_summary.employee_id", "=", "employees.id")
-            ->orderBy("employees.last_name", "ASC")
-            ->select("timekeeping_summary.*");
+            $timeKeepingSummaryQuery = TimeKeepingSummary::with(["employee", "lates", "employee.current_position", "employee.timekeeping"])
+                ->where("timekeeping_summary.branch_id", $request->branch_id)
+                ->where("cut-off", $start_time.'-'.$end_time)
+                ->join("employees", "timekeeping_summary.employee_id", "=", "employees.id")
+                ->orderBy("employees.last_name", "ASC")
+                ->select("timekeeping_summary.*");
             
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
