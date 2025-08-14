@@ -17,11 +17,11 @@ class ScheduleSeeder extends Seeder
         foreach($employees as $employee) {
             $schedule = "Others";
             if ( strtolower($employee->station->name) === "head office") {
-                if (in_array($employee->current_position->description, ['Stockman', 'Technician', 'Driver', 'Repair & Maintenance Staff'])) {
+                if (in_array($employee->current_position->description, ['Stockman', 'Technician', 'Driver', 'Repair & Maintenance Staff', "Janitor/Maintenance Staff"])) {
                     $schedule = "Normal Schedule";
                 } else {
                     $schedule = "Compressed Schedule";
-                }
+                } 
             } else {
                 $schedule = "Normal Schedule";
             }

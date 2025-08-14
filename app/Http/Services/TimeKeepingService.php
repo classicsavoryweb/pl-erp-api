@@ -54,6 +54,7 @@ class TimeKeepingService
         $parsedFirstPunch = Carbon::parse($firstPunch->punch_time)->seconds(0);
         $parsedLastPunch = Carbon::parse($lastPunch->punch_time)->seconds(0);
         $diffInSeconds = $parsedLastPunch->diffInSeconds($parsedFirstPunch);
+
         $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
         $decimalHours = $diffInSeconds / 3600;
 
@@ -106,7 +107,9 @@ class TimeKeepingService
             $halfScheduleTime = $scheduleStart->copy()->addMinutes($scheduleStart->diffInMinutes($scheduleEnd) / 2);
             $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true);
         }
-
+        if ($workHours > $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd)) {
+            $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
+        }
         //holiday computation
         if ($holiday) {
             $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";
@@ -614,6 +617,7 @@ class TimeKeepingService
 
         //head office
         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+            $pay = true;
             $hasLeaveOrSuspension = $schedules->contains(function ($schedule) {
                 return in_array($schedule->timetable, ['LEAVE', 'SUSPENSION']);
             });
@@ -626,12 +630,10 @@ class TimeKeepingService
             if ($hasLeaveOrSuspension) {
                 $shouldPay = false;
             }
-            $pay = true;
             foreach ($otherSchedules as $schedule) {
                 $log = BiotimeLog::where("date", $schedule->date)
                 ->where("employee_id", $employee->id)
                 ->first();
-
                 if (!$log && $schedule->timetable !== "NO SCHEDULE") {
                     $pay = false;
                 }
@@ -661,6 +663,8 @@ class TimeKeepingService
                 }
 
             } else if ($previousDateSchedule && $previousDateSchedule->timetable === "INCENTIVE LEAVE") {
+                $shouldPay = true;
+            } else if ($previousDateSchedule && $previousDateSchedule->timetable === "NO SCHEDULE") {
                 $shouldPay = true;
             } else {
                 if ($hasLog) {
@@ -708,8 +712,8 @@ class TimeKeepingService
             return in_array($schedule->timetable, ['LEAVE', 'SUSPENSION']);
         });
 
-        $otherSchedules = $schedules->filter(function ($schedule) {
-            if (!in_array($schedule->timetable, ["LEAVE", "SUSPENSION", "REST DAY", "NO SCHEDULE"])) {
+        $otherSchedules = $schedules->filter(function ($schedule) use ($employee) {
+            if (!in_array($schedule->timetable, ["REST DAY", "NO SCHEDULE"])) {
                 return $schedule;
             }
         });

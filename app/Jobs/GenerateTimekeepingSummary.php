@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Services\TimeKeepingService;
 use App\Models\Adjustment;
 use App\Models\AdjustmentTimeKeeping;
+use App\Models\BiotimeLog;
 use App\Models\Holiday;
 use App\Models\LateTimeKeepingSummary;
 use App\Models\ScheduleMasterlist;
@@ -85,10 +86,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($hours == $timeKeep->final_worked_hours && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
-                        Log::info($employee->full_name ." - ". $timeKeep->date." +1 ");
                     } else if ( $hours / 2 == $timeKeep->final_worked_hours  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
-                        Log::info($employee->full_name ." - ". $timeKeep->date." +.5 ");
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
@@ -169,6 +168,27 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         if ($employee->schedule->schedule_type->name === "Normal Schedule") {
                             $regular_days = 13;
                         }
+                    }
+                } else {
+                    if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+                        $absent = 0;
+                        $schedules = ScheduleTime::where("employee_id", $employee->id)
+                        ->whereBetween("date", [$cutOff['start_time'],$cutOff['end_time']])
+                        ->get();
+
+                        foreach ($schedules as $sched) {
+                            if (!in_array($sched->timetable,["REST DAY", "NO SCHEDULE"])) {
+                                $logs = BiotimeLog::where("date", $sched->date)
+                                ->where("employee_id", $employee->id)
+                                ->first();
+
+                                if (!$logs) {
+                                    $absent += 1;
+                                }
+                            }
+                        }
+
+                        $regular_days = 11 - $absent;
                     }
                 }
 
