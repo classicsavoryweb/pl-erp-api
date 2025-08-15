@@ -54,15 +54,24 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
             $branch = Branch::where("short_name", $row["department"])->first();
 
             if ($employee) {
+                $isExisting = ScheduleTime::where('biometric_number', $row["employee_id"])
+                    ->whereDate('date', $formattedDate)
+                    ->first();
+
+                if ($isExisting) {
+                    $isExisting->delete();
+                }
+
                 ScheduleTime::create([
                     'employee_id' => $employee->id,
-                    "biometric_number" => $row["employee_id"],
-                    "date" => $formattedDate,
-                    "timetable" => $row["timetable"],
-                    "check_in" => $checkIn,
-                    "check_out" => $checkOut,
-                    "branch_id" => $branch->id ?? $employee->branch_id
+                    'biometric_number' => $row["employee_id"],
+                    'date' => $formattedDate,
+                    'timetable' => $row["timetable"],
+                    'check_in' => $checkIn,
+                    'check_out' => $checkOut,
+                    'branch_id' => $branch->id ?? $employee->branch_id
                 ]);
+
                 $importedCount++;
             }
         }
