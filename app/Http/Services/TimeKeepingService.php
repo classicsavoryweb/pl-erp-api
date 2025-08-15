@@ -164,6 +164,18 @@ class TimeKeepingService
             if ($totalWorkedHours > 9.5) {
                 $overtime = $totalWorkedHours - 9.5 < 1 ? 0 : $totalWorkedHours - 9.5;
             }
+
+            if ($holiday && $legalHoliday === "Yes") {
+                $legalHolidayHours = $totalHolidayWorkedHours;
+                $legalHolidayOvertime = $overtime;
+                $overtime = 0;
+            }
+
+            if ($holiday && $specialHoliday === "Yes") {
+                $specialHolidayHours = $totalHolidayWorkedHours;
+                $specialHolidayOvertime = $overtime;
+                $overtime = 0;
+            }
         }
 
         if (
@@ -292,8 +304,9 @@ class TimeKeepingService
         $tenPM = Carbon::parse($log->date." ".'22:00:00');
         //FLEX TO BE CHANGED
         if (
-            ($scheduleEnd->greaterThan($tenPM) && $parsedLastPunch->greaterThan($tenPM)) ||
-            strtolower($schedule->selection) === "flex"
+            $scheduleEnd->greaterThan($tenPM) &&
+            $parsedLastPunch->greaterThan($tenPM) &&
+            strtolower($schedule->selection) !== "flex"
         ) {
             $differ = $scheduleEnd;
             if ($parsedLastPunch->isBefore($scheduleEnd)) {
@@ -308,10 +321,23 @@ class TimeKeepingService
             }
         }
 
+        if (
+            $tenPM->greaterThanOrEqualTo($scheduleEnd) &&
+            $parsedLastPunch->greaterThan($tenPM) &&
+            strtolower($schedule->selection) === "flex"
+        ) {
+            $nightDiffSeconds = $differ->diffInSeconds($tenPM);
+            
+            if ($overtime >= 1) {
+                $nightDiffOt = $overtime;
+            }
+        }
+
         //FLEX TO BE CHANGED
         if (
-            ($tenPM->greaterThanOrEqualTo($scheduleEnd) && $parsedLastPunch->greaterThan($tenPM)) ||
-            strtolower($schedule->selection) === "flex"
+            $tenPM->greaterThanOrEqualTo($scheduleEnd) &&
+            $parsedLastPunch->greaterThan($tenPM) &&
+            strtolower($schedule->selection) !== "flex"
         ) {
             $nightDiffOtSeconds = $parsedLastPunch->diffInSeconds($tenPM);
             $ot = $nightDiffOtSeconds / 3600;

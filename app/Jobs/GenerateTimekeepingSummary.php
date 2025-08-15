@@ -128,7 +128,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     } else if ($timeKeep->special_holiday === "Yes" && $holidayIsPaid ) {
                         $special_holiday_overtime += $totalOT > $timeKeep->special_holiday_overtime ? $timeKeep->special_holiday_overtime : $totalOT;
                     } else {
-                        $regular_overtime += $totalOT;
+                        if ($employee->current_branch->type === "Branch") {
+                            $regular_overtime += $totalOT > $timeKeep->regular_overtime ? floor($timeKeep->regular_overtime) : $totalOT;
+                        } else {
+                            $regular_overtime += $totalOT > $timeKeep->regular_overtime ? $timeKeep->regular_overtime : $totalOT;
+                        }
                     }
 
                     if ($timeKeep->night_diff_hours > 0) {
