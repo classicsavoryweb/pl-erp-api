@@ -412,8 +412,9 @@ class TimeKeepingService
             ) {
                 $finalWorkHours = $hours;
             } else if (
-                (($workHours < $schedule->total_hours - 3.5 && $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
-                !$isCancelledOff
+                (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
+                !$isCancelledOff &&
+                $workHours > 0
             ) {
                 $finalWorkHours = $hours / 2;
             }
@@ -634,7 +635,7 @@ class TimeKeepingService
     }
 
     public function payHoliday($date, $employee, $cutOff) {
-        $shouldPay = false;
+        $shouldPay = true;
         $holidayDate = Carbon::parse($date);
         $weekDateRange = $this->getCustomWeekRange($date, $cutOff);
         $schedules = ScheduleTime::where("employee_id", $employee->id)
@@ -643,7 +644,6 @@ class TimeKeepingService
 
         //head office
         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-            $pay = true;
             $hasLeaveOrSuspension = $schedules->contains(function ($schedule) {
                 return in_array($schedule->timetable, ['LEAVE', 'SUSPENSION']);
             });
@@ -653,20 +653,17 @@ class TimeKeepingService
                 }
             });
 
-            if ($hasLeaveOrSuspension) {
-                $shouldPay = false;
-            }
             foreach ($otherSchedules as $schedule) {
                 $log = BiotimeLog::where("date", $schedule->date)
                 ->where("employee_id", $employee->id)
                 ->first();
                 if (!$log && $schedule->timetable !== "NO SCHEDULE") {
-                    $pay = false;
+                    $shouldPay = false;
                 }
             }
 
-            if ($pay) {
-                $shouldPay = true;
+            if ($hasLeaveOrSuspension) {
+                $shouldPay = false;
             }
         }
 
@@ -721,8 +718,8 @@ class TimeKeepingService
         }
 
         return [
-            "start" => $startOfWeek,
-            "end" => $endOfWeek
+            "start" => $startOfWeek->format("Y-m-d"),
+            "end" => $endOfWeek->format("Y-m-d")
         ];
     }
 

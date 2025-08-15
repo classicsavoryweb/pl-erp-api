@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Transactions;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessActualTimeImport;
 use App\Models\BiotimeLog;
+use App\Models\BiotimePunch;
 use App\Models\Employee;
 use Exception;
 use Illuminate\Http\Request;
@@ -170,11 +171,22 @@ class ActualTimeController extends Controller
             if ($biotime) {
                 foreach ($request->punches as $punch) {
                     if (isset($punch["id"])) {
-                        $biotime->punches()
-                        ->where("id", $punch["id"])
-                        ->update([
-                            "punch_time" => $punch["punch_time"],
-                        ]);
+                        $origPunch = BiotimePunch::find($punch["id"]);
+
+                        if ($origPunch->punch_time !== $punch["punch_time"]) {
+                            $biotime->punches()
+                            ->where("id", $punch["id"])
+                            ->update([
+                                "punch_time" => $punch["punch_time"],
+                                "remarks" => "Edited by ". $user->full_name."Original log ".$origPunch->punch_time
+                            ]);
+                        } else {
+                            $biotime->punches()
+                            ->where("id", $punch["id"])
+                            ->update([
+                                "punch_time" => $punch["punch_time"],
+                            ]);
+                        }
                     } else {
                         $biotime->punches()->create([
                             "date" => $biotime->date,
