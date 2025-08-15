@@ -723,6 +723,18 @@ class TimeKeepingService
         ];
     }
 
+    public function getWeekRange($date)
+    {
+        $selected_date = Carbon::parse($date);
+        $startOfWeek = $selected_date->copy()->startOfWeek(CarbonInterface::MONDAY);
+        $endOfWeek = $selected_date->copy()->endOfWeek(CarbonInterface::SUNDAY);
+
+        return [
+            "start" => $startOfWeek->format("Y-m-d"),
+            "end" => $endOfWeek->format("Y-m-d")
+        ];
+    }
+
     public function isCompleteAttendanceThisCutOff($employee, $cutOff) {
         $isComplete = true;
 
