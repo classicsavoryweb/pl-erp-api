@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Transactions;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessActualTimeImport;
-use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\BiotimeLog;
-use App\Models\BiotimePunch;
 use App\Models\Employee;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\Transactions\ActualLogsExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use DB;
 use Illuminate\Support\Facades\Auth;
@@ -73,8 +73,14 @@ class ActualTimeController extends Controller
                 $bioTimeLogs = $bioTimeLogs->whereBetween('date', [$request->date_from, $request->date_to]);
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $bioTimeLogs = $bioTimeLogs->get();
+                return Excel::download(new ActualLogsExport($bioTimeLogs), "actual_logs.xls");
+            }
+
             $bioTimeLogs = $bioTimeLogs->with([
                 "employee",
+                "employee.current_branch",
                 "punches",
                 "punches.branch"
             ])
@@ -84,6 +90,12 @@ class ActualTimeController extends Controller
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
+    }
+
+    public function exportAllTransactionsActualLogs(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllBiotimeTransactions($request);
     }
 
     public function createBiotimeLog(Request $request) {
