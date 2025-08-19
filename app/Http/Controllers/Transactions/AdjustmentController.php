@@ -75,6 +75,10 @@ class AdjustmentController extends Controller
                 }
             }
 
+            if ($request->has(["status"])) {
+                $adjustments = $adjustments->where("status", $request->status);
+            }
+
             if ($request->has('cutoff') && $request->filled('cutoff.start_time') && $request->filled('cutoff.end_time')) {
                 $year = $request->year ?? Carbon::now()->year;
 
