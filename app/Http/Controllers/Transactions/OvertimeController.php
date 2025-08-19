@@ -13,6 +13,7 @@ use DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
+use Carbon\Carbon;
 
 class OvertimeController extends Controller
 {
@@ -61,14 +62,19 @@ class OvertimeController extends Controller
                 $overtime = $overtime->where("status", $request->status);
             }
 
-            if ($request->has(["date_from", "date_to"])) {
-                $overtime = $overtime->whereBetween('date_filed', [$request->date_from, $request->date_to]);
-            }
-
             if ($request->has(['branch_id'])) {
                 $overtime = $overtime->whereHas("employee", function ($query) use ($request) {
                     $query->where("branch_id", $request->branch_id);
                 });
+            }
+
+            if ($request->has('cutoff') && $request->filled('cutoff.start_time') && $request->filled('cutoff.end_time')) {
+                $year = $request->year ?? Carbon::now()->year;
+
+                $start_time = $year . '-' . $request->cutoff['start_time'];
+                $end_time = $year . '-' . $request->cutoff['end_time'];
+
+                $overtime = $overtime->whereBetween("date_filed", [$start_time, $end_time]);
             }
 
             $overtime = $overtime->with([

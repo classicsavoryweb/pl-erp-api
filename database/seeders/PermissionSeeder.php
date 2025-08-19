@@ -116,6 +116,7 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "void_all_records_tardiness"]);
 
         //transactions module
+        Permission::firstOrCreate(["name" => "export_all_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "view_transactions_module"]);
         Permission::firstOrCreate(["name" => "view_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "perform_transactions_schedule_time"]);
@@ -130,13 +131,14 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "view_transactions_time_keeping_summary"]);
         Permission::firstOrCreate(["name" => "perform_transactions_time_keeping_summary"]);
         Permission::firstOrCreate(["name" => "export_all_transactions_time_keeping_summary"]);
-        Permission::firstOrCreate(["name" => "view_transactions_overtime"]);
-        Permission::firstOrCreate(["name" => "perform_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "view_transactions_adjustments"]);
         Permission::firstOrCreate(["name" => "perform_transactions_adjustments"]);
         Permission::firstOrCreate(["name" => "approve_transactions_adjustments"]);
         Permission::firstOrCreate(["name" => "unapprove_transactions_adjustments"]);
+        Permission::firstOrCreate(["name" => "view_transactions_overtime"]);
+        Permission::firstOrCreate(["name" => "perform_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "import_all_transactions_overtime"]);
+        Permission::firstOrCreate(["name" => "export_all_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "approve_all_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "unapprove_all_transactions_overtime"]);
     }
