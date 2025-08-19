@@ -294,9 +294,9 @@ Route::middleware('auth:sanctum')->group( function () {
     //schedule time
     Route::get("/get-all-transactions-schedule-time", [ScheduleTimeController::class, "getAllTransactionsScheduleTime"]);
     Route::get("/get-transactions-schedule-time", [ScheduleTimeController::class, "getTransactionsScheduleTime"]);
-    Route::get("/export-all-transactions-schedule-time", [ScheduleTimeController::class, "exportAllTransactionsScheduleTime"]);
     Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/validate-import-transactions-schedule-time", [ScheduleTimeController::class, "validateImportTransactionsScheduleTimeExcel"]);
     Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/import-transactions-schedule-time", [ScheduleTimeController::class, "importTransactionsScheduleTimeExcel"]);
+    Route::middleware(["permission:export_all_transactions_schedule_time"])->get("/export-all-transactions-schedule-time", [ScheduleTimeController::class, "exportAllTransactionsScheduleTime"]);
     //actual logs
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
     Route::middleware(["permission:perform_transactions_actual_time"])->post("/edit-biotime-punch/{id}", [ActualTimeController::class, "editBiotimePunch"]);
@@ -306,10 +306,10 @@ Route::middleware('auth:sanctum')->group( function () {
     //overtime
     Route::get("/get-all-overtime", [OvertimeController::class, "getAllOvertime"]);
     Route::get("/get-overtime", [OvertimeController::class, "getOvertime"]);
-    Route::get("/export-all-overtime", [OvertimeController::class, "exportAllOvertime"]);
     Route::middleware(["permission:perform_transactions_overtime"])->post("/create-overtime", [OvertimeController::class, "createOvertime"]);
     Route::middleware(["permission:perform_transactions_overtime"])->post("/edit-overtime/{id}", [OvertimeController::class, "editOvertime"]);
     Route::middleware(["permission:import_all_transactions_overtime"])->post("/import-overtime", [OvertimeController::class, "importOvertimeExcel"]);
+    Route::middleware(["permission:export_all_transactions_overtime"])->get("/export-all-overtime", [OvertimeController::class, "exportAllOvertime"]);
     Route::middleware(["permission:approve_all_transactions_overtime"])->get("/approve-overtime/{id}", [OvertimeController::class, "approveOvertime"]);
     Route::middleware(["permission:approve_all_transactions_overtime"])->post("/approve-all-overtime", [OvertimeController::class, "approveBulkOvertime"]);
     Route::middleware(["permission:unapprove_all_transactions_overtime"])->get("/unapprove-overtime/{id}", [OvertimeController::class, "unapproveOvertime"]);

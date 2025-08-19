@@ -59,12 +59,17 @@ class ScheduleTimeController extends Controller
                 }
             }
 
-            if ($request->has(["date_from", "date_to"])) {
-                $schedule_time = $schedule_time->whereBetween('date', [$request->date_from, $request->date_to]);
-            }
-
             if ($request->has(['branch_id'])) {
                 $schedule_time = $schedule_time->where("branch_id", $request->branch_id);
+            }
+
+            if ($request->has('cutoff') && $request->filled('cutoff.start_time') && $request->filled('cutoff.end_time')) {
+                $year = $request->year ?? Carbon::now()->year;
+
+                $start_time = $year . '-' . $request->cutoff['start_time'];
+                $end_time = $year . '-' . $request->cutoff['end_time'];
+
+                $schedule_time = $schedule_time->whereBetween("date", [$start_time, $end_time]);
             }
 
             if ($request->has(["export"]) && $request->export) {
