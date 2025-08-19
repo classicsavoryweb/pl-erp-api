@@ -57,7 +57,6 @@ class OvertimeController extends Controller
                 }
             }
 
-
             if ($request->has(["status"])) {
                 $overtime = $overtime->where("status", $request->status);
             }
