@@ -84,9 +84,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         continue;
                     }
 
-                    if ($hours == $timeKeep->final_worked_hours && !$timeKeep->is_cancelled_off) {
+                    if ($hours == $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0 && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
-                    } else if ( $hours / 2 >= $timeKeep->final_worked_hours  && !$timeKeep->is_cancelled_off) {
+                    } else if ( $hours / 2 >= $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
                     }
 
