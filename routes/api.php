@@ -325,6 +325,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:export_all_transactions_time_keeping_summary"])->get("/export-all-time-keeping-summary", [TimeKeepingController::class, "exportAllTimeKeepingSummary"]);
     //adjustments
     Route::get("/get-all-adjustments", [AdjustmentController::class, "getAllAdjustments"]);
+    Route::get("/get-adjustment/{id}", [AdjustmentController::class, "getAdjustment"]);
     Route::middleware("permission:approve_transactions_adjustments")->get("/approve-adjustments/{id}", [AdjustmentController::class, "approveAdjustments"]);
     Route::middleware("permission:unapprove_transactions_adjustments")->get("/unapprove-adjustments/{id}", [AdjustmentController::class, "unapproveAdjustments"]);
     Route::middleware("permission:unapprove_transactions_adjustments")->get("/void-adjustments/{id}", [AdjustmentController::class, "voidAdjustments"]);

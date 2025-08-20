@@ -206,16 +206,6 @@ class ScheduleTimeController extends Controller
                     }
                 }
 
-                $previousCutoff = [
-                    'start_time' => '2025-06-11',
-                    'end_time' => '2025-06-25',
-                ];
-
-                $currentCutoff = [
-                    'start_time' => '2025-06-26',
-                    'end_time' => '2025-07-10',
-                ];
-
                 $employeesWithRestDayInBothCutoffs = [];
 
                 foreach ($restDayDatesByEmployee as $employeeId => $dates) {

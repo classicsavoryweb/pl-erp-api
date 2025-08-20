@@ -41,4 +41,8 @@ class AdjustmentTimeKeeping extends Model
     public function employee() {
         return $this->belongsTo(Employee::class, "employee_id", "id");
     }
+
+    public function schedule() {
+        return $this->hasOne(ScheduleTime::class, "id", "schedule_time_id");
+    }
 }

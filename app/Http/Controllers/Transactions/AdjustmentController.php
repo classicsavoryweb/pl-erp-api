@@ -216,7 +216,7 @@ class AdjustmentController extends Controller
                     "correct_amount_paid" => round($adjustmentPayment->total_amount, 2),
                     "actual_schedule" => $schedule->selection,
                     "type" => $request->type,
-                    "status" => "Pending",
+                    "status" => "Approved",
                     "added_by" => Auth::user()->id,
                     "added_at" => now(),
                 ]);
@@ -226,6 +226,35 @@ class AdjustmentController extends Controller
         } catch (Exception $e) {
             Log::error($e);
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getAdjustment($id) {
+        try {
+            $adjustment = Adjustment::find($id);
+
+            if ($adjustment) {
+                $employee = $adjustment->employee;
+                $adjustmentTimeKeeping = AdjustmentTimeKeeping::with("schedule")
+                ->where("employee_id", $employee->id)
+                ->where("date", $adjustment->date)
+                ->first();
+                $originalTimeKeeping = TimeKeeping::with("schedule")
+                ->where("employee_id", $employee->id)
+                ->where("date", $adjustment->date)
+                ->first();
+    
+                return $this->sendResponse([
+                    "adjustment" => $adjustment,
+                    "adjustment_timekeeping" => $adjustmentTimeKeeping,
+                    "original_timekeeping" => $originalTimeKeeping
+                ]);
+            }
+            
+            return $this->sendError(["message" => "Adjustment not found"]);
+        } catch (Exception $e) {
+            Log::info($e);
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }

@@ -169,7 +169,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                                 $regular_days = 11;
                             }
                         }
-                        if ($employee->schedule->schedule_type->name === "Normal Schedule") {
+                        if ($regular_days > 13 && $employee->schedule->schedule_type->name === "Normal Schedule") {
                             $regular_days = 13;
                         }
                     }
@@ -231,16 +231,15 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 $adjustments = Adjustment::whereBetween("date", [$previousCutOff['start_time'], $previousCutOff['end_time']])
                 ->where("employee_id", $employee->id)
-                ->where("status", "Approved")
+                ->whereIn("status", ["Approved", "Adjusted"])
                 ->get();
 
                 $withAdjustments = false;
-
                 foreach($adjustments as $adjustment) {
                     if ($adjustment->days > 0) {
                         $adjustments_days += $adjustment->days;
                     } else {
-                        if ($adjustment_amount > 0) {
+                        if ($adjustment->taxable_amount !== 0) {
                             $adjustment_amount += $adjustment->taxable_amount;
                         }
 
@@ -265,7 +264,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     $adjustment->update([
-                        "status" => "Reflected",
+                        "status" => "Adjusted",
                         "timekeeping_summary_id" => $timeKeepingSummary->id
                     ]);
 
