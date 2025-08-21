@@ -36,6 +36,8 @@ use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
 use App\Http\Controllers\Maintenance\HolidayController;
+use App\Http\Controllers\Maintenance\SSSController;
+use App\Http\Controllers\Maintenance\TaxController;
 use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
@@ -189,6 +191,18 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-holidays", [HolidayController::class, "exportHolidays"]);
     Route::middleware(["permission:perform_holidays"])->post("/create-holiday", [HolidayController::class, "createHoliday"]);
     Route::middleware(["permission:perform_holidays"])->post("/edit-holiday/{id}", [HolidayController::class, "editHoliday"]);
+    //sss
+    Route::get("/get-all-sss", [SSSController::class, "getAllSSS"]);
+    Route::get("/get-sss", [SSSController::class, "getSSS"]);
+    Route::get("/export-all-sss", [SSSController::class, "exportAllSSS"]);
+    Route::middleware(["permission:perform_sss"])->post("/create-sss", [SSSController::class, "createSSS"]);
+    Route::middleware(["permission:perform_sss"])->post("/edit-sss/{id}", [SSSController::class, "editSSS"]);
+    //tax
+    Route::get("/get-all-tax", [TaxController::class, "getAllTax"]);
+    Route::get("/get-tax", [TaxController::class, "getTax"]);
+    Route::get("/export-all-tax", [TaxController::class, "exportAllTax"]);
+    Route::middleware(["permission:perform_tax"])->post("/create-tax", [TaxController::class, "createTax"]);
+    Route::middleware(["permission:perform_tax"])->post("/edit-tax/{id}", [TaxController::class, "editTax"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
