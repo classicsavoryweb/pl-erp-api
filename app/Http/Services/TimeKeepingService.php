@@ -412,6 +412,14 @@ class TimeKeepingService
             ) {
                 $finalWorkHours = $hours;
             } else if (
+                $workHours >= 4 &&
+                $undertime >= 240 &&
+                !$isCancelledOff &&
+                $workHours > 0
+            ) {
+                $finalWorkHours = $hours;
+            }
+            else if (
                 (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
                 !$isCancelledOff &&
                 $workHours > 0

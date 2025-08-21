@@ -17,7 +17,7 @@ use Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-
+use Illuminate\Support\Facades\Auth;
 
 class ScheduleTimeController extends Controller
 {
@@ -375,6 +375,8 @@ class ScheduleTimeController extends Controller
 
             if ($filePath) {
                 ProcessScheduleTimeImport::dispatch($filePath, $excludedEmployeeIds);
+                $user = Auth::user();
+                activity()->causedBy($user)->useLog("Import Schedule")->log('User imported schedule');
             }
 
             return $this->sendResponse(["message" => "Excel file imported successfully"]);
