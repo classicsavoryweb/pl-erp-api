@@ -1,0 +1,64 @@
+{
+  "tbl_tax": [
+    {
+      "tax_id": "13",
+      "tax_type": "Semi-Monthly",
+      "tax_status": "S",
+      "tax_range_min": "0.00",
+      "tax_range_max": "10,416.66",
+      "tax_salary_base": "10,416.66",
+      "tax_percentage": "0",
+      "tax_exemption": "0.00"
+    },
+    {
+      "tax_id": "14",
+      "tax_type": "Semi-Monthly",
+      "tax_status": "S",
+      "tax_range_min": "10,416.67",
+      "tax_range_max": "16,666.66",
+      "tax_salary_base": "10,416.67",
+      "tax_percentage": "15",
+      "tax_exemption": "0.00"
+    },
+    {
+      "tax_id": "15",
+      "tax_type": "Semi-Monthly",
+      "tax_status": "S",
+      "tax_range_min": "16,666.67",
+      "tax_range_max": "33,333.32",
+      "tax_salary_base": "16,666.67",
+      "tax_percentage": "20",
+      "tax_exemption": "1,250.00"
+    },
+    {
+      "tax_id": "16",
+      "tax_type": "Semi-Monthly",
+      "tax_status": "S",
+      "tax_range_min": "33,333.33",
+      "tax_range_max": "83,333.32",
+      "tax_salary_base": "33,333.33",
+      "tax_percentage": "25",
+      "tax_exemption": "5,416.67"
+    },
+    {
+      "tax_id": "17",
+      "tax_type": "Semi-Monthly",
+      "tax_status": "S",
+      "tax_range_min": "83,333.33",
+      "tax_range_max": "333,333.32",
+      "tax_salary_base": "83,333.33",
+      "tax_percentage": "30",
+      "tax_exemption": "20,416.67"
+    },
+    {
+      "tax_id": "18",
+      "tax_type": "Semi-Monthly",
+      "tax_status": "S",
+      "tax_range_min": "333,333.33",
+      "tax_range_max": "999,999.00",
+      "tax_salary_base": "333,333.33",
+      "tax_percentage": "35",
+      "tax_exemption": "100,416.67"
+    }
+  ]
+}
