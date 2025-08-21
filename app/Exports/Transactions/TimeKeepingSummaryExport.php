@@ -111,7 +111,7 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
             'No',
             'Biometric Number',
             'Timekeeping Branch',
-            'Mother Branch',
+            'Home Branch',
             'Employee Name',
             'Regular Days',
             'Taxable Adjustment Amount',
