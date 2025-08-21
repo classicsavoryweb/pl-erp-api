@@ -142,9 +142,42 @@ class ScheduleTimeController extends Controller
 
                 $datesByEmployee = [];
 
-                foreach ($dataRows as $row) {
-                    $employeeId = $row[0] ?? null;
-                    $dateRaw    = $row[4] ?? null;
+                foreach ($dataRows as $index => $row) {
+                    if (empty(array_filter($row))) {
+                        continue;
+                    }
+
+                    $rowNumber   = $index + 3;
+                    $employeeId  = trim((string) $row[0]);
+                    $department  = $row[2] ?? null;
+                    $dateRaw     = $row[4] ?? null;
+                    $timetable   = $row[5] ?? null;
+                    $checkIn     = $row[6] ?? null;
+                    $checkOut    = $row[7] ?? null;
+
+                    $employee = Employee::where('biometric_number', $employeeId)->first();
+                    if (!$employee) {
+                        return $this->sendError([
+                            "message" => "Employee ID {$employeeId} not found at row {$rowNumber}"
+                        ]);
+                    }
+
+                    $requiredFields = [
+                        'employeeId' => "Employee ID",
+                        'dateRaw'    => "Date",
+                        'department' => "Department",
+                        'timetable'  => "Timetable",
+                        'checkIn'    => "Check-in",
+                        'checkOut'   => "Check-out",
+                    ];
+
+                    foreach ($requiredFields as $field => $label) {
+                        if (empty($$field)) {
+                            return $this->sendError([
+                                "message" => "{$label} is missing at row {$rowNumber}"
+                            ]);
+                        }
+                    }
 
                     if ($employeeId && $dateRaw) {
                         $convertedDate = $this->excelDateToDateString($dateRaw);
