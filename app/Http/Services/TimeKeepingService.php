@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 use App\Models\BiotimeLog;
+use App\Models\BiotimePunch;
 use App\Models\Holiday;
 use App\Models\Overtime;
 use App\Models\ScheduleMasterlist;
@@ -100,7 +101,7 @@ class TimeKeepingService
         }
 
         //undertime computation
-        if ($workHours < $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd) && $workHours > ($schedule->total_hours / 2)) {
+        if ($workHours < $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd) && $workHours >= ($schedule->total_hours / 2)) {
             $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
         }
         if ($workHours < ($schedule->total_hours / 2)) {
@@ -645,6 +646,9 @@ class TimeKeepingService
     public function payHoliday($date, $employee, $cutOff) {
         $shouldPay = true;
         $holidayDate = Carbon::parse($date);
+        $hasHolidayLogs = BiotimeLog::where("date", $date)
+        ->where("employee_id", $employee->id)
+        ->first();
         $weekDateRange = $this->getCustomWeekRange($date, $cutOff);
         $schedules = ScheduleTime::where("employee_id", $employee->id)
         ->whereBetween("date", [$weekDateRange["start"], $weekDateRange["end"] ])
@@ -687,9 +691,7 @@ class TimeKeepingService
                 $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
                 $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
 
-                if ($hasLog) {
-                    $shouldPay = true;
-                } else {
+                if (!$hasLog) {
                     $shouldPay = false;
                 }
 
@@ -698,11 +700,13 @@ class TimeKeepingService
             } else if ($previousDateSchedule && $previousDateSchedule->timetable === "NO SCHEDULE") {
                 $shouldPay = true;
             } else {
-                if ($hasLog) {
-                    $shouldPay = true;
-                } else {
+                if (!$hasLog) {
                     $shouldPay = false;
                 }
+            }
+
+            if ($employee->current_position->timekeeping_type === "Daily" && $hasHolidayLogs) {
+                $shouldPay = true;
             }
         }
 
