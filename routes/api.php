@@ -38,6 +38,7 @@ use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
 use App\Http\Controllers\Maintenance\HolidayController;
 use App\Http\Controllers\Maintenance\SSSController;
 use App\Http\Controllers\Maintenance\TaxController;
+use App\Http\Controllers\Maintenance\PhilhealthController;
 use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
@@ -203,6 +204,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-tax", [TaxController::class, "exportAllTax"]);
     Route::middleware(["permission:perform_tax"])->post("/create-tax", [TaxController::class, "createTax"]);
     Route::middleware(["permission:perform_tax"])->post("/edit-tax/{id}", [TaxController::class, "editTax"]);
+    //philhealth
+    Route::get("/get-all-philhealth", [PhilhealthController::class, "getAllPhilhealth"]);
+    Route::get("/get-philhealth", [PhilhealthController::class, "getPhilhealth"]);
+    Route::get("/export-all-philhealth", [PhilhealthController::class, "exportAllPhilhealth"]);
+    Route::middleware(["permission:perform_philhealth"])->post("/create-philhealth", [PhilhealthController::class, "createPhilhealth"]);
+    Route::middleware(["permission:perform_philhealth"])->post("/edit-philhealth/{id}", [PhilhealthController::class, "editPhilhealth"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
