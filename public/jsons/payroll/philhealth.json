@@ -1,0 +1,292 @@
+{
+  "tbl_philhealthcompute": [
+    {
+      "salary_bracket": "1",
+      "salary_range_from": "1.00",
+      "salary_range_to": "8,999.99",
+      "salary_base": "8,000.00",
+      "employee_share": "100.00",
+      "employer_share": "100.00",
+      "total_monthly_premium": "200.00"
+    },
+    {
+      "salary_bracket": "2",
+      "salary_range_from": "9,000.00",
+      "salary_range_to": "9,999.99",
+      "salary_base": "9,000.00",
+      "employee_share": "112.50",
+      "employer_share": "112.50",
+      "total_monthly_premium": "225.00"
+    },
+    {
+      "salary_bracket": "3",
+      "salary_range_from": "10,000.00",
+      "salary_range_to": "10,999.99",
+      "salary_base": "10,000.00",
+      "employee_share": "125.00",
+      "employer_share": "125.00",
+      "total_monthly_premium": "250.00"
+    },
+    {
+      "salary_bracket": "4",
+      "salary_range_from": "11,000.00",
+      "salary_range_to": "11,999.99",
+      "salary_base": "11,000.00",
+      "employee_share": "137.50",
+      "employer_share": "137.50",
+      "total_monthly_premium": "275.00"
+    },
+    {
+      "salary_bracket": "5",
+      "salary_range_from": "12,000.00",
+      "salary_range_to": "12,999.99",
+      "salary_base": "12,000.00",
+      "employee_share": "150.00",
+      "employer_share": "150.00",
+      "total_monthly_premium": "300.00"
+    },
+    {
+      "salary_bracket": "6",
+      "salary_range_from": "13,000.00",
+      "salary_range_to": "13,999.99",
+      "salary_base": "13,000.00",
+      "employee_share": "162.50",
+      "employer_share": "162.50",
+      "total_monthly_premium": "325.00"
+    },
+    {
+      "salary_bracket": "7",
+      "salary_range_from": "14,000.00",
+      "salary_range_to": "14,999.99",
+      "salary_base": "14,000.00",
+      "employee_share": "175.00",
+      "employer_share": "175.00",
+      "total_monthly_premium": "350.00"
+    },
+    {
+      "salary_bracket": "8",
+      "salary_range_from": "15,000.00",
+      "salary_range_to": "15,999.99",
+      "salary_base": "15,000.00",
+      "employee_share": "187.50",
+      "employer_share": "187.50",
+      "total_monthly_premium": "375.00"
+    },
+    {
+      "salary_bracket": "9",
+      "salary_range_from": "16,000.00",
+      "salary_range_to": "16,999.99",
+      "salary_base": "16,000.00",
+      "employee_share": "200.00",
+      "employer_share": "200.00",
+      "total_monthly_premium": "400.00"
+    },
+    {
+      "salary_bracket": "10",
+      "salary_range_from": "17,000.00",
+      "salary_range_to": "17,999.99",
+      "salary_base": "17,000.00",
+      "employee_share": "212.50",
+      "employer_share": "212.50",
+      "total_monthly_premium": "425.00"
+    },
+    {
+      "salary_bracket": "11",
+      "salary_range_from": "18,000.00",
+      "salary_range_to": "18,999.99",
+      "salary_base": "18,000.00",
+      "employee_share": "225.00",
+      "employer_share": "225.00",
+      "total_monthly_premium": "450.00"
+    },
+    {
+      "salary_bracket": "12",
+      "salary_range_from": "19,000.00",
+      "salary_range_to": "19,999.99",
+      "salary_base": "19,000.00",
+      "employee_share": "237.50",
+      "employer_share": "237.50",
+      "total_monthly_premium": "475.00"
+    },
+    {
+      "salary_bracket": "13",
+      "salary_range_from": "20,000.00",
+      "salary_range_to": "20,999.99",
+      "salary_base": "20,000.00",
+      "employee_share": "250.00",
+      "employer_share": "250.00",
+      "total_monthly_premium": "500.00"
+    },
+    {
+      "salary_bracket": "14",
+      "salary_range_from": "21,000.00",
+      "salary_range_to": "21,999.99",
+      "salary_base": "21,000.00",
+      "employee_share": "262.50",
+      "employer_share": "262.50",
+      "total_monthly_premium": "525.00"
+    },
+    {
+      "salary_bracket": "15",
+      "salary_range_from": "22,000.00",
+      "salary_range_to": "22,999.99",
+      "salary_base": "22,000.00",
+      "employee_share": "275.00",
+      "employer_share": "275.00",
+      "total_monthly_premium": "550.00"
+    },
+    {
+      "salary_bracket": "16",
+      "salary_range_from": "23,000.00",
+      "salary_range_to": "23,999.99",
+      "salary_base": "23,000.00",
+      "employee_share": "287.50",
+      "employer_share": "287.50",
+      "total_monthly_premium": "575.00"
+    },
+    {
+      "salary_bracket": "17",
+      "salary_range_from": "24,000.00",
+      "salary_range_to": "24,999.99",
+      "salary_base": "24,000.00",
+      "employee_share": "300.00",
+      "employer_share": "300.00",
+      "total_monthly_premium": "600.00"
+    },
+    {
+      "salary_bracket": "18",
+      "salary_range_from": "25,000.00",
+      "salary_range_to": "25,999.99",
+      "salary_base": "25,000.00",
+      "employee_share": "312.50",
+      "employer_share": "312.50",
+      "total_monthly_premium": "625.00"
+    },
+    {
+      "salary_bracket": "19",
+      "salary_range_from": "26,000.00",
+      "salary_range_to": "26,999.99",
+      "salary_base": "26,000.00",
+      "employee_share": "325.00",
+      "employer_share": "325.00",
+      "total_monthly_premium": "650.00"
+    },
+    {
+      "salary_bracket": "20",
+      "salary_range_from": "27,000.00",
+      "salary_range_to": "27,999.99",
+      "salary_base": "27,000.00",
+      "employee_share": "337.50",
+      "employer_share": "337.50",
+      "total_monthly_premium": "675.00"
+    },
+    {
+      "salary_bracket": "21",
+      "salary_range_from": "28,000.00",
+      "salary_range_to": "28,999.99",
+      "salary_base": "28,000.00",
+      "employee_share": "350.00",
+      "employer_share": "350.00",
+      "total_monthly_premium": "700.00"
+    },
+    {
+      "salary_bracket": "22",
+      "salary_range_from": "29,000.00",
+      "salary_range_to": "29,999.99",
+      "salary_base": "29,000.00",
+      "employee_share": "362.50",
+      "employer_share": "362.50",
+      "total_monthly_premium": "725.00"
+    },
+    {
+      "salary_bracket": "23",
+      "salary_range_from": "30,000.00",
+      "salary_range_to": "30,999.99",
+      "salary_base": "30,000.00",
+      "employee_share": "375.00",
+      "employer_share": "375.00",
+      "total_monthly_premium": "750.00"
+    },
+    {
+      "salary_bracket": "24",
+      "salary_range_from": "31,000.00",
+      "salary_range_to": "31,999.99",
+      "salary_base": "31,000.00",
+      "employee_share": "387.50",
+      "employer_share": "387.50",
+      "total_monthly_premium": "775.00"
+    },
+    {
+      "salary_bracket": "25",
+      "salary_range_from": "32,000.00",
+      "salary_range_to": "32,999.99",
+      "salary_base": "32,000.00",
+      "employee_share": "400.00",
+      "employer_share": "400.00",
+      "total_monthly_premium": "800.00"
+    },
+    {
+      "salary_bracket": "26",
+      "salary_range_from": "33,000.00",
+      "salary_range_to": "33,999.99",
+      "salary_base": "33,000.00",
+      "employee_share": "412.50",
+      "employer_share": "412.50",
+      "total_monthly_premium": "825.00"
+    },
+    {
+      "salary_bracket": "27",
+      "salary_range_from": "34,000.00",
+      "salary_range_to": "34,999.99",
+      "salary_base": "34,000.00",
+      "employee_share": "425.00",
+      "employer_share": "425.00",
+      "total_monthly_premium": "850.00"
+    },
+    {
+      "salary_bracket": "28",
+      "salary_range_from": "35,000.00",
+      "salary_range_to": "35,999.99",
+      "salary_base": "35,000.00",
+      "employee_share": "437.50",
+      "employer_share": "437.50",
+      "total_monthly_premium": "875.00"
+    },
+    {
+      "salary_bracket": "29",
+      "salary_range_from": "36,000.00",
+      "salary_range_to": "36,999.99",
+      "salary_base": "36,000.00",
+      "employee_share": "437.50",
+      "employer_share": "437.50",
+      "total_monthly_premium": "875.00"
+    },
+    {
+      "salary_bracket": "30",
+      "salary_range_from": "37,000.00",
+      "salary_range_to": "37,999.99",
+      "salary_base": "37,000.00",
+      "employee_share": "437.50",
+      "employer_share": "437.50",
+      "total_monthly_premium": "875.00"
+    },
+    {
+      "salary_bracket": "31",
+      "salary_range_from": "38,000.00",
+      "salary_range_to": "38,999.99",
+      "salary_base": "38,000.00",
+      "employee_share": "437.50",
+      "employer_share": "437.50",
+      "total_monthly_premium": "875.00"
+    },
+    {
+      "salary_bracket": "32",
+      "salary_range_from": "39,000.00",
+      "salary_range_to": "1,000,000.00",
+      "salary_base": "39,000.00",
+      "employee_share": "437.50",
+      "employer_share": "437.50",
+      "total_monthly_premium": "875.00"
+    }
+  ]
+}
