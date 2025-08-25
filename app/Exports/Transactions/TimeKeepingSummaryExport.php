@@ -211,6 +211,8 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
             $columns[] = $this->getExcelColumnLetter($i);
         }
 
+        $sheet->freezePane('F2');
+
         $maxLengths = array_fill_keys($columns, 0);
         $rows = $this->timekeeping_summary;
 
@@ -282,6 +284,17 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
                 }
             }
 
+            foreach ($columns as $colIndex => $col) {
+                $headerCell = $sheet->getCell($col . $headerRow);
+                $headerLength = strlen((string) $headerCell->getValue());
+
+                $maxContentLength = max($maxLengths[$col], $headerLength);
+
+                $sheet->getColumnDimension($col)->setWidth($maxContentLength + 2);
+            }
+
+            $sheet->getColumnDimension('E')->setAutoSize(true);
+
             $sheet->getStyle('A' . $rowNumber . ':' . $lastColumnLetter . $rowNumber)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
@@ -321,15 +334,6 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
             'font' => ['bold' => true],
         ]);
 
-        for ($i = 0; $i < count($columns); $i++) {
-            $col = $columns[$i];
-            $headerCell = $sheet->getCell($col . $headerRow);
-            $headerLength = strlen((string) $headerCell->getValue()) > 15
-                ? strlen((string) $headerCell->getValue())
-                : 20;
-            $maxContentLength = max($maxLengths[$col], $headerLength);
-            $sheet->getColumnDimension($col)->setWidth($maxContentLength + 2);
-        }
 
         for ($i = 0; $i < $maxUndertimeColumns; $i++) {
             $colLetter = $this->getExcelColumnLetter(18 + $i);

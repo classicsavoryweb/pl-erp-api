@@ -99,11 +99,16 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
         $columns = range('A', 'R');
         $rowCount = $this->timekeeping->count() + 1;
         $sheet->getStyle('A1:R' . $rowCount)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $sheet->freezePane('C2');
+
         $maxLengths = array_fill_keys($columns, 0);
 
         foreach ($columns as $colIndex => $col) {
             $maxLengths[$col] = strlen($headings[$colIndex]);
         }
+
+        $sheet->getColumnDimension('B')->setAutoSize(true);
 
         $rows = $this->timekeeping;
         
