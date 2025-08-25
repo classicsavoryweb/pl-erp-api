@@ -39,6 +39,7 @@ use App\Http\Controllers\Maintenance\HolidayController;
 use App\Http\Controllers\Maintenance\SSSController;
 use App\Http\Controllers\Maintenance\TaxController;
 use App\Http\Controllers\Maintenance\PhilhealthController;
+use App\Http\Controllers\Maintenance\PagibigController;
 use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
@@ -210,6 +211,11 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-philhealth", [PhilhealthController::class, "exportAllPhilhealth"]);
     Route::middleware(["permission:perform_philhealth"])->post("/create-philhealth", [PhilhealthController::class, "createPhilhealth"]);
     Route::middleware(["permission:perform_philhealth"])->post("/edit-philhealth/{id}", [PhilhealthController::class, "editPhilhealth"]);
+    //pagibig
+    Route::get("/get-all-pagibig", [PagibigController::class, "getAllPagibig"]);
+    Route::get("/get-pagibig", [PagibigController::class, "getPagibig"]);
+    Route::get("/export-all-pagibig", [PagibigController::class, "exportAllPagibig"]);
+    Route::middleware(["permission:perform_pagibig"])->post("/edit-pagibig/{id}", [PagibigController::class, "editPagibig"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
