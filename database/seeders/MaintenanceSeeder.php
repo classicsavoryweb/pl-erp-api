@@ -32,5 +32,9 @@ class MaintenanceSeeder extends Seeder
         $this->call(ScheduleTypeSeeder::class);
         $this->call(ScheduleMasterlistSeeder::class);
         $this->call(HolidaySeeder::class);
+        $this->call(SSSSeeder::class);
+        $this->call(TaxSeeder::class);
+        $this->call(PhilhealthSeeder::class);
+        $this->call(PagibigSeeder::class);
     }
 }
