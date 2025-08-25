@@ -390,6 +390,9 @@ class TimeKeepingService
             if ($schedule->selection === "REST DAY") {
                 $isCancelledOff = true;
                 $overtime = 0;
+                $legalHolidayOvertime = 0;
+                $specialHolidayOvertime = 0;
+                $tardiness = 0;
                 $cancelled_off_hours = round($decimalHours, 2);
             }
 
@@ -555,7 +558,13 @@ class TimeKeepingService
                 } else {
                     $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours < 9.5 ? $timeKeeping->cancelled_off_hours : 9.5;
                 }
+
                 $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.3);
+
+                if ($timeKeeping->legal_holiday === "Yes") {
+                    $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.6);
+                }
+
                 $totalAmount = $cancelled_off;
             }
 
