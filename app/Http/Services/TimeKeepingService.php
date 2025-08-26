@@ -136,7 +136,6 @@ class TimeKeepingService
             $schedule->selection === "Spot Audit" ||
             $schedule->selection === "MEI 08:00 TO 06:30" ||
             $schedule->selection === "MEI 09:00 TO 19:30" ||
-            $schedule->selection === "Flex" ||
             $schedule->selection === "Flex 1" ||
             $schedule->selection === "Flex 2"
         ) {
@@ -209,7 +208,8 @@ class TimeKeepingService
             // NO CLOCK IN
             if (
                 $scheduleStart->diffInHours($parsedFirstPunch) > 3 &&
-                $parsedFirstPunch->diffInHours($parsedSecondPunch) <= 2
+                $parsedFirstPunch->diffInHours($parsedSecondPunch) <= 2 &&
+                $workHours < $schedule->total_hours
             ) {
                 $tardiness = $scheduleStart->diffInMinutes($parsedFirstPunch);
             }
@@ -219,7 +219,8 @@ class TimeKeepingService
                 $scheduleStart->diffInHours($parsedFirstPunch) <= 3 &&
                 $parsedFirstPunch->diffInHours($parsedSecondPunch) > 3 &&
                 $scheduleEnd->diffInHours($parsedLastPunch) < 3 &&
-                $breakOutGap > $breakInGap
+                $breakOutGap > $breakInGap &&
+                $workHours >= $schedule->total_hours
             ) {
                 $tardiness = $scheduleStart->diffInMinutes($parsedSecondPunch) - $scheduledBreakInMinutes;
             }
@@ -229,7 +230,8 @@ class TimeKeepingService
                 $parsedSecondPunch->diffInHours($parsedLastPunch) > 3 &&
                 $parsedSecondPunch->diffInMinutes($parsedLastPunch) > $scheduledBreakInMinutes &&
                 $scheduleEnd->diffInHours($parsedLastPunch) < 3 &&
-                $breakInGap > $breakOutGap
+                $breakInGap > $breakOutGap &&
+                $workHours >= $schedule->total_hours
             ) {
                 $tardiness = $parsedSecondPunch->diffInMinutes($scheduleEnd) - $scheduledBreakInMinutes;
             }
@@ -238,7 +240,6 @@ class TimeKeepingService
             if (
                 $scheduleStart->diffInHours($parsedFirstPunch) <= 3 &&
                 $parsedSecondPunch->diffInHours($parsedLastPunch) < 3 &&
-                $scheduleStart->diffInHours($parsedFirstPunch) < 3 &&
                 $workHours < $schedule->total_hours
             ) {
                 $underTimeInMinutes = $scheduleEnd->diffInMinutes($parsedLastPunch);
@@ -352,7 +353,7 @@ class TimeKeepingService
             strtolower($schedule->selection) === "flex"
         ) {
             $tardiness = 0;
-
+            $undertime = 0;
             if ($schedule->selection == "NO SCHEDULE") {
                 $overtime = $decimalHours;
             }
