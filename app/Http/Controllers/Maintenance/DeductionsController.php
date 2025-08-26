@@ -46,7 +46,7 @@ class DeductionsController extends Controller
 
     public function getDeduction(Request $request) {
         try {
-            $deductions = Deduction::where("status", "Active")->get();
+            $deductions = Deduction::where("status", "active")->get();
             return $this->sendResponse(["deductions" => $deductions]);
         } catch(Exception $e) {
 

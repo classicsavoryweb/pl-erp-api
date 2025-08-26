@@ -41,6 +41,7 @@ use App\Http\Controllers\Maintenance\TaxController;
 use App\Http\Controllers\Maintenance\PhilhealthController;
 use App\Http\Controllers\Maintenance\PagibigController;
 use App\Http\Controllers\Maintenance\DeductionsController;
+use App\Http\Controllers\Maintenance\AdditionalIncomeController;
 use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
@@ -223,6 +224,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-deductions", [DeductionsController::class, "exportAllDeductions"]);
     Route::middleware(["permission:perform_deductions"])->post("/create-deduction", [DeductionsController::class, "createDeduction"]);
     Route::middleware(["permission:perform_deductions"])->post("/edit-deduction/{id}", [DeductionsController::class, "editDeduction"]);
+    //additional income
+    Route::get("/get-all-additional-income", [AdditionalIncomeController::class, "getAllAdditionalIncome"]);
+    Route::get("/get-additional-income", [AdditionalIncomeController::class, "getAdditionalIncome"]);
+    Route::get("/export-all-additional-income", [AdditionalIncomeController::class, "exportAllAdditionalIncome"]);
+    Route::middleware(["permission:perform_additional_income"])->post("/create-additional-income", [AdditionalIncomeController::class, "createAdditionalIncome"]);
+    Route::middleware(["permission:perform_additional_income"])->post("/edit-additional-income/{id}", [AdditionalIncomeController::class, "editAdditionalIncome"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
