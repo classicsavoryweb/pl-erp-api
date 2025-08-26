@@ -36,5 +36,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(TaxSeeder::class);
         $this->call(PhilhealthSeeder::class);
         $this->call(PagibigSeeder::class);
+        $this->call(DeductionSeeder::class);
     }
 }

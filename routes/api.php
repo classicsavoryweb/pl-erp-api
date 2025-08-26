@@ -40,6 +40,7 @@ use App\Http\Controllers\Maintenance\SSSController;
 use App\Http\Controllers\Maintenance\TaxController;
 use App\Http\Controllers\Maintenance\PhilhealthController;
 use App\Http\Controllers\Maintenance\PagibigController;
+use App\Http\Controllers\Maintenance\DeductionsController;
 use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
@@ -216,6 +217,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-pagibig", [PagibigController::class, "getPagibig"]);
     Route::get("/export-all-pagibig", [PagibigController::class, "exportAllPagibig"]);
     Route::middleware(["permission:perform_pagibig"])->post("/edit-pagibig/{id}", [PagibigController::class, "editPagibig"]);
+    //deductions
+    Route::get("/get-all-deductions", [DeductionsController::class, "getAllDeductions"]);
+    Route::get("/get-deduction", [DeductionsController::class, "getDeduction"]);
+    Route::get("/export-all-deductions", [DeductionsController::class, "exportAllDeductions"]);
+    Route::middleware(["permission:perform_deductions"])->post("/create-deduction", [DeductionsController::class, "createDeduction"]);
+    Route::middleware(["permission:perform_deductions"])->post("/edit-deduction/{id}", [DeductionsController::class, "editDeduction"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
