@@ -248,7 +248,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-
                     $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("date", $adjustment->date)
                     ->where("employee_id", $employee->id)
                     ->first();

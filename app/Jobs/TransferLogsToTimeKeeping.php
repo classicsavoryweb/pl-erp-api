@@ -146,7 +146,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     if (
                         ($actualSchedule->timetable == "NO SCHEDULE" || $actualSchedule->timetable == "SUSPENSION" ) &&
                         $isHoliday &&
-                        !$isRequiredToReport &&
+                        // !$isRequiredToReport &&
                         $employee->schedule->schedule_type->name === "Compressed Schedule" &&
                         $holidayType === "LH"
                     ) {
@@ -174,8 +174,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         ]);
                     } else if (
                         ($actualSchedule->timetable == "NO SCHEDULE" || $actualSchedule->timetable == "SUSPENSION" ) &&
-                        $isHoliday &&
-                        !$isRequiredToReport
+                        $isHoliday
+                        // !$isRequiredToReport
                     ) {
                         TimeKeeping::create([
                             "employee_id" => $employee->id,

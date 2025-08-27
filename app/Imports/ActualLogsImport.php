@@ -24,32 +24,35 @@ class ActualLogsImport implements ToCollection, WithHeadingRow
             $punches = array_map("trim", explode(",",$row['time']));
             $employee = Employee::where("biometric_number", $row["employee_id"])->first();
             // $branch = Branch::where("short_name", $row["department"])->first();
-            $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
-            $parsedDate = Carbon::parse($punches[0]);
-            $time = $parsedDate->toTimeString();
 
-            $date = is_numeric($row["date"])
-                ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d')
-                : date('Y-m-d', strtotime($row["date"]));
-
-            if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
-                $latest->punches()->create([
-                    "punch_time" => $punches[0],
-                    "date" => $date,
-                    "branch_id" => null
-                ]);
-            } else {
-                $log = BiotimeLog::create([
-                    "employee_id" => $employee->id,
-                    "biometric_number" => $employee->biometric_number,
-                    "date" => $date,
-                ]);
-                foreach ($punches as $punch) {
-                    $log->punches()->create([
-                        "punch_time" => $punch,
+            if ($employee) {
+                $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
+                $parsedDate = Carbon::parse($punches[0]);
+                $time = $parsedDate->toTimeString();
+    
+                $date = is_numeric($row["date"])
+                    ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d')
+                    : date('Y-m-d', strtotime($row["date"]));
+    
+                if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
+                    $latest->punches()->create([
+                        "punch_time" => $punches[0],
                         "date" => $date,
                         "branch_id" => null
                     ]);
+                } else {
+                    $log = BiotimeLog::create([
+                        "employee_id" => $employee->id,
+                        "biometric_number" => $employee->biometric_number,
+                        "date" => $date,
+                    ]);
+                    foreach ($punches as $punch) {
+                        $log->punches()->create([
+                            "punch_time" => $punch,
+                            "date" => $date,
+                            "branch_id" => null
+                        ]);
+                    }
                 }
             }
         }
