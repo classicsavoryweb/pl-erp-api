@@ -11,12 +11,14 @@ use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
 use App\Exports\Transactions\TimeKeepingExport;
 use App\Exports\Transactions\TimeKeepingSummaryExport;
+use App\Models\Branch;
 use Illuminate\Support\Facades\Artisan;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use DB;
+use Illuminate\Support\Facades\Auth;
 use Str;
 use Log;
 
@@ -46,6 +48,11 @@ class TimeKeepingController extends Controller
                 : $currentCutOff['end_time'];
 
             TransferLogsToTimeKeeping::dispatch($request->branch_id, [$start_time, $end_time]);
+            $branch = Branch::find($request->branch_id);
+            $user = Auth::user();
+            activity()->causedBy($user)->useLog("Timekeeping Generation")
+            ->log('User generated timekeeping of '.$branch->name ?? "undefined"." branch." );
+
             return $this->sendResponse(["message" => "Logs are in queue for processing."]);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
@@ -232,6 +239,11 @@ class TimeKeepingController extends Controller
             ->get();
 
             GenerateTimekeepingSummary::dispatch($employees, $cutOff);
+
+            $branch = Branch::find($request->branch_id);
+            $user = Auth::user();
+            activity()->causedBy($user)->useLog("Timekeeping Summary Generation")
+            ->log('User generated timekeeping summary of '.$branch->name ?? "undefined"." branch." );
 
             return $this->sendResponse(["message" => "Timekeeping are in queue for processing."]);
         } catch(Exception $e) {

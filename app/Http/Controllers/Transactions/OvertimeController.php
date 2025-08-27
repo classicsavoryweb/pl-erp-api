@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class OvertimeController extends Controller
 {
@@ -220,6 +221,8 @@ class OvertimeController extends Controller
                 $storage->put($filePath, file_get_contents($file));
                 
                 ProcessOvertimeImport::dispatch($filePath);
+                $user = Auth::user();
+                activity()->causedBy($user)->useLog("Import Overtime")->log('User imported overtime from cshub.');
                 return $this->sendResponse(["message" => "Excel file imported successfully"]);
             }
         } catch (Exception $e) {

@@ -95,22 +95,23 @@ class TimeKeepingService
 
         $shouldBeHalfDay = false;
         if ($tardiness >= 120) {
-            $workHours = $schedule->total_hours / 2;
+            $workHours = $hours / 2;
             $tardiness = 0;
             $shouldBeHalfDay = true;
         }
 
         //undertime computation
-        if ($workHours < $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd) && $workHours >= ($schedule->total_hours / 2)) {
+        if ($workHours < $hours && $parsedLastPunch->isBefore($scheduleEnd) && $workHours >= ($hours / 2)) {
             $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
         }
-        if ($workHours < ($schedule->total_hours / 2)) {
+        if ($workHours < ($hours / 2)) {
             $halfScheduleTime = $scheduleStart->copy()->addMinutes($scheduleStart->diffInMinutes($scheduleEnd) / 2);
             $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true);
         }
-        if ($workHours > $schedule->total_hours && $parsedLastPunch->isBefore($scheduleEnd)) {
+        if ($workHours > $hours && $parsedLastPunch->isBefore($scheduleEnd)) {
             $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
         }
+
         //holiday computation
         if ($holiday) {
             $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";

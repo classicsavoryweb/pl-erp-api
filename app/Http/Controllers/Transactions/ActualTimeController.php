@@ -238,6 +238,8 @@ class ActualTimeController extends Controller
 
             if ($filePath) {
                 ProcessActualTimeImport::dispatch($filePath);
+                $user = Auth::user();
+                activity()->causedBy($user)->useLog("Import Actual Logs")->log('User imported actual logs');
             }
 
             return $this->sendResponse(["message" => "Excel file imported successfully"]);
