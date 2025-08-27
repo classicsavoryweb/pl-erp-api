@@ -1,0 +1,70 @@
+{
+  "tbl_additionalincome": [
+    {
+      "additionalincome_id": "1",
+      "additionalincome_earnid": "00000001",
+      "additionalincome_description": "13th Month",
+      "additionalincome_taxable": "N",
+      "additionalincome_status": "Active",
+      "debit_ho": "7500015",
+      "credit_ho": "4000000",
+      "debit_store": "7000020",
+      "credit_store": "4000000"
+    },
+    {
+      "additionalincome_id": "2",
+      "additionalincome_earnid": "00000002",
+      "additionalincome_description": "SL/VL Liquidation",
+      "additionalincome_taxable": "N",
+      "additionalincome_status": "Active",
+      "debit_ho": "7500015",
+      "credit_ho": "4000000",
+      "debit_store": "7000020",
+      "credit_store": "4000000"
+    },
+    {
+      "additionalincome_id": "3",
+      "additionalincome_earnid": "00000003",
+      "additionalincome_description": "Allowance",
+      "additionalincome_taxable": "N",
+      "additionalincome_status": "Active",
+      "debit_ho": "7500015",
+      "credit_ho": "4000000",
+      "debit_store": "7000020",
+      "credit_store": "4000000"
+    },
+    {
+      "additionalincome_id": "4",
+      "additionalincome_earnid": "00000004",
+      "additionalincome_description": "COLA",
+      "additionalincome_taxable": "N",
+      "additionalincome_status": "Active",
+      "debit_ho": "7500015",
+      "credit_ho": "4000000",
+      "debit_store": "7000020",
+      "credit_store": "4000000"
+    },
+    {
+      "additionalincome_id": "5",
+      "additionalincome_earnid": "00000005",
+      "additionalincome_description": "Incentives",
+      "additionalincome_taxable": "N",
+      "additionalincome_status": "Active",
+      "debit_ho": "7500015",
+      "credit_ho": "4000000",
+      "debit_store": "7000020",
+      "credit_store": "4000000"
+    },
+    {
+      "additionalincome_id": "6",
+      "additionalincome_earnid": "00000006",
+      "additionalincome_description": "ECOLA",
+      "additionalincome_taxable": "N",
+      "additionalincome_status": "Active",
+      "debit_ho": "7500015",
+      "credit_ho": "4000000",
+      "debit_store": "7000020",
+      "credit_store": "4000000"
+    }
+  ]
+}

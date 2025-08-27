@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AdditionalIncome;
 use App\Models\BankAccountType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -37,5 +38,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(PhilhealthSeeder::class);
         $this->call(PagibigSeeder::class);
         $this->call(DeductionSeeder::class);
+        $this->call(AdditionalIncomeSeeder::class);
     }
 }
