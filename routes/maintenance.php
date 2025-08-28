@@ -1,0 +1,189 @@
+<?php
+
+use App\Http\Controllers\Maintenance\ActingCapacityMaintenanceController;
+use App\Http\Controllers\Maintenance\AdditionalIncomeController;
+use App\Http\Controllers\Maintenance\AgencyController;
+use App\Http\Controllers\Maintenance\BankAccountTypeController;
+use App\Http\Controllers\Maintenance\BranchController;
+use App\Http\Controllers\Maintenance\CoeReasonController;
+use App\Http\Controllers\Maintenance\CSHubTransactionTypeController;
+use App\Http\Controllers\Maintenance\DeductionsController;
+use App\Http\Controllers\Maintenance\DiagnosisController;
+use App\Http\Controllers\Maintenance\EmployeeStatusController;
+use App\Http\Controllers\Maintenance\HolidayController;
+use App\Http\Controllers\Maintenance\OffenseController;
+use App\Http\Controllers\Maintenance\PagibigController;
+use App\Http\Controllers\Maintenance\PeriodDefinitionController;
+use App\Http\Controllers\Maintenance\PhilhealthController;
+use App\Http\Controllers\Maintenance\PositionController;
+use App\Http\Controllers\Maintenance\RateController;
+use App\Http\Controllers\Maintenance\SalaryPositionController;
+use App\Http\Controllers\Maintenance\SanctionsController;
+use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
+use App\Http\Controllers\Maintenance\SSSController;
+use App\Http\Controllers\Maintenance\StationController;
+use App\Http\Controllers\Maintenance\TaxController;
+use App\Http\Controllers\Maintenance\TrainingTitleController;
+use App\Http\Controllers\Maintenance\VaccineController;
+use Illuminate\Support\Facades\Route;
+
+// MAINTENANCE MODULE
+Route::middleware('auth:sanctum')->group(function() {
+    //stations
+    Route::get("/get-all-stations", [StationController::class, "getAllStation"]);
+    Route::get("/export-all-stations", [StationController::class, "exportAllStation"]);
+    Route::get("/get-stations", [StationController::class, "getStations"]);
+    Route::middleware(["permission:perform_stations"])->get("/delete-station/{id}", [StationController::class,"deleteStation"]);
+    Route::middleware(["permission:perform_stations"])->post("/edit-station/{id}", [StationController::class,"editStation"]);
+    Route::middleware(["permission:perform_stations"])->post("/create-station", [StationController::class,"createStation"]);
+    //employee status
+    Route::get("/get-all-status", [EmployeeStatusController::class, "getAllEmployeStatus"]);
+    Route::get("/get-status", [EmployeeStatusController::class, "getEmployeeStatus"]);
+    Route::get("/export-all-status", [EmployeeStatusController::class, "exportEmployeeStatus"]);
+    Route::middleware(["permission:perform_employee_status"])->post("/create-employee-status", [EmployeeStatusController::class, "createEmployeeStatus"]);
+    Route::middleware(["permission:perform_employee_status"])->post("/edit-employee-status/{id}", [EmployeeStatusController::class, "editEmployeeStatus"]);
+    Route::middleware(["permission:perform_employee_status"])->get("/delete-employee-status/{id}", [EmployeeStatusController::class, "deleteEmployeeStatus"]);
+    //positions
+    Route::get("/get-all-positions", [PositionController::class, "getAllPositions"]);
+    Route::get("/get-positions", [PositionController::class, "getPositions"]);
+    Route::get("/export-all-positions", [PositionController::class, "exportAllPositions"]);
+    Route::middleware(["permission:perform_stations"])->post("/create-position", [PositionController::class,"createPosition"]);
+    Route::middleware(["permission:perform_stations"])->post("/edit-position/{id}", [PositionController::class,"editPosition"]);
+    //agency
+    Route::get("/get-all-agencies", [AgencyController::class, "getAllAgencies"]);
+    Route::get("/get-agencies", [AgencyController::class, "getAgencies"]);
+    Route::get("/export-all-agencies", [AgencyController::class, "exportAllAgencies"]);
+    Route::middleware(["permission:perform_agencies"])->post("/create-agency", [AgencyController::class, "createAgency"]);
+    Route::middleware(["permission:perform_agencies"])->post("/edit-agency/{id}", [AgencyController::class, "editAgency"]);
+    //offenses
+    Route::get("/get-all-offenses", [OffenseController::class, "getAllOffenses"]);
+    Route::get("/get-all-categories", [OffenseController::class, "getAllCategories"]);
+    Route::get("/get-all-subcategories", [OffenseController::class, "getAllSubCategories"]);
+    Route::get("/get-subcategories", [OffenseController::class, "getSubCategories"]);
+    Route::get("/get-categories", [OffenseController::class, "getCategories"]);
+    Route::get("/get-offenses", [OffenseController::class, "getOffenses"]);
+    Route::get("/export-all-offenses", [OffenseController::class, "exportAllOffenses"]);
+    Route::middleware(["permission:perform_offenses"])->post("/create-offense", [OffenseController::class, "createOffense"]);
+    Route::middleware(["permission:perform_offenses"])->post("/edit-offense/{id}", [OffenseController::class, "editOffense"]);
+    Route::middleware(["permission:perform_offenses"])->post("/create-category", [OffenseController::class, "createCategory"]);
+    Route::middleware(["permission:perform_offenses"])->post("/edit-category/{id}", [OffenseController::class, "editCategory"]);
+    Route::middleware(["permission:perform_offenses"])->post("/create-subcategory", [OffenseController::class, "createSubCategory"]);
+    Route::middleware(["permission:perform_offenses"])->post("/edit-subcategory/{id}", [OffenseController::class, "editSubCategory"]);
+    //branches
+    Route::get("/get-all-branches", [BranchController::class, "getAllBranches"]);
+    Route::get("/get-branches", [BranchController::class, "getBranches"]);
+    Route::get("/export-all-branches", [BranchController::class, "exportBranches"]);
+    Route::middleware(["permission:perform_branches"])->post("/create-branch", [BranchController::class, "createBranch"]);
+    Route::middleware(["permission:perform_branches"])->post("/edit-branch/{id}", [BranchController::class, "editBranch"]);
+    //training titles
+    Route::get("/get-all-training-titles", [TrainingTitleController::class, "getAllTrainingTitles"]);
+    Route::get("/get-training-titles", [TrainingTitleController::class, "getTrainingTitles"]);
+    Route::get("/export-all-training-titles", [TrainingTitleController::class, "exportAllTrainingTitles"]);
+    Route::middleware(["permission:perform_training_titles"])->post("/create-training-title", [TrainingTitleController::class, "createTrainingTitle"]);
+    Route::middleware(["permission:perform_training_titles"])->post("/edit-training-title/{id}", [TrainingTitleController::class, "editTrainingTitle"]);
+    //diagnosis
+    Route::get("/get-all-diagnosis", [DiagnosisController::class, "getAllDiagnosis"]);
+    Route::get("/get-diagnosis", [DiagnosisController::class, "getDiagnosis"]);
+    Route::get("/export-all-diagnosis", [DiagnosisController::class, "exportAllDiagnosis"]);
+    Route::middleware(["permission:perform_diagnosis"])->post("/create-diagnosis", [DiagnosisController::class, "createDiagnosis"]);
+    Route::middleware(["permission:perform_diagnosis"])->post("/edit-diagnosis/{id}", [DiagnosisController::class, "editDiagnosis"]);
+    //rate per group
+    Route::get("/get-all-rates", [RateController::class, "getAllRates"]);
+    Route::get("/export-all-rates", [RateController::class, "exportAllRates"]);
+    Route::get("/get-rates", [RateController::class, "getRates"]);
+    Route::middleware(["permission:perform_rate_per_group"])->post("/create-rate", [RateController::class, "createRate"]);
+    Route::middleware(["permission:perform_rate_per_group"])->post("/edit-rate/{id}", [RateController::class, "editRate"]);
+    //bank account types
+    Route::get("/get-all-bank-account-types", [BankAccountTypeController::class, "getAllBankAccountTypes"]);
+    Route::get("/export-all-bank-account-types", [BankAccountTypeController::class, "exportAllBankAccountTypes"]);
+    Route::get("/get-bank-account-types", [BankAccountTypeController::class, "getBankAccountTypes"]);
+    Route::middleware(["permission:perform_bank_account_types"])->post("/create-bank-account-type", [BankAccountTypeController::class, "createBankAccountType"]);
+    Route::middleware(["permission:perform_bank_account_types"])->post("/edit-bank-account-type/{id}", [BankAccountTypeController::class, "editBankAccountType"]);
+    //salary positions
+    Route::get("/get-all-salary-positions", [SalaryPositionController::class, "getAllSalaryPositions"]);
+    Route::get("/export-all-salary-positions", [SalaryPositionController::class, "exportAlLSalaryPositions"]);
+    Route::get("/get-salary-positions", [SalaryPositionController::class, "getSalaryPositions"]);
+    Route::middleware(["permission:perform_salary_positions"])->post("/create-salary-position", [SalaryPositionController::class, "createSalaryPosition"]);
+    Route::middleware(["permission:perform_salary_positions"])->post("/edit-salary-position/{id}", [SalaryPositionController::class, "editSalaryPosition"]);
+    //vaccines
+    Route::get("/get-all-vaccines", [VaccineController::class, "getAllVaccines"]);
+    Route::get("/export-all-vaccines", [VaccineController::class, "exportAllVaccines"]);
+    Route::get("/get-vaccines", [VaccineController::class, "getVaccines"]);
+    Route::middleware(["permission:perform_vaccine_brand"])->post("/create-vaccine", [VaccineController::class, "createVaccine"]);
+    Route::middleware(["permission:perform_vaccine_brand"])->post("/edit-vaccine/{id}", [VaccineController::class, "editVaccine"]);
+    //coe reasons
+    Route::get("/get-all-coe-reasons", [CoeReasonController::class, "getAllCoeReasons"]);
+    Route::get("/get-coe-reasons", [CoeReasonController::class, "getCoeReasons"]);
+    Route::get("/export-all-coe-reasons", [CoeReasonController::class, "exportAllCoeReasons"]);
+    Route::middleware(["permission:perform_coe_reasons"])->post("/create-coe-reason", [CoeReasonController::class, "createCoeReason"]);
+    Route::middleware(["permission:perform_coe_reasons"])->post("/edit-coe-reason/{id}", [CoeReasonController::class, "editCoeReason"]);
+    //acting capacity reasons
+    Route::get("/get-all-acting-capacity-reasons", [ActingCapacityMaintenanceController::class, "getAllActingCapacityReasons"]);
+    Route::get("/get-acting-capacity-reasons", [ActingCapacityMaintenanceController::class, "getActingCapacityReasons"]);
+    Route::get("/export-all-acting-capacity-reasons", [ActingCapacityMaintenanceController::class, "exportActingCapacityReasons"]);
+    Route::middleware(["permission:perform_acting_capacity_reasons"])->post("/create-acting-capacity-reason", [ActingCapacityMaintenanceController::class, "createActingCapacityReason"]);
+    Route::middleware(["permission:perform_acting_capacity_reasons"])->post("/edit-acting-capacity-reason/{id}", [ActingCapacityMaintenanceController::class, "editActingCapacityReason"]);
+    //sanctions
+    Route::get("/get-all-sanctions", [SanctionsController::class, "getAllSanctions"]);
+    Route::get("/get-sanctions", [SanctionsController::class, "getSanctions"]);
+    Route::get("/export-all-sanctions", [SanctionsController::class, "exportSanctions"]);
+    Route::middleware(["permission:perform_sanctions"])->post("/create-sanction", [SanctionsController::class, "createSanction"]);
+    Route::middleware(["permission:perform_sanctions"])->post("/edit-sanction/{id}", [SanctionsController::class, "editSanction"]);
+    //schedule masterlist
+    Route::get("/get-all-schedule-masterlist", [ScheduleMasterlistController::class, "getAllScheduleMasterlist"]);
+    Route::get("/get-schedule-masterlist", [ScheduleMasterlistController::class, "getScheduleMasterlist"]);
+    Route::get("/export-all-schedule-masterlist", [ScheduleMasterlistController::class, "exportScheduleMasterlist"]);
+    Route::middleware(["permission:perform_schedule_masterlist"])->post("/create-schedule-masterlist", [ScheduleMasterlistController::class, "createScheduleMasterlist"]);
+    Route::middleware(["permission:perform_schedule_masterlist"])->post("/edit-schedule-masterlist/{id}", [ScheduleMasterlistController::class, "editScheduleMasterlist"]);
+    //holidays
+    Route::get("/get-all-holidays", [HolidayController::class, "getAllHolidays"]);
+    Route::get("/get-holiday", [HolidayController::class, "getHoliday"]);
+    Route::get("/export-all-holidays", [HolidayController::class, "exportHolidays"]);
+    Route::middleware(["permission:perform_holidays"])->post("/create-holiday", [HolidayController::class, "createHoliday"]);
+    Route::middleware(["permission:perform_holidays"])->post("/edit-holiday/{id}", [HolidayController::class, "editHoliday"]);
+    //sss
+    Route::get("/get-all-sss", [SSSController::class, "getAllSSS"]);
+    Route::get("/get-sss", [SSSController::class, "getSSS"]);
+    Route::get("/export-all-sss", [SSSController::class, "exportAllSSS"]);
+    Route::middleware(["permission:perform_sss"])->post("/create-sss", [SSSController::class, "createSSS"]);
+    Route::middleware(["permission:perform_sss"])->post("/edit-sss/{id}", [SSSController::class, "editSSS"]);
+    //tax
+    Route::get("/get-all-tax", [TaxController::class, "getAllTax"]);
+    Route::get("/get-tax", [TaxController::class, "getTax"]);
+    Route::get("/export-all-tax", [TaxController::class, "exportAllTax"]);
+    Route::middleware(["permission:perform_tax"])->post("/create-tax", [TaxController::class, "createTax"]);
+    Route::middleware(["permission:perform_tax"])->post("/edit-tax/{id}", [TaxController::class, "editTax"]);
+    //philhealth
+    Route::get("/get-all-philhealth", [PhilhealthController::class, "getAllPhilhealth"]);
+    Route::get("/get-philhealth", [PhilhealthController::class, "getPhilhealth"]);
+    Route::get("/export-all-philhealth", [PhilhealthController::class, "exportAllPhilhealth"]);
+    Route::middleware(["permission:perform_philhealth"])->post("/create-philhealth", [PhilhealthController::class, "createPhilhealth"]);
+    Route::middleware(["permission:perform_philhealth"])->post("/edit-philhealth/{id}", [PhilhealthController::class, "editPhilhealth"]);
+    //pagibig
+    Route::get("/get-all-pagibig", [PagibigController::class, "getAllPagibig"]);
+    Route::get("/get-pagibig", [PagibigController::class, "getPagibig"]);
+    Route::get("/export-all-pagibig", [PagibigController::class, "exportAllPagibig"]);
+    Route::middleware(["permission:perform_pagibig"])->post("/edit-pagibig/{id}", [PagibigController::class, "editPagibig"]);
+    //deductions
+    Route::get("/get-all-deductions", [DeductionsController::class, "getAllDeductions"]);
+    Route::get("/get-deduction", [DeductionsController::class, "getDeduction"]);
+    Route::get("/export-all-deductions", [DeductionsController::class, "exportAllDeductions"]);
+    Route::middleware(["permission:perform_deductions"])->post("/create-deduction", [DeductionsController::class, "createDeduction"]);
+    Route::middleware(["permission:perform_deductions"])->post("/edit-deduction/{id}", [DeductionsController::class, "editDeduction"]);
+    //additional income
+    Route::get("/get-all-additional-income", [AdditionalIncomeController::class, "getAllAdditionalIncome"]);
+    Route::get("/get-additional-income", [AdditionalIncomeController::class, "getAdditionalIncome"]);
+    Route::get("/export-all-additional-income", [AdditionalIncomeController::class, "exportAllAdditionalIncome"]);
+    Route::middleware(["permission:perform_additional_income"])->post("/create-additional-income", [AdditionalIncomeController::class, "createAdditionalIncome"]);
+    Route::middleware(["permission:perform_additional_income"])->post("/edit-additional-income/{id}", [AdditionalIncomeController::class, "editAdditionalIncome"]);
+    //period definition
+    Route::get("/get-all-period-definition", [PeriodDefinitionController::class, "getAllPeriodDefinition"]);
+    Route::get("/get-period-definition", [PeriodDefinitionController::class, "getPeriodDefinition"]);
+    Route::get("/export-all-period-definition", [PeriodDefinitionController::class, "exportAllPeriodDefinition"]);
+    Route::middleware(["permission:perform_period_definition"])->post("/create-period-definition", [PeriodDefinitionController::class, "createPeriodDefinition"]);
+    Route::middleware(["permission:perform_period_definition"])->post("/edit-period-definition/{id}", [PeriodDefinitionController::class, "editPeriodDefinition"]);
+    //cs hub transaction types
+    Route::get("/get-all-cshub-transaction-types", [CSHubTransactionTypeController::class, "getAllCsHubTransactionTypes"]);
+    Route::get("/get-cshub-transaction-types", [CSHubTransactionTypeController::class, "getCsHubTransactionTypes"]);
+    Route::get("/export-all-cshub-transaction-types", [CSHubTransactionTypeController::class, "exportCsHubTransactionTypes"]);
+});

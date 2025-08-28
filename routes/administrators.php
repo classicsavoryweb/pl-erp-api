@@ -1,0 +1,28 @@
+<?php
+
+use App\Http\Controllers\Admin\ActivityLogsController;
+use App\Http\Controllers\Admin\DatabaseBackupsController;
+use App\Http\Controllers\Admin\RolesPermissionController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Route;
+
+// ADMINISTRATOR MODULE
+Route::middleware('auth:sanctum')->group(function() {
+    //roles and permission
+    Route::get("/get-all-activity-logs", [ActivityLogsController::class, "getAllActivityLogs"]);
+    Route::get("/get-all-roles-and-permissions", [RolesPermissionController::class, "getAllRolesAndPermissions"]);
+    Route::get("/get-all-permissions", [RolesPermissionController::class, "getAllPermissions"]);
+    Route::get("/get-all-roles", [RolesPermissionController::class,"getAllRoles"]);
+    Route::middleware(["permission:perform_roles_and_permissions"])->post("/update-or-create-roles-and-permissions", [RolesPermissionController::class, "updateOrCreateNewRole"]);
+    Route::middleware(["permission:perform_roles_and_permissions"])->get("/delete-role/{id}", [RolesPermissionController::class,"deleteRolesAndPermissions"]);
+    //users
+    Route::get('/get-all-users', [UserController::class, "getAllUsers"]);
+    Route::middleware(["permission:perform_users"])->post('/create-user', [AuthController::class, 'createUser']);
+    Route::middleware(["permission:perform_users"])->post("/edit-user/{id}", [UserController::class,"editUser"]);
+    //database backup
+    Route::get("/get-all-database-backups", [DatabaseBackupsController::class, "getAllDatabaseBackups"]);
+    Route::middleware(["permission:perform_database_backups"])->post("/create-database-backup", [DatabaseBackupsController::class,"createDatabaseBackup"]);
+    Route::middleware(["permission:perform_database_backups"])->get('/download-sql-file/{filename}', [DatabaseBackupsController::class, 'downloadSqlFile']);
+
+});
