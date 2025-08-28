@@ -42,6 +42,7 @@ use App\Http\Controllers\Maintenance\PhilhealthController;
 use App\Http\Controllers\Maintenance\PagibigController;
 use App\Http\Controllers\Maintenance\DeductionsController;
 use App\Http\Controllers\Maintenance\AdditionalIncomeController;
+use App\Http\Controllers\Maintenance\PeriodDefinitionController;
 use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Reports\ReportsEmploymentStatusController;
@@ -230,6 +231,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-additional-income", [AdditionalIncomeController::class, "exportAllAdditionalIncome"]);
     Route::middleware(["permission:perform_additional_income"])->post("/create-additional-income", [AdditionalIncomeController::class, "createAdditionalIncome"]);
     Route::middleware(["permission:perform_additional_income"])->post("/edit-additional-income/{id}", [AdditionalIncomeController::class, "editAdditionalIncome"]);
+    //period definition
+    Route::get("/get-all-period-definition", [PeriodDefinitionController::class, "getAllPeriodDefinition"]);
+    Route::get("/get-period-definition", [PeriodDefinitionController::class, "getPeriodDefinition"]);
+    Route::get("/export-all-period-definition", [PeriodDefinitionController::class, "exportAllPeriodDefinition"]);
+    Route::middleware(["permission:perform_period_definition"])->post("/create-period-definition", [PeriodDefinitionController::class, "createPeriodDefinition"]);
+    Route::middleware(["permission:perform_period_definition"])->post("/edit-period-definition/{id}", [PeriodDefinitionController::class, "editPeriodDefinition"]);
 
     // EMPLOYEES MODULE
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);

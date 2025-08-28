@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AdditionalIncome;
 use App\Models\BankAccountType;
+use App\Models\PeriodDefinition;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -39,5 +40,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(PagibigSeeder::class);
         $this->call(DeductionSeeder::class);
         $this->call(AdditionalIncomeSeeder::class);
+        $this->call(PeriodDefinitionSeeder::class);
     }
 }
