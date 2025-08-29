@@ -14,6 +14,7 @@ class AccountController extends Controller
         try {
 
             $accounts = Account::select('acc_no', 'acc_name')
+            ->where('acc_status', 'Active')
             ->groupBy('acc_name', 'acc_no')
             ->orderBy('acc_name')
             ->get();
