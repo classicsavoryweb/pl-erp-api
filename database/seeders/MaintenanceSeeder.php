@@ -42,5 +42,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(AdditionalIncomeSeeder::class);
         $this->call(PeriodDefinitionSeeder::class);
         $this->call(CSHubTransactionTypeSeeder::class);
+        $this->call(AdjustmentTypeSeeder::class);
     }
 }

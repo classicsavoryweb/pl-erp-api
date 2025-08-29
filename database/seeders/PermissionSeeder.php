@@ -79,6 +79,8 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "perform_period_definition"]);
         Permission::firstOrCreate(["name" => "view_cshub_transaction_type"]);
         Permission::firstOrCreate(["name" => "perform_cshub_transaction_type"]);
+        Permission::firstOrCreate(["name" => "view_adjustment_types"]);
+        Permission::firstOrCreate(["name" => "perform_adjustment_types"]);
 
         //employees module
         Permission::firstOrCreate(["name" => "view_employees_module"]);

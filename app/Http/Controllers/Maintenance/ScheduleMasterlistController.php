@@ -46,7 +46,7 @@ class ScheduleMasterlistController extends Controller
 
     public function getScheduleMasterlist(Request $request) {
         try {
-            $schedule_masterlist = ScheduleMasterlist::all();
+            $schedule_masterlist = ScheduleMasterlist::where("status", "active")->get();
             return $this->sendResponse(["schedule_masterlist" => $schedule_masterlist]);
         } catch(Exception $e) {
 

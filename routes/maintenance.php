@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Maintenance\ActingCapacityMaintenanceController;
 use App\Http\Controllers\Maintenance\AdditionalIncomeController;
+use App\Http\Controllers\Maintenance\AdjustmentTypeController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BankAccountTypeController;
 use App\Http\Controllers\Maintenance\BranchController;
@@ -186,4 +187,11 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-cshub-transaction-types", [CSHubTransactionTypeController::class, "getAllCsHubTransactionTypes"]);
     Route::get("/get-cshub-transaction-types", [CSHubTransactionTypeController::class, "getCsHubTransactionTypes"]);
     Route::get("/export-all-cshub-transaction-types", [CSHubTransactionTypeController::class, "exportCsHubTransactionTypes"]);
+    //adjustment types
+    Route::get("/get-all-adjustment-types", [AdjustmentTypeController::class, "getAllAdjustmentTypes"]);
+    Route::get("/get-adjustment-types", [AdjustmentTypeController::class, "getAdjustmentTypes"]);
+    Route::get("/export-all-adjustment-types", [AdjustmentTypeController::class, "exportAdjustmentTypes"]);
+    Route::middleware(["permission:perform_adjustment_types"])->post("/create-adjustment-type", [AdjustmentTypeController::class, "createAdjustmentType"]);
+    Route::middleware(["permission:perform_adjustment_types"])->post("/edit-adjustment-type/{id}", [AdjustmentTypeController::class, "editAdjustmentType"]);
+
 });
