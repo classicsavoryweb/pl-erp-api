@@ -77,6 +77,8 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "perform_additional_income"]);
         Permission::firstOrCreate(["name" => "view_period_definition"]);
         Permission::firstOrCreate(["name" => "perform_period_definition"]);
+        Permission::firstOrCreate(["name" => "view_cshub_transaction_type"]);
+        Permission::firstOrCreate(["name" => "perform_cshub_transaction_type"]);
 
         //employees module
         Permission::firstOrCreate(["name" => "view_employees_module"]);
@@ -130,10 +132,10 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "void_all_records_tardiness"]);
 
         //transactions module
-        Permission::firstOrCreate(["name" => "export_all_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "view_transactions_module"]);
         Permission::firstOrCreate(["name" => "view_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "perform_transactions_schedule_time"]);
+        Permission::firstOrCreate(["name" => "export_all_transactions_schedule_time"]);
         Permission::firstOrCreate(["name" => "view_transactions_actual_time"]);
         Permission::firstOrCreate(["name" => "perform_transactions_actual_time"]);
         Permission::firstOrCreate(["name" => "import_transactions_actual_time"]);
