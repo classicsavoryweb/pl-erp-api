@@ -28,7 +28,7 @@ class DeductionExport implements FromCollection, WithHeadings
                 $unique_deductions->amortization_credit_id,
                 $unique_deductions->end_loan_vendor_id,
                 $unique_deductions->end_loan_debit_id,
-                $unique_deductions->end_load_credit_id,
+                $unique_deductions->end_loan_credit_id,
             ];
         });
     }
