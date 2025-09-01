@@ -8,9 +8,10 @@ use App\Models\ScheduleTime;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-class ScheduleTimeImport implements ToCollection, WithHeadingRow
+class ScheduleTimeImport implements ToCollection, WithHeadingRow, WithMultipleSheets
 {
     protected $excludedEmployeeIds;
 
@@ -22,6 +23,13 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow
     public function headingRow(): int
     {
         return 2; 
+    }
+
+    public function sheets(): array
+    {
+        return [
+            0 => $this,
+        ];
     }
 
     public function collection(Collection $collection)

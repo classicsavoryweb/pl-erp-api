@@ -34,25 +34,19 @@ class ActualLogsImport implements ToCollection, WithHeadingRow
                     ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d')
                     : date('Y-m-d', strtotime($row["date"]));
     
-                if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
-                    $latest->punches()->create([
-                        "punch_time" => $punches[0],
+
+                $log = BiotimeLog::create([
+                    "employee_id" => $employee->id,
+                    "biometric_number" => $employee->biometric_number,
+                    "date" => $date,
+                ]);
+
+                foreach ($punches as $punch) {
+                    $log->punches()->create([
+                        "punch_time" => $date." ".$punch,
                         "date" => $date,
                         "branch_id" => null
                     ]);
-                } else {
-                    $log = BiotimeLog::create([
-                        "employee_id" => $employee->id,
-                        "biometric_number" => $employee->biometric_number,
-                        "date" => $date,
-                    ]);
-                    foreach ($punches as $punch) {
-                        $log->punches()->create([
-                            "punch_time" => $punch,
-                            "date" => $date,
-                            "branch_id" => null
-                        ]);
-                    }
                 }
             }
         }

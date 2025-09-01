@@ -718,7 +718,7 @@ class TimeKeepingService
         $hasHolidayLogs = BiotimeLog::where("date", $date)
         ->where("employee_id", $employee->id)
         ->first();
-        $weekDateRange = $this->getCustomWeekRange($date, $cutOff);
+        $weekDateRange = $this->getCustomWeekRange($date, $cutOff, $employee);
         $schedules = ScheduleTime::where("employee_id", $employee->id)
         ->whereBetween("date", [$weekDateRange["start"], $weekDateRange["end"] ])
         ->get();
@@ -782,7 +782,7 @@ class TimeKeepingService
         return $shouldPay;
     }
 
-    private function getCustomWeekRange($date, $cutOff)
+    private function getCustomWeekRange($date, $cutOff, $employee)
     {
         $holidayDate = Carbon::parse($date);
         $startOfWeek = $holidayDate->copy()->startOfWeek(CarbonInterface::MONDAY);
@@ -791,11 +791,19 @@ class TimeKeepingService
         $startDate = Carbon::parse($cutOff["start_time"]);
         $endDate = Carbon::parse($cutOff["end_time"]);
 
-        if ($startOfWeek->lt($startDate)) {
-            $startOfWeek = $startDate;
-        }
         if ($endOfWeek->gt($endDate)) {
-            $endOfWeek = $endDate;
+            $newStart = Carbon::parse($endDate)
+            ->addDay()
+            ->format("Y-m-d");
+
+            $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
+            ->whereBetween("date", [$newStart, $endOfWeek->format("Y-m-d")])
+            ->get();
+
+            if ($timeKeepings->count() === 0) {
+                $endOfWeek = $endDate;
+            }
+
         }
 
         return [
@@ -849,5 +857,71 @@ class TimeKeepingService
         }
 
         return $isComplete;
+    }
+
+    public function getPreviousCutOff($date) {
+        $now = Carbon::parse($date);
+        $day = $now->day;
+
+        if ($day >= 1 && $day <= 15) {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25);
+            $endTime = $now->copy()->startOfMonth()->addDays(9);
+        } else {
+            $startTime = $now->copy()->startOfMonth()->addDays(10);
+            $endTime = $now->copy()->startOfMonth()->addDays(24);
+        }
+
+        return [
+            "start_time" => $startTime->toDateString(),
+            "end_time" => $endTime->toDateString()
+        ];
+    }
+
+    public function deductPreviousPaidHoliday($currentCutOff, $employee) {
+        $deductSpecial = 0;
+        $deductLegal = 0;
+        $deductSpecialOt = 0;
+        $deductLegalOt = 0;
+        $dates = [];
+
+        $weekRange = $this->getPreviousCutOff($currentCutOff["start_time"]);
+
+        $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
+        ->where(function ($query) {
+            $query->where("legal_holiday", "Yes")
+                ->orWhere("special_holiday", "Yes");
+        })
+        ->where("paid_holiday", "Yes")
+        ->whereBetween("date", [$weekRange['start_time'], $weekRange['end_time']])
+        ->get();
+
+        if ($timeKeepings->count() > 0) {
+            foreach ($timeKeepings as $timeKeeping) {
+                $cutOff = $this->getCutOff($timeKeeping->date);
+                $shouldBePaid = $this->payHoliday($timeKeeping->date, $employee, $cutOff);
+    
+                if (!$shouldBePaid) {
+                    if ($timeKeeping->legal_holiday === "Yes") {
+                        $deductLegal += $timeKeeping->legal_holiday_hours;
+                        $deductLegalOt += $timeKeeping->legal_holiday_overtime;
+                    }
+        
+                    if ($timeKeeping->special_holiday === "Yes") {
+                        $deductSpecial += $timeKeeping->special_holiday_hours;
+                        $deductSpecialOt += $timeKeeping->special_holiday_overtime;
+                    }
+                    $dates[] = $timeKeeping->date;
+                }
+    
+            }
+        }
+
+        return [
+            "special_holiday_hours_deduction" => $deductSpecial,
+            "special_holiday_overtime_deduction" => $deductSpecialOt,
+            "legal_holiday_hours_deduction" => $deductLegal,
+            "legal_holiday_overtime_deduction" => $deductLegalOt,
+            "dates" => $dates
+        ];
     }
 }

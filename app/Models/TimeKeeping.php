@@ -36,7 +36,8 @@ class TimeKeeping extends Model
         "branch_id",
         "approved_overtime",
         "final_worked_hours",
-        "cancelled_off_hours"
+        "cancelled_off_hours",
+        "paid_holiday"
     ];
 
     public function employee() {

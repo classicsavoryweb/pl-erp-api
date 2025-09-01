@@ -63,7 +63,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
             if ($timeKeepings->count() > 0) {
                 foreach ($timeKeepings as $timeKeep) {
                     $actualSchedule = ScheduleTime::find($timeKeep->schedule_time_id);
-                    $employee = $actualSchedule->employee;
                     $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
                     $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
                     ->first();
@@ -78,6 +77,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($holiday) {
                         $holidayIsPaid = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff);
+                        if ($holidayIsPaid) {
+                            $timeKeep->update([
+                                "paid_holiday" => "Yes"
+                            ]);
+                        }
                     }
 
                     if ($schedule->selection === "SUSPENSION") {
@@ -207,6 +211,23 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 $adjustments_days = 0;
                 $adjustments_cancelled_off = 0;
 
+                $deductions = $this->timeKeepingService->deductPreviousPaidHoliday($cutOff, $employee);
+                $remarks = null;
+                if (
+                    $deductions['special_holiday_hours_deduction'] > 0 ||
+                    $deductions['special_holiday_overtime_deduction'] > 0 ||
+                    $deductions['legal_holiday_hours_deduction'] > 0 ||
+                    $deductions['legal_holiday_overtime_deduction'] > 0
+                ) {
+                    $special_holiday -= $deductions['special_holiday_hours_deduction'];
+                    $special_holiday_overtime -= $deductions['special_holiday_overtime_deduction'];
+                    $legal_holiday -= $deductions['legal_holiday_hours_deduction'];
+                    $legal_holiday_overtime -= $deductions['legal_holiday_overtime_deduction'];
+                    $regular_overtime += $deductions['special_holiday_overtime_deduction'] + $deductions['legal_holiday_overtime_deduction'];
+                    $dateString = implode(", ", $deductions["dates"]);
+                    $remarks = "Retracted holiday hours from previous cutoff: " . $dateString;
+                }
+
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut-off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
@@ -224,7 +245,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     "travel_time" => $travel_time,
                     "tardiness" => $tardiness,
                     "branch_id" => $timeKeepings[0]->branch_id,
-                    "adjustment_amount" => $adjustment_amount
+                    "adjustment_amount" => $adjustment_amount,
+                    "remarks" => $remarks
                 ]);
 
                 $previousCutOff = $this->getPreviousCutOff($cutOff["start_time"]);
@@ -282,7 +304,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "regular_days" => $regular_days,
                         "adjustment_amount" => $adjustment_amount,
                         "cancelled_off" => $this->formatHours($cancelled_off),
-                        "remarks" => "With adjustments"
+                        "remarks" => $timeKeepingSummary->remarks ? $timeKeepingSummary->remarks . " | With adjustments"  : "With adjustments"
                     ]);
                 }
 

@@ -8,14 +8,22 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Illuminate\Support\Facades\Log;
 
-class OvertimeImport implements ToCollection, WithHeadingRow
+class OvertimeImport implements ToCollection, WithHeadingRow, WithMultipleSheets
 {
     public function headingRow(): int
     {
         return 1; 
+    }
+
+    public function sheets(): array
+    {
+        return [
+            0 => $this,
+        ];
     }
 
     public function collection(Collection $collection)
