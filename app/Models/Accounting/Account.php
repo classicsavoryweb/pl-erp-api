@@ -10,4 +10,5 @@ class Account extends Model
     use HasFactory;
     protected $connection="apsys";
     protected $table="tbl_account";
+
 }

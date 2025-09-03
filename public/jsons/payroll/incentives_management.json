@@ -1,0 +1,8872 @@
+{
+  "tbl_positionmanagement": [
+    {
+      "employee_id": "1",
+      "employee_id2": "0000002",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "2",
+      "employee_id2": "0000010",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "3",
+      "employee_id2": "0000013",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "4",
+      "employee_id2": "0000022",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "5",
+      "employee_id2": "0000028",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "6",
+      "employee_id2": "0000031",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "7",
+      "employee_id2": "0000041",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "8",
+      "employee_id2": "0000095",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "9",
+      "employee_id2": "0000096",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "10",
+      "employee_id2": "0000112",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "11",
+      "employee_id2": "0000190",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "12",
+      "employee_id2": "0000199",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "13",
+      "employee_id2": "0000256",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "14",
+      "employee_id2": "0000344",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "15",
+      "employee_id2": "0000348",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "16",
+      "employee_id2": "0000365",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "17",
+      "employee_id2": "0000377",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "18",
+      "employee_id2": "0000389",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "19",
+      "employee_id2": "0000458",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "20",
+      "employee_id2": "0000499",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "21",
+      "employee_id2": "0000566",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "22",
+      "employee_id2": "0000666",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "23",
+      "employee_id2": "0000928",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "24",
+      "employee_id2": "0001010",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "25",
+      "employee_id2": "0001070",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "26",
+      "employee_id2": "0001223",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "27",
+      "employee_id2": "0001351",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "28",
+      "employee_id2": "0001352",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "29",
+      "employee_id2": "0001922",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "30",
+      "employee_id2": "0001925",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "31",
+      "employee_id2": "0001939",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "32",
+      "employee_id2": "0001957",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "33",
+      "employee_id2": "0002024",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "34",
+      "employee_id2": "0002044",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "35",
+      "employee_id2": "0002053",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "36",
+      "employee_id2": "0003012",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "37",
+      "employee_id2": "0003015",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "38",
+      "employee_id2": "0003016",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "39",
+      "employee_id2": "0003021",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "40",
+      "employee_id2": "0003023",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "41",
+      "employee_id2": "0003035",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "42",
+      "employee_id2": "0003050",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "43",
+      "employee_id2": "0003057",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "44",
+      "employee_id2": "0003068",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "45",
+      "employee_id2": "0003076",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "46",
+      "employee_id2": "0003079",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "47",
+      "employee_id2": "0003173",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "48",
+      "employee_id2": "0003201",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "49",
+      "employee_id2": "0003215",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "50",
+      "employee_id2": "0003265",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "51",
+      "employee_id2": "0003314",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "52",
+      "employee_id2": "0003315",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "53",
+      "employee_id2": "0003317",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "54",
+      "employee_id2": "0003322",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "55",
+      "employee_id2": "0003327",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "56",
+      "employee_id2": "0003329",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "57",
+      "employee_id2": "0003330",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "58",
+      "employee_id2": "0003332",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "59",
+      "employee_id2": "0003339",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "60",
+      "employee_id2": "0003368",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "61",
+      "employee_id2": "0003385",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "62",
+      "employee_id2": "0003388",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "63",
+      "employee_id2": "0003438",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "64",
+      "employee_id2": "0003448",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "65",
+      "employee_id2": "0003470",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "66",
+      "employee_id2": "0003492",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "67",
+      "employee_id2": "0003493",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "68",
+      "employee_id2": "0003503",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "69",
+      "employee_id2": "0003551",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "70",
+      "employee_id2": "0003590",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "71",
+      "employee_id2": "0003637",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "72",
+      "employee_id2": "0003644",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "73",
+      "employee_id2": "0003664",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "74",
+      "employee_id2": "0003670",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "75",
+      "employee_id2": "0003680",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "76",
+      "employee_id2": "0003684",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "77",
+      "employee_id2": "0003688",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "78",
+      "employee_id2": "0003704",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "79",
+      "employee_id2": "0003747",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "80",
+      "employee_id2": "0003771",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "81",
+      "employee_id2": "0003782",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "82",
+      "employee_id2": "0003806",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "83",
+      "employee_id2": "0003810",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "84",
+      "employee_id2": "0003852",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "85",
+      "employee_id2": "0003866",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "86",
+      "employee_id2": "0003868",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "87",
+      "employee_id2": "0003880",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "88",
+      "employee_id2": "0003888",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "89",
+      "employee_id2": "0003906",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "90",
+      "employee_id2": "0003912",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "91",
+      "employee_id2": "0003925",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "92",
+      "employee_id2": "0003931",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "93",
+      "employee_id2": "0003934",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "94",
+      "employee_id2": "0003946",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "95",
+      "employee_id2": "0003967",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "96",
+      "employee_id2": "0003968",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "97",
+      "employee_id2": "0003978",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "98",
+      "employee_id2": "0004031",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "99",
+      "employee_id2": "0004060",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "100",
+      "employee_id2": "0004096",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "101",
+      "employee_id2": "0004113",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "102",
+      "employee_id2": "0004118",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "103",
+      "employee_id2": "0004120",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "104",
+      "employee_id2": "0004151",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "105",
+      "employee_id2": "0004154",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "106",
+      "employee_id2": "0004164",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "107",
+      "employee_id2": "0004181",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "108",
+      "employee_id2": "0004200",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "109",
+      "employee_id2": "0004211",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "110",
+      "employee_id2": "0004226",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "111",
+      "employee_id2": "0004229",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "112",
+      "employee_id2": "0004231",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "113",
+      "employee_id2": "0004246",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "114",
+      "employee_id2": "0004264",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "115",
+      "employee_id2": "0004272",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "116",
+      "employee_id2": "0004320",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "117",
+      "employee_id2": "0004326",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "118",
+      "employee_id2": "0004329",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "119",
+      "employee_id2": "0004345",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "120",
+      "employee_id2": "0004361",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "121",
+      "employee_id2": "0004384",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "122",
+      "employee_id2": "0004385",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "123",
+      "employee_id2": "0004406",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "124",
+      "employee_id2": "0004408",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "125",
+      "employee_id2": "0004419",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "126",
+      "employee_id2": "0004456",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "127",
+      "employee_id2": "0004457",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "128",
+      "employee_id2": "0004460",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "129",
+      "employee_id2": "0004472",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "130",
+      "employee_id2": "0004483",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "131",
+      "employee_id2": "0004533",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "132",
+      "employee_id2": "0004546",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "133",
+      "employee_id2": "0004547",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "134",
+      "employee_id2": "0004570",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "135",
+      "employee_id2": "0004582",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "136",
+      "employee_id2": "0004597",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "137",
+      "employee_id2": "0004609",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "138",
+      "employee_id2": "0004610",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "139",
+      "employee_id2": "0004616",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "140",
+      "employee_id2": "0004623",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "141",
+      "employee_id2": "0004624",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "142",
+      "employee_id2": "0004625",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "143",
+      "employee_id2": "0004634",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "144",
+      "employee_id2": "0004636",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "145",
+      "employee_id2": "0004642",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "146",
+      "employee_id2": "0004648",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "147",
+      "employee_id2": "0004655",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "148",
+      "employee_id2": "0004721",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "149",
+      "employee_id2": "0004732",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "150",
+      "employee_id2": "0004744",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "151",
+      "employee_id2": "0004748",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "152",
+      "employee_id2": "0004753",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "153",
+      "employee_id2": "0004781",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "154",
+      "employee_id2": "0004783",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "155",
+      "employee_id2": "0004795",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "156",
+      "employee_id2": "0004823",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "157",
+      "employee_id2": "0004865",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "158",
+      "employee_id2": "0004879",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "159",
+      "employee_id2": "0004885",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "160",
+      "employee_id2": "0004895",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "161",
+      "employee_id2": "0004913",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "162",
+      "employee_id2": "0004933",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "163",
+      "employee_id2": "0004939",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "164",
+      "employee_id2": "0004943",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "165",
+      "employee_id2": "0004953",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "166",
+      "employee_id2": "0004958",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "167",
+      "employee_id2": "0004967",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "168",
+      "employee_id2": "0004979",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "169",
+      "employee_id2": "0004980",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "170",
+      "employee_id2": "0004998",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "171",
+      "employee_id2": "0005008",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "172",
+      "employee_id2": "0005012",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "173",
+      "employee_id2": "0005034",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "174",
+      "employee_id2": "0005060",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "175",
+      "employee_id2": "0005078",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "176",
+      "employee_id2": "0005085",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "177",
+      "employee_id2": "0005117",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "178",
+      "employee_id2": "0005141",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "179",
+      "employee_id2": "0005220",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "180",
+      "employee_id2": "0005221",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "181",
+      "employee_id2": "0005225",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "182",
+      "employee_id2": "0005236",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "183",
+      "employee_id2": "0005244",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "184",
+      "employee_id2": "0005264",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "185",
+      "employee_id2": "0005269",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "186",
+      "employee_id2": "0005274",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "187",
+      "employee_id2": "0005286",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "188",
+      "employee_id2": "0005316",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "189",
+      "employee_id2": "0005338",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "190",
+      "employee_id2": "0005349",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "191",
+      "employee_id2": "0005352",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "192",
+      "employee_id2": "0005364",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "193",
+      "employee_id2": "0005369",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "194",
+      "employee_id2": "0005386",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "195",
+      "employee_id2": "0005413",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "196",
+      "employee_id2": "0005421",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "197",
+      "employee_id2": "0005434",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "198",
+      "employee_id2": "0005435",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "199",
+      "employee_id2": "0005454",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "200",
+      "employee_id2": "0005471",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "201",
+      "employee_id2": "0005487",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "202",
+      "employee_id2": "0005489",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "203",
+      "employee_id2": "0005493",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "204",
+      "employee_id2": "0005500",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "205",
+      "employee_id2": "0005590",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "206",
+      "employee_id2": "0005599",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "207",
+      "employee_id2": "0005610",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "208",
+      "employee_id2": "0005639",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "209",
+      "employee_id2": "0005666",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "210",
+      "employee_id2": "0005672",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "211",
+      "employee_id2": "0005674",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "212",
+      "employee_id2": "0005677",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "213",
+      "employee_id2": "0005690",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "214",
+      "employee_id2": "0005696",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "215",
+      "employee_id2": "0005703",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "216",
+      "employee_id2": "0005705",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "217",
+      "employee_id2": "0005723",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "218",
+      "employee_id2": "0005724",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "219",
+      "employee_id2": "0005731",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "220",
+      "employee_id2": "0005733",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "221",
+      "employee_id2": "0005753",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "222",
+      "employee_id2": "0005762",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "223",
+      "employee_id2": "0005778",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "224",
+      "employee_id2": "0005779",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "225",
+      "employee_id2": "0005788",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "226",
+      "employee_id2": "0005796",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "227",
+      "employee_id2": "0005800",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "228",
+      "employee_id2": "0005829",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "229",
+      "employee_id2": "0005848",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "230",
+      "employee_id2": "0005857",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "231",
+      "employee_id2": "0005863",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "232",
+      "employee_id2": "0005868",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "233",
+      "employee_id2": "0005879",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "234",
+      "employee_id2": "0005890",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "235",
+      "employee_id2": "0005891",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "236",
+      "employee_id2": "0005901",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "237",
+      "employee_id2": "0005947",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "238",
+      "employee_id2": "0005953",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "239",
+      "employee_id2": "0005957",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "240",
+      "employee_id2": "0005959",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "241",
+      "employee_id2": "0005967",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "242",
+      "employee_id2": "0005977",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "243",
+      "employee_id2": "0005989",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "244",
+      "employee_id2": "0006023",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "245",
+      "employee_id2": "0006031",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "246",
+      "employee_id2": "0006041",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "247",
+      "employee_id2": "0006050",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "248",
+      "employee_id2": "0006055",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "249",
+      "employee_id2": "0006061",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "250",
+      "employee_id2": "0006068",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "251",
+      "employee_id2": "0006093",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "252",
+      "employee_id2": "0006105",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "253",
+      "employee_id2": "0006106",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "254",
+      "employee_id2": "0006113",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "255",
+      "employee_id2": "0006132",
+      "amount": "3800.00",
+      "maxamount": "3800.00"
+    },
+    {
+      "employee_id": "256",
+      "employee_id2": "0006137",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "257",
+      "employee_id2": "0006171",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "258",
+      "employee_id2": "0006199",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "259",
+      "employee_id2": "0006207",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "260",
+      "employee_id2": "0006223",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "261",
+      "employee_id2": "0006231",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "262",
+      "employee_id2": "0006254",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "263",
+      "employee_id2": "0006296",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "264",
+      "employee_id2": "0006310",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "265",
+      "employee_id2": "0006344",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "266",
+      "employee_id2": "0006349",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "267",
+      "employee_id2": "0006352",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "268",
+      "employee_id2": "0006353",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "269",
+      "employee_id2": "0006355",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "270",
+      "employee_id2": "0006367",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "271",
+      "employee_id2": "0006374",
+      "amount": "3750.00",
+      "maxamount": "3750.00"
+    },
+    {
+      "employee_id": "272",
+      "employee_id2": "0006384",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "273",
+      "employee_id2": "0006390",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "274",
+      "employee_id2": "0006395",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "275",
+      "employee_id2": "0006403",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "276",
+      "employee_id2": "0006404",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "277",
+      "employee_id2": "0006428",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "278",
+      "employee_id2": "0006433",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "279",
+      "employee_id2": "0006439",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "280",
+      "employee_id2": "0006462",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "281",
+      "employee_id2": "0006465",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "282",
+      "employee_id2": "0006473",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "283",
+      "employee_id2": "0006490",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "284",
+      "employee_id2": "0006511",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "285",
+      "employee_id2": "0006527",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "286",
+      "employee_id2": "0006538",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "287",
+      "employee_id2": "0006549",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "288",
+      "employee_id2": "0006560",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "289",
+      "employee_id2": "0006561",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "290",
+      "employee_id2": "0006562",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "291",
+      "employee_id2": "0006570",
+      "amount": "3250.00",
+      "maxamount": "3250.00"
+    },
+    {
+      "employee_id": "292",
+      "employee_id2": "0006571",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "293",
+      "employee_id2": "0006578",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "294",
+      "employee_id2": "0006604",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "295",
+      "employee_id2": "0006614",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "296",
+      "employee_id2": "0006629",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "297",
+      "employee_id2": "0006647",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "298",
+      "employee_id2": "0006650",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "299",
+      "employee_id2": "0006671",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "300",
+      "employee_id2": "0006687",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "301",
+      "employee_id2": "0006695",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "302",
+      "employee_id2": "0006705",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "303",
+      "employee_id2": "0006706",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "304",
+      "employee_id2": "0006720",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "305",
+      "employee_id2": "0006721",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "306",
+      "employee_id2": "0006726",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "307",
+      "employee_id2": "0006729",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "308",
+      "employee_id2": "0006763",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "309",
+      "employee_id2": "0006772",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "310",
+      "employee_id2": "0006779",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "311",
+      "employee_id2": "0006780",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "312",
+      "employee_id2": "0006782",
+      "amount": "3250.00",
+      "maxamount": "3250.00"
+    },
+    {
+      "employee_id": "313",
+      "employee_id2": "0006783",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "314",
+      "employee_id2": "0006793",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "315",
+      "employee_id2": "0006794",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "316",
+      "employee_id2": "0006825",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "317",
+      "employee_id2": "0006829",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "318",
+      "employee_id2": "0006846",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "319",
+      "employee_id2": "0006859",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "320",
+      "employee_id2": "0006864",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "321",
+      "employee_id2": "0006885",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "322",
+      "employee_id2": "0006888",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "323",
+      "employee_id2": "0006889",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "324",
+      "employee_id2": "0006903",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "325",
+      "employee_id2": "0006934",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "326",
+      "employee_id2": "0006942",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "327",
+      "employee_id2": "0006945",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "328",
+      "employee_id2": "0006967",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "329",
+      "employee_id2": "0006968",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "330",
+      "employee_id2": "0007004",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "331",
+      "employee_id2": "0007016",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "332",
+      "employee_id2": "0007041",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "333",
+      "employee_id2": "0007067",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "334",
+      "employee_id2": "0007074",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "335",
+      "employee_id2": "0007079",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "336",
+      "employee_id2": "0007111",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "337",
+      "employee_id2": "0007126",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "338",
+      "employee_id2": "0007139",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "339",
+      "employee_id2": "0007159",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "340",
+      "employee_id2": "0007163",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "341",
+      "employee_id2": "0007189",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "342",
+      "employee_id2": "0007198",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "343",
+      "employee_id2": "0007199",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "344",
+      "employee_id2": "0007201",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "345",
+      "employee_id2": "0007203",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "346",
+      "employee_id2": "0007204",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "347",
+      "employee_id2": "0007221",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "348",
+      "employee_id2": "0007237",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "349",
+      "employee_id2": "0007239",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "350",
+      "employee_id2": "0007265",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "351",
+      "employee_id2": "0007280",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "352",
+      "employee_id2": "0007297",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "353",
+      "employee_id2": "0007302",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "354",
+      "employee_id2": "0007317",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "355",
+      "employee_id2": "0007355",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "356",
+      "employee_id2": "0007356",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "357",
+      "employee_id2": "0007359",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "358",
+      "employee_id2": "0007361",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "359",
+      "employee_id2": "0007370",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "360",
+      "employee_id2": "0007405",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "361",
+      "employee_id2": "0007412",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "362",
+      "employee_id2": "0007415",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "363",
+      "employee_id2": "0007439",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "364",
+      "employee_id2": "0007447",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "365",
+      "employee_id2": "0007449",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "366",
+      "employee_id2": "0007458",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "367",
+      "employee_id2": "0007459",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "368",
+      "employee_id2": "0007478",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "369",
+      "employee_id2": "0007496",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "370",
+      "employee_id2": "0007585",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "371",
+      "employee_id2": "0007616",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "372",
+      "employee_id2": "0007640",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "373",
+      "employee_id2": "0007649",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "374",
+      "employee_id2": "0007667",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "375",
+      "employee_id2": "0007706",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "376",
+      "employee_id2": "0007717",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "377",
+      "employee_id2": "0007723",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "378",
+      "employee_id2": "0007730",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "379",
+      "employee_id2": "0007745",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "380",
+      "employee_id2": "0007750",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "381",
+      "employee_id2": "0007757",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "382",
+      "employee_id2": "0007781",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "383",
+      "employee_id2": "0007792",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "384",
+      "employee_id2": "0007806",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "385",
+      "employee_id2": "0007814",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "386",
+      "employee_id2": "0007820",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "387",
+      "employee_id2": "0007835",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "388",
+      "employee_id2": "0007844",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "389",
+      "employee_id2": "0007854",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "390",
+      "employee_id2": "0007871",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "391",
+      "employee_id2": "0007882",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "392",
+      "employee_id2": "0007889",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "393",
+      "employee_id2": "0007908",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "394",
+      "employee_id2": "0007936",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "395",
+      "employee_id2": "0007937",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "396",
+      "employee_id2": "0007983",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "397",
+      "employee_id2": "0007984",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "398",
+      "employee_id2": "0007985",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "399",
+      "employee_id2": "0007990",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "400",
+      "employee_id2": "0007994",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "401",
+      "employee_id2": "0008006",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "402",
+      "employee_id2": "0008010",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "403",
+      "employee_id2": "0008017",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "404",
+      "employee_id2": "0008032",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "405",
+      "employee_id2": "0008039",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "406",
+      "employee_id2": "0008069",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "407",
+      "employee_id2": "0008081",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "408",
+      "employee_id2": "0008101",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "409",
+      "employee_id2": "0008102",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "410",
+      "employee_id2": "0008109",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "411",
+      "employee_id2": "0008116",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "412",
+      "employee_id2": "0008119",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "413",
+      "employee_id2": "0008123",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "414",
+      "employee_id2": "0008128",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "415",
+      "employee_id2": "0008168",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "416",
+      "employee_id2": "0008179",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "417",
+      "employee_id2": "0008193",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "418",
+      "employee_id2": "0008208",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "419",
+      "employee_id2": "0008224",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "420",
+      "employee_id2": "0008228",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "421",
+      "employee_id2": "0008233",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "422",
+      "employee_id2": "0008245",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "423",
+      "employee_id2": "0008255",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "424",
+      "employee_id2": "0008260",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "425",
+      "employee_id2": "0008266",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "426",
+      "employee_id2": "0008271",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "427",
+      "employee_id2": "0008272",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "428",
+      "employee_id2": "0008274",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "429",
+      "employee_id2": "0008276",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "430",
+      "employee_id2": "0008280",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "431",
+      "employee_id2": "0008285",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "432",
+      "employee_id2": "0008328",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "433",
+      "employee_id2": "0008371",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "434",
+      "employee_id2": "0008401",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "435",
+      "employee_id2": "0008403",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "436",
+      "employee_id2": "0008420",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "437",
+      "employee_id2": "0008426",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "438",
+      "employee_id2": "0008434",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "439",
+      "employee_id2": "0008445",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "440",
+      "employee_id2": "0008455",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "441",
+      "employee_id2": "0008476",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "442",
+      "employee_id2": "0008492",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "443",
+      "employee_id2": "0008512",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "444",
+      "employee_id2": "0008513",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "445",
+      "employee_id2": "0008520",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "446",
+      "employee_id2": "0008575",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "447",
+      "employee_id2": "0008579",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "448",
+      "employee_id2": "0008591",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "449",
+      "employee_id2": "0008595",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "450",
+      "employee_id2": "0008600",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "451",
+      "employee_id2": "0008607",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "452",
+      "employee_id2": "0008639",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "453",
+      "employee_id2": "0008646",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "454",
+      "employee_id2": "0008654",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "455",
+      "employee_id2": "0008661",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "456",
+      "employee_id2": "0008675",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "457",
+      "employee_id2": "0008678",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "458",
+      "employee_id2": "0008685",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "459",
+      "employee_id2": "0008696",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "460",
+      "employee_id2": "0008741",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "461",
+      "employee_id2": "0008749",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "462",
+      "employee_id2": "0008754",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "463",
+      "employee_id2": "0008777",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "464",
+      "employee_id2": "0008786",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "465",
+      "employee_id2": "0008842",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "466",
+      "employee_id2": "0008845",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "467",
+      "employee_id2": "0008852",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "468",
+      "employee_id2": "0008875",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "469",
+      "employee_id2": "0008904",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "470",
+      "employee_id2": "0008925",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "471",
+      "employee_id2": "0008952",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "472",
+      "employee_id2": "0008975",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "473",
+      "employee_id2": "0008976",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "474",
+      "employee_id2": "0008985",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "475",
+      "employee_id2": "0008986",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "476",
+      "employee_id2": "0009001",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "477",
+      "employee_id2": "0009056",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "478",
+      "employee_id2": "0009060",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "479",
+      "employee_id2": "0009088",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "480",
+      "employee_id2": "0009090",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "481",
+      "employee_id2": "0009094",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "482",
+      "employee_id2": "0009119",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "483",
+      "employee_id2": "0009146",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "484",
+      "employee_id2": "0009170",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "485",
+      "employee_id2": "0009220",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "486",
+      "employee_id2": "0009230",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "487",
+      "employee_id2": "0009242",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "488",
+      "employee_id2": "0009250",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "489",
+      "employee_id2": "0009258",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "490",
+      "employee_id2": "0009270",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "491",
+      "employee_id2": "0009272",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "492",
+      "employee_id2": "0009275",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "493",
+      "employee_id2": "0009276",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "494",
+      "employee_id2": "0009281",
+      "amount": "3500.00",
+      "maxamount": "3500.00"
+    },
+    {
+      "employee_id": "495",
+      "employee_id2": "0009300",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "496",
+      "employee_id2": "0009334",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "497",
+      "employee_id2": "0009353",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "498",
+      "employee_id2": "0009366",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "499",
+      "employee_id2": "0009373",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "500",
+      "employee_id2": "0009381",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "501",
+      "employee_id2": "0009384",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "502",
+      "employee_id2": "0009415",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "503",
+      "employee_id2": "0009417",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "504",
+      "employee_id2": "0009445",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "505",
+      "employee_id2": "0009496",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "506",
+      "employee_id2": "0009497",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "507",
+      "employee_id2": "0009498",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "508",
+      "employee_id2": "0009520",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "509",
+      "employee_id2": "0009530",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "510",
+      "employee_id2": "0009546",
+      "amount": "4750.00",
+      "maxamount": "4750.00"
+    },
+    {
+      "employee_id": "511",
+      "employee_id2": "0009580",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "512",
+      "employee_id2": "0009598",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "513",
+      "employee_id2": "0009619",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "514",
+      "employee_id2": "0009627",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "515",
+      "employee_id2": "0009631",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "516",
+      "employee_id2": "0009672",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "517",
+      "employee_id2": "0009676",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "518",
+      "employee_id2": "0009696",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "519",
+      "employee_id2": "0009720",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "520",
+      "employee_id2": "0009726",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "521",
+      "employee_id2": "0009729",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "522",
+      "employee_id2": "0009754",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "523",
+      "employee_id2": "0009774",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "524",
+      "employee_id2": "0009782",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "525",
+      "employee_id2": "0009791",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "526",
+      "employee_id2": "0009797",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "527",
+      "employee_id2": "0009810",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "528",
+      "employee_id2": "0009823",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "529",
+      "employee_id2": "0009833",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "530",
+      "employee_id2": "0009872",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "531",
+      "employee_id2": "0009874",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "532",
+      "employee_id2": "0009876",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "533",
+      "employee_id2": "0009881",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "534",
+      "employee_id2": "0009895",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "535",
+      "employee_id2": "0009906",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "536",
+      "employee_id2": "0009907",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "537",
+      "employee_id2": "0009925",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "538",
+      "employee_id2": "0009966",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "539",
+      "employee_id2": "0009975",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "540",
+      "employee_id2": "0009997",
+      "amount": "4750.00",
+      "maxamount": "4750.00"
+    },
+    {
+      "employee_id": "541",
+      "employee_id2": "0009998",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "542",
+      "employee_id2": "0010019",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "543",
+      "employee_id2": "0010027",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "544",
+      "employee_id2": "0010049",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "545",
+      "employee_id2": "0010059",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "546",
+      "employee_id2": "0010062",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "547",
+      "employee_id2": "0010071",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "548",
+      "employee_id2": "0010073",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "549",
+      "employee_id2": "0010082",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "550",
+      "employee_id2": "0010084",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "551",
+      "employee_id2": "0010091",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "552",
+      "employee_id2": "0010116",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "553",
+      "employee_id2": "0010152",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "554",
+      "employee_id2": "0010193",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "555",
+      "employee_id2": "0010202",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "556",
+      "employee_id2": "0010215",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "557",
+      "employee_id2": "0010233",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "558",
+      "employee_id2": "0010242",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "559",
+      "employee_id2": "0010262",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "560",
+      "employee_id2": "0010263",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "561",
+      "employee_id2": "0010264",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "562",
+      "employee_id2": "0010280",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "563",
+      "employee_id2": "0010285",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "564",
+      "employee_id2": "0010324",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "565",
+      "employee_id2": "0010340",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "566",
+      "employee_id2": "0010366",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "567",
+      "employee_id2": "0010367",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "568",
+      "employee_id2": "0010370",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "569",
+      "employee_id2": "0010371",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "570",
+      "employee_id2": "0010374",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "571",
+      "employee_id2": "0010392",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "572",
+      "employee_id2": "0010403",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "573",
+      "employee_id2": "0010408",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "574",
+      "employee_id2": "0010430",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "575",
+      "employee_id2": "0010431",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "576",
+      "employee_id2": "007",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "577",
+      "employee_id2": "051",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "578",
+      "employee_id2": "054",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "579",
+      "employee_id2": "1020",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "580",
+      "employee_id2": "1031",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "581",
+      "employee_id2": "104",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "582",
+      "employee_id2": "1056",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "583",
+      "employee_id2": "1058",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "584",
+      "employee_id2": "1084",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "585",
+      "employee_id2": "1094",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "586",
+      "employee_id2": "1125",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "587",
+      "employee_id2": "1147",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "588",
+      "employee_id2": "1253",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "589",
+      "employee_id2": "1259",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "590",
+      "employee_id2": "1266",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "591",
+      "employee_id2": "1283",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "592",
+      "employee_id2": "130",
+      "amount": "2390.00",
+      "maxamount": "2390.00"
+    },
+    {
+      "employee_id": "593",
+      "employee_id2": "1306",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "594",
+      "employee_id2": "1347",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "595",
+      "employee_id2": "1365",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "596",
+      "employee_id2": "139",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "597",
+      "employee_id2": "1423",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "598",
+      "employee_id2": "1434",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "599",
+      "employee_id2": "1466",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "600",
+      "employee_id2": "148",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "601",
+      "employee_id2": "1531",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "602",
+      "employee_id2": "1545",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "603",
+      "employee_id2": "1558",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "604",
+      "employee_id2": "1579",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "605",
+      "employee_id2": "1671",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "606",
+      "employee_id2": "1683",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "607",
+      "employee_id2": "1687",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "608",
+      "employee_id2": "1704",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "609",
+      "employee_id2": "1713",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "610",
+      "employee_id2": "1740",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "611",
+      "employee_id2": "1768",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "612",
+      "employee_id2": "178",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "613",
+      "employee_id2": "1788",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "614",
+      "employee_id2": "1806",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "615",
+      "employee_id2": "1808",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "616",
+      "employee_id2": "1809",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "617",
+      "employee_id2": "1813",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "618",
+      "employee_id2": "1837",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "619",
+      "employee_id2": "1851",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "620",
+      "employee_id2": "1852",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "621",
+      "employee_id2": "1857",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "622",
+      "employee_id2": "186",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "623",
+      "employee_id2": "1871",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "624",
+      "employee_id2": "1881",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "625",
+      "employee_id2": "189",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "626",
+      "employee_id2": "1951",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "627",
+      "employee_id2": "1954",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "628",
+      "employee_id2": "1999",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "629",
+      "employee_id2": "2066",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "630",
+      "employee_id2": "209",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "631",
+      "employee_id2": "2112",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "632",
+      "employee_id2": "214",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "633",
+      "employee_id2": "224",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "634",
+      "employee_id2": "225",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "635",
+      "employee_id2": "235",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "636",
+      "employee_id2": "237",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "637",
+      "employee_id2": "239",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "638",
+      "employee_id2": "259",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "639",
+      "employee_id2": "277",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "640",
+      "employee_id2": "287",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "641",
+      "employee_id2": "3003",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "642",
+      "employee_id2": "314",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "643",
+      "employee_id2": "357",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "644",
+      "employee_id2": "369",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "645",
+      "employee_id2": "384",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "646",
+      "employee_id2": "398",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "647",
+      "employee_id2": "399",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "648",
+      "employee_id2": "448",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "649",
+      "employee_id2": "452",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "650",
+      "employee_id2": "491",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "651",
+      "employee_id2": "519",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "652",
+      "employee_id2": "553",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "653",
+      "employee_id2": "574",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "654",
+      "employee_id2": "619",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "655",
+      "employee_id2": "639",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "656",
+      "employee_id2": "640",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "657",
+      "employee_id2": "765",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "658",
+      "employee_id2": "767",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "659",
+      "employee_id2": "815",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "660",
+      "employee_id2": "843",
+      "amount": "10495.00",
+      "maxamount": "10495.00"
+    },
+    {
+      "employee_id": "661",
+      "employee_id2": "854",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "662",
+      "employee_id2": "900",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "663",
+      "employee_id2": "918",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "664",
+      "employee_id2": "925",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "665",
+      "employee_id2": "973",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "666",
+      "employee_id2": "981",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "667",
+      "employee_id2": "996",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "668",
+      "employee_id2": "0010459",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "669",
+      "employee_id2": "0010484",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "670",
+      "employee_id2": "0010495",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "671",
+      "employee_id2": "0010493",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "672",
+      "employee_id2": "0010494",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "673",
+      "employee_id2": "0010505",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "674",
+      "employee_id2": "0010519",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "675",
+      "employee_id2": "0010514",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "676",
+      "employee_id2": "0010526",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "677",
+      "employee_id2": "0010598",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "678",
+      "employee_id2": "0010611",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "679",
+      "employee_id2": "0010641",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "680",
+      "employee_id2": "0010717",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "681",
+      "employee_id2": "0010768",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "682",
+      "employee_id2": "0010823",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "683",
+      "employee_id2": "0010837",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "684",
+      "employee_id2": "0011250",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "685",
+      "employee_id2": "0011280",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "686",
+      "employee_id2": "0011279",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "687",
+      "employee_id2": "0004665",
+      "amount": "1.00",
+      "maxamount": "2.00"
+    },
+    {
+      "employee_id": "688",
+      "employee_id2": "0007631",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "689",
+      "employee_id2": "0010544",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "690",
+      "employee_id2": "0010589",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "691",
+      "employee_id2": "0010897",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "692",
+      "employee_id2": "0011281",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "693",
+      "employee_id2": "0011322",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "694",
+      "employee_id2": "0009938",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "695",
+      "employee_id2": "0005082",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "696",
+      "employee_id2": "0009527",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "697",
+      "employee_id2": "0009878",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "698",
+      "employee_id2": "0010148",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "699",
+      "employee_id2": "0010453",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "700",
+      "employee_id2": "0010673",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "701",
+      "employee_id2": "0011331",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "702",
+      "employee_id2": "1738",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "703",
+      "employee_id2": "296",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "704",
+      "employee_id2": "0011311",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "705",
+      "employee_id2": "0011340",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "706",
+      "employee_id2": "0011341",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "707",
+      "employee_id2": "0011382",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "708",
+      "employee_id2": "0011383",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "709",
+      "employee_id2": "0011384",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "710",
+      "employee_id2": "0007648",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "711",
+      "employee_id2": "0008553",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "712",
+      "employee_id2": "0010825",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "713",
+      "employee_id2": "0007133",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "714",
+      "employee_id2": "0009646",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "715",
+      "employee_id2": "0009164",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "716",
+      "employee_id2": "0007315",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "717",
+      "employee_id2": "0008326",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "718",
+      "employee_id2": "0005139",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "719",
+      "employee_id2": "0010386",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "720",
+      "employee_id2": "0008665",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "721",
+      "employee_id2": "0007313",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "722",
+      "employee_id2": "0006083",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "723",
+      "employee_id2": "0008203",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "724",
+      "employee_id2": "0008257",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "725",
+      "employee_id2": "0009143",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "726",
+      "employee_id2": "0010149",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "727",
+      "employee_id2": "0010195",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "728",
+      "employee_id2": "0010478",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "729",
+      "employee_id2": "0010518",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "730",
+      "employee_id2": "0010579",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "731",
+      "employee_id2": "0010585",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "732",
+      "employee_id2": "0010631",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "733",
+      "employee_id2": "0010633",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "734",
+      "employee_id2": "0010681",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "735",
+      "employee_id2": "0010703",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "736",
+      "employee_id2": "0011190",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "737",
+      "employee_id2": "0011478",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "738",
+      "employee_id2": "0011502",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "739",
+      "employee_id2": "0007549",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "740",
+      "employee_id2": "0007955",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "741",
+      "employee_id2": "0009448",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "742",
+      "employee_id2": "0009665",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "743",
+      "employee_id2": "0010472",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "744",
+      "employee_id2": "0010548",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "745",
+      "employee_id2": "0011533",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "746",
+      "employee_id2": "0011567",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "747",
+      "employee_id2": "0007428",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "748",
+      "employee_id2": "0007956",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "749",
+      "employee_id2": "0008422",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "750",
+      "employee_id2": "0008485",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "751",
+      "employee_id2": "0008551",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "752",
+      "employee_id2": "0008779",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "753",
+      "employee_id2": "0009101",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "754",
+      "employee_id2": "0009408",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "755",
+      "employee_id2": "0009846",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "756",
+      "employee_id2": "0010088",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "757",
+      "employee_id2": "0010254",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "758",
+      "employee_id2": "0010289",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "759",
+      "employee_id2": "0010296",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "760",
+      "employee_id2": "0010351",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "761",
+      "employee_id2": "0010461",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "762",
+      "employee_id2": "0010473",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "763",
+      "employee_id2": "0010485",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "764",
+      "employee_id2": "0010512",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "765",
+      "employee_id2": "0010686",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "766",
+      "employee_id2": "0010705",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "767",
+      "employee_id2": "0010721",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "768",
+      "employee_id2": "0010722",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "769",
+      "employee_id2": "0010729",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "770",
+      "employee_id2": "0010747",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "771",
+      "employee_id2": "0010748",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "772",
+      "employee_id2": "0010806",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "773",
+      "employee_id2": "0010916",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "774",
+      "employee_id2": "0011007",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "775",
+      "employee_id2": "0011175",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "776",
+      "employee_id2": "0011676",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "777",
+      "employee_id2": "0010070",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "778",
+      "employee_id2": "0006416",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "779",
+      "employee_id2": "0010150",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "780",
+      "employee_id2": "0006921",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "781",
+      "employee_id2": "0007013",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "782",
+      "employee_id2": "0007884",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "783",
+      "employee_id2": "0008117",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "784",
+      "employee_id2": "0008357",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "785",
+      "employee_id2": "0008865",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "786",
+      "employee_id2": "0009642",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "787",
+      "employee_id2": "0010158",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "788",
+      "employee_id2": "0010248",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "789",
+      "employee_id2": "0010517",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "790",
+      "employee_id2": "0010754",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "791",
+      "employee_id2": "0010781",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "792",
+      "employee_id2": "0011012",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "793",
+      "employee_id2": "0011217",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "794",
+      "employee_id2": "0011766",
+      "amount": "10000.00",
+      "maxamount": "10000.00"
+    },
+    {
+      "employee_id": "795",
+      "employee_id2": "0011795",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "796",
+      "employee_id2": "0011796",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "797",
+      "employee_id2": "0011797",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "798",
+      "employee_id2": "0007857",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "799",
+      "employee_id2": "0008061",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "800",
+      "employee_id2": "0008096",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "801",
+      "employee_id2": "0008124",
+      "amount": "2800.00",
+      "maxamount": "2800.00"
+    },
+    {
+      "employee_id": "802",
+      "employee_id2": "0008183",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "803",
+      "employee_id2": "0008409",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "804",
+      "employee_id2": "0008783",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "805",
+      "employee_id2": "0010464",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "806",
+      "employee_id2": "0010696",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "807",
+      "employee_id2": "0010746",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "808",
+      "employee_id2": "0010831",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "809",
+      "employee_id2": "0011102",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "810",
+      "employee_id2": "0011253",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "811",
+      "employee_id2": "0011419",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "812",
+      "employee_id2": "0011505",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "813",
+      "employee_id2": "0011884",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "814",
+      "employee_id2": "0007614",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "815",
+      "employee_id2": "0007827",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "816",
+      "employee_id2": "0008118",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "817",
+      "employee_id2": "0008389",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "818",
+      "employee_id2": "0008415",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "819",
+      "employee_id2": "0008899",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "820",
+      "employee_id2": "0009424",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "821",
+      "employee_id2": "0009509",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "822",
+      "employee_id2": "0009724",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "823",
+      "employee_id2": "0009763",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "824",
+      "employee_id2": "0009867",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "825",
+      "employee_id2": "0010338",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "826",
+      "employee_id2": "0010344",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "827",
+      "employee_id2": "0010604",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "828",
+      "employee_id2": "0010701",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "829",
+      "employee_id2": "0010871",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "830",
+      "employee_id2": "0010945",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "831",
+      "employee_id2": "0010952",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "832",
+      "employee_id2": "0010976",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "833",
+      "employee_id2": "0011231",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "834",
+      "employee_id2": "0011376",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "835",
+      "employee_id2": "0007759",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "836",
+      "employee_id2": "0007931",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "837",
+      "employee_id2": "0008971",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "838",
+      "employee_id2": "0009297",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "839",
+      "employee_id2": "0009574",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "840",
+      "employee_id2": "0010349",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "841",
+      "employee_id2": "0010442",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "842",
+      "employee_id2": "0010463",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "843",
+      "employee_id2": "0010827",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "844",
+      "employee_id2": "0010869",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "845",
+      "employee_id2": "0010924",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "846",
+      "employee_id2": "0010955",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "847",
+      "employee_id2": "0011194",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "848",
+      "employee_id2": "0011235",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "849",
+      "employee_id2": "0011265",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "850",
+      "employee_id2": "0011477",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "851",
+      "employee_id2": "0011590",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "852",
+      "employee_id2": "0005239",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "853",
+      "employee_id2": "0006756",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "854",
+      "employee_id2": "0007054",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "855",
+      "employee_id2": "0007252",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "856",
+      "employee_id2": "0007450",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "857",
+      "employee_id2": "0007633",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "858",
+      "employee_id2": "0007860",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "859",
+      "employee_id2": "0010376",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "860",
+      "employee_id2": "0010501",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "861",
+      "employee_id2": "0010674",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "862",
+      "employee_id2": "0010930",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "863",
+      "employee_id2": "0011122",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "864",
+      "employee_id2": "0011186",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "865",
+      "employee_id2": "0011214",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "866",
+      "employee_id2": "0011229",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "867",
+      "employee_id2": "0011352",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "868",
+      "employee_id2": "0011427",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "869",
+      "employee_id2": "0011665",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "870",
+      "employee_id2": "0011668",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "871",
+      "employee_id2": "0004517",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "872",
+      "employee_id2": "0006728",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "873",
+      "employee_id2": "0007838",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "874",
+      "employee_id2": "0008150",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "875",
+      "employee_id2": "0011111",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "876",
+      "employee_id2": "0012143",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "877",
+      "employee_id2": "0010283",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "878",
+      "employee_id2": "0006933",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "879",
+      "employee_id2": "0007743",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "880",
+      "employee_id2": "0008222",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "881",
+      "employee_id2": "0009237",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "882",
+      "employee_id2": "0009567",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "883",
+      "employee_id2": "0010599",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "884",
+      "employee_id2": "0011258",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "885",
+      "employee_id2": "0008484",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "886",
+      "employee_id2": "0010316",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "887",
+      "employee_id2": "0010486",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "888",
+      "employee_id2": "0010573",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "889",
+      "employee_id2": "0011306",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "890",
+      "employee_id2": "0011407",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "891",
+      "employee_id2": "0011436",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "892",
+      "employee_id2": "0011673",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "893",
+      "employee_id2": "0012219",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "894",
+      "employee_id2": "0010401",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "895",
+      "employee_id2": "0011450",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "896",
+      "employee_id2": "0010699",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "897",
+      "employee_id2": "0010974",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "898",
+      "employee_id2": "0012228",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "899",
+      "employee_id2": "0010177",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "900",
+      "employee_id2": "0009748",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "901",
+      "employee_id2": "0011764",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "902",
+      "employee_id2": "0011413",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "903",
+      "employee_id2": "0010913",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "904",
+      "employee_id2": "0010428",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "905",
+      "employee_id2": "0010554",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "906",
+      "employee_id2": "0011391",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "907",
+      "employee_id2": "0011565",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "908",
+      "employee_id2": "0011618",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "909",
+      "employee_id2": "0006701",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "910",
+      "employee_id2": "0008843",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "911",
+      "employee_id2": "0009713",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "912",
+      "employee_id2": "0010042",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "913",
+      "employee_id2": "0010490",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "914",
+      "employee_id2": "0010632",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "915",
+      "employee_id2": "0010661",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "916",
+      "employee_id2": "0011138",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "917",
+      "employee_id2": "0011162",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "918",
+      "employee_id2": "0011476",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "919",
+      "employee_id2": "0011783",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "920",
+      "employee_id2": "0009695",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "921",
+      "employee_id2": "0011034",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "922",
+      "employee_id2": "0011339",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "923",
+      "employee_id2": "0010790",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "924",
+      "employee_id2": "0011365",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "925",
+      "employee_id2": "0011704",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "926",
+      "employee_id2": "0011708",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "927",
+      "employee_id2": "0011753",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "928",
+      "employee_id2": "0011978",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "929",
+      "employee_id2": "0012066",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "930",
+      "employee_id2": "0008615",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "931",
+      "employee_id2": "0009643",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "932",
+      "employee_id2": "0010969",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "933",
+      "employee_id2": "0010988",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "934",
+      "employee_id2": "0011077",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "935",
+      "employee_id2": "0011120",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "936",
+      "employee_id2": "0011274",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "937",
+      "employee_id2": "0011296",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "938",
+      "employee_id2": "0011349",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "939",
+      "employee_id2": "0011350",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "940",
+      "employee_id2": "0011358",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "941",
+      "employee_id2": "0011480",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "942",
+      "employee_id2": "0011579",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "943",
+      "employee_id2": "0011674",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "944",
+      "employee_id2": "0011689",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "945",
+      "employee_id2": "0012042",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "946",
+      "employee_id2": "0011548",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "947",
+      "employee_id2": "0011662",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "948",
+      "employee_id2": "0011854",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "949",
+      "employee_id2": "0012330",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "950",
+      "employee_id2": "0010672",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "951",
+      "employee_id2": "0011152",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "952",
+      "employee_id2": "0011202",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "953",
+      "employee_id2": "0011283",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "954",
+      "employee_id2": "0011431",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "955",
+      "employee_id2": "0011584",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "956",
+      "employee_id2": "0011670",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "957",
+      "employee_id2": "0011903",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "958",
+      "employee_id2": "0012091",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "959",
+      "employee_id2": "0012344",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "960",
+      "employee_id2": "0011438",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "961",
+      "employee_id2": "0011443",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "962",
+      "employee_id2": "0011852",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "963",
+      "employee_id2": "0011950",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "964",
+      "employee_id2": "0010191",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "965",
+      "employee_id2": "0011440",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "966",
+      "employee_id2": "0011470",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "967",
+      "employee_id2": "0011588",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "968",
+      "employee_id2": "0011893",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "969",
+      "employee_id2": "0012235",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "970",
+      "employee_id2": "0008214",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "971",
+      "employee_id2": "0009028",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "972",
+      "employee_id2": "0009390",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "973",
+      "employee_id2": "0009624",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "974",
+      "employee_id2": "0010922",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "975",
+      "employee_id2": "0011150",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "976",
+      "employee_id2": "0011324",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "977",
+      "employee_id2": "0011401",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "978",
+      "employee_id2": "0011680",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "979",
+      "employee_id2": "0011748",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "980",
+      "employee_id2": "0011798",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "981",
+      "employee_id2": "0011840",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "982",
+      "employee_id2": "0011889",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "983",
+      "employee_id2": "0012147",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "984",
+      "employee_id2": "0012152",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "985",
+      "employee_id2": "0009841",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "986",
+      "employee_id2": "0010732",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "987",
+      "employee_id2": "0011002",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "988",
+      "employee_id2": "0011595",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "989",
+      "employee_id2": "0011639",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "990",
+      "employee_id2": "0011832",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "991",
+      "employee_id2": "0012009",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "992",
+      "employee_id2": "0012242",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "993",
+      "employee_id2": "0012243",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "994",
+      "employee_id2": "0008137",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "995",
+      "employee_id2": "0009367",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "996",
+      "employee_id2": "0010421",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "997",
+      "employee_id2": "0011172",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "998",
+      "employee_id2": "0011375",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "999",
+      "employee_id2": "0011403",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1000",
+      "employee_id2": "0011560",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1001",
+      "employee_id2": "0006222",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1002",
+      "employee_id2": "0011904",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1003",
+      "employee_id2": "0012193",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1004",
+      "employee_id2": "0012266",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1005",
+      "employee_id2": "0011266",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1006",
+      "employee_id2": "0007843",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1007",
+      "employee_id2": "0010956",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1008",
+      "employee_id2": "0012121",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1009",
+      "employee_id2": "0012526",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1010",
+      "employee_id2": "0007521",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1011",
+      "employee_id2": "0010546",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1012",
+      "employee_id2": "0011017",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1013",
+      "employee_id2": "0011065",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1014",
+      "employee_id2": "0011210",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1015",
+      "employee_id2": "0011434",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1016",
+      "employee_id2": "0011596",
+      "amount": "3750.00",
+      "maxamount": "3750.00"
+    },
+    {
+      "employee_id": "1017",
+      "employee_id2": "0011695",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1018",
+      "employee_id2": "0011891",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1019",
+      "employee_id2": "0011915",
+      "amount": "3750.00",
+      "maxamount": "3750.00"
+    },
+    {
+      "employee_id": "1020",
+      "employee_id2": "0004234",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1021",
+      "employee_id2": "0005665",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1022",
+      "employee_id2": "0006405",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1023",
+      "employee_id2": "0007231",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1024",
+      "employee_id2": "0009195",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1025",
+      "employee_id2": "0009816",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1026",
+      "employee_id2": "0010830",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1027",
+      "employee_id2": "0011698",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1028",
+      "employee_id2": "0012281",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1029",
+      "employee_id2": "0012286",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1030",
+      "employee_id2": "0010760",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1031",
+      "employee_id2": "0011402",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1032",
+      "employee_id2": "0011607",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1033",
+      "employee_id2": "0010899",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1034",
+      "employee_id2": "0010787",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1035",
+      "employee_id2": "0012272",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1036",
+      "employee_id2": "0011406",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1037",
+      "employee_id2": "0012276",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1038",
+      "employee_id2": "0012693",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1039",
+      "employee_id2": "0012393",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1040",
+      "employee_id2": "0012249",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1041",
+      "employee_id2": "0010887",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1042",
+      "employee_id2": "0012261",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1043",
+      "employee_id2": "0012295",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "1044",
+      "employee_id2": "0012745",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1045",
+      "employee_id2": "0012703",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1046",
+      "employee_id2": "0012675",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1047",
+      "employee_id2": "0012503",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1048",
+      "employee_id2": "0010892",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1049",
+      "employee_id2": "0011149",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1050",
+      "employee_id2": "0011309",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1051",
+      "employee_id2": "0011444",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1052",
+      "employee_id2": "0011841",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1053",
+      "employee_id2": "0012149",
+      "amount": "4375.00",
+      "maxamount": "4375.00"
+    },
+    {
+      "employee_id": "1054",
+      "employee_id2": "0012263",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1055",
+      "employee_id2": "0012296",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1056",
+      "employee_id2": "0012297",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1057",
+      "employee_id2": "0012310",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "1058",
+      "employee_id2": "0012338",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "1059",
+      "employee_id2": "0012355",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1060",
+      "employee_id2": "0012594",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1061",
+      "employee_id2": "0012746",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1062",
+      "employee_id2": "0012762",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1063",
+      "employee_id2": "0012796",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1064",
+      "employee_id2": "0012343",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1065",
+      "employee_id2": "0008638",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1067",
+      "employee_id2": "0012404",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1068",
+      "employee_id2": "0012823",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1069",
+      "employee_id2": "0012908",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1070",
+      "employee_id2": "0010811",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1071",
+      "employee_id2": "0012871",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "1072",
+      "employee_id2": "0012743",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1073",
+      "employee_id2": "0012914",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1074",
+      "employee_id2": "0013006",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "1075",
+      "employee_id2": "0012166",
+      "amount": "4375.00",
+      "maxamount": "4375.00"
+    },
+    {
+      "employee_id": "1076",
+      "employee_id2": "0012217",
+      "amount": "5375.00",
+      "maxamount": "5375.00"
+    },
+    {
+      "employee_id": "1078",
+      "employee_id2": "0012529",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1079",
+      "employee_id2": "0011730",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1080",
+      "employee_id2": "0010900",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1081",
+      "employee_id2": "0011826",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1082",
+      "employee_id2": "0012481",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1083",
+      "employee_id2": "0012516",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1084",
+      "employee_id2": "0012342",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1085",
+      "employee_id2": "0012689",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1086",
+      "employee_id2": "0012995",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1087",
+      "employee_id2": "0013021",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1088",
+      "employee_id2": "0013107",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1089",
+      "employee_id2": "0013064",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1090",
+      "employee_id2": "0008809",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1091",
+      "employee_id2": "0012759",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1092",
+      "employee_id2": "0012435",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1093",
+      "employee_id2": "0012501",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1094",
+      "employee_id2": "0012536",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1095",
+      "employee_id2": "0012580",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1096",
+      "employee_id2": "0012665",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1097",
+      "employee_id2": "0012544",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1098",
+      "employee_id2": "0011228",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1099",
+      "employee_id2": "0012324",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1100",
+      "employee_id2": "0012381",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1101",
+      "employee_id2": "0012375",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1102",
+      "employee_id2": "0009153",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1103",
+      "employee_id2": "0011189",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1104",
+      "employee_id2": "0009851",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1105",
+      "employee_id2": "0007182",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1106",
+      "employee_id2": "0010628",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1107",
+      "employee_id2": "0008250",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1108",
+      "employee_id2": "0012328",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1109",
+      "employee_id2": "0006887",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1110",
+      "employee_id2": "0010322",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1111",
+      "employee_id2": "0010779",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1112",
+      "employee_id2": "0008577",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1113",
+      "employee_id2": "0013057",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1114",
+      "employee_id2": "0013097",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1115",
+      "employee_id2": "0012309",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1116",
+      "employee_id2": "0012561",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1117",
+      "employee_id2": "0012688",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1118",
+      "employee_id2": "0012880",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1119",
+      "employee_id2": "0011959",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1120",
+      "employee_id2": "0012474",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1121",
+      "employee_id2": "0012555",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1122",
+      "employee_id2": "0012512",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1123",
+      "employee_id2": "0012600",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1124",
+      "employee_id2": "0012633",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1125",
+      "employee_id2": "0012360",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1126",
+      "employee_id2": "0013147",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1127",
+      "employee_id2": "0011292",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1128",
+      "employee_id2": "0007537",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1129",
+      "employee_id2": "0012405",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1130",
+      "employee_id2": "0012300",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1131",
+      "employee_id2": "0012629",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1132",
+      "employee_id2": "0013224",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1133",
+      "employee_id2": "0011315",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1134",
+      "employee_id2": "0012382",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "1135",
+      "employee_id2": "0012369",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1136",
+      "employee_id2": "0012553",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1137",
+      "employee_id2": "0013211",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1138",
+      "employee_id2": "0012640",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1139",
+      "employee_id2": "0012835",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1140",
+      "employee_id2": "0012582",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1141",
+      "employee_id2": "0009652",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1142",
+      "employee_id2": "0010962",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1143",
+      "employee_id2": "0011142",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1144",
+      "employee_id2": "0011167",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1145",
+      "employee_id2": "0012509",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1146",
+      "employee_id2": "0012511",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1147",
+      "employee_id2": "0012637",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1148",
+      "employee_id2": "0012642",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1149",
+      "employee_id2": "0012883",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1150",
+      "employee_id2": "0013259",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1151",
+      "employee_id2": "0013263",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1152",
+      "employee_id2": "0013273",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "1153",
+      "employee_id2": "0012052",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1154",
+      "employee_id2": "0012253",
+      "amount": "3750.00",
+      "maxamount": "3750.00"
+    },
+    {
+      "employee_id": "1155",
+      "employee_id2": "0012371",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1156",
+      "employee_id2": "0012388",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1157",
+      "employee_id2": "0012436",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1158",
+      "employee_id2": "0012537",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1159",
+      "employee_id2": "0012596",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1160",
+      "employee_id2": "0012604",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1161",
+      "employee_id2": "0013299",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1162",
+      "employee_id2": "0013311",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1163",
+      "employee_id2": "0013330",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1164",
+      "employee_id2": "0011545",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1165",
+      "employee_id2": "0011927",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1166",
+      "employee_id2": "0012407",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1167",
+      "employee_id2": "0012361",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1168",
+      "employee_id2": "0012427",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1169",
+      "employee_id2": "0012541",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1170",
+      "employee_id2": "0012546",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1171",
+      "employee_id2": "0012783",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1172",
+      "employee_id2": "0012790",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1173",
+      "employee_id2": "0012928",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1174",
+      "employee_id2": "0012947",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1175",
+      "employee_id2": "0012984",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1176",
+      "employee_id2": "0013078",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1177",
+      "employee_id2": "0010902",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1178",
+      "employee_id2": "0012321",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1179",
+      "employee_id2": "0012352",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1180",
+      "employee_id2": "0012380",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1181",
+      "employee_id2": "0012494",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1182",
+      "employee_id2": "0012540",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1183",
+      "employee_id2": "0012579",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1184",
+      "employee_id2": "0012606",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1185",
+      "employee_id2": "0012616",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1186",
+      "employee_id2": "0012728",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1187",
+      "employee_id2": "0012778",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1188",
+      "employee_id2": "0012850",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1189",
+      "employee_id2": "0012967",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1190",
+      "employee_id2": "0012969",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1191",
+      "employee_id2": "0012981",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1192",
+      "employee_id2": "0009467",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1193",
+      "employee_id2": "0010885",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1194",
+      "employee_id2": "0013523",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1195",
+      "employee_id2": "0013557",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1196",
+      "employee_id2": "0008358",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1197",
+      "employee_id2": "0012563",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "1198",
+      "employee_id2": "0012593",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1199",
+      "employee_id2": "0012657",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1200",
+      "employee_id2": "0012667",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1201",
+      "employee_id2": "0012677",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1202",
+      "employee_id2": "0012870",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1203",
+      "employee_id2": "0012893",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1204",
+      "employee_id2": "0012951",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1205",
+      "employee_id2": "0012980",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1206",
+      "employee_id2": "0013023",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1207",
+      "employee_id2": "0013066",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1208",
+      "employee_id2": "0013179",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1209",
+      "employee_id2": "0013549",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1210",
+      "employee_id2": "0013573",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1211",
+      "employee_id2": "0009687",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1212",
+      "employee_id2": "0010776",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1213",
+      "employee_id2": "0010844",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1214",
+      "employee_id2": "0011108",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1215",
+      "employee_id2": "0011181",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1216",
+      "employee_id2": "0011380",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1217",
+      "employee_id2": "0011484",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1218",
+      "employee_id2": "0012241",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1219",
+      "employee_id2": "0012319",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1220",
+      "employee_id2": "0012498",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1221",
+      "employee_id2": "0012520",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1222",
+      "employee_id2": "0012602",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1223",
+      "employee_id2": "0012744",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1224",
+      "employee_id2": "0012682",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1225",
+      "employee_id2": "0012886",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1226",
+      "employee_id2": "0012944",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1227",
+      "employee_id2": "0013126",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1228",
+      "employee_id2": "0012303",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1229",
+      "employee_id2": "0013155",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1230",
+      "employee_id2": "0013198",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1231",
+      "employee_id2": "0013668",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1232",
+      "employee_id2": "0013711",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "1233",
+      "employee_id2": "0010236",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1234",
+      "employee_id2": "0011318",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1235",
+      "employee_id2": "0012598",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1236",
+      "employee_id2": "0012612",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1237",
+      "employee_id2": "0012648",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1238",
+      "employee_id2": "0012771",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1239",
+      "employee_id2": "0012828",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1240",
+      "employee_id2": "0012889",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1241",
+      "employee_id2": "0012890",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1242",
+      "employee_id2": "0013040",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1243",
+      "employee_id2": "0013698",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1244",
+      "employee_id2": "0010880",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1245",
+      "employee_id2": "0011282",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1246",
+      "employee_id2": "0011716",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1247",
+      "employee_id2": "0012572",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1248",
+      "employee_id2": "0012631",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1249",
+      "employee_id2": "0013137",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1250",
+      "employee_id2": "0013343",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1251",
+      "employee_id2": "0013714",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1252",
+      "employee_id2": "0009785",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1253",
+      "employee_id2": "0010843",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1254",
+      "employee_id2": "0010917",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1255",
+      "employee_id2": "0011691",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1256",
+      "employee_id2": "0011767",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1257",
+      "employee_id2": "0012385",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1258",
+      "employee_id2": "0012515",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1259",
+      "employee_id2": "0012661",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1260",
+      "employee_id2": "0012672",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1261",
+      "employee_id2": "0012692",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1262",
+      "employee_id2": "0012717",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1263",
+      "employee_id2": "0012775",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1264",
+      "employee_id2": "0012812",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1265",
+      "employee_id2": "0013095",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1266",
+      "employee_id2": "0013122",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1267",
+      "employee_id2": "0013172",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1268",
+      "employee_id2": "0013351",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1269",
+      "employee_id2": "0013133",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1270",
+      "employee_id2": "0013845",
+      "amount": "3750.00",
+      "maxamount": "3750.00"
+    },
+    {
+      "employee_id": "1271",
+      "employee_id2": "0009610",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1272",
+      "employee_id2": "0012879",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1273",
+      "employee_id2": "0012913",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1274",
+      "employee_id2": "0013046",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1275",
+      "employee_id2": "0013189",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1276",
+      "employee_id2": "0013844",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1277",
+      "employee_id2": "0009386",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1278",
+      "employee_id2": "0011571",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1279",
+      "employee_id2": "0011777",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1280",
+      "employee_id2": "0012363",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1281",
+      "employee_id2": "0012799",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1282",
+      "employee_id2": "0012804",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1283",
+      "employee_id2": "0012826",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1284",
+      "employee_id2": "0012833",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1285",
+      "employee_id2": "0012906",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1286",
+      "employee_id2": "0013068",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1287",
+      "employee_id2": "0013123",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1288",
+      "employee_id2": "0013176",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1289",
+      "employee_id2": "0013242",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1290",
+      "employee_id2": "0013331",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1291",
+      "employee_id2": "0013332",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1292",
+      "employee_id2": "0013345",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1293",
+      "employee_id2": "0013378",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1294",
+      "employee_id2": "0013458",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1295",
+      "employee_id2": "0013920",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1296",
+      "employee_id2": "0011257",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1297",
+      "employee_id2": "0012418",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1298",
+      "employee_id2": "0012440",
+      "amount": "4000.00",
+      "maxamount": "4000.00"
+    },
+    {
+      "employee_id": "1299",
+      "employee_id2": "0012664",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1300",
+      "employee_id2": "0012770",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1301",
+      "employee_id2": "0012862",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1302",
+      "employee_id2": "0012837",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1303",
+      "employee_id2": "0013045",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1304",
+      "employee_id2": "0013138",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1305",
+      "employee_id2": "0013229",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1306",
+      "employee_id2": "0013448",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1307",
+      "employee_id2": "0013496",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1308",
+      "employee_id2": "0013500",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1309",
+      "employee_id2": "0013533",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1310",
+      "employee_id2": "0010833",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1311",
+      "employee_id2": "0012347",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1312",
+      "employee_id2": "0013221",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1313",
+      "employee_id2": "0013452",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1314",
+      "employee_id2": "0013995",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1315",
+      "employee_id2": "0012287",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1316",
+      "employee_id2": "0012288",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1317",
+      "employee_id2": "0012373",
+      "amount": "5000.00",
+      "maxamount": "5000.00"
+    },
+    {
+      "employee_id": "1318",
+      "employee_id2": "0012530",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1319",
+      "employee_id2": "0012605",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1320",
+      "employee_id2": "0012840",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1321",
+      "employee_id2": "0012899",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1322",
+      "employee_id2": "0012950",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1323",
+      "employee_id2": "0013055",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1324",
+      "employee_id2": "0013100",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1325",
+      "employee_id2": "0013209",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1326",
+      "employee_id2": "0013212",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1327",
+      "employee_id2": "0013291",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1328",
+      "employee_id2": "0013550",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1329",
+      "employee_id2": "0009888",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1330",
+      "employee_id2": "0010901",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1331",
+      "employee_id2": "0010935",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1332",
+      "employee_id2": "0011425",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1333",
+      "employee_id2": "0012650",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1334",
+      "employee_id2": "0012814",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1335",
+      "employee_id2": "0013101",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1336",
+      "employee_id2": "0013256",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1337",
+      "employee_id2": "0013376",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1338",
+      "employee_id2": "0013503",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1339",
+      "employee_id2": "0013658",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1340",
+      "employee_id2": "0013782",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1341",
+      "employee_id2": "0014065",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1342",
+      "employee_id2": "0014111",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1343",
+      "employee_id2": "0010550",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1344",
+      "employee_id2": "0011735",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1345",
+      "employee_id2": "0011738",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1346",
+      "employee_id2": "0012851",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1347",
+      "employee_id2": "0013429",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1348",
+      "employee_id2": "0013462",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1349",
+      "employee_id2": "0013539",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1350",
+      "employee_id2": "0013656",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1351",
+      "employee_id2": "0013665",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1352",
+      "employee_id2": "0013674",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1353",
+      "employee_id2": "0014128",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1354",
+      "employee_id2": "0014142",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1355",
+      "employee_id2": "0014175",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1356",
+      "employee_id2": "0014182",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1357",
+      "employee_id2": "0009205",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1358",
+      "employee_id2": "0012761",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1359",
+      "employee_id2": "0012868",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1360",
+      "employee_id2": "0012970",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1361",
+      "employee_id2": "0014200",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1362",
+      "employee_id2": "0014226",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1363",
+      "employee_id2": "0014284",
+      "amount": "2500.00",
+      "maxamount": "2500.00"
+    },
+    {
+      "employee_id": "1364",
+      "employee_id2": "0012668",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1365",
+      "employee_id2": "0012718",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1366",
+      "employee_id2": "0013134",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1367",
+      "employee_id2": "0013285",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1368",
+      "employee_id2": "0013411",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1369",
+      "employee_id2": "0013509",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1370",
+      "employee_id2": "0013602",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1371",
+      "employee_id2": "0013613",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1372",
+      "employee_id2": "0013836",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1373",
+      "employee_id2": "0014323",
+      "amount": "4500.00",
+      "maxamount": "4500.00"
+    },
+    {
+      "employee_id": "1374",
+      "employee_id2": "0010716",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1375",
+      "employee_id2": "0011237",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1376",
+      "employee_id2": "0011768",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1377",
+      "employee_id2": "0012776",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1378",
+      "employee_id2": "0012852",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1379",
+      "employee_id2": "0013000",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1380",
+      "employee_id2": "0013043",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1381",
+      "employee_id2": "0013194",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1382",
+      "employee_id2": "0013367",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1383",
+      "employee_id2": "0013402",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1384",
+      "employee_id2": "0013468",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1385",
+      "employee_id2": "0013505",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1386",
+      "employee_id2": "0013538",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1387",
+      "employee_id2": "0013584",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1388",
+      "employee_id2": "0013685",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1389",
+      "employee_id2": "0013762",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1390",
+      "employee_id2": "0013888",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1391",
+      "employee_id2": "0013853",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1392",
+      "employee_id2": "0014332",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1393",
+      "employee_id2": "0014339",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1394",
+      "employee_id2": "0013596",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1395",
+      "employee_id2": "0013940",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1396",
+      "employee_id2": "0014353",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1397",
+      "employee_id2": "0014360",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1398",
+      "employee_id2": "0012773",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1399",
+      "employee_id2": "0012930",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1400",
+      "employee_id2": "0012974",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1401",
+      "employee_id2": "0013160",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1402",
+      "employee_id2": "0013236",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1403",
+      "employee_id2": "0013249",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1404",
+      "employee_id2": "0013315",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1405",
+      "employee_id2": "0013423",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1406",
+      "employee_id2": "0013488",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1407",
+      "employee_id2": "0013637",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1408",
+      "employee_id2": "0013691",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1409",
+      "employee_id2": "0013833",
+      "amount": "3375.00",
+      "maxamount": "3375.00"
+    },
+    {
+      "employee_id": "1410",
+      "employee_id2": "0013889",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1411",
+      "employee_id2": "0014394",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1412",
+      "employee_id2": "0012274",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1413",
+      "employee_id2": "0014435",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1414",
+      "employee_id2": "0014441",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1415",
+      "employee_id2": "0011739",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1416",
+      "employee_id2": "0012733",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1417",
+      "employee_id2": "0013029",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1418",
+      "employee_id2": "0013120",
+      "amount": "3200.00",
+      "maxamount": "3200.00"
+    },
+    {
+      "employee_id": "1419",
+      "employee_id2": "0013438",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1420",
+      "employee_id2": "0013632",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1421",
+      "employee_id2": "0013686",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1422",
+      "employee_id2": "0013783",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1423",
+      "employee_id2": "0013852",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1424",
+      "employee_id2": "0013868",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1425",
+      "employee_id2": "0013869",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1426",
+      "employee_id2": "0013988",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1427",
+      "employee_id2": "0014004",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1428",
+      "employee_id2": "0014131",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1429",
+      "employee_id2": "0014483",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1430",
+      "employee_id2": "0014484",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1431",
+      "employee_id2": "0014527",
+      "amount": "7750.00",
+      "maxamount": "7750.00"
+    },
+    {
+      "employee_id": "1432",
+      "employee_id2": "0010980",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1433",
+      "employee_id2": "0012628",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1434",
+      "employee_id2": "0012734",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1435",
+      "employee_id2": "0012926",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1436",
+      "employee_id2": "0013233",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1437",
+      "employee_id2": "0013282",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1438",
+      "employee_id2": "0013373",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1439",
+      "employee_id2": "0013441",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1440",
+      "employee_id2": "0013469",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1441",
+      "employee_id2": "0013758",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1442",
+      "employee_id2": "0013907",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1443",
+      "employee_id2": "0014044",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1444",
+      "employee_id2": "0014140",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1445",
+      "employee_id2": "0014174",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1446",
+      "employee_id2": "0014548",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1447",
+      "employee_id2": "0014569",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1448",
+      "employee_id2": "0012547",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1449",
+      "employee_id2": "0012757",
+      "amount": "2750.00",
+      "maxamount": "2750.00"
+    },
+    {
+      "employee_id": "1450",
+      "employee_id2": "0013158",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1451",
+      "employee_id2": "0013180",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1452",
+      "employee_id2": "0013277",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1453",
+      "employee_id2": "0013599",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1454",
+      "employee_id2": "0013689",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1455",
+      "employee_id2": "0013710",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1456",
+      "employee_id2": "0013788",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1457",
+      "employee_id2": "0013965",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1458",
+      "employee_id2": "0013987",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1459",
+      "employee_id2": "0014016",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1460",
+      "employee_id2": "0014020",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1461",
+      "employee_id2": "0014144",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1462",
+      "employee_id2": "0014602",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1463",
+      "employee_id2": "0014596",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    },
+    {
+      "employee_id": "1464",
+      "employee_id2": "0011558",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1465",
+      "employee_id2": "0012963",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1466",
+      "employee_id2": "0014078",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1467",
+      "employee_id2": "0014239",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1468",
+      "employee_id2": "0013861",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1469",
+      "employee_id2": "0014173",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1470",
+      "employee_id2": "0013905",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1471",
+      "employee_id2": "0013847",
+      "amount": "2800.00",
+      "maxamount": "2800.00"
+    },
+    {
+      "employee_id": "1472",
+      "employee_id2": "0012311",
+      "amount": "3000.00",
+      "maxamount": "3000.00"
+    },
+    {
+      "employee_id": "1473",
+      "employee_id2": "0012327",
+      "amount": "3500.00",
+      "maxamount": "3500.00"
+    },
+    {
+      "employee_id": "1474",
+      "employee_id2": "0012753",
+      "amount": "2900.00",
+      "maxamount": "2900.00"
+    },
+    {
+      "employee_id": "1475",
+      "employee_id2": "0013032",
+      "amount": "3488.00",
+      "maxamount": "3488.00"
+    },
+    {
+      "employee_id": "1476",
+      "employee_id2": "0013980",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1477",
+      "employee_id2": "0014186",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1478",
+      "employee_id2": "0014228",
+      "amount": "2000.00",
+      "maxamount": "2000.00"
+    },
+    {
+      "employee_id": "1479",
+      "employee_id2": "0014628",
+      "amount": "5695.00",
+      "maxamount": "5695.00"
+    },
+    {
+      "employee_id": "1480",
+      "employee_id2": "0014665",
+      "amount": "0.00",
+      "maxamount": "0.00"
+    }
+  ]
+}
