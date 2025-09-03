@@ -184,7 +184,7 @@ class ActualTimeController extends Controller
                             ->where("id", $punch["id"])
                             ->update([
                                 "punch_time" => $punch["punch_time"],
-                                "remarks" => "Edited by ". $user->full_name."Original log ".$origPunch->punch_time
+                                "remarks" => "Edited by ". $user->full_name." Original log ".$origPunch->punch_time
                             ]);
                         } else {
                             $biotime->punches()

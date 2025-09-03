@@ -127,6 +127,9 @@ class TimeKeepingService
 
             if ($specialHoliday === "Yes") {
                 $specialHolidayHours = $totalHolidayWorkedHours;
+                if ($totalHolidayWorkedHours < $hours) {
+                    $specialHolidayHours = $hours; 
+                }
                 $specialHolidayOvertime = $overtime;
             }
 
@@ -256,8 +259,18 @@ class TimeKeepingService
             if ($workHours >= 4 && $workHours <= 5) {
                 $workHours = $schedule->total_hours / 2;
             } else if ($workHours >= 6) {
-                $workHours = $workHours - ($scheduledBreakInMinutes / 60);
-                $undertime = $scheduledBreakInMinutes;
+                // $workHours = $workHours - ($scheduledBreakInMinutes / 60);
+
+                // if ($hours - $workHours > 0 && $workHours < $hours) {
+                //     $undertime = ($hours - $workHours) * 60;
+                // }
+                // $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
+
+                if ($parsedLastPunch->lt($scheduleEnd)) {
+                    $undertime = $scheduleEnd->diffInMinutes($parsedLastPunch);
+                }
+
+                
             }
         }
 
@@ -375,6 +388,7 @@ class TimeKeepingService
         ) {
             $tardiness = 0;
             $undertime = 0;
+            $workHours = 0;
             if ($schedule->selection == "NO SCHEDULE") {
                 $overtime = $decimalHours;
             }
@@ -430,14 +444,16 @@ class TimeKeepingService
             $isExisting = $model->where("employee_id", $employee->id)
             ->where("biotime_log_id", $log->id)
             ->where("date" , $log->date)
-            ->first();
+            ->get();
 
             if ($isExisting) {
-                $payment = TimeKeepingPayment::where("timekeeping_id", $isExisting->id)->first();
-                if ($payment) {
-                    $payment->delete();
+                foreach ($isExisting as $t) {
+                    $payment = TimeKeepingPayment::where("timekeeping_id", $t->id)->first();
+                    if ($payment) {
+                        $payment->delete();
+                    }
+                    $t->delete();
                 }
-                $isExisting->delete();
             }
 
             if (
@@ -463,20 +479,26 @@ class TimeKeepingService
             }
 
             if ($holiday) {
-                if ($workHours >= $schedule->total_hours) {
-                    if ($legalHoliday === "Yes") {
-                        $legalHolidayHours = $hours;
-                    } else if ($specialHoliday === "Yes") {
-                        $specialHolidayHours = $hours;
-                    }
-                } else {
-                    $holidayHours = $workHours > $hours ? $hours : $workHours;
-                    if ($legalHoliday === "Yes") {
-                        $legalHolidayHours = $hours; 
-                    } else if ($specialHoliday === "Yes") {
-                        $specialHolidayHours = $holidayHours;
-                        $finalWorkHours = $hours;
-                    }
+                // if ($workHours >= $schedule->total_hours) {
+                //     if ($legalHoliday === "Yes") {
+                //         $legalHolidayHours = $hours;
+                //     } else if ($specialHoliday === "Yes") {
+                //         $specialHolidayHours = $hours;
+                //     }
+                // } else {
+                //     $holidayHours = $workHours > $hours ? $hours : $workHours;
+                //     if ($legalHoliday === "Yes") {
+                //         $legalHolidayHours = $hours; 
+                //     } else if ($specialHoliday === "Yes") {
+                //         $specialHolidayHours = $holidayHours;
+                //         $finalWorkHours = $hours;
+                //     }
+                // }
+
+                if ($legalHoliday === "Yes") {
+                    $legalHolidayHours = $hours;
+                } else if ($specialHoliday === "Yes") {
+                    $specialHolidayHours = $hours;
                 }
             }
 
@@ -712,7 +734,7 @@ class TimeKeepingService
         return $formattedHours;
     }
 
-    public function payHoliday($date, $employee, $cutOff) {
+    public function payHoliday($date, $employee, $cutOff, ?Holiday $holiday = null) {
         $shouldPay = true;
         $holidayDate = Carbon::parse($date);
         $hasHolidayLogs = BiotimeLog::where("date", $date)
@@ -733,6 +755,11 @@ class TimeKeepingService
                     return $schedule;
                 }
             });
+            $noSchedules = $schedules->filter(function ($schedule) {
+                if (in_array($schedule->timetable, ["NO SCHEDULE"])) {
+                    return $schedule;
+                }
+            });
 
             foreach ($otherSchedules as $schedule) {
                 $log = BiotimeLog::where("date", $schedule->date)
@@ -745,6 +772,22 @@ class TimeKeepingService
 
             if ($hasLeaveOrSuspension) {
                 $shouldPay = false;
+            }
+
+            if ($holiday && $noSchedules->count() > 1 && $holiday->required_days >= 5) {
+                $noSchedWithoutLogs = 0;
+                foreach ($noSchedules as $noSched) {
+                    $noSchedLogs = BiotimeLog::where("date", $noSched->date)
+                    ->where("employee_id", $employee->id)
+                    ->first();
+
+                    if (!$noSchedLogs) {
+                        $noSchedWithoutLogs += 1;
+                    }
+                }
+                if ($noSchedWithoutLogs > 1) {
+                    $shouldPay = false;
+                }
             }
         }
 
@@ -897,8 +940,12 @@ class TimeKeepingService
 
         if ($timeKeepings->count() > 0) {
             foreach ($timeKeepings as $timeKeeping) {
+                $holiday = Holiday::where("date", $timeKeeping->date)
+                ->whereHas("branches", function ($query) use ($timeKeeping) {
+                    $query->where("branch_id", $timeKeeping->branch_id);
+                })->first();
                 $cutOff = $this->getCutOff($timeKeeping->date);
-                $shouldBePaid = $this->payHoliday($timeKeeping->date, $employee, $cutOff);
+                $shouldBePaid = $this->payHoliday($timeKeeping->date, $employee, $cutOff, $holiday);
     
                 if (!$shouldBePaid) {
                     if ($timeKeeping->legal_holiday === "Yes") {

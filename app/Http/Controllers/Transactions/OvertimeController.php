@@ -74,7 +74,7 @@ class OvertimeController extends Controller
                 $start_time = $year . '-' . $request->cutoff['start_time'];
                 $end_time = $year . '-' . $request->cutoff['end_time'];
 
-                $overtime = $overtime->whereBetween("date_filed", [$start_time, $end_time]);
+                $overtime = $overtime->whereBetween("overtime_date", [$start_time, $end_time]);
             }
 
             $overtime = $overtime->with([

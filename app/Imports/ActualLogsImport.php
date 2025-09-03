@@ -33,7 +33,19 @@ class ActualLogsImport implements ToCollection, WithHeadingRow
                 $date = is_numeric($row["date"])
                     ? Date::excelToDateTimeObject($row["date"])->format('Y-m-d')
                     : date('Y-m-d', strtotime($row["date"]));
-    
+        
+
+                $isExisting = BiotimeLog::where("employee_id", $employee->id)
+                ->where("biometric_number", $employee->biometric_number)
+                ->where("date", $date)
+                ->get();
+
+                if ($isExisting) {
+                    foreach($isExisting as $record) {
+                        $record->delete();
+                        $record->punches()->delete();
+                    }
+                }
 
                 $log = BiotimeLog::create([
                     "employee_id" => $employee->id,
@@ -42,8 +54,12 @@ class ActualLogsImport implements ToCollection, WithHeadingRow
                 ]);
 
                 foreach ($punches as $punch) {
+                    $newDate = $date;
+                    if (Carbon::parse($punches[0])->gt(Carbon::parse($punch))) {
+                        $newDate = Carbon::parse($date)->addDay()->format("Y-m-d");
+                    }
                     $log->punches()->create([
-                        "punch_time" => $date." ".$punch,
+                        "punch_time" => $newDate." ".$punch,
                         "date" => $date,
                         "branch_id" => null
                     ]);
