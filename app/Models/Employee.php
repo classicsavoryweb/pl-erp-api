@@ -251,6 +251,10 @@ class Employee extends Model
         return $this->hasOne(EmployeeRequirements::class, "employee_id", "id");
     }
 
+    public function incentives_management() {
+        return $this->hasOne(IncentivesManagement::class, "id", "employee_id");
+    }
+
     public function contracts() {
         return $this->hasMany(Contract::class, 'employee_id','id');
     }

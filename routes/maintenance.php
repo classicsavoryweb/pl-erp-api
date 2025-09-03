@@ -9,6 +9,7 @@ use App\Http\Controllers\Maintenance\BranchController;
 use App\Http\Controllers\Maintenance\CoeReasonController;
 use App\Http\Controllers\Maintenance\CSHubTransactionTypeController;
 use App\Http\Controllers\Maintenance\DeductionsController;
+use App\Http\Controllers\Maintenance\IncentivesManagementController;
 use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\HolidayController;
@@ -193,5 +194,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-adjustment-types", [AdjustmentTypeController::class, "exportAdjustmentTypes"]);
     Route::middleware(["permission:perform_adjustment_types"])->post("/create-adjustment-type", [AdjustmentTypeController::class, "createAdjustmentType"]);
     Route::middleware(["permission:perform_adjustment_types"])->post("/edit-adjustment-type/{id}", [AdjustmentTypeController::class, "editAdjustmentType"]);
-
+    //incentives management
+    Route::get("/get-all-incentives-management", [IncentivesManagementController::class, "getAllIncentivesManagement"]);
+    Route::get("/get-incentives-management", [IncentivesManagementController::class, "getIncentivesManagement"]);
+    Route::get("/export-all-incentives-management", [IncentivesManagementController::class, "exportAllIncentivesManagement"]);
+    Route::middleware(["permission:perform_incentives_management"])->post("/create-incentives-management", [IncentivesManagementController::class, "createIncentivesManagement"]);
+    Route::middleware(["permission:perform_incentives_management"])->post("/edit-incentives-management/{id}", [IncentivesManagementController::class, "editIncentivesManagement"]);
 });
