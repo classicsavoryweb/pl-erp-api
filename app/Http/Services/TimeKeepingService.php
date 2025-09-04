@@ -94,7 +94,15 @@ class TimeKeepingService
         })->where("date", $log->date)->first();
 
         $shouldBeHalfDay = false;
-        if ($tardiness >= 120) {
+        if (
+            $tardiness >= 120 &&
+            $schedule->selection !== "Spot Audit" &&
+            $schedule->selection !== "MEI 08:00 TO 06:30" &&
+            $schedule->selection !== "MEI 09:00 TO 19:30" &&
+            $schedule->selection !== "Flex 1" &&
+            $schedule->selection !== "Flex 2" &&
+            strtolower($schedule->selection) !== "flex"
+        ) {
             $workHours = $hours / 2;
             $tardiness = 0;
             $shouldBeHalfDay = true;
@@ -137,54 +145,15 @@ class TimeKeepingService
         }
 
         if (
-            $schedule->selection === "Spot Audit" ||
-            $schedule->selection === "MEI 08:00 TO 06:30" ||
-            $schedule->selection === "MEI 09:00 TO 19:30" ||
-            $schedule->selection === "Flex 1" ||
-            $schedule->selection === "Flex 2"
-        ) {
-            $punches = $biotimePunches;
-            $firstPunch = $punches[0];
-
-            $punchWithTravelTime = $punches->first(function ($punch) {
-                return $punch->branch && $punch->branch->travel_time;
-            });
-
-            if ($punchWithTravelTime) {
-                if ($firstPunch->branch_id === null) {
-                    $travel_time = $punchWithTravelTime->branch ? (int)$punchWithTravelTime->branch->travel_time : 0;
-                } else {
-                    $travel_time = $punchWithTravelTime->branch ? (int)$punchWithTravelTime->branch->travel_time * 2 :  0;
-                }
-            }
-
-            $workHours += (int)$travel_time;
-            $undertime = 0;
-            $tardiness = 0;
-            $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
-            if ($totalWorkedHours < 9.5 && $totalWorkedHours >= 7 ) {
-                $totalWorkedHours = 9.5;
-            }
-            if ($totalWorkedHours > 9.5) {
-                $overtime = $totalWorkedHours - 9.5 < 1 ? 0 : $totalWorkedHours - 9.5;
-            }
-
-            if ($holiday && $legalHoliday === "Yes") {
-                $legalHolidayHours = $totalHolidayWorkedHours;
-                $legalHolidayOvertime = $overtime;
-                $overtime = 0;
-            }
-
-            if ($holiday && $specialHoliday === "Yes") {
-                $specialHolidayHours = $totalHolidayWorkedHours;
-                $specialHolidayOvertime = $overtime;
-                $overtime = 0;
-            }
-        }
-
-        if (
             $biotimePunches->count() === 4 &&
-            strtolower($schedule->selection) !== "flex"
+            (
+                $schedule->selection !== "Spot Audit" &&
+                $schedule->selection !== "MEI 08:00 TO 06:30" &&
+                $schedule->selection !== "MEI 09:00 TO 19:30" &&
+                $schedule->selection !== "Flex 1" &&
+                $schedule->selection !== "Flex 2" &&
+                strtolower($schedule->selection) !== "flex"
+            )
         ) {
             $breaks = $biotimePunches
             ->whereNotIn("id", [$firstPunch->id, $lastPunch->id])
@@ -201,7 +170,14 @@ class TimeKeepingService
 
         if (
             $biotimePunches->count() === 3 &&
-            strtolower($schedule->selection) !== "flex"
+            (
+                $schedule->selection !== "Spot Audit" &&
+                $schedule->selection !== "MEI 08:00 TO 06:30" &&
+                $schedule->selection !== "MEI 09:00 TO 19:30" &&
+                $schedule->selection !== "Flex 1" &&
+                $schedule->selection !== "Flex 2" &&
+                strtolower($schedule->selection) !== "flex"
+            )
         ) {
             $secondPunch = $biotimePunches[1];
             $parsedSecondPunch = Carbon::parse($secondPunch->punch_time)->seconds(0);
@@ -254,7 +230,14 @@ class TimeKeepingService
 
         if (
             $biotimePunches->count() === 2 &&
-            strtolower($schedule->selection) !== "flex"
+            (
+                $schedule->selection !== "Spot Audit" &&
+                $schedule->selection !== "MEI 08:00 TO 06:30" &&
+                $schedule->selection !== "MEI 09:00 TO 19:30" &&
+                $schedule->selection !== "Flex 1" &&
+                $schedule->selection !== "Flex 2" &&
+                strtolower($schedule->selection) !== "flex"
+            )
         ) {
             if ($workHours >= 4 && $workHours <= 5) {
                 $workHours = $schedule->total_hours / 2;
@@ -269,14 +252,19 @@ class TimeKeepingService
                 if ($parsedLastPunch->lt($scheduleEnd)) {
                     $undertime = $scheduleEnd->diffInMinutes($parsedLastPunch);
                 }
-
-                
             }
         }
 
         if (
             $biotimePunches->count() > 4 &&
-            strtolower($schedule->selection) !== "flex"
+            (
+                $schedule->selection !== "Spot Audit" &&
+                $schedule->selection !== "MEI 08:00 TO 06:30" &&
+                $schedule->selection !== "MEI 09:00 TO 19:30" &&
+                $schedule->selection !== "Flex 1" &&
+                $schedule->selection !== "Flex 2" &&
+                strtolower($schedule->selection) !== "flex"
+            )
         ) {
 
             $allPunches = $biotimePunches;
@@ -325,7 +313,14 @@ class TimeKeepingService
         if (
             $scheduleEnd->greaterThan($tenPM) &&
             $parsedLastPunch->greaterThan($tenPM) &&
-            strtolower($schedule->selection) !== "flex"
+            (
+                $schedule->selection !== "Spot Audit" &&
+                $schedule->selection !== "MEI 08:00 TO 06:30" &&
+                $schedule->selection !== "MEI 09:00 TO 19:30" &&
+                $schedule->selection !== "Flex 1" &&
+                $schedule->selection !== "Flex 2" &&
+                strtolower($schedule->selection) !== "flex"
+            )
         ) {
             $differ = $scheduleEnd;
             if ($parsedLastPunch->isBefore($scheduleEnd)) {
@@ -373,7 +368,14 @@ class TimeKeepingService
         if (
             $tenPM->greaterThanOrEqualTo($scheduleEnd) &&
             $parsedLastPunch->greaterThan($tenPM) &&
-            strtolower($schedule->selection) !== "flex"
+            (
+                $schedule->selection !== "Spot Audit" &&
+                $schedule->selection !== "MEI 08:00 TO 06:30" &&
+                $schedule->selection !== "MEI 09:00 TO 19:30" &&
+                $schedule->selection !== "Flex 1" &&
+                $schedule->selection !== "Flex 2" &&
+                strtolower($schedule->selection) !== "flex"
+            )
         ) {
             $nightDiffOtSeconds = $parsedLastPunch->diffInSeconds($tenPM);
             $ot = $nightDiffOtSeconds / 3600;
@@ -401,6 +403,56 @@ class TimeKeepingService
         } else if ($employee->schedule->schedule_type->name === "Normal Schedule" && $undertime >= 240) {
             $undertime = $undertime - 240;
             $shouldBeHalfDay = true;
+        }
+
+        if (
+            $schedule->selection === "Spot Audit" ||
+            $schedule->selection === "MEI 08:00 TO 06:30" ||
+            $schedule->selection === "MEI 09:00 TO 19:30" ||
+            $schedule->selection === "Flex 1" ||
+            $schedule->selection === "Flex 2"
+        ) {
+            $punches = $biotimePunches;
+            $firstPunch = $punches[0];
+
+            $punchWithTravelTime = $punches->first(function ($punch) {
+                return $punch->branch && $punch->branch->travel_time;
+            });
+
+            if ($punchWithTravelTime) {
+                if ($firstPunch->branch_id === null) {
+                    $travel_time = $punchWithTravelTime->branch ? (int)$punchWithTravelTime->branch->travel_time : 0;
+                } else {
+                    $travel_time = $punchWithTravelTime->branch ? (int)$punchWithTravelTime->branch->travel_time * 2 :  0;
+                }
+                if ($firstPunch->branch_id === null && $lastPunch->branch_id === null ) {
+                    $travel_time = 0;
+                }
+            }
+
+            $workHours += (int)$travel_time;
+            $undertime = 0;
+            $tardiness = 0;
+            $shouldBeHalfDay = false;
+            $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
+            if ($totalWorkedHours < 9.5 && $totalWorkedHours >= 7 ) {
+                $totalWorkedHours = 9.5;
+            }
+            if ($totalWorkedHours > 9.5) {
+                $overtime = $totalWorkedHours - 9.5 < 1 ? 0 : $totalWorkedHours - 9.5;
+            }
+
+            if ($holiday && $legalHoliday === "Yes") {
+                $legalHolidayHours = $totalHolidayWorkedHours;
+                $legalHolidayOvertime = $overtime;
+                $overtime = 0;
+            }
+
+            if ($holiday && $specialHoliday === "Yes") {
+                $specialHolidayHours = $totalHolidayWorkedHours;
+                $specialHolidayOvertime = $overtime;
+                $overtime = 0;
+            }
         }
 
         if ($biotimePunches->count() > 1) {
@@ -603,14 +655,20 @@ class TimeKeepingService
                 $timeKeeping->night_diff_overtime = floor($timeKeeping->night_diff_overtime);
             }
 
-            if ( $timeKeeping->regular_overtime > 0 && $timeKeeping->regular_overtime < $timeKeeping->approved_overtime) {
-                $regular_overtime = $timeKeeping->regular_overtime * ($paymentPerHour * 1.25);
-            } else if ( $timeKeeping->regular_overtime > 0 && $timeKeeping->regular_overtime > $timeKeeping->approved_overtime) {
-                $regular_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * 1.25);
+            if ($timeKeeping->regular_overtime > 0) {
+                if ($timeKeeping->regular_overtime < $timeKeeping->approved_overtime) {
+                    $regular_overtime = $timeKeeping->regular_overtime * ($paymentPerHour * 1.25);
+                } else {
+                    $regular_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * 1.25);
+                }
             }
-
-            if ($timeKeeping->night_diff_overtime > 0 && $timeKeeping->night_diff_overtime <= $timeKeeping->approved_overtime) {
-                $night_differential_overtime = $timeKeeping->night_diff_overtime * ($paymentPerHour * .125);
+            
+            if ($timeKeeping->night_diff_overtime > 0) {
+                if ($timeKeeping->night_diff_overtime < $timeKeeping->approved_overtime) {
+                    $night_differential_overtime = $timeKeeping->night_diff_overtime * ($paymentPerHour * .125);
+                } else {
+                    $night_differential_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * .125);
+                }
             }
 
             if ($timeKeeping->legal_holiday_overtime > 0) {

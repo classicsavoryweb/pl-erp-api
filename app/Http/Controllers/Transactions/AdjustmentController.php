@@ -8,6 +8,7 @@ use App\Models\Adjustment;
 use App\Models\AdjustmentPunch;
 use App\Models\AdjustmentTimeKeeping;
 use App\Models\BiotimeLog;
+use App\Models\BiotimePunch;
 use App\Models\Employee;
 use App\Models\ScheduleMasterlist;
 use App\Models\ScheduleTime;
@@ -150,11 +151,15 @@ class AdjustmentController extends Controller
                 ]);
 
                 foreach($request->punches as $punch) {
+                    $biotimePunch = $log->punches()
+                    ->where("punch_time", $punch["punch_time"])
+                    ->first();
+
                     AdjustmentPunch::create([
                         "adjustment_id" => $adjustment->id,
                         "punch_time" => $punch["punch_time"],
                         "date" => $request->date,
-                        "branch_id" => $request->branch_id
+                        "branch_id" => $biotimePunch->branch_id ?? $request->branch_id
                     ]);
                 }
 

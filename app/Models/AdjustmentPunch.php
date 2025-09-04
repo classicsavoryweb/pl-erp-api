@@ -17,4 +17,8 @@ class AdjustmentPunch extends Model
         "punch_time",
         "branch_id",
     ];
+
+    public function branch() {
+        return $this->hasOne(Branch::class, "id", "branch_id");
+    }
 }

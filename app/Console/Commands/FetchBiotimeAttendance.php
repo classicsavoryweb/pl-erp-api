@@ -76,8 +76,22 @@ class FetchBiotimeAttendance extends Command
                         $date = $parsedDate->toDateString();
                         $time = $parsedDate->toTimeString();
                         $branch = Branch::where("device_name", $log["terminal_sn"])->first();
+
+                        // $isExisting = BiotimeLog::where("employee_id", $employee->id)
+                        //     ->where("date",$date)
+                        //     ->orderBy("date", "DESC")
+                        //     ->first();
+
+                        // if ($isExisting) {
+                        //     $isExisting->punches()->delete();
+                        //     $isExisting->delete();
+                        // }
+
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
-                            $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
+                            $latest = BiotimeLog::where("employee_id", $employee->id)
+                            ->orderBy("date", "DESC")
+                            ->first();
+
                             if ($latest) {
                                 $latest->punches()->create([
                                     "punch_time" => $log["punch_time"],
@@ -183,8 +197,22 @@ class FetchBiotimeAttendance extends Command
                         $date = $parsedDate->toDateString();
                         $time = $parsedDate->toTimeString();
                         $branch = Branch::where("device_name", $log["terminal_sn"])->first();
+
+                        // $isExisting = BiotimeLog::where("employee_id", $employee->id)
+                        //     ->where("date",$date)
+                        //     ->orderBy("date", "DESC")
+                        //     ->first();
+
+                        // if ($isExisting) {
+                        //     $isExisting->punches()->delete();
+                        //     $isExisting->delete();
+                        // }
+
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
-                            $latest = BiotimeLog::where("employee_id", $employee->id)->orderBy("date", "DESC")->first();
+                            $latest = BiotimeLog::where("employee_id", $employee->id)
+                            ->orderBy("date", "DESC")
+                            ->first();
+
                             if ($latest) {
                                 $latest->punches()->create([
                                     "punch_time" => $log["punch_time"],

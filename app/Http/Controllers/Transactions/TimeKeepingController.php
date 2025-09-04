@@ -238,6 +238,10 @@ class TimeKeepingController extends Controller
             ->where("status", "active")
             ->get();
 
+            $timeKeepings = TimeKeeping::where("branch_id",$request->branch_id)->whereBetween("date", $cutOff)->get();
+            if ($timeKeepings->count() > 0) {
+                TransferLogsToTimeKeeping::dispatch($request->branch_id, $cutOff);
+            }
             GenerateTimekeepingSummary::dispatch($employees, $cutOff);
 
             $branch = Branch::find($request->branch_id);

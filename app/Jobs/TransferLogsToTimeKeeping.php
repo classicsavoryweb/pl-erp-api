@@ -115,13 +115,14 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                             "final_worked_hours" => 0
                         ]);
                     }
-
+                    
                     if (
-                        $actualSchedule->timetable == "NO SCHEDULE" &&
+                        ($actualSchedule->timetable == "NO SCHEDULE" || $actualSchedule->timetable == "SUSPENSION" || $actualSchedule->timetable == "REST DAY" || $actualSchedule->timetable == "LEAVE" ) &&
                         $employee->current_position->timekeeping_type === "Daily" &&
                         $employee->current_branch->type === "Branch" &&
-                        !$isRequiredToReport &&
-                        $isHoliday
+                        // !$isRequiredToReport &&
+                        $isHoliday &&
+                        $holidayType == "LH"
                     ) {
                         TimeKeeping::create([
                             "employee_id" => $employee->id,

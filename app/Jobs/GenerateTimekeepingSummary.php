@@ -140,11 +140,20 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($timeKeep->night_diff_hours > 0) {
-                        $night_differential += $timeKeep->night_diff_hours;
+                        if ($employee->current_branch->type === "Branch") {
+                            $night_differential += floor($timeKeep->night_diff_hours);
+                        } else {
+                            $night_differential += $timeKeep->night_diff_hours;
+                        }
+                        
                     }
 
-                    if ($timeKeep->night_diff_overtime > 0 && $timeKeep->night_diff_overtime <= $totalOT) {
-                        $night_differential_overtime += $timeKeep->night_diff_overtime;
+                    if ($timeKeep->night_diff_overtime > 0 && $timeKeep->approved_overtime > 0) {
+                        if ($employee->current_branch->type === "Branch") {
+                            $night_differential_overtime += $timeKeep->night_diff_overtime > $totalOT ? floor($totalOT) : floor($timeKeep->night_diff_overtime);
+                        } else {
+                            $night_differential_overtime += $timeKeep->night_diff_overtime > $totalOT ? $totalOT : $timeKeep->night_diff_overtime;
+                        }
                     }
 
                     if ($timeKeep->undertime > 0) {
@@ -205,26 +214,26 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-                    // if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                    //     $regular_days = 11 - $absent;
-                    // }
-
-                    // if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                    //     $regular_days = 13 - $absent;
-                    // }
-
-                    $shouldBeRegularDays = 0;
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                        $shouldBeRegularDays = 11 - $absent;
+                        $regular_days = 11 - $absent;
                     }
 
                     if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                        $shouldBeRegularDays = 13 - $absent;
+                        $regular_days = 13 - $absent;
                     }
 
-                    if ($shouldBeRegularDays > $regular_days) {
-                        $regular_days = $shouldBeRegularDays;
-                    }
+                    // $shouldBeRegularDays = 0;
+                    // if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
+                    //     $shouldBeRegularDays = 11 - $absent;
+                    // }
+
+                    // if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
+                    //     $shouldBeRegularDays = 13 - $absent;
+                    // }
+
+                    // if ($shouldBeRegularDays > $regular_days) {
+                    //     $regular_days = $shouldBeRegularDays;
+                    // }
                 }
 
                 if ($isExisting) {
