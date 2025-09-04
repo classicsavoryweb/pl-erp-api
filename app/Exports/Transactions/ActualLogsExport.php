@@ -52,7 +52,7 @@ class ActualLogsExport implements FromCollection, WithHeadings, WithStyles, With
         return [
             'Biometric Number',
             'Employee Name',
-            'Branch',
+            'Home Branch',
             'Date',
             'Times',
             'Punches',

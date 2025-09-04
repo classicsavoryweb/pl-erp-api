@@ -238,14 +238,13 @@ class TimeKeepingController extends Controller
             ->where("status", "active")
             ->get();
 
-            $timeKeepings = TimeKeeping::where("branch_id",$request->branch_id)->whereBetween("date", $cutOff)->get();
-            if ($timeKeepings->count() > 0) {
-                TransferLogsToTimeKeeping::dispatch($request->branch_id, $cutOff);
-            }
+            TransferLogsToTimeKeeping::dispatch($request->branch_id, $cutOff);
             GenerateTimekeepingSummary::dispatch($employees, $cutOff);
 
             $branch = Branch::find($request->branch_id);
             $user = Auth::user();
+            activity()->causedBy($user)->useLog("Timekeeping Generation")
+            ->log('User generated timekeeping of '.$branch->name ?? "undefined"." branch." );
             activity()->causedBy($user)->useLog("Timekeeping Summary Generation")
             ->log('User generated timekeeping summary of '.$branch->name ?? "undefined"." branch." );
 
