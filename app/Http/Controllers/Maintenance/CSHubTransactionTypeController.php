@@ -8,6 +8,7 @@ use App\Models\CSHubTransactionType;
 use Exception;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use DB;
 
 class CSHubTransactionTypeController extends Controller
 {
@@ -50,6 +51,88 @@ class CSHubTransactionTypeController extends Controller
             $transactionTypes = CSHubTransactionType::where("status", "active")->get();
             return $this->sendResponse(["transaction_types" => $transactionTypes]);
         } catch(Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function createCSHubTransactionType(Request $request) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "description" => "required",
+                "source_id" => "required",
+                "transaction_type" => "required",
+                "deduction_id" => "required",
+                "ho_credit" => "required",
+                "branch_debit" => "required",
+                "branch_credit" => "required",
+                "status" => "required",
+            ]);
+
+            CSHubTransactionType::create([
+                "description" => $request->description,
+                "source_id" => $request->source_id,
+                "transaction_type" => $request->transaction_type,
+                "exam_type" => $request->exam_type,
+                "deduction_id" => $request->deduction_id,
+                "deduction_status_positive" => $request->deduction_status_positive,
+                "deduction_status_negative" => $request->deduction_status_negative,
+                "credit_status_positive" => $request->credit_status_positive,
+                "credit_status_negative" => $request->credit_status_negative,
+                "email_status" => $request->email_status,
+                "ho_debit" => $request->ho_debit,
+                "ho_credit" => $request->ho_credit,
+                "branch_debit" => $request->branch_debit,
+                "branch_credit" => $request->branch_credit,
+                "advances_debit" => $request->advances_debit,
+                "status" => $request->status,
+            ]);
+            DB::commit();
+            return $this->sendResponse(["message" => "Transaction type created succesfully"]);
+        } catch(Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function editCSHubTransactionType(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "description" => "required|unique:cs_hub_transaction_type,description,".$id,
+                "source_id" => "required",
+                "transaction_type" => "required",
+                "deduction_id" => "required",
+                "ho_credit" => "required",
+                "branch_debit" => "required",
+                "branch_credit" => "required",
+                "status" => "required",
+            ]);
+
+            CSHubTransactionType::where("id", $id)->update([
+                "description" => $request->description,
+                "source_id" => $request->source_id,
+                "transaction_type" => $request->transaction_type,
+                "exam_type" => $request->exam_type,
+                "deduction_id" => $request->deduction_id,
+                "deduction_status_positive" => $request->deduction_status_positive,
+                "deduction_status_negative" => $request->deduction_status_negative,
+                "credit_status_positive" => $request->credit_status_positive,
+                "credit_status_negative" => $request->credit_status_negative,
+                "email_status" => $request->email_status,
+                "ho_debit" => $request->ho_debit,
+                "ho_credit" => $request->ho_credit,
+                "branch_debit" => $request->branch_debit,
+                "branch_credit" => $request->branch_credit,
+                "advances_debit" => $request->advances_debit,
+                "status" => $request->status,
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Transaction type updated succesfully"]);
+        } catch(Exception $e) {
+
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
