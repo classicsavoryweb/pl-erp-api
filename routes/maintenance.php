@@ -8,6 +8,8 @@ use App\Http\Controllers\Maintenance\BankAccountTypeController;
 use App\Http\Controllers\Maintenance\BranchController;
 use App\Http\Controllers\Maintenance\CoeReasonController;
 use App\Http\Controllers\Maintenance\CSHubTransactionTypeController;
+use App\Http\Controllers\Maintenance\CSHubModulesController;
+use App\Http\Controllers\Maintenance\CSHubSourceTypeController;
 use App\Http\Controllers\Maintenance\DeductionsController;
 use App\Http\Controllers\Maintenance\IncentivesManagementController;
 use App\Http\Controllers\Maintenance\DiagnosisController;
@@ -188,6 +190,13 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-cshub-transaction-types", [CSHubTransactionTypeController::class, "getAllCsHubTransactionTypes"]);
     Route::get("/get-cshub-transaction-types", [CSHubTransactionTypeController::class, "getCsHubTransactionTypes"]);
     Route::get("/export-all-cshub-transaction-types", [CSHubTransactionTypeController::class, "exportCsHubTransactionTypes"]);
+    Route::middleware(["permission:perform_cshub_transaction_type"])->post("/create-cshub-transaction-type", [CSHubTransactionTypeController::class, "createCsHubTransactionType"]);
+    Route::middleware(["permission:perform_cshub_transaction_type"])->post("/edit-cshub-transaction-type/{id}", [CSHubTransactionTypeController::class, "editCsHubTransactionType"]);
+    //cs hub modules
+    Route::get("/get-cshub-modules", [CSHubModulesController::class, "getCsHubModules"]);
+    //cs hub source type
+    Route::get("/get-trans-type", [CSHubSourceTypeController::class, "getTransType"]);
+    Route::get("/get-exam-type", [CSHubSourceTypeController::class, "getExamType"]);
     //adjustment types
     Route::get("/get-all-adjustment-types", [AdjustmentTypeController::class, "getAllAdjustmentTypes"]);
     Route::get("/get-adjustment-types", [AdjustmentTypeController::class, "getAdjustmentTypes"]);

@@ -1,0 +1,118 @@
+{
+  "cshub_transtype": [
+    {
+      "id": "1",
+      "description": "ANNUAL PHYSICAL EXAM",
+      "status": "Active",
+      "source_type": "Tran_type_1"
+    },
+    {
+      "id": "2",
+      "description": "CASH ADVANCE",
+      "status": "Active",
+      "source_type": "Tran_type_2"
+    },
+    {
+      "id": "3",
+      "description": "COMPANY LOAN",
+      "status": "Active",
+      "source_type": "Tran_type_3"
+    },
+    {
+      "id": "4",
+      "description": "TRANSPORTATION REIMBURSEMENT",
+      "status": "Active",
+      "source_type": "Tran_type_4"
+    },
+    {
+      "id": "5",
+      "description": "REIMBURSEMENT",
+      "status": "Active",
+      "source_type": "Tran_type_5"
+    },
+    {
+      "id": "6",
+      "description": "STORE VISIT REQUEST",
+      "status": "Active",
+      "source_type": "Tran_type_6"
+    },
+    {
+      "id": "7",
+      "description": "REFERRAL (HI-PRECISION)",
+      "status": "Active",
+      "source_type": "Tran_type_7"
+    },
+    {
+      "id": "8",
+      "description": "APE: MANAGEMENT BELOW 35y/0",
+      "status": "Active",
+      "source_type": "Exam_type_1"
+    },
+    {
+      "id": "9",
+      "description": "APE : MANAGEMENT 35y/o AND ABOVE (FEMALE)",
+      "status": "Active",
+      "source_type": "Exam_type_2"
+    },
+    {
+      "id": "10",
+      "description": "APE : MANAGEMENT 35y/o AND ABOVE (MALE)",
+      "status": "Active",
+      "source_type": "Exam_type_3"
+    },
+    {
+      "id": "11",
+      "description": "APE : RANK & FILE 35y/o AND ABOVE (FEMALE)",
+      "status": "Active",
+      "source_type": "Exam_type_4"
+    },
+    {
+      "id": "12",
+      "description": "APE : RANK & FILE 35 y/o AND ABOVE (MALE)",
+      "status": "Active",
+      "source_type": "Exam_type_5"
+    },
+    {
+      "id": "13",
+      "description": "APE : RANK & FILE below 35 y/o",
+      "status": "Active",
+      "source_type": "Exam_type_6"
+    },
+    {
+      "id": "14",
+      "description": "DENTAL AND OPTICAL",
+      "status": "Active",
+      "source_type": "Exam_type_7"
+    },
+    {
+      "id": "15",
+      "description": "MEDICINE",
+      "status": "Active",
+      "source_type": "Exam_type_8"
+    },
+    {
+      "id": "16",
+      "description": "HOSPITALIZATION",
+      "status": "Active",
+      "source_type": "Exam_type_9"
+    },
+    {
+      "id": "17",
+      "description": "CONSULTATION",
+      "status": "Active",
+      "source_type": "Exam_type_10"
+    },
+    {
+      "id": "18",
+      "description": "LABORATORY",
+      "status": "Active",
+      "source_type": "Exam_type_11"
+    },
+    {
+      "id": "9999",
+      "description": "N/A",
+      "status": "Active",
+      "source_type": "9999"
+    }
+  ]
+}
