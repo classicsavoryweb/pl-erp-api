@@ -173,6 +173,7 @@ class ActualTimeController extends Controller
                             ->where("id", $punch["id"])
                             ->update([
                                 "punch_time" => $punch["punch_time"],
+                                "branch_id" => $punch["branch_id"] ?? null,
                                 "remarks" => "Edited by ". $user->full_name." Original log ".$origPunch->punch_time
                             ]);
                         } else {
@@ -180,12 +181,14 @@ class ActualTimeController extends Controller
                             ->where("id", $punch["id"])
                             ->update([
                                 "punch_time" => $punch["punch_time"],
+                                "branch_id" => $punch["branch_id"] ?? null,
                             ]);
                         }
                     } else {
                         $biotime->punches()->create([
                             "date" => $biotime->date,
                             "punch_time" => $punch["punch_time"],
+                            "branch_id" => $punch["branch_id"] ?? null,
                             "remarks" => "Added by ".$user->full_name
                         ]);
                     }

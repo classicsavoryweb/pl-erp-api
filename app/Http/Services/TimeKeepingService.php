@@ -302,7 +302,7 @@ class TimeKeepingService
             }
 
             if ($allPunches->count() >= 6) {
-                $tardiness = 0;
+                $tardiness = $scheduleStart->diffInMinutes($parsedFirstPunch);
             }
         }
 
@@ -420,10 +420,11 @@ class TimeKeepingService
             });
 
             if ($punchWithTravelTime) {
-                if ($firstPunch->branch_id === null) {
-                    $travel_time = $punchWithTravelTime->branch ? (int)$punchWithTravelTime->branch->travel_time : 0;
-                } else {
-                    $travel_time = $punchWithTravelTime->branch ? (int)$punchWithTravelTime->branch->travel_time * 2 :  0;
+                if ($firstPunch->branch_id !== null) {
+                    $travel_time += (float)$punchWithTravelTime->branch->travel_time;
+                }
+                if ($lastPunch->branch_id !== null) {
+                    $travel_time += (float)$punchWithTravelTime->branch->travel_time;
                 }
                 if ($firstPunch->branch_id === null && $lastPunch->branch_id === null ) {
                     $travel_time = 0;
@@ -435,11 +436,29 @@ class TimeKeepingService
             $tardiness = 0;
             $shouldBeHalfDay = false;
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
-            if ($totalWorkedHours < 9.5 && $totalWorkedHours >= 7 ) {
+
+            // if ($totalWorkedHours < 9.5 && $totalWorkedHours >= 8.5 ) {
+            //     $totalWorkedHours = 9.5;
+            // }
+
+            // if ($totalWorkedHours < 8.5) {
+            //     $undertime = (9.5 - $totalWorkedHours) * 60; 
+            // }
+
+            // if ($totalWorkedHours > 9.5) {
+            //     $overtime = $totalWorkedHours - 9.5 < 1 ? 0 : $totalWorkedHours - 9.5;
+            // }
+
+            if ($totalWorkedHours < 9.5) {
+                $undertime = (10.5 - $totalWorkedHours) * 60;
+            }
+
+            if ($totalWorkedHours < 10.5 && $totalWorkedHours >= 9.5 ) {
                 $totalWorkedHours = 9.5;
             }
-            if ($totalWorkedHours > 9.5) {
-                $overtime = $totalWorkedHours - 9.5 < 1 ? 0 : $totalWorkedHours - 9.5;
+
+            if ($totalWorkedHours > 10.5) {
+                $overtime = $totalWorkedHours - 10.5 < 1 ? 0 : $totalWorkedHours - 10.5;
             }
 
             if ($holiday && $legalHoliday === "Yes") {

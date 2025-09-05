@@ -205,14 +205,15 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     foreach ($schedules as $sched) {
                         if (!in_array($sched->timetable,["REST DAY", "NO SCHEDULE"])) {
-                            $logs = BiotimeLog::where("date", $sched->date)
+                            $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
                             ->first();
-                            if (!$logs) {
+                            if (!$timeKeeping) {
                                 $absent += 1;
                             }
                         }
                     }
+
 
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
                         $regular_days = 11 - $absent;
