@@ -50,7 +50,7 @@ class OvertimeImport implements ToCollection, WithHeadingRow, WithMultipleSheets
                 ? Date::excelToDateTimeObject($row["overtime_date"])->format('Y-m-d')
                 : Carbon::createFromFormat("m-d-Y", $row["overtime_date"])->format("Y-m-d");
 
-            $existing = Overtime::where("biometrics_id", $biometric_number)
+            $existing = Overtime::where("biometric_number", $biometric_number)
                 ->where("overtime_date", $formattedOvertimeDate)
                 ->where("date_filed", $formattedDateFiled)
                 ->first();
@@ -70,7 +70,7 @@ class OvertimeImport implements ToCollection, WithHeadingRow, WithMultipleSheets
             Overtime::create([
                 "date_filed" => $formattedDateFiled,
                 "employee_id"=> $employee_id,
-                "biometrics_id" => $biometric_number,
+                "biometric_number" => $biometric_number,
                 "overtime_date" => $formattedOvertimeDate,
                 "purpose" => $row["purpose"],
                 "total_hours" => $row["total_hours"],

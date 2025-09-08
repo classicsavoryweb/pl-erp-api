@@ -10,10 +10,10 @@ class Overtime extends Model
     use HasFactory;
 
     protected $table = "overtime";
-    protected $fillable = ["date_filed", "employee_id", "biometrics_id", "overtime_date", "purpose", "total_hours", "status"];
+    protected $fillable = ["date_filed", "employee_id", "biometric_number", "overtime_date", "purpose", "total_hours", "status"];
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class, "biometrics_id", "biometric_number",);
+        return $this->belongsTo(Employee::class, "biometric_number", "biometric_number",);
     }
 }

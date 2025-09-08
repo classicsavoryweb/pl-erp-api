@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('overtime', function (Blueprint $table) {
             $table->id();
             $table->string('date_filed');
-            $table->string('biometrics_id');
+            $table->string('biometric_number');
             $table->string('overtime_date');
             $table->string('purpose');
             $table->string('total_hours');
