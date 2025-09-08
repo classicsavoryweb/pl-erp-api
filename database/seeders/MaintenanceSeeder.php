@@ -2,10 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\AdditionalIncome;
-use App\Models\BankAccountType;
-use App\Models\IncentivesManagement;
-use App\Models\PeriodDefinition;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -47,5 +43,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(CSHubTransactionTypeSeeder::class);
         $this->call(AdjustmentTypeSeeder::class);
         $this->call(IncentivesManagementSeeder::class);
+        $this->call(ContributionAndTaxSeeder::class);
     }
 }
