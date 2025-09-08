@@ -2,7 +2,9 @@
 
 namespace App\Models\Accounting;
 
+use App\Models\ContributionAndTax;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Vendor extends Model
@@ -11,4 +13,8 @@ class Vendor extends Model
 
     protected $connection="apsys";
     protected $table="tbl_vendor";
+
+    public function contribution_and_tax() {
+        return $this->belongsTo(ContributionAndTax::class);
+    }
 }

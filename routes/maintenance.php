@@ -12,6 +12,7 @@ use App\Http\Controllers\Maintenance\CSHubModulesController;
 use App\Http\Controllers\Maintenance\CSHubSourceTypeController;
 use App\Http\Controllers\Maintenance\DeductionsController;
 use App\Http\Controllers\Maintenance\IncentivesManagementController;
+use App\Http\Controllers\Maintenance\ContributionsAndTaxController;
 use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\HolidayController;
@@ -209,4 +210,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-incentives-management", [IncentivesManagementController::class, "exportAllIncentivesManagement"]);
     Route::middleware(["permission:perform_incentives_management"])->post("/create-incentives-management", [IncentivesManagementController::class, "createIncentivesManagement"]);
     Route::middleware(["permission:perform_incentives_management"])->post("/edit-incentives-management/{id}", [IncentivesManagementController::class, "editIncentivesManagement"]);
+    //contributions and tax set-up
+    Route::get("/get-all-contributions-and-tax", [ContributionsAndTaxController::class, "getAllContributionsAndTax"]);
+    Route::get("/get-contribution-and-tax", [ContributionsAndTaxController::class, "getContributionAndTax"]);
+    Route::get("/export-all-contributions-and-tax", [ContributionsAndTaxController::class, "exportAllContributionsAndTax"]);
+    Route::middleware(["permission:perform_contributions_and_tax"])->post("/edit-contribution-and-tax/{id}", [ContributionsAndTaxController::class, "editContributionAndTax"]);
 });
