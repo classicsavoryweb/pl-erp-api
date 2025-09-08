@@ -187,7 +187,7 @@ class OvertimeController extends Controller
             $overtime->update([
                 "date_filed"=> $request->date_filed,
                 "employee_id"=> $employee->id,
-                "biometrics_id"=> $employee->biometric_number,
+                "biometric_number"=> $employee->biometric_number,
                 "overtime_date"=> $request->overtime_date,
                 "purpose"=> $request->purpose,
                 "total_hours"=> $request->total_hours,

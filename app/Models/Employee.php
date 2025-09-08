@@ -346,7 +346,7 @@ class Employee extends Model
     }
 
     public function overtime() {
-        return $this->hasMany(Adjustment::class, "biometrics_id", "biometric_number");
+        return $this->hasMany(Adjustment::class, "biometric_number", "biometric_number");
     }
 
     public function timekeeping_summary() {
