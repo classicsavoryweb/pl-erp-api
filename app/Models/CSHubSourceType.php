@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\CSHubTransactionType;
 use Illuminate\Database\Eloquent\Model;
 
 class CSHubSourceType extends Model
@@ -16,4 +17,8 @@ class CSHubSourceType extends Model
         "source_type",
         "status",
     ];
+
+    public function cs_hub_transaction_type() {
+        return $this->belongsTo(CSHubTransactionType::class);
+    }
 }

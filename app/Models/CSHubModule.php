@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\CSHubTransactionType;
 use Illuminate\Database\Eloquent\Model;
 
 class CSHubModule extends Model
@@ -15,4 +16,8 @@ class CSHubModule extends Model
         "description",
         "status",
     ];
+
+    public function cs_hub_transaction_type() {
+        return $this->belongsTo(CSHubTransactionType::class);
+    }
 }
