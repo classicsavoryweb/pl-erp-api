@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CSHubModule;
+use App\Models\CSHubSourceType;
+use App\Models\Deduction;
 
 class CSHubTransactionType extends Model
 {
@@ -29,4 +32,20 @@ class CSHubTransactionType extends Model
         "advances_debit",
         "status",
     ];
+
+    public function module() {
+        return $this->hasOne(CSHubModule::class,'id','source_id');
+    }
+
+    public function deduction() {
+        return $this->hasOne(Deduction::class,'id','deduction_id');
+    }
+
+    public function trans_type() {
+        return $this->hasOne(CSHubSourceType::class,'id','transaction_type');
+    }
+
+    public function unique_exam_type() {
+        return $this->hasOne(CSHubSourceType::class,'id','exam_type');
+    }
 }

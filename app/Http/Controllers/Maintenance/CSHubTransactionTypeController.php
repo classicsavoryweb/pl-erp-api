@@ -31,7 +31,9 @@ class CSHubTransactionTypeController extends Controller
                 return Excel::download(new CSHubTransactionTypeExport($transactionsTypes), "transactionsTypes.xls");
             }
  
-            $transactionsTypes = $transactionsTypes->paginate($perPage);
+            $transactionsTypes = $transactionsTypes
+            ->with(["module", "deduction", "trans_type", "unique_exam_type"])
+            ->paginate($perPage);
 
             return $this->sendResponse($transactionsTypes);
         } catch(Exception $e) {
