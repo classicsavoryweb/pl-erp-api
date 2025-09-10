@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\IncentivesBracket;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -44,5 +45,7 @@ class MaintenanceSeeder extends Seeder
         $this->call(AdjustmentTypeSeeder::class);
         $this->call(IncentivesManagementSeeder::class);
         $this->call(ContributionAndTaxSeeder::class);
+        $this->call(PositionIncentivesSeeder::class);
+        $this->call(IncentivesBracketSeeder::class);
     }
 }
