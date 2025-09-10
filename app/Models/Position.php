@@ -33,4 +33,11 @@ class Position extends Model
     public function acting_capacity() {
         return $this->belongsTo(ActingCapacity::class);
     }
+
+    public function incentives() {
+        return $this->belongsToMany(IncentivesBracket::class, 'position_incentives')
+        ->using(PositionIncentives::class)
+        ->withPivot("position_id", "incentives_bracket_id",)
+        ->withTimestamps();
+    }
 }

@@ -1,0 +1,1096 @@
+{
+  "tbl_positionrankfile": [
+    {
+      "bracket_id": "185",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "1",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "186",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "2",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "187",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "3",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "188",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "4",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "189",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "5",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "190",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "6",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "191",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "7",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "192",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "8",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "193",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "9",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "194",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "10",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "195",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "11",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "196",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "12",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "197",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "1",
+      "amount": "300.00"
+    },
+    {
+      "bracket_id": "198",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "2",
+      "amount": "300.00"
+    },
+    {
+      "bracket_id": "199",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "3",
+      "amount": "300.00"
+    },
+    {
+      "bracket_id": "200",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "4",
+      "amount": "300.00"
+    },
+    {
+      "bracket_id": "201",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "5",
+      "amount": "300.00"
+    },
+    {
+      "bracket_id": "202",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "6",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "203",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "7",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "204",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "8",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "205",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "9",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "206",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "10",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "207",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "11",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "208",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "12",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "209",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "1",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "210",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "2",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "211",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "3",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "212",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "4",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "213",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "5",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "214",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "6",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "215",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "7",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "216",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "8",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "217",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "9",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "218",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "10",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "219",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "11",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "220",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "12",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "221",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "1",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "222",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "2",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "223",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "3",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "224",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "4",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "225",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "5",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "226",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "6",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "227",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "7",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "228",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "8",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "229",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "9",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "230",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "10",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "231",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "11",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "232",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "12",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "233",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "1",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "234",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "2",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "235",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "3",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "236",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "4",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "237",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "5",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "238",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "6",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "239",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "7",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "240",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "8",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "241",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "9",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "242",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "10",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "243",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "11",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "244",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "12",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "245",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "1",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "246",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "2",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "247",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "3",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "248",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "4",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "249",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "5",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "250",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "6",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "251",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "7",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "252",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "8",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "253",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "9",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "254",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "10",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "255",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "11",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "256",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "12",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "257",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "1",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "258",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "2",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "259",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "3",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "260",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "4",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "261",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "5",
+      "amount": "800.00"
+    },
+    {
+      "bracket_id": "262",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "6",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "263",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "7",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "264",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "8",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "265",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "9",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "266",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "10",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "267",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "11",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "268",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "12",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "269",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "1",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "270",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "2",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "271",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "3",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "272",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "4",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "273",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "5",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "274",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "6",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "275",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "7",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "276",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "8",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "277",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "9",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "278",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "10",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "279",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "11",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "280",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "12",
+      "amount": "1,500.00"
+    },
+    {
+      "bracket_id": "281",
+      "bracket_id2": "BID0001",
+      "bracketname": "OFFICE BASE EMPLOYEES",
+      "month": "24",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "282",
+      "bracket_id2": "BID0002",
+      "bracketname": "LUSOY STAFF",
+      "month": "24",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "283",
+      "bracket_id2": "BID0003",
+      "bracketname": "STOCKMAN",
+      "month": "24",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "284",
+      "bracket_id2": "BID0004",
+      "bracketname": "CAD OPERATOR",
+      "month": "24",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "285",
+      "bracket_id2": "BID0005",
+      "bracketname": "COOKS",
+      "month": "24",
+      "amount": "2,500.00"
+    },
+    {
+      "bracket_id": "286",
+      "bracket_id2": "BID0006",
+      "bracketname": "CASHIER / TEAM MEMBER",
+      "month": "24",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "287",
+      "bracket_id2": "BID0007",
+      "bracketname": "FOOD PREPARATION",
+      "month": "24",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "288",
+      "bracket_id2": "BID0008",
+      "bracketname": "DELIVERY RIDER",
+      "month": "24",
+      "amount": "2,000.00"
+    },
+    {
+      "bracket_id": "289",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "1",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "290",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "2",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "291",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "3",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "292",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "4",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "293",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "5",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "294",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "6",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "295",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "7",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "296",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "8",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "297",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "9",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "298",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "10",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "299",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "11",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "300",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "12",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "301",
+      "bracket_id2": "BID0009",
+      "bracketname": "PMD STAFF",
+      "month": "24",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "302",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "1",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "303",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "2",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "304",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "3",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "305",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "4",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "306",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "5",
+      "amount": "500.00"
+    },
+    {
+      "bracket_id": "307",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "6",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "308",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "7",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "309",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "8",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "310",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "9",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "311",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "10",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "312",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "11",
+      "amount": "1,000.00"
+    },
+    {
+      "bracket_id": "313",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "12",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "314",
+      "bracket_id2": "BID0010",
+      "bracketname": "MESSENGER",
+      "month": "24",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "315",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "1",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "316",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "2",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "317",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "3",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "318",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "4",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "319",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "5",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "320",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "6",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "321",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "7",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "322",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "8",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "323",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "9",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "324",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "10",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "325",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "11",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "326",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "12",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "327",
+      "bracket_id2": "BID0011",
+      "bracketname": "CASHIER / CASHIER TRAINEE",
+      "month": "24",
+      "amount": "1,200.00"
+    },
+    {
+      "bracket_id": "328",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "1",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "329",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "2",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "330",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "3",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "331",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "4",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "332",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "5",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "333",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "6",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "334",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "7",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "335",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "8",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "336",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "9",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "337",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "10",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "338",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "11",
+      "amount": "1,688.00"
+    },
+    {
+      "bracket_id": "339",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "12",
+      "amount": "2,688.00"
+    },
+    {
+      "bracket_id": "340",
+      "bracket_id2": "BID0012",
+      "bracketname": "GRAPHIC ARTIST",
+      "month": "24",
+      "amount": "2,688.00"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ use App\Http\Controllers\Maintenance\CSHubModulesController;
 use App\Http\Controllers\Maintenance\CSHubSourceTypeController;
 use App\Http\Controllers\Maintenance\DeductionsController;
 use App\Http\Controllers\Maintenance\IncentivesManagementController;
+use App\Http\Controllers\Maintenance\IncentivesBracketController;
 use App\Http\Controllers\Maintenance\ContributionsAndTaxController;
 use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
@@ -215,4 +216,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-contribution-and-tax", [ContributionsAndTaxController::class, "getContributionAndTax"]);
     Route::get("/export-all-contributions-and-tax", [ContributionsAndTaxController::class, "exportAllContributionsAndTax"]);
     Route::middleware(["permission:perform_contributions_and_tax"])->post("/edit-contribution-and-tax/{id}", [ContributionsAndTaxController::class, "editContributionAndTax"]);
+    //incentives bracket
+    Route::get("/get-all-incentives-bracket", [IncentivesBracketController::class, "getAllIncentivesBracket"]);
+    Route::get("/get-incentives-bracket", [IncentivesBracketController::class, "getIncentivesBracket"]);
+    Route::get("/export-all-incentives-bracket", [IncentivesBracketController::class, "exportAllIncentivesBracket"]);
+    Route::middleware(["permission:perform_incentives_bracket"])->post("/create-incentives-bracket", [IncentivesBracketController::class, "createIncentivesBracket"]);
+    Route::middleware(["permission:perform_incentives_bracket"])->post("/edit-incentives-bracket/{id}", [IncentivesBracketController::class, "editIncentivesBracket"]);
 });
