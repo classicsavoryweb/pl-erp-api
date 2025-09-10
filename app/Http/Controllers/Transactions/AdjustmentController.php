@@ -10,6 +10,7 @@ use App\Models\AdjustmentTimeKeeping;
 use App\Models\BiotimeLog;
 use App\Models\BiotimePunch;
 use App\Models\Employee;
+use App\Models\Overtime;
 use App\Models\ScheduleMasterlist;
 use App\Models\ScheduleTime;
 use App\Models\TimeKeeping;
@@ -182,7 +183,9 @@ class AdjustmentController extends Controller
                     $updatedPunches,
                     $schedule->selection,
                     $employee,
-                    new AdjustmentTimeKeeping()
+                    new AdjustmentTimeKeeping(),
+                    true,
+                    "taxable adjustment"
                 );
 
                 $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("biotime_log_id", $log->id)->first();
@@ -260,6 +263,95 @@ class AdjustmentController extends Controller
             return $this->sendError(["message" => "Adjustment not found"]);
         } catch (Exception $e) {
             Log::info($e);
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function adjustTimeKeepingWithOtherOvertime(Request $request) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "timekeeping_id" => "required",
+                "overtime_id" => "required"
+            ]);
+
+            $overtime = Overtime::find($request->overtime_id);
+            $timeKeeping = TimeKeeping::find($request->timekeeping_id);
+
+            if ($overtime && $timeKeeping) {
+                $employee = $overtime->employee;
+                $overtimeHours = $overtime->total_hours;
+                $schedule = $timeKeeping->schedule;
+                $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
+
+                if ($timeKeeping->regular_overtime > 0 && $overtimeHours > $timeKeeping->regular_overtime) {
+                    $overtimeHours = $timeKeeping->regular_overtime;
+                } else if ($timeKeeping->legal_holiday_overtime > 0 && $overtimeHours > $timeKeeping->legal_holiday_overtime) {
+                    $overtimeHours = $timeKeeping->legal_holiday_overtime;
+                } else if ($timeKeeping->special_holiday_overtime > 0 && $overtimeHours > $timeKeeping->special_holiday_overtime) {
+                    $overtimeHours = $timeKeeping->special_holiday_overtime;
+                }
+
+                $adjustedTimeKeeping = AdjustmentTimeKeeping::create([
+                    ...$timeKeeping->toArray(),
+                    "approved_overtime" => $overtimeHours
+                ]);
+
+                $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
+                    $adjustedTimeKeeping,
+                    $schedule->timetable,
+                    true
+                );
+
+                $log = BiotimeLog::where("employee_id", $employee->id)
+                ->where("date", $timeKeeping->date)
+                ->first();
+
+                $taxable_amount = $adjustedTimeKeepingPayment->total_amount - ($oldtimeKeepingPayment->total_amount ?? 0);
+                $amount_paid = $oldtimeKeepingPayment->total_amount ?? 0;
+                $adjustment = Adjustment::create([
+                    "employee_id" => $employee->id,
+                    "biometric_number" => $employee->biometric_number,
+                    "date" => $timeKeeping->date,
+                    "days" => 0,
+                    "cancelled_rd" => 0,
+                    "taxable_amount" => round($taxable_amount, 2) ,
+                    "amount_paid" => round($amount_paid, 2),
+                    "correct_amount_paid" => round($adjustedTimeKeepingPayment->total_amount, 2),
+                    "actual_schedule" => $schedule->timetable,
+                    "type" => "Overtime Force Adjustments",
+                    "status" => "Approved",
+                    "added_by" => Auth::user()->id,
+                    "added_at" => now(),
+                ]);
+
+                foreach($log->punches as $punch) {
+                    AdjustmentPunch::create([
+                        "adjustment_id" => $adjustment->id,
+                        "punch_time" => $punch->punch_time,
+                        "date" => $timeKeeping->date,
+                        "branch_id" => $punch->branch_id ?? null
+                    ]);
+                }
+
+                $currentCutOff = $this->timeKeepingService->getCutOff(now()->format("Y-m-d"));
+                $cutOffPaid = Carbon::parse($currentCutOff["start_time"])->format("m/d/Y")." TO ". Carbon::parse($currentCutOff['end_time'])->format("m/d/Y");
+                $overtime->update([
+                    "hours_paid" => $overtimeHours,
+                    "cutoff_paid" => $cutOffPaid,
+                    "payment_type" => "force adjustment",
+                    "adjustment_timekeeping_id" => $adjustedTimeKeeping->id,
+                    "status" => ($overtime->total_hours - $overtimeHours >= 1) ? "Partialy Paid" : "Paid"
+                ]);
+
+                DB::commit();
+                return $this->sendResponse(["message" => "Overtime successfully adjusted"]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Overtime or Timekeeping cant be found."]);
+        } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }

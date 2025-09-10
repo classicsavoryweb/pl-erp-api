@@ -25,7 +25,7 @@ class FetchBiotimeAttendance extends Command
         $password = env('BIOMETRICS_PASSWORD');
         $employees = Employee::where("status", "active")
         ->where("type", "Direct")
-        ->where("branch_id", 107)
+        // ->where("branch_id", 107)
         ->get();
 
         $now = Carbon::now();
@@ -59,10 +59,10 @@ class FetchBiotimeAttendance extends Command
                 ->timeout(60)
                 ->retry(3)
                 ->get($url,[
-                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
-                    "start_time" => "2025-07-25 00:00:00",
-                    "end_time" => "2025-08-26 23:59:59",
+                    "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    // "start_time" => "2025-07-25 00:00:00",
+                    // "end_time" => "2025-08-26 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
@@ -180,10 +180,10 @@ class FetchBiotimeAttendance extends Command
                 ->timeout(60)
                 ->retry(3)
                 ->get($url,[
-                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
-                    "start_time" => "2025-07-25 00:00:00",
-                    "end_time" => "2025-08-26 23:59:59",
+                    "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    // "start_time" => "2025-07-25 00:00:00",
+                    // "end_time" => "2025-08-26 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);

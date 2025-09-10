@@ -15,11 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Carbon\CarbonInterface;
 
-
 class TimeKeepingService
 {
-    public function computeTimeKeeping($branchId, $log, $biotimePunches, $actualSchedule, $employee, Model $model)
+    public function computeTimeKeeping($branchId, $log, $biotimePunches, $actualSchedule, $employee, Model $model, $isAdjustment = false, $paymentType = "timekeeping")
     {
+        $timeKeeping = null;
         $schedule = ScheduleMasterlist::where("selection", $actualSchedule)->first();
         $scheduleTime = ScheduleTime::where("timetable", $actualSchedule)
         ->where("employee_id", $employee->id)
@@ -478,6 +478,7 @@ class TimeKeepingService
 
             $overtimeApplied = Overtime::where("employee_id", $employee->id)
             ->where("overtime_date", $log->date)
+            ->whereNot("status", "Voided")
             ->first();
 
             $generalOvertime = $overtime;
@@ -490,7 +491,7 @@ class TimeKeepingService
                 $generalOvertime = $specialHolidayOvertime;
             }
 
-            if ($overtimeApplied) {
+            if ($overtimeApplied && $generalOvertime >= 1) {
                 if ($overtimeApplied->total_hours <= $generalOvertime) {
                     $approvedOvertime = $overtimeApplied->total_hours;
                 } else {
@@ -498,8 +499,30 @@ class TimeKeepingService
                     $remarks = "Approved overtime is higher than the computed overtime from the system.";
                 }
 
+                $cutOff = $this->getCutOff($scheduleTime->date);
+                $currentCutOff = $this->getCutOff(now()->format("Y-m-d"));
+
+                $totalHoursPaid = $approvedOvertime;
+
+                if ($overtimeApplied->hours_paid > 0 && $isAdjustment) {
+                    if ($overtimeApplied->total_hours < ($overtimeApplied->hours_paid + $approvedOvertime)) {
+                        $totalHoursPaid = $overtimeApplied->total_hours;
+                    } else {
+                        $totalHoursPaid += $overtimeApplied->hours_paid;
+                    }
+                }
+
+                $cutOffPaid = Carbon::parse($cutOff["start_time"])->format("m/d/Y")." TO ". Carbon::parse($cutOff['end_time'])->format("m/d/Y");
+                
+                if ($isAdjustment) {
+                    $cutOffPaid = Carbon::parse($currentCutOff["start_time"])->format("m/d/Y")." TO ". Carbon::parse($currentCutOff['end_time'])->format("m/d/Y");
+                }
+
                 $overtimeApplied->update([
-                    "status" => "Approved"
+                    "hours_paid" => $totalHoursPaid,
+                    "cutoff_paid" => $cutOffPaid,
+                    "payment_type" => $paymentType,
+                    "status" => ($overtimeApplied->total_hours - $totalHoursPaid >= 1) ? "Partialy Paid" : "Paid"
                 ]);
             }
 
@@ -573,7 +596,7 @@ class TimeKeepingService
                 }
             }
 
-            $model->create([
+            $timeKeeping = $model->create([
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
                 "biotime_log_id" => $log->id,
@@ -599,10 +622,17 @@ class TimeKeepingService
                 "final_worked_hours" => $finalWorkHours,
                 "cancelled_off_hours" => $cancelled_off_hours,
             ]);
+
+            if ($overtimeApplied && $approvedOvertime >= 1) {
+                $overtimeApplied->update([
+                    "timekeeping_id" => !$isAdjustment ? $timeKeeping->id : null,
+                    "adjustment_timekeeping_id" => $isAdjustment ? $timeKeeping->id : null
+                ]);
+            }
         }
 
         if ($schedule->selection === "INCENTIVE LEAVE") {
-            $model->create([
+            $timeKeeping = $model->create([
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
                 "biotime_log_id" => null,
@@ -625,9 +655,12 @@ class TimeKeepingService
                 "final_worked_hours" => $schedule->total_hours
             ]);
         }
+        
+        return $timeKeeping;
     }
 
     public function computePayment($timeKeeping, $actualSchedule, $isAdjustment = false) {
+        $timekeepingPayment = null;
         if ($timeKeeping) {
             $employee = $timeKeeping->employee;
 
@@ -733,7 +766,7 @@ class TimeKeepingService
                     $payment->delete();
                 }
 
-                TimeKeepingPayment::create([
+                $timekeepingPayment = TimeKeepingPayment::create([
                     "timekeeping_id" => $timeKeeping->id,
                     "base_amount" => round($paymentPerDay, 2),
                     "tardiness_deduction" => round($tardinessDeduction, 2),
@@ -755,7 +788,7 @@ class TimeKeepingService
                     $isExisting->delete();
                 }
 
-                TimeKeepingPayment::create([
+                $timekeepingPayment = TimeKeepingPayment::create([
                     "adjustment_timekeeping_id" => $timeKeeping->id,
                     "base_amount" => round($paymentPerDay,2),
                     "tardiness_deduction" => round($tardinessDeduction,2),
@@ -772,6 +805,8 @@ class TimeKeepingService
                     "type" => "adjustment_timekeeping"
                 ]);
             }
+
+            return $timekeepingPayment;
         }
     }
 

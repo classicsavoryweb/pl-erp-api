@@ -59,4 +59,8 @@ class TimeKeeping extends Model
     public function payment() {
         return $this->hasOne(TimeKeepingPayment::class, "timekeeping_id", "id");
     }
+
+    public function overtime() {
+        return $this->hasOne(Overtime::class, "id", "timekeeping_id");
+    }
 }

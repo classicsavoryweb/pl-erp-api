@@ -45,4 +45,8 @@ class AdjustmentTimeKeeping extends Model
     public function schedule() {
         return $this->hasOne(ScheduleTime::class, "id", "schedule_time_id");
     }
+
+    public function overtime() {
+        return $this->hasOne(Overtime::class, "adjustment_timekeeping_id", "id");
+    }
 }

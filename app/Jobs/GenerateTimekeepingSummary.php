@@ -289,11 +289,53 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 $adjustments = Adjustment::whereBetween("date", [$previousCutOff['start_time'], $previousCutOff['end_time']])
                 ->where("employee_id", $employee->id)
+                ->whereNot("type", "Overtime Force Adjustments")
+                ->whereIn("status", ["Approved", "Adjusted"])
+                ->get();
+
+                $anotherAdjustments = Adjustment::where("date","<" ,$cutOff["start_time"])
+                ->where("employee_id", $employee->id)
+                ->where("type", "Overtime Force Adjustments")
                 ->whereIn("status", ["Approved", "Adjusted"])
                 ->get();
 
                 $withAdjustments = false;
-                foreach($adjustments as $adjustment) {
+                foreach($adjustments as $adjustment) {                      
+                    if ($adjustment->days > 0) {
+                        $adjustments_days += $adjustment->days;
+                    } else {
+                        if ($adjustment->taxable_amount !== 0) {
+                            $adjustment_amount += $adjustment->taxable_amount;
+                        }
+
+                        if ($adjustment->cancelled_rd > 0) {
+                            $adjustments_cancelled_off += $adjustment->cancelled_rd;
+                        }
+                    }
+
+                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("date", $adjustment->date)
+                    ->where("employee_id", $employee->id)
+                    ->first();
+
+                    if ($adjustmentTimeKeeping) {
+                        if ($adjustmentTimeKeeping->undertime > 0) {
+                            $adjustments_undertime += $adjustmentTimeKeeping->undertime;
+                        }
+
+                        if ($adjustmentTimeKeeping->tardiness > 0) {
+                            $adjustments_tardiness += $adjustmentTimeKeeping->tardiness;
+                        }
+                    }
+
+                    $adjustment->update([
+                        "status" => "Adjusted",
+                        "timekeeping_summary_id" => $timeKeepingSummary->id
+                    ]);
+
+                    $withAdjustments = true;
+                }
+
+                foreach($anotherAdjustments as $adjustment) {
                     if ($adjustment->days > 0) {
                         $adjustments_days += $adjustment->days;
                     } else {
