@@ -13,6 +13,7 @@ use App\Http\Controllers\Maintenance\CSHubSourceTypeController;
 use App\Http\Controllers\Maintenance\DeductionsController;
 use App\Http\Controllers\Maintenance\IncentivesManagementController;
 use App\Http\Controllers\Maintenance\IncentivesBracketController;
+use App\Http\Controllers\Maintenance\IncentivesPerEmployeeController;
 use App\Http\Controllers\Maintenance\ContributionsAndTaxController;
 use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
@@ -222,4 +223,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-incentives-bracket", [IncentivesBracketController::class, "exportAllIncentivesBracket"]);
     Route::middleware(["permission:perform_incentives_bracket"])->post("/create-incentives-bracket", [IncentivesBracketController::class, "createIncentivesBracket"]);
     Route::middleware(["permission:perform_incentives_bracket"])->post("/edit-incentives-bracket/{id}", [IncentivesBracketController::class, "editIncentivesBracket"]);
+    //incentives per employee
+    Route::get("/get-all-incentives-per-employee", [IncentivesPerEmployeeController::class, "getAllIncentivesPerEmployee"]);
+    Route::get("/get-incentives-per-employee", [IncentivesPerEmployeeController::class, "getIncentivesPerEmployee"]);
+    Route::get("/export-all-incentives-per-employee", [IncentivesPerEmployeeController::class, "exportAllIncentivesPerEmployee"]);
+    Route::middleware(["permission:perform_incentives_per_employee"])->post("/create-incentives-per-employee", [IncentivesPerEmployeeController::class, "createIncentivesPerEmployee"]);
+    Route::middleware(["permission:perform_incentives_per_employee"])->post("/edit-incentives-per-employee/{id}", [IncentivesPerEmployeeController::class, "editIncentivesPerEmployee"]);
 });

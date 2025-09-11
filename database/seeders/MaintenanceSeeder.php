@@ -47,5 +47,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(ContributionAndTaxSeeder::class);
         $this->call(PositionIncentivesSeeder::class);
         $this->call(IncentivesBracketSeeder::class);
+        $this->call(IncentivesPerEmployeeSeeder::class);
     }
 }
