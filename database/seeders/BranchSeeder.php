@@ -95,6 +95,23 @@ class BranchSeeder extends Seeder
             }
         }
 
-        
+        $jsonPath = public_path('jsons/payroll/branches.json');
+        $jsonData = file_get_contents($jsonPath);
+        $branches = json_decode($jsonData, true);
+        $unique_branches = array_map("unserialize", array_unique(array_map("serialize", $branches["tbl_branches"])));
+
+        foreach ($unique_branches as $branches) {
+
+            $branch = Branch::where("branch_number", $branches["branch_id2"])->first();
+
+            if ($branch) {
+                $branch->update([
+                    "expense_debit" => $branches["expense_debit"],
+                    "expense_credit" => $branches["expense_credit"],
+                    "advance_debit" => $branches["advances_debit"],
+                    "advance_credit" => $branches["advances_credit"]
+                ]);
+            }
+        }
     }
 }
