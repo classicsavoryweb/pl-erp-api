@@ -115,6 +115,10 @@ class BranchController extends Controller
                 "mancom" => $mancom->full_name,
                 "kitchen_oic_employee_number" => $kitchenOIC->employee_number ?? null,
                 "kitchen_oic" => $kitchenOIC->full_name ?? null, 
+                "expense_debit" => $request->expense_debit, 
+                "expense_credit" => $request->expense_credit, 
+                "advance_debit" => $request->advance_debit, 
+                "advance_credit" => $request->advance_credit, 
             ]);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);
@@ -174,7 +178,11 @@ class BranchController extends Controller
                 "mancom_employee_number" => $mancom->employee_number,
                 "mancom" => $mancom->full_name,
                 "kitchen_oic_employee_number" => $kitchenOIC->employee_number ?? null,
-                "kitchen_oic" => $kitchenOIC->full_name ?? null, 
+                "kitchen_oic" => $kitchenOIC->full_name ?? null,
+                "expense_debit" => $request->expense_debit, 
+                "expense_credit" => $request->expense_credit, 
+                "advance_debit" => $request->advance_debit, 
+                "advance_credit" => $request->advance_credit, 
             ]);
 
             return $this->sendResponse(["message" => "Branch updated successfully"]);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Accounting\Account;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,6 +32,10 @@ class Branch extends Model
         'kitchen_oic',
         'mancom_employee_number',
         'mancom',
+        'expense_debit',
+        'expense_credit',
+        'advance_debit',
+        'advance_credit',
     ];
 
     public function employee() {
@@ -51,6 +56,21 @@ class Branch extends Model
 
     public function group_head() {
         return $this->hasOne(Employee::class, "employee_number", "group_head_employee_number");
+    }
+    public function expense_debit() {
+        return $this->hasOne(Account::class,'acc_no','expense_debit');
+    }
+
+    public function expense_credit() {
+        return $this->hasOne(Account::class,'acc_no','expense_credit');
+    }
+
+    public function advance_debit() {
+        return $this->hasOne(Account::class,'acc_no','advance_debit');
+    }
+
+    public function advance_credit() {
+        return $this->hasOne(Account::class,'acc_no','advance_credit');
     }
 
     public function schedule_time() {
