@@ -30,6 +30,7 @@ use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
 use App\Http\Controllers\Maintenance\SSSController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TaxController;
+use App\Http\Controllers\Maintenance\TermsController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use Illuminate\Support\Facades\Route;
@@ -229,4 +230,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-incentives-per-employee", [IncentivesPerEmployeeController::class, "exportAllIncentivesPerEmployee"]);
     Route::middleware(["permission:perform_incentives_per_employee"])->post("/create-incentives-per-employee", [IncentivesPerEmployeeController::class, "createIncentivesPerEmployee"]);
     Route::middleware(["permission:perform_incentives_per_employee"])->post("/edit-incentives-per-employee/{id}", [IncentivesPerEmployeeController::class, "editIncentivesPerEmployee"]);
+    //terms
+    Route::get("/get-all-terms", [TermsController::class, "getAllTerms"]);
+    Route::get("/get-term", [TermsController::class, "getTerm"]);
+    Route::get("/export-all-terms", [TermsController::class, "exportAllTerms"]);
+    Route::middleware(["permission:perform_terms"])->post("/create-term", [TermsController::class, "createTerm"]);
+    Route::middleware(["permission:perform_terms"])->post("/edit-term/{id}", [TermsController::class, "editTerm"]);
 });
