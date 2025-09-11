@@ -1,0 +1,64 @@
+{
+  "tbl_terms": [
+    {
+      "id": "1",
+      "description": "1 cut-off",
+      "cutoff": "1",
+      "amountfrom": "0.01",
+      "amountto": "299.99",
+      "createdby": "FULLNAME",
+      "datecreated": "2025-01-04 15:39:03",
+      "modifiedby": "FULLNAME",
+      "datemodified": "2025-01-14 11:47:44",
+      "payroll_months": "0.0"
+    },
+    {
+      "id": "2",
+      "description": "1 month",
+      "cutoff": "2",
+      "amountfrom": "300.00",
+      "amountto": "999.99",
+      "createdby": "FULLNAME",
+      "datecreated": "2025-01-04 18:08:23",
+      "modifiedby": null,
+      "datemodified": null,
+      "payroll_months": "1.0"
+    },
+    {
+      "id": "3",
+      "description": "2 months",
+      "cutoff": "4",
+      "amountfrom": "1000.00",
+      "amountto": "2999.99",
+      "createdby": "FULLNAME",
+      "datecreated": "2025-01-04 18:08:55",
+      "modifiedby": null,
+      "datemodified": null,
+      "payroll_months": "2.0"
+    },
+    {
+      "id": "4",
+      "description": "3 months",
+      "cutoff": "6",
+      "amountfrom": "3000.00",
+      "amountto": "100000.00",
+      "createdby": "FULLNAME",
+      "datecreated": "2025-01-04 18:09:58",
+      "modifiedby": null,
+      "datemodified": null,
+      "payroll_months": "3.0"
+    },
+    {
+      "id": "999",
+      "description": "N/A",
+      "cutoff": "0",
+      "amountfrom": "0.00",
+      "amountto": "0.00",
+      "createdby": null,
+      "datecreated": null,
+      "modifiedby": null,
+      "datemodified": null,
+      "payroll_months": "0.0"
+    }
+  ]
+}
