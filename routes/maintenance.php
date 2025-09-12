@@ -31,6 +31,7 @@ use App\Http\Controllers\Maintenance\SSSController;
 use App\Http\Controllers\Maintenance\StationController;
 use App\Http\Controllers\Maintenance\TaxController;
 use App\Http\Controllers\Maintenance\TermsController;
+use App\Http\Controllers\Maintenance\LastPaySetupController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use Illuminate\Support\Facades\Route;
@@ -236,4 +237,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-terms", [TermsController::class, "exportAllTerms"]);
     Route::middleware(["permission:perform_terms"])->post("/create-term", [TermsController::class, "createTerm"]);
     Route::middleware(["permission:perform_terms"])->post("/edit-term/{id}", [TermsController::class, "editTerm"]);
+    //last pay setup
+    Route::get("/get-all-last-pay-setup", [LastPaySetupController::class, "getAllLastPaySetup"]);
+    Route::get("/get-last-pay-setup", [LastPaySetupController::class, "getLastPaySetup"]);
+    Route::get("/export-all-last-pay-setup", [LastPaySetupController::class, "exportAllLastPaySetup"]);
+    Route::middleware(["permission:perform_last_pay_setup"])->post("/create-last-pay-setup", [LastPaySetupController::class, "createLastPaySetup"]);
+    Route::middleware(["permission:perform_last_pay_setup"])->post("/edit-last-pay-setup/{id}", [LastPaySetupController::class, "editLastPaySetup"]);
 });
