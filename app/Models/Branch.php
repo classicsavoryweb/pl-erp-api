@@ -36,6 +36,14 @@ class Branch extends Model
         'expense_credit',
         'advance_debit',
         'advance_credit',
+        'ho_13th_debit',
+        'ho_13th_debit_1',
+        'ho_13th_credit',
+        'branch_ho_13th_debit',
+        'branch_ho_13th_debit_1',
+        'branch_ho_13th_credit',
+        'branch_ho_stat_debit',
+        'branch_ho_stat_credit',
     ];
 
     public function employee() {
