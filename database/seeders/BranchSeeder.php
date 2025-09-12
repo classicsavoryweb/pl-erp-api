@@ -113,5 +113,28 @@ class BranchSeeder extends Seeder
                 ]);
             }
         }
+
+        $jsonPath = public_path('jsons/payroll/allocation_setup.json');
+        $jsonData = file_get_contents($jsonPath);
+        $branches = json_decode($jsonData, true);
+        $unique_branches = array_map("unserialize", array_unique(array_map("serialize", $branches["tbl_allocation"])));
+
+        foreach ($unique_branches as $branches) {
+
+            $branch = Branch::where("branch_number", $branches["branch_id"])->first();
+
+            if ($branch) {
+                $branch->update([
+                    "ho_13th_debit" => $branches["debit13"],
+                    "ho_13th_debit_1" => $branches["debit123"],
+                    "ho_13th_credit" => $branches["credit13"],
+                    "branch_ho_13th_debit" => $branches["debit132"],
+                    "branch_ho_13th_debit_1" => $branches["debit1322"],
+                    "branch_ho_13th_credit" => $branches["credit132"],
+                    "branch_ho_stat_debit" => $branches["debitstat2"],
+                    "branch_ho_stat_credit" => $branches["creditstat2"],
+                ]);
+            }
+        }
     }
 }

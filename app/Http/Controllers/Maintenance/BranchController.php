@@ -79,6 +79,18 @@ class BranchController extends Controller
                 'branch_head_employee_number' => "required",
                 "group_head_employee_number" => "required",
                 "mancom_employee_number" => "required",
+                "expense_debit" => "required",
+                "expense_credit" => "required",
+                "advance_debit" => "required",
+                "advance_credit" => "required",
+                "ho_13th_debit" => "required",
+                "ho_13th_debit_1" => "required",
+                "ho_13th_credit" => "required",
+                "branch_ho_13th_debit" => "required",
+                "branch_ho_13th_debit_1" => "required",
+                "branch_ho_13th_credit" => "required",
+                "branch_ho_stat_debit" => "required",
+                "branch_ho_stat_credit" => "required",
             ]);
 
             $count = Branch::count();
@@ -119,6 +131,14 @@ class BranchController extends Controller
                 "expense_credit" => $request->expense_credit, 
                 "advance_debit" => $request->advance_debit, 
                 "advance_credit" => $request->advance_credit, 
+                "ho_13th_debit" => $request->ho_13th_debit,
+                "ho_13th_debit_1" => $request->ho_13th_debit_1,
+                "ho_13th_credit" => $request->ho_13th_credit,
+                "branch_ho_13th_debit" => $request->branch_ho_13th_debit,
+                "branch_ho_13th_debit_1" => $request->branch_ho_13th_debit_1,
+                "branch_ho_13th_credit" => $request->branch_ho_13th_credit,
+                "branch_ho_stat_debit" => $request->branch_ho_stat_debit,
+                "branch_ho_stat_credit" => $request->branch_ho_stat_credit,
             ]);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);
@@ -147,6 +167,18 @@ class BranchController extends Controller
                 'branch_head_employee_number' => "required",
                 "group_head_employee_number" => "required",
                 "mancom_employee_number" => "required",
+                "expense_debit" => "required",
+                "expense_credit" => "required",
+                "advance_debit" => "required",
+                "advance_credit" => "required",
+                "ho_13th_debit" => "required",
+                "ho_13th_debit_1" => "required",
+                "ho_13th_credit" => "required",
+                "branch_ho_13th_debit" => "required",
+                "branch_ho_13th_debit_1" => "required",
+                "branch_ho_13th_credit" => "required",
+                "branch_ho_stat_debit" => "required",
+                "branch_ho_stat_credit" => "required",
             ]);
 
             $bhEmployee = Employee::where("employee_number", $request->branch_head_employee_number)->first();
@@ -182,7 +214,15 @@ class BranchController extends Controller
                 "expense_debit" => $request->expense_debit, 
                 "expense_credit" => $request->expense_credit, 
                 "advance_debit" => $request->advance_debit, 
-                "advance_credit" => $request->advance_credit, 
+                "advance_credit" => $request->advance_credit,
+                "ho_13th_debit" => $request->ho_13th_debit,
+                "ho_13th_debit_1" => $request->ho_13th_debit_1,
+                "ho_13th_credit" => $request->ho_13th_credit,
+                "branch_ho_13th_debit" => $request->branch_ho_13th_debit,
+                "branch_ho_13th_debit_1" => $request->branch_ho_13th_debit_1,
+                "branch_ho_13th_credit" => $request->branch_ho_13th_credit,
+                "branch_ho_stat_debit" => $request->branch_ho_stat_debit,
+                "branch_ho_stat_credit" => $request->branch_ho_stat_credit,
             ]);
 
             return $this->sendResponse(["message" => "Branch updated successfully"]);
