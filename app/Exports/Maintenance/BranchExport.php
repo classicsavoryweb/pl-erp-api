@@ -35,6 +35,18 @@ class BranchExport implements FromCollection, WithHeadings
                 $branch->travel_time,
                 $branch->device_name,
                 $branch->status,
+                $branch->expense_debit,
+                $branch->expense_credit,
+                $branch->advance_debit,
+                $branch->advance_credit,
+                $branch->ho_13th_debit,
+                $branch->ho_13th_debit_1,
+                $branch->ho_13th_credit,
+                $branch->branch_ho_13th_debit,
+                $branch->branch_ho_13th_debit_1,
+                $branch->branch_ho_13th_credit,
+                $branch->branch_ho_stat_debit,
+                $branch->branch_ho_stat_credit,
             ];
         });
     }
@@ -57,6 +69,18 @@ class BranchExport implements FromCollection, WithHeadings
             'Travel Time',
             'Device Name',
             'Status',
+            'Expense Account (Debit)',
+            'Expense Account (Credit)',
+            'Advance Account (Debit)',
+            'Advance Account (Credit)',
+            '13th, HO/HO (Debit)',
+            '13th, HO/HO (Debit 1)',
+            '13th, HO/HO (Credit)',
+            '13th, Branch/HO (Debit)',
+            '13th, Branch/HO (Debit 1)',
+            '13th, Branch/HO (Credit)',
+            'Statutory, Branch/HO (Debit)',
+            'Statutory, Branch/HO (Credit)',
         ];
     }
 }
