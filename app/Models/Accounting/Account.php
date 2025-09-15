@@ -4,6 +4,7 @@ namespace App\Models\Accounting;
 
 use App\Models\Branch;
 use App\Models\ContributionAndTax;
+use App\Models\LastPaySetup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,5 +20,9 @@ class Account extends Model
 
     public function branch() {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function last_pay_setup() {
+        return $this->belongsTo(LastPaySetup::class);
     }
 }

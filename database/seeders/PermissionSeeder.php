@@ -91,6 +91,8 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "perform_incentives_per_employee"]);
         Permission::firstOrCreate(["name" => "view_terms"]);
         Permission::firstOrCreate(["name" => "perform_terms"]);
+        Permission::firstOrCreate(["name" => "view_last_pay_setup"]);
+        Permission::firstOrCreate(["name" => "perform_last_pay_setup"]);
 
         //employees module
         Permission::firstOrCreate(["name" => "view_employees_module"]);

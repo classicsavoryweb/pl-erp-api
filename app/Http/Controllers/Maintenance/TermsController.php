@@ -42,7 +42,7 @@ class TermsController extends Controller
 
     public function getTerm(Request $request) {
         try {
-            $terms = Term::where("status", "active")->get();
+            $terms = Term::all();
             return $this->sendResponse(["terms" => $terms]);
         } catch(Exception $e) {
 

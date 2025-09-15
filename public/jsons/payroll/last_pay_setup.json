@@ -1,0 +1,67 @@
+{
+  "tbl_lastpay_setup": [
+    {
+      "setup_id": "10",
+      "debit_acc": "4600000",
+      "credit_acc": "4000000",
+      "setuptype": "13th",
+      "vendor": ""
+    },
+    {
+      "setup_id": "11",
+      "debit_acc": "4600000",
+      "credit_acc": "4000000",
+      "setuptype": "slvl",
+      "vendor": ""
+    },
+    {
+      "setup_id": "12",
+      "debit_acc": "4600000",
+      "credit_acc": "4000000",
+      "setuptype": "taxrefund",
+      "vendor": ""
+    },
+    {
+      "setup_id": "13",
+      "debit_acc": "7000020",
+      "credit_acc": "4000000",
+      "setuptype": "incentives",
+      "vendor": ""
+    },
+    {
+      "setup_id": "14",
+      "debit_acc": "4600000",
+      "credit_acc": "4000000",
+      "setuptype": "sales",
+      "vendor": ""
+    },
+    {
+      "setup_id": "15",
+      "debit_acc": "7500017",
+      "credit_acc": "4000000",
+      "setuptype": "meal",
+      "vendor": ""
+    },
+    {
+      "setup_id": "16",
+      "debit_acc": "7000020",
+      "credit_acc": "4500033",
+      "setuptype": "storeincentives",
+      "vendor": ""
+    },
+    {
+      "setup_id": "17",
+      "debit_acc": "4000000",
+      "credit_acc": "4600004",
+      "setuptype": "sssloans",
+      "vendor": ""
+    },
+    {
+      "setup_id": "18",
+      "debit_acc": "4600003",
+      "credit_acc": "3000006",
+      "setuptype": "sssloansremittance",
+      "vendor": "GOV0000000005"
+    }
+  ]
+}
