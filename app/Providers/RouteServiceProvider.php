@@ -28,35 +28,36 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->routes(function () {
             Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
+            ->prefix('api')
+            ->group(base_path('routes/api.php'));
 
             Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/employees.php'));
+            ->prefix('api')
+            ->group(base_path('routes/employees.php'));
 
             Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/maintenance.php'));
+            ->prefix('api')
+            ->group(base_path('routes/maintenance.php'));
             
             Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/transactions.php'));
+            ->prefix('api')
+            ->group(base_path('routes/transactions.php'));
             
             Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/administrators.php'));
+            ->prefix('api')
+            ->group(base_path('routes/administrators.php'));
 
             Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/all-records.php'));
+            ->prefix('api')
+            ->group(base_path('routes/all-records.php'));
 
             Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/accounting.php'));
+            ->prefix('api')
+            ->group(base_path('routes/accounting.php'));
 
-            // Route::middleware('web')
-            //     ->group(base_path('routes/web.php'));
+            Route::middleware('api')
+            ->prefix('api')
+            ->group(base_path('routes/compensation.php'));
         });
     }
 

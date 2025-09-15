@@ -173,5 +173,12 @@ class PermissionSeeder extends Seeder
         Permission::firstOrCreate(["name" => "unapprove_all_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "void_all_transactions_overtime"]);
         Permission::firstOrCreate(["name" => "force_adjust_all_transactions_overtime"]);
+
+        //compensation modules
+        Permission::firstOrCreate(["name" => "view_compensation_module"]);
+        Permission::firstOrCreate(["name" => "view_compensation_cutoff_setup"]);
+        Permission::firstOrCreate(["name" => "perform_compensation_cutoff_setup"]);
+        Permission::firstOrCreate(["name" => "view_compensation_deductions"]);
+        Permission::firstOrCreate(["name" => "perform_compensation_deductions"]);
     }
 }
