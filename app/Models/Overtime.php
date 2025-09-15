@@ -23,6 +23,7 @@ class Overtime extends Model
         "adjustment_timekeeping_id",
         "cutoff_paid",
         "payment_type",
+        "cshub_overtime_id"
     ];
 
     public function employee()

@@ -14,11 +14,20 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Http;
 
 class TimeKeepingService
 {
-    public function computeTimeKeeping($branchId, $log, $biotimePunches, $actualSchedule, $employee, Model $model, $isAdjustment = false, $paymentType = "timekeeping")
-    {
+    public function computeTimeKeeping(
+        $branchId,
+        $log,
+        $biotimePunches,
+        $actualSchedule,
+        $employee,
+        Model $model,
+        $isAdjustment = false,
+        $paymentType = "timekeeping"
+    ){
         $timeKeeping = null;
         $schedule = ScheduleMasterlist::where("selection", $actualSchedule)->first();
         $scheduleTime = ScheduleTime::where("timetable", $actualSchedule)
@@ -224,7 +233,6 @@ class TimeKeepingService
             ) {
                 $underTimeInMinutes = $scheduleEnd->diffInMinutes($parsedLastPunch);
                 $undertime = $underTimeInMinutes;
-                // $undertime = $underTimeInMinutes >= 240 ? 240 : $underTimeInMinutes;
             }
         }
 
@@ -241,17 +249,8 @@ class TimeKeepingService
         ) {
             if ($workHours >= 4 && $workHours <= 5) {
                 $workHours = $schedule->total_hours / 2;
-            } else if ($workHours >= 6) {
-                // $workHours = $workHours - ($scheduledBreakInMinutes / 60);
-
-                // if ($hours - $workHours > 0 && $workHours < $hours) {
-                //     $undertime = ($hours - $workHours) * 60;
-                // }
-                // $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
-
-                if ($parsedLastPunch->lt($scheduleEnd)) {
-                    $undertime = $scheduleEnd->diffInMinutes($parsedLastPunch);
-                }
+            } else if ($workHours >= 6 && $parsedLastPunch->lt($scheduleEnd)) {
+                $undertime = $scheduleEnd->diffInMinutes($parsedLastPunch);
             }
         }
 
@@ -390,9 +389,9 @@ class TimeKeepingService
         ) {
             $tardiness = 0;
             $undertime = 0;
-            $workHours = 0;
             if ($schedule->selection == "NO SCHEDULE") {
-                $overtime = $decimalHours;
+                $workHours = 0;
+                $overtime = $biotimePunches->count() > 3 ? $decimalHours - 1 : $decimalHours;   
             }
         }
 
@@ -436,18 +435,6 @@ class TimeKeepingService
             $tardiness = 0;
             $shouldBeHalfDay = false;
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
-
-            // if ($totalWorkedHours < 9.5 && $totalWorkedHours >= 8.5 ) {
-            //     $totalWorkedHours = 9.5;
-            // }
-
-            // if ($totalWorkedHours < 8.5) {
-            //     $undertime = (9.5 - $totalWorkedHours) * 60; 
-            // }
-
-            // if ($totalWorkedHours > 9.5) {
-            //     $overtime = $totalWorkedHours - 9.5 < 1 ? 0 : $totalWorkedHours - 9.5;
-            // }
 
             if ($totalWorkedHours < 9.5) {
                 $undertime = (10.5 - $totalWorkedHours) * 60;
@@ -500,7 +487,7 @@ class TimeKeepingService
                 }
 
                 $cutOff = $this->getCutOff($scheduleTime->date);
-                $currentCutOff = $this->getCutOff(now()->format("Y-m-d"));
+                $currentCutOff = $this->getCurrentCutOff();
 
                 $totalHoursPaid = $approvedOvertime;
 
@@ -523,6 +510,23 @@ class TimeKeepingService
                     "cutoff_paid" => $cutOffPaid,
                     "payment_type" => $paymentType,
                     "status" => ($overtimeApplied->total_hours - $totalHoursPaid >= 1) ? "Partialy Paid" : "Paid"
+                ]);
+
+                $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtimeApplied ->cshub_overtime_id;
+                $user = env('CS_HUB_ADMIN_EMAIL');
+                $password = env('CS_HUB_ADMIN_PASSWORD');
+
+                Http::withBasicAuth($user, $password)
+                ->withHeaders([
+                    "Accept" => "application/json",
+                    "Content-Type" => "application/json"
+                ])->timeout(60)
+                ->retry(50, 1000, function ($exception, $attempt) {
+                    return str_contains($exception->getMessage(), 'cURL error 60');
+                })
+                ->post($overtimeLink,[
+                    "status_payroll" => "paid",
+                    "status" => "approved",
                 ]);
             }
 
@@ -573,22 +577,6 @@ class TimeKeepingService
             }
 
             if ($holiday) {
-                // if ($workHours >= $schedule->total_hours) {
-                //     if ($legalHoliday === "Yes") {
-                //         $legalHolidayHours = $hours;
-                //     } else if ($specialHoliday === "Yes") {
-                //         $specialHolidayHours = $hours;
-                //     }
-                // } else {
-                //     $holidayHours = $workHours > $hours ? $hours : $workHours;
-                //     if ($legalHoliday === "Yes") {
-                //         $legalHolidayHours = $hours; 
-                //     } else if ($specialHoliday === "Yes") {
-                //         $specialHolidayHours = $holidayHours;
-                //         $finalWorkHours = $hours;
-                //     }
-                // }
-
                 if ($legalHoliday === "Yes") {
                     $legalHolidayHours = $hours;
                 } else if ($specialHoliday === "Yes") {
@@ -1081,6 +1069,26 @@ class TimeKeepingService
             "legal_holiday_hours_deduction" => $deductLegal,
             "legal_holiday_overtime_deduction" => $deductLegalOt,
             "dates" => $dates
+        ];
+    }
+
+    public function getCurrentCutoff() {
+        $now = Carbon::now();
+        $startTime = "";
+        $endTime = "";
+        $dayOfMonth = Carbon::now()->day;
+
+        if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
+            $startTime = $now->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); //26
+            $endTime = $now->copy()->startOfMonth()->addDays(9)->endOfDay(); //10
+        } else {
+            $startTime = $now->copy()->startOfMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
+            $endTime = $now->copy()->startOfMonth()->addDays(24)->endOfDay(); //25
+        }
+
+        return [
+            "start_time" => $startTime->toDateString(),
+            "end_time" => $endTime->toDateString()
         ];
     }
 }
