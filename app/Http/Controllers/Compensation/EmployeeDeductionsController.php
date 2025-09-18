@@ -207,4 +207,24 @@ class EmployeeDeductionsController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function endLoanTransaction(Request $request, $id)
+    {
+        try {
+            $amount = floatval(str_replace(',', '', $request->amount));
+            $balance = floatval(str_replace(',', '', $request->balance));
+
+            $updated_balance = $balance - $amount;
+
+            EmployeeDeduction::where("id", $id)->update([
+                "balance" => $updated_balance,
+                "end_loan_reason" => $request->end_loan_reason,
+                "end_loan_status" => "Yes"
+            ]);
+
+            return $this->sendResponse(["message" => "End loan updated successfully"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
 }

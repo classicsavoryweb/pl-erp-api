@@ -48,8 +48,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(IncentivesPerEmployeeSeeder::class);
         $this->call(TermSeeder::class);
         $this->call(LastPaySetupSeeder::class);
-        $this->call(DeductionHistorySeeder::class);
-        $this->call(EmployeeDeductionSeeder::class);
         $this->call(CutOffInitializeSeeder::class);
     }
 }

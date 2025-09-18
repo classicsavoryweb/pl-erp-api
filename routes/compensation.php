@@ -20,4 +20,5 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/export-all-employee-deductions", [EmployeeDeductionsController::class, "exportAllEmployeeDeductions"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/create-employee-deduction", [EmployeeDeductionsController::class, "createEmployeeDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/edit-employee-deduction/{id}", [EmployeeDeductionsController::class, "editEmployeeDeduction"]);
+    Route::middleware(["permission:perform_compensation_deductions"])->post("/end-loan-transaction/{id}", [EmployeeDeductionsController::class, "endLoanTransaction"]);
 });
