@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessInitializeCutOff;
 use App\Models\Cutoff;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 class CutOffController extends Controller
 {
@@ -26,6 +28,50 @@ class CutOffController extends Controller
     public function createCutOff(Request $request) {
         try {
             DB::beginTransaction();
+            $request->validate([
+                "cutoff" => "required",
+                "year" => "required",
+                "pay_date" => "required",
+                "initialize" => "required"
+            ]);
+
+            $startDate = $request->year."-".$request->cutoff["start_time"]; 
+            $endDate = $request->year."-".$request->cutoff["end_time"];
+            $cutOff = $startDate."-".$endDate;
+
+            $isExisting = Cutoff::where("cut_off", $cutOff)->first();
+            if ($isExisting) {
+                return $this->sendError(["message" => "Cutoff is already existing"]);
+            }
+
+            $initialized = false;
+            $initializedJson = [];
+
+            if ($request->initialize === "Yes") {
+                $initialized = true;
+                $initializedJson[] = [
+                    "initialized_at" => now(),
+                    "initialized_by" => Auth::user()->full_name
+                ];
+            }
+            
+            $createdCutOff = Cutoff::create([
+                "cut_off" => $cutOff,
+                "start_date" => $startDate,
+                "end_date" => $endDate,
+                "is_cutoff_initialized" => $initialized,
+                "status" => "active",
+                "pay_date" => $request->pay_date,
+                "initializations" => json_encode($initializedJson)
+            ]);
+
+            Cutoff::whereNot("id", $createdCutOff->id)
+            ->where("status", "active")
+            ->update(["status" => "inactive"]);
+
+            if ($initialized) {
+                ProcessInitializeCutOff::dispatch();
+            }
 
             DB::commit();
             return $this->sendResponse(["message" => "Cut off created successfully"]);
@@ -35,12 +81,78 @@ class CutOffController extends Controller
         }
     }
 
-    public function editCutOff(Request $request, $id) {
+    public function initializeCutOff($id) {
         try {
             DB::beginTransaction();
 
-            DB::commit();
-            return $this->sendResponse(["message" => "Cut off edited successfully"]);
+            $createdCutOff = Cutoff::find($id);
+
+            if ($createdCutOff) {                
+                $initializedJson = [];
+
+                if ($createdCutOff->initializations) {
+                    $initializedJson = json_decode($createdCutOff->initializations, true);
+                }
+
+                $newJson = [
+                    [
+                        "initialized_at" => now(),
+                        "initialized_by" => Auth::user()->full_name
+                    ],
+                    ...$initializedJson
+                ];
+
+                $createdCutOff->update([
+                    "initializations" => json_encode($newJson)
+                ]);
+
+                //trigger a cut off initialization job
+                ProcessInitializeCutOff::dispatch();
+
+                DB::commit();
+                return $this->sendResponse([
+                    "cut_off" => $createdCutOff,
+                    "message" => "Cut off initialized successfully"
+                ]);
+            }
+
+            return $this->sendError(["message" => "Cut off not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function editCutOff(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "cutoff" => "required",
+                "year" => "required",
+                "pay_date" => "required",
+                "initialize" => "required"
+            ]);
+
+            $startDate = $request->year."-".$request->cutoff["start_time"]; 
+            $endDate = $request->year."-".$request->cutoff["end_time"];
+            $cutOff = $startDate."-".$endDate;
+
+            $createdCutOff = Cutoff::find($id);
+
+            if ($createdCutOff) {                
+                $createdCutOff->update([
+                    "cut_off" => $cutOff,
+                    "start_date" => $startDate,
+                    "end_date" => $endDate,
+                    "status" => "active",
+                    "pay_date" => $request->pay_date,
+                ]);
+
+                DB::commit();
+                return $this->sendResponse(["message" => "Cut off updated successfully"]);
+            }
+
+            return $this->sendError(["message" => "Cut off not found"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);

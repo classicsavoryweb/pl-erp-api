@@ -12,6 +12,8 @@ class Cutoff extends Model
     protected $table = "cut_off";
     protected $fillable = [
         "cut_off",
+        "start_date",
+        "end_date",
         "is_timekeeping_locked",
         "is_cutoff_initialized",
         "is_cutoff_locked",
@@ -23,5 +25,6 @@ class Cutoff extends Model
         "cutoff_locked_by",
         "cutoff_locked_date",
         "status",
+        "initializations"
     ];
 }

@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string("initialized_by")->nullable();
             $table->string("cutoff_locked_by")->nullable();
             $table->string("cutoff_locked_date")->nullable();
-            $table->string("status")->default("inactive");
+            $table->string("status")->default("active");
             $table->timestamps();
         });
     }

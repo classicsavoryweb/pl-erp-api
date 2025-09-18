@@ -21,17 +21,5 @@ class DatabaseSeeder extends Seeder
         $this->call(HRRoleSeeder::class);
         $this->call(MaintenanceSeeder::class);
         $this->call(EmployeeRecordSeeder::class);
-        // $employees = Employee::where("branch_id", 107)->where("status", "active")->get();
-
-        // foreach ($employees as $employee) {
-        //     $logs = BiotimeLog::where("employee_id", $employee->id)
-        //     ->get();
-
-        //     foreach ($logs as $log) {
-        //         $log->punches()->delete();
-        //         $log->delete();
-        //     }
-        // }
-
     }
 }
