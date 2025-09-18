@@ -21,7 +21,7 @@ class CSHubTransactionTypeExport implements FromCollection, WithHeadings
             return [
                 $type->description,
                 $type->module->description,
-                (optional($type->deduction)->description === '') ? 'N/A' : optional($type->deduction)->description,
+                optional($type->deduction)->description ?: '',
                 $type->trans_type->description,
                 $type->unique_exam_type->description,
                 $type->deduction_status_positive,

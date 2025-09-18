@@ -279,6 +279,10 @@ class Employee extends Model
         return $this->hasMany(CoeRequest::class,'employee_id','id');
     }
 
+    public function employee_deduction() {
+        return $this->hasMany(EmployeeDeduction::class,'employee_id','id');
+    }
+
     public function latest_contract()
     {
         return $this->hasOne(Contract::class)->latestOfMany();
