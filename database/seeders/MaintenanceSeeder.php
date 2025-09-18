@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\DeductionHistory;
+use App\Models\EmployeeDeduction;
 use App\Models\IncentivesBracket;
 use App\Models\LastPaySetup;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -51,5 +53,7 @@ class MaintenanceSeeder extends Seeder
         $this->call(IncentivesPerEmployeeSeeder::class);
         $this->call(TermSeeder::class);
         $this->call(LastPaySetupSeeder::class);
+        $this->call(DeductionHistorySeeder::class);
+        $this->call(EmployeeDeductionSeeder::class);
     }
 }

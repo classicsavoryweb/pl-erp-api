@@ -19,6 +19,10 @@ class Deduction extends Model
         return $this->belongsTo(CSHubTransactionType::class);
     }
 
+    public function employee_deduction() {
+        return $this->belongsTo(EmployeeDeduction::class);
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

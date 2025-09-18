@@ -97,6 +97,10 @@ class Branch extends Model
         return $this->belongsTo(TimeKeepingSummary::class);
     }
 
+    public function employee_deduction() {
+        return $this->belongsTo(EmployeeDeduction::class);
+    }
+
     public function holidays() {
         return $this->belongsToMany(Holiday::class)
         ->using(BranchHoliday::class)

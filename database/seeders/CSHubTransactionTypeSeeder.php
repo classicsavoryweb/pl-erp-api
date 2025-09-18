@@ -30,7 +30,23 @@ class CSHubTransactionTypeSeeder extends Seeder
                 $transaction["deduction_id"] = '';
             }
 
-            $transaction["deduction_id"] = ltrim($transaction["deduction_id"], '0');
+            $deductionIdMap = [
+                '00000011' => 10,
+                '00000012' => 11,
+                '00000013' => 12,
+                '00000014' => 13,
+                '00000015' => 14,
+                '00000016' => 15,
+                '00000017' => 16,
+                '00000018' => 17,
+                '00000019' => 18,
+            ];
+
+            if (array_key_exists($transaction["deduction_id"], $deductionIdMap)) {
+                $transaction["deduction_id"] = $deductionIdMap[$transaction["deduction_id"]];
+            } else {
+                $transaction["deduction_id"] = ltrim($transaction["deduction_id"], '0');
+            }
 
             CSHubTransactionType::create([
                 "description" => $transaction["description"],
@@ -53,4 +69,3 @@ class CSHubTransactionTypeSeeder extends Seeder
         }
     }
 }
-
