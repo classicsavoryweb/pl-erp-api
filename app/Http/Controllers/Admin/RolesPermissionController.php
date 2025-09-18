@@ -25,7 +25,7 @@ class RolesPermissionController extends Controller
 
     public function getAllPermissions (Request $request) {
         try {
-            $permissions = Permission::all();
+            $permissions = Permission::orderBy("module")->get();
 
             return $this->sendResponse(["permissions" => $permissions]);
         } catch(Exception $e) {
