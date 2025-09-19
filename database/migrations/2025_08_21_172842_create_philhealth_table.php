@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('philhealth', function (Blueprint $table) {
             $table->id();
-            $table->string("salary_range_min");
-            $table->string("salary_range_max");
-            $table->string("salary_base");
-            $table->string("employee_share");
-            $table->string("employer_share");
-            $table->string("total_monthly_contribution");
+            $table->decimal("salary_range_min");
+            $table->decimal("salary_range_max");
+            $table->decimal("salary_base");
+            $table->decimal("employee_share");
+            $table->decimal("employer_share");
+            $table->decimal("total_monthly_contribution");
             $table->timestamps();
         });
     }

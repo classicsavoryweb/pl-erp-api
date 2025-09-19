@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('pagibig', function (Blueprint $table) {
             $table->id();
-            $table->string("employer_share");
-            $table->string("employee_share");
+            $table->decimal("employer_share");
+            $table->decimal("employee_share");
             $table->timestamps();
         });
     }

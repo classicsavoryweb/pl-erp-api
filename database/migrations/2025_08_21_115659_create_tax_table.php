@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string("type");
             $table->string("status");
-            $table->string("range_min");
-            $table->string("range_max");
-            $table->string("salary_base");
-            $table->string("percentage");
-            $table->string("exemption");
+            $table->decimal("range_min");
+            $table->decimal("range_max");
+            $table->decimal("salary_base");
+            $table->decimal("percentage");
+            $table->decimal("exemption");
             $table->timestamps();
         });
     }

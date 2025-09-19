@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('sss', function (Blueprint $table) {
             $table->id();
-            $table->string("salary_range_min");
-            $table->string("salary_range_max");
-            $table->string("salary_credit");
-            $table->string("employer_ss");
-            $table->string("employer_cc");
-            $table->string("employee_ss");
+            $table->decimal("salary_range_min");
+            $table->decimal("salary_range_max");
+            $table->decimal("salary_credit");
+            $table->decimal("employer_ss");
+            $table->decimal("employer_cc");
+            $table->decimal("employee_ss");
             $table->timestamps();
         });
     }

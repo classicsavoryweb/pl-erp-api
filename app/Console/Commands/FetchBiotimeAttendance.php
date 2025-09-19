@@ -90,6 +90,7 @@ class FetchBiotimeAttendance extends Command
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
                             $latest = BiotimeLog::where("employee_id", $employee->id)
                             ->orderBy("date", "DESC")
+                            ->where("date", '<=', $date)
                             ->first();
 
                             if ($latest) {
@@ -211,6 +212,7 @@ class FetchBiotimeAttendance extends Command
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
                             $latest = BiotimeLog::where("employee_id", $employee->id)
                             ->orderBy("date", "DESC")
+                            ->where("date", '<=', $date)
                             ->first();
 
                             if ($latest) {
