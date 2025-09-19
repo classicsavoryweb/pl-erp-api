@@ -512,22 +512,22 @@ class TimeKeepingService
                     "status" => ($overtimeApplied->total_hours - $totalHoursPaid >= 1) ? "Partialy Paid" : "Paid"
                 ]);
 
-                $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtimeApplied ->cshub_overtime_id;
-                $user = env('CS_HUB_ADMIN_EMAIL');
-                $password = env('CS_HUB_ADMIN_PASSWORD');
+                // $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtimeApplied ->cshub_overtime_id;
+                // $user = env('CS_HUB_ADMIN_EMAIL');
+                // $password = env('CS_HUB_ADMIN_PASSWORD');
 
-                Http::withBasicAuth($user, $password)
-                ->withHeaders([
-                    "Accept" => "application/json",
-                    "Content-Type" => "application/json"
-                ])->timeout(60)
-                ->retry(50, 1000, function ($exception, $attempt) {
-                    return str_contains($exception->getMessage(), 'cURL error 60');
-                })
-                ->post($overtimeLink,[
-                    "status_payroll" => "paid",
-                    "status" => "approved",
-                ]);
+                // Http::withBasicAuth($user, $password)
+                // ->withHeaders([
+                //     "Accept" => "application/json",
+                //     "Content-Type" => "application/json"
+                // ])->timeout(60)
+                // ->retry(50, 1000, function ($exception, $attempt) {
+                //     return str_contains($exception->getMessage(), 'cURL error 60');
+                // })
+                // ->post($overtimeLink,[
+                //     "status_payroll" => "paid",
+                //     "status" => "approved",
+                // ]);
             }
 
             if ($schedule->selection === "REST DAY") {
@@ -660,7 +660,7 @@ class TimeKeepingService
             $totalDutyHours = $schedule->total_hours - $this->formatHours($scheduledBreakInHours);
 
             $paymentPerDay = $employee->daily_salary;
-            $paymentPerHour =  $totalDutyHours > 0 ? $paymentPerDay / $totalDutyHours : $paymentPerDay / 8;
+            $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
             $paymentPerMinute = $paymentPerHour / 60;
 
             if (

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Compensation\CutOffController;
 use App\Http\Controllers\Compensation\EmployeeDeductionsController;
 use App\Http\Controllers\Compensation\DeductionHistoryController;
+use App\Http\Controllers\Compensation\PayrollController;
 use Illuminate\Support\Facades\Route;
 
 //compensation routes
@@ -21,4 +22,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_deductions"])->post("/create-employee-deduction", [EmployeeDeductionsController::class, "createEmployeeDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/edit-employee-deduction/{id}", [EmployeeDeductionsController::class, "editEmployeeDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/end-loan-transaction/{id}", [EmployeeDeductionsController::class, "endLoanTransaction"]);
+
+    //payroll
+    Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);
+
 });

@@ -20,12 +20,12 @@ class SSSSeeder extends Seeder
 
         foreach ($unique_sss_details as $sss_detail) {
             SSS::create([
-                "salary_range_min" => $sss_detail["salary_range_min"],
-                "salary_range_max" => $sss_detail["salary_range_max"],
-                "salary_credit" => $sss_detail["salary_credit"],
-                "employer_ss" => $sss_detail["employer_ss"],
-                "employer_cc" => $sss_detail["employer_ec"],
-                "employee_ss" => $sss_detail["employee_ss"]
+                "salary_range_min" => floatval(str_replace(',', '', $sss_detail["salary_range_min"])),
+                "salary_range_max" =>floatval(str_replace(',', '', $sss_detail["salary_range_max"])),
+                "salary_credit" => floatval(str_replace(',', '', $sss_detail["salary_credit"])),
+                "employer_ss" => floatval(str_replace(',', '', $sss_detail["employer_ss"])),
+                "employer_cc" => floatval(str_replace(',', '', $sss_detail["employer_ec"])),
+                "employee_ss" => floatval(str_replace(',', '', $sss_detail["employee_ss"]))
             ]);
         }
     }

@@ -11,7 +11,7 @@ class TimeKeepingSummary extends Model
 
     protected $table = "timekeeping_summary";
     protected $fillable = [
-        "cut-off",
+        "cut_off",
         "employee_id",
         "regular_days",
         "special_leave",

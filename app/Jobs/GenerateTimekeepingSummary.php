@@ -165,7 +165,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 }
 
-                $isExisting = TimeKeepingSummary::where("cut-off", $cutOff['start_time']."-".$cutOff['end_time'])
+                $isExisting = TimeKeepingSummary::where("cut_off", $cutOff['start_time']."-".$cutOff['end_time'])
                 ->where("employee_id", $employee->id)
                 ->first();
 
@@ -265,7 +265,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
 
                 $timeKeepingSummary = TimeKeepingSummary::create([
-                    "cut-off" => $cutOff['start_time']."-".$cutOff['end_time'],
+                    "cut_off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
                     "regular_days" => $regular_days,
                     "special_leave" => $special_leave,

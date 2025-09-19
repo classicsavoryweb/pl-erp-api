@@ -192,22 +192,22 @@ class OvertimeController extends Controller
                 "status" => "Voided"
             ]);
 
-            $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtime->cshub_overtime_id;
-            $user = env('CS_HUB_ADMIN_EMAIL');
-            $password = env('CS_HUB_ADMIN_PASSWORD');
+            // $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtime->cshub_overtime_id;
+            // $user = env('CS_HUB_ADMIN_EMAIL');
+            // $password = env('CS_HUB_ADMIN_PASSWORD');
 
-            Http::withBasicAuth($user, $password)
-            ->withHeaders([
-                "Accept" => "application/json",
-                "Content-Type" => "application/json"
-            ])->timeout(60)
-            ->retry(50, 1000, function ($exception, $attempt) {
-                return str_contains($exception->getMessage(), 'cURL error 60');
-            })
-            ->post($overtimeLink,[
-                "status_payroll" => "unpaid",
-                "status" => "rejected",
-            ]);
+            // Http::withBasicAuth($user, $password)
+            // ->withHeaders([
+            //     "Accept" => "application/json",
+            //     "Content-Type" => "application/json"
+            // ])->timeout(60)
+            // ->retry(50, 1000, function ($exception, $attempt) {
+            //     return str_contains($exception->getMessage(), 'cURL error 60');
+            // })
+            // ->post($overtimeLink,[
+            //     "status_payroll" => "unpaid",
+            //     "status" => "rejected",
+            // ]);
 
             DB::commit();
             return $this->sendResponse(["message" => "Overtime voided successfully"]);

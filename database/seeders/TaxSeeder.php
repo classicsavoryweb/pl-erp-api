@@ -22,11 +22,11 @@ class TaxSeeder extends Seeder
             Tax::create([
                 "type" => $tax_detail["tax_type"],
                 "status" => $tax_detail["tax_status"],
-                "range_min" => $tax_detail["tax_range_min"],
-                "range_max" => $tax_detail["tax_range_max"],
-                "salary_base" => $tax_detail["tax_salary_base"],
-                "percentage" => $tax_detail["tax_percentage"],
-                "exemption" => $tax_detail["tax_exemption"],
+                "range_min" => floatval(str_replace(',', '', $tax_detail["tax_range_min"])),
+                "range_max" => floatval(str_replace(',', '', $tax_detail["tax_range_max"])),
+                "salary_base" => floatval(str_replace(',', '', $tax_detail["tax_salary_base"])),
+                "percentage" => floatval(str_replace(',', '', $tax_detail["tax_percentage"])),
+                "exemption" => floatval(str_replace(',', '', $tax_detail["tax_exemption"])),
             ]);
         }
     }
