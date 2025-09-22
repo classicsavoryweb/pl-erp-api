@@ -106,6 +106,218 @@ class ScheduleTimeController extends Controller
         }
     }
 
+    private function processExcelRows(
+        array $dataRows,
+        array $headerRow,
+        array &$employeeDetails,
+        array &$restDayDatesByEmployee,
+        array &$incentiveLeaveDatesByEmployee,
+        array &$restDayCounts,
+        array &$incentiveLeaveCounts,
+        array &$restDaysPerWeek
+    ): void {
+        foreach ($dataRows as $index => $row) {
+            $rowNumber = $index + 3;
+            $rowAssoc  = array_combine($headerRow, $row);
+
+            $employeeId     = $rowAssoc['employee_id'] ?? null;
+            $dateRaw        = $rowAssoc['date'] ?? null;
+            $converted_date = $this->excelDateToDateString($dateRaw);
+            $timetable      = $rowAssoc['timetable'] ?? null;
+            $leaveType      = strtoupper(trim($timetable));
+
+            $employeeDetails[$employeeId] = $employeeDetails[$employeeId] ?? [
+                'employee_id'            => $employeeId,
+                'rest_day_count'         => 0,
+                'incentive_leave_count'  => 0,
+            ];
+
+            if ($leaveType === 'REST DAY') {
+                $formattedDate = date('n/j', strtotime($converted_date));
+
+                if (!in_array($formattedDate, $restDayDatesByEmployee[$employeeId] ?? [])) {
+                    $restDayDatesByEmployee[$employeeId][] = $formattedDate;
+
+                    $restDayCounts[$employeeId] = ($restDayCounts[$employeeId] ?? 0) + 1;
+                    $employeeDetails[$employeeId]['rest_day_count'] = $restDayCounts[$employeeId];
+                }
+
+                $week = date('o-W', strtotime($converted_date));
+                if (!in_array($converted_date, $restDaysPerWeek[$employeeId][$week] ?? [])) {
+                    $restDaysPerWeek[$employeeId][$week][] = $converted_date;
+                }
+            }
+
+            if ($leaveType === 'INCENTIVE LEAVE') {
+                $formattedDate = date('n/j', strtotime($converted_date));
+
+                if (!in_array($formattedDate, $incentiveLeaveDatesByEmployee[$employeeId] ?? [])) {
+                    $incentiveLeaveDatesByEmployee[$employeeId][] = $formattedDate;
+
+                    $incentiveLeaveCounts[$employeeId] = ($incentiveLeaveCounts[$employeeId] ?? 0) + 1;
+                    $employeeDetails[$employeeId]['incentive_leave_count'] = $incentiveLeaveCounts[$employeeId];
+                }
+            }
+        }
+    }
+
+    private function mergePriorLeavesWithExcelData(
+        array $dataRows,
+        array $previousCutoff,
+        array $currentCutoff,
+        array &$employeeDetails,
+        array &$restDayDatesByEmployee,
+        array &$incentiveLeaveDatesByEmployee,
+        array &$restDayCounts,
+        array &$incentiveLeaveCounts
+    ): void {
+        $excelEmployeeIds = collect($dataRows)->pluck(0)->filter()->unique()->toArray();
+
+        $priorLeaves = ScheduleTime::whereBetween('date', [$previousCutoff['start_time'], $currentCutoff['end_time']])
+            ->whereIn('timetable', ['REST DAY', 'INCENTIVE LEAVE'])
+            ->whereIn('biometric_number', $excelEmployeeIds)
+            ->get()
+            ->groupBy('biometric_number');
+
+        foreach ($priorLeaves as $employeeId => $entries) {
+            foreach ($entries as $entry) {
+                $leaveType = strtoupper(trim($entry->timetable));
+
+                $employeeDetails[$employeeId] = $employeeDetails[$employeeId] ?? [
+                    'employee_id'          => $employeeId,
+                    'rest_day_count'       => 0,
+                    'incentive_leave_count'=> 0,
+                ];
+
+                if ($leaveType === 'REST DAY') {
+                    $formattedDate = date('n/j', strtotime($entry->date));
+
+                    if (!in_array($formattedDate, $restDayDatesByEmployee[$employeeId] ?? [])) {
+                        $restDayDatesByEmployee[$employeeId][] = $formattedDate;
+
+                        $restDayCounts[$employeeId] = ($restDayCounts[$employeeId] ?? 0) + 1;
+                        $employeeDetails[$employeeId]['rest_day_count'] = $restDayCounts[$employeeId];
+                    }
+                } elseif ($leaveType === 'INCENTIVE LEAVE') {
+                    $formattedDate = date('n/j', strtotime($entry->date));
+
+                    if (!in_array($formattedDate, $incentiveLeaveDatesByEmployee[$employeeId] ?? [])) {
+                        $incentiveLeaveDatesByEmployee[$employeeId][] = $formattedDate;
+
+                        $incentiveLeaveCounts[$employeeId] = ($incentiveLeaveCounts[$employeeId] ?? 0) + 1;
+                        $employeeDetails[$employeeId]['incentive_leave_count'] = $incentiveLeaveCounts[$employeeId];
+                    }
+                }
+            }
+        }
+    }
+
+    private function getEmployeesWithRestDayInBothCutoffs(
+        array $restDayDatesByEmployee,
+        array $previousCutoff,
+        array $currentCutoff
+    ): array {
+        $employeesWithRestDayInBothCutoffs = [];
+
+        foreach ($restDayDatesByEmployee as $employeeId => $dates) {
+            $duplicatedRestDayDates = [];
+
+            foreach ($dates as $date) {
+                $carbonDate = Carbon::createFromFormat('n/j', $date)->setYear(now()->year);
+                $dateRange  = $this->timeKeepingService->getWeekRange($carbonDate);
+
+                $hasAnotherRestDay = ScheduleTime::whereBetween("date", [$dateRange['start'], $dateRange['end']])
+                    ->where("biometric_number", $employeeId)
+                    ->where("timetable", "REST DAY")
+                    ->whereDate("date", '!=', $carbonDate->toDateString()) 
+                    ->first();
+
+                if ($hasAnotherRestDay) {
+                    $date1 = Carbon::parse($hasAnotherRestDay->date);
+                    $date2 = $carbonDate;
+
+                    $inPreviousCutoff = $date1->betweenIncluded($previousCutoff['start_time'], $previousCutoff['end_time']) ||
+                        $date2->betweenIncluded($previousCutoff['start_time'], $previousCutoff['end_time']);
+
+                    $inCurrentCutoff = $date1->betweenIncluded($currentCutoff['start_time'], $currentCutoff['end_time']) ||
+                        $date2->betweenIncluded($currentCutoff['start_time'], $currentCutoff['end_time']);
+
+                    if ($inPreviousCutoff && $inCurrentCutoff) {
+                        $duplicatedRestDayDates[$employeeId][] = $date1->format('n/j');
+                        $duplicatedRestDayDates[$employeeId][] = $date2->format('n/j');
+                    }
+                }
+            }
+
+            if (!empty($duplicatedRestDayDates[$employeeId])) {
+                $employee = Employee::where('biometric_number', $employeeId)->first();
+
+                if ($employee) {
+                    $employeesWithRestDayInBothCutoffs[] = [
+                        'employee_id'    => $employeeId,
+                        'employee_name'  => $employee->full_name,
+                        'rest_day_dates' => array_values(array_unique($duplicatedRestDayDates[$employeeId])),
+                    ];
+                }
+            }
+        }
+        return $employeesWithRestDayInBothCutoffs;
+    }
+
+    private function getEmployeesWithMultipleRestDaysPerWeek(array $restDaysPerWeek): array
+    {
+        $employeesWithMultipleRestDays = [];
+
+        foreach ($restDaysPerWeek as $employeeId => $weeks) {
+            foreach ($weeks as $week => $dates) {
+                if (count($dates) > 1) {
+                    $employee = Employee::where('biometric_number', $employeeId)->first();
+
+                    if ($employee) {
+                        $formattedDates = array_map(function ($d) {
+                            $ts = strtotime($d);
+                            return $ts ? date('n/j', $ts) : $d;
+                        }, $dates);
+
+                        $employeesWithMultipleRestDays[] = [
+                            'employee_id'    => $employeeId,
+                            'employee_name'  => $employee->full_name,
+                            'rest_day_dates' => $formattedDates,
+                        ];
+                    }
+                }
+            }
+        }
+        return $employeesWithMultipleRestDays;
+    }
+
+    private function getEmployeesWithExcessiveTimetableValues(
+        array $employeeDetails,
+        array $restDayDatesByEmployee,
+        array $incentiveLeaveDatesByEmployee
+    ): array {
+        $employeesWithExcessiveTimetableValues = [];
+
+        foreach ($employeeDetails as $employeeId => $details) {
+            if ($details['rest_day_count'] >= 3 || $details['incentive_leave_count'] >= 3) {
+                $employee = Employee::where('biometric_number', $employeeId)->first();
+
+                if ($employee) {
+                    $employeesWithExcessiveTimetableValues[] = [
+                        'employee_id'             => $employeeId,
+                        'employee_name'           => $employee->full_name,
+                        'rest_day_count'          => $details['rest_day_count'],
+                        'incentive_leave_count'   => $details['incentive_leave_count'],
+                        'rest_day_dates'          => $restDayDatesByEmployee[$employeeId] ?? [],
+                        'incentive_leave_dates'   => $incentiveLeaveDatesByEmployee[$employeeId] ?? [],
+                    ];
+                }
+            }
+        }
+
+        return $employeesWithExcessiveTimetableValues;
+    }
+
     public function validateImportTransactionsScheduleTimeExcel(Request $request)
     {
         try {
@@ -135,7 +347,13 @@ class ScheduleTimeController extends Controller
                 $incentiveLeaveDatesByEmployee = [];
 
                 $dataRows = Excel::toArray([], $file);
-                $dataRows = array_slice($dataRows[0], 2);
+
+                $rawHeaderRow = $dataRows[0][1]; 
+                $dataRows     = array_slice($dataRows[0], 2); 
+
+                $headerRow = array_map(function ($header) {
+                    return strtolower(trim(preg_replace('/[^a-zA-Z0-9_]/', '_', $header)));
+                }, $rawHeaderRow);
 
                 $currentCutoff = $this->getCurrentCutOff();
                 $previousCutoff = $this->getPreviousCutOff($currentCutoff['start_time']);
@@ -148,12 +366,14 @@ class ScheduleTimeController extends Controller
                     }
 
                     $rowNumber   = $index + 3;
-                    $employeeId  = trim((string) $row[0]);
-                    $department  = $row[2] ?? null;
-                    $dateRaw     = $row[4] ?? null;
-                    $timetable   = $row[5] ?? null;
-                    $checkIn     = $row[6] ?? null;
-                    $checkOut    = $row[7] ?? null;
+                    $rowAssoc = array_combine($headerRow, $row);
+
+                    $employeeId = trim((string) ($rowAssoc['employee_id'] ?? ''));
+                    $department = $rowAssoc['department'] ?? null;
+                    $dateRaw    = $rowAssoc['date'] ?? null;
+                    $timetable  = $rowAssoc['timetable'] ?? null;
+                    $checkIn    = $rowAssoc['check_in'] ?? null;
+                    $checkOut   = $rowAssoc['check_out'] ?? null;
 
                     $employee = Employee::where('biometric_number', $employeeId)->first();
                     if (!$employee) {
@@ -174,7 +394,7 @@ class ScheduleTimeController extends Controller
                     foreach ($requiredFields as $field => $label) {
                         if (empty($$field)) {
                             return $this->sendError([
-                                "message" => "{$label} is missing at row {$rowNumber}"
+                                "message" => "{$label} value is missing at row {$rowNumber}"
                             ]);
                         }
                     }
@@ -195,176 +415,48 @@ class ScheduleTimeController extends Controller
                     $missing = array_diff($expectedDates, $employeeDates);
                     if (count($missing) > 0) {
                         return $this->sendError([
-                            "message" => "Employee has incomplete schedule."
+                            "message" => "Employee with ID {$employeeId} has incomplete schedule."
                         ]);
                     }
                 }
 
-                $excelEmployeeIds = collect($dataRows)->pluck(0)->filter()->unique()->toArray();
-
-                foreach ($dataRows as $index => $row) {
-                    $employeeId = $row[0] ?? null;
-                    $dateRaw = $row[4] ?? null;
-                    $converted_date = $this->excelDateToDateString($dateRaw);
-                    $timetable = $row[5] ?? null;
-                    $leaveType = strtoupper(trim($timetable));
-
-                    $employeeDetails[$employeeId] = [
-                        'employee_id' => $employeeId,
-                        'rest_day_count' => 0,
-                        'incentive_leave_count' => 0,
-                    ];
-
-                    if ($leaveType === 'REST DAY') {
-                        $formattedDate = date('n/j', strtotime($converted_date));
-
-                        if (!in_array($formattedDate, $restDayDatesByEmployee[$employeeId] ?? [])) {
-                            $restDayDatesByEmployee[$employeeId][] = $formattedDate;
-
-                            $restDayCounts[$employeeId] = ($restDayCounts[$employeeId] ?? 0) + 1;
-                            $employeeDetails[$employeeId]['rest_day_count'] = $restDayCounts[$employeeId];
-                        }
-
-                        $week = date('o-W', strtotime($converted_date));
-                        if (!in_array($converted_date, $restDaysPerWeek[$employeeId][$week] ?? [])) {
-                            $restDaysPerWeek[$employeeId][$week][] = $converted_date;
-                        }
-                    }
-
-                    if ($leaveType === 'INCENTIVE LEAVE') {
-                        $formattedDate = date('n/j', strtotime($converted_date));
-
-                        if (!in_array($formattedDate, $incentiveLeaveDatesByEmployee[$employeeId] ?? [])) {
-                            $incentiveLeaveDatesByEmployee[$employeeId][] = $formattedDate;
-
-                            $incentiveLeaveCounts[$employeeId] = ($incentiveLeaveCounts[$employeeId] ?? 0) + 1;
-                            $employeeDetails[$employeeId]['incentive_leave_count'] = $incentiveLeaveCounts[$employeeId];
-                        }
-                    }
-                }
-
-                $priorLeaves = ScheduleTime::whereBetween('date', [$previousCutoff['start_time'], $currentCutoff['end_time']])
-                    ->whereIn('timetable', ['REST DAY', 'INCENTIVE LEAVE'])
-                    ->whereIn('biometric_number', $excelEmployeeIds)
-                    ->get()
-                    ->groupBy('biometric_number');
-
-                foreach ($priorLeaves as $employeeId => $entries) {
-                    foreach ($entries as $entry) {
-                        $leaveType = strtoupper(trim($entry->timetable));
-
-                        $employeeDetails[$employeeId] = [
-                            'employee_id' => $employeeId,
-                            'rest_day_count' => 0,
-                            'incentive_leave_count' => 0,
-                        ];
-
-                        if ($leaveType === 'REST DAY') {
-                            $formattedDate = date('n/j', strtotime($entry->date));
-                            
-                            if (!in_array($formattedDate, $restDayDatesByEmployee[$employeeId] ?? [])) {
-                                $restDayDatesByEmployee[$employeeId][] = $formattedDate;
-                                
-                                $restDayCounts[$employeeId] = ($restDayCounts[$employeeId] ?? 0) + 1;
-                                $employeeDetails[$employeeId]['rest_day_count'] = $restDayCounts[$employeeId];
-                            }
-
-                        } elseif ($leaveType === 'INCENTIVE LEAVE') {
-                            $formattedDate = date('n/j', strtotime($entry->date));
-
-                            if (!in_array($formattedDate, $incentiveLeaveDatesByEmployee[$employeeId] ?? [])) {
-                                $incentiveLeaveDatesByEmployee[$employeeId][] = $formattedDate;
-                                
-                                $incentiveLeaveCounts[$employeeId] = ($incentiveLeaveCounts[$employeeId] ?? 0) + 1;
-                                $employeeDetails[$employeeId]['incentive_leave_count'] = $incentiveLeaveCounts[$employeeId];
-                            }
-                        }
-                    }
-                }
-
-                $employeesWithRestDayInBothCutoffs = [];
-
-                foreach ($restDayDatesByEmployee as $employeeId => $dates) {
-                    $duplicatedRestDayDates = [];
-
-                    foreach ($dates as $date) {
-                        $carbonDate = Carbon::createFromFormat('n/j', $date)->setYear(now()->year);
-                        $dateRange  = $this->timeKeepingService->getWeekRange($carbonDate);
-
-                        $hasAnotherRestDay = ScheduleTime::whereBetween("date", [$dateRange['start'], $dateRange['end']])
-                            ->where("biometric_number", $employeeId)
-                            ->where("timetable", "REST DAY")
-                            ->whereDate("date", '!=', $carbonDate->toDateString()) 
-                            ->first();
-
-                        if ($hasAnotherRestDay) {
-                            $date1 = Carbon::parse($hasAnotherRestDay->date);
-                            $date2 = $carbonDate;
-
-                            $inPreviousCutoff = $date1->betweenIncluded($previousCutoff['start_time'], $previousCutoff['end_time']) ||
-                                $date2->betweenIncluded($previousCutoff['start_time'], $previousCutoff['end_time']);
-
-                            $inCurrentCutoff = $date1->betweenIncluded($currentCutoff['start_time'], $currentCutoff['end_time']) ||
-                                $date2->betweenIncluded($currentCutoff['start_time'], $currentCutoff['end_time']);
-
-                            if ($inPreviousCutoff && $inCurrentCutoff) {
-                                $duplicatedRestDayDates[$employeeId][] = $date1->format('n/j');
-                                $duplicatedRestDayDates[$employeeId][] = $date2->format('n/j');
-                            }
-                        }
-                    }
-
-                    if (!empty($duplicatedRestDayDates[$employeeId])) {
-                        $employee = Employee::where('biometric_number', $employeeId)->first();
-
-                        if ($employee) {
-                            $employeesWithRestDayInBothCutoffs[] = [
-                                'employee_id'    => $employeeId,
-                                'employee_name'  => $employee->full_name,
-                                'rest_day_dates' => array_values(array_unique($duplicatedRestDayDates[$employeeId])),
-                            ];
-                        }
-                    }
-                }
-
-                $employeesWithMultipleRestDays = [];
-
-                foreach ($restDaysPerWeek as $employeeId => $weeks) {
-
-                    foreach ($weeks as $week => $dates) {
-                        if (count($dates) > 1) {
-                            $employee = Employee::where('biometric_number', $employeeId)->first();
-                            $employeeName = $employee->full_name;
-                            $formattedDates = array_map(function($d) {
-                                $ts = strtotime($d);
-                                return $ts ? date('n/j', $ts) : $d;
-                            }, $dates);
-                            $employeesWithMultipleRestDays[] = [
-                                'employee_id' => $employeeId,
-                                'employee_name' => $employeeName,
-                                'rest_day_dates' => $formattedDates,
-                            ];
-                        }
-                    }
-                }
-
-                $employeesWithExcessiveTimetableValues = [];
+                $this->processExcelRows(
+                    $dataRows,
+                    $headerRow,
+                    $employeeDetails,
+                    $restDayDatesByEmployee,
+                    $incentiveLeaveDatesByEmployee,
+                    $restDayCounts,
+                    $incentiveLeaveCounts,
+                    $restDaysPerWeek
+                );
                 
-                foreach ($employeeDetails as $employeeId => $details) {
+                $this->mergePriorLeavesWithExcelData(
+                    $dataRows,
+                    $previousCutoff,
+                    $currentCutoff,
+                    $employeeDetails,
+                    $restDayDatesByEmployee,
+                    $incentiveLeaveDatesByEmployee,
+                    $restDayCounts,
+                    $incentiveLeaveCounts
+                );
 
-                    if ($details['rest_day_count'] >= 3 || $details['incentive_leave_count'] >= 3) {
-                        $employee = Employee::where('biometric_number', $employeeId)->first();
-                        $employeeName = $employee->full_name;
-                        $employeesWithExcessiveTimetableValues[] = [
-                            'employee_id' => $employeeId,
-                            'employee_name' => $employeeName,
-                            'rest_day_count' => $details['rest_day_count'],
-                            'incentive_leave_count' => $details['incentive_leave_count'],
-                            'rest_day_dates' => $restDayDatesByEmployee[$employeeId] ?? [],
-                            'incentive_leave_dates' => $incentiveLeaveDatesByEmployee[$employeeId] ?? [],
-                        ];
-                    }
-                }
+                $employeesWithRestDayInBothCutoffs = $this->getEmployeesWithRestDayInBothCutoffs(
+                    $restDayDatesByEmployee,
+                    $previousCutoff,
+                    $currentCutoff
+                );
+
+                $employeesWithMultipleRestDays = $this->getEmployeesWithMultipleRestDaysPerWeek(
+                    $restDaysPerWeek
+                );
+
+                $employeesWithExcessiveTimetableValues = $this->getEmployeesWithExcessiveTimetableValues(
+                    $employeeDetails,
+                    $restDayDatesByEmployee,
+                    $incentiveLeaveDatesByEmployee
+                );
             }
             
             return $this->sendResponse([

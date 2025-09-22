@@ -58,6 +58,7 @@ class EmployeeDeductionsController extends Controller
 
             $deductions = $deductions
             ->with(["employee", "branch", "deduction"])
+            ->orderBy("start_date", "desc")
             ->paginate($perPage);
 
             return $this->sendResponse($deductions);
