@@ -17,12 +17,12 @@ return new class extends Migration
             $table->string("deduction_id")->nullable();
             $table->string("reference_doc")->nullable();
             $table->string("months")->nullable();
-            $table->string("amount")->nullable();
+            $table->decimal("amount")->nullable();
             $table->string("source_of_fund")->nullable();
             $table->string("start_date")->nullable();
             $table->string("end_date")->nullable();
-            $table->string("monthly_amortization")->nullable();
-            $table->string("balance")->nullable();
+            $table->decimal("monthly_amortization")->nullable();
+            $table->decimal("balance")->nullable();
             $table->text("remarks")->nullable();
             $table->string("debit_id")->nullable();
             $table->string("credit_id")->nullable();

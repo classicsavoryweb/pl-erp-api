@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string("employee_id")->nullable();
             $table->string("reference_doc")->nullable();
             $table->string("deduction_id")->nullable();
-            $table->string("amount")->nullable();
+            $table->decimal("amount")->nullable();
             $table->string("pay_date")->nullable();
             $table->string("date_time")->nullable();
             $table->timestamps();

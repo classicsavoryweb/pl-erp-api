@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('incentives_management', function (Blueprint $table) {
             $table->id();
             $table->string("employee_id");
-            $table->string("amount");
-            $table->string("max_amount");
+            $table->decimal("amount");
+            $table->decimal("max_amount");
             $table->timestamps();
         });
     }
