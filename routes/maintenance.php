@@ -22,6 +22,7 @@ use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PagibigController;
 use App\Http\Controllers\Maintenance\PeriodDefinitionController;
 use App\Http\Controllers\Maintenance\PhilhealthController;
+use App\Http\Controllers\Maintenance\PhilhealthPercentageBaseController;
 use App\Http\Controllers\Maintenance\PositionController;
 use App\Http\Controllers\Maintenance\RateController;
 use App\Http\Controllers\Maintenance\SalaryPositionController;
@@ -243,4 +244,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-last-pay-setup", [LastPaySetupController::class, "exportAllLastPaySetup"]);
     Route::middleware(["permission:perform_last_pay_setup"])->post("/create-last-pay-setup", [LastPaySetupController::class, "createLastPaySetup"]);
     Route::middleware(["permission:perform_last_pay_setup"])->post("/edit-last-pay-setup/{id}", [LastPaySetupController::class, "editLastPaySetup"]);
+    //philhealth
+    Route::get("/get-all-philhealth-percentage-base", [PhilhealthPercentageBaseController::class, "getAllPhilhealthPercentageBase"]);
+    Route::get("/get-philhealth-percentage-base", [PhilhealthPercentageBaseController::class, "getPhilhealthPercentageBase"]);
+    Route::middleware(["permission:perform_philhealth"])->post("/edit-philhealth-percentage-base/{id}", [PhilhealthPercentageBaseController::class, "editPhilhealthPercentageBase"]);
 });
