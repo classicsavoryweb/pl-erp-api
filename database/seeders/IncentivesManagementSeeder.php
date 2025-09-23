@@ -24,8 +24,8 @@ class IncentivesManagementSeeder extends Seeder
 
             IncentivesManagement::create([
                 "employee_id" => $employee->id,
-                "amount" => $unique_incentives_management_detail["amount"],
-                "max_amount" => $unique_incentives_management_detail["maxamount"]
+                "amount" => floatval(str_replace(',', '', $unique_incentives_management_detail["amount"])),
+                "max_amount" => floatval(str_replace(',', '',$unique_incentives_management_detail["maxamount"]))
             ]);
         }
     }

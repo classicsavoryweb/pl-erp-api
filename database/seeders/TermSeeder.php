@@ -22,8 +22,8 @@ class TermSeeder extends Seeder
             Term::create([
                 "description" => $unique_terms_detail["description"],
                 "cutoff" => $unique_terms_detail["cutoff"],
-                "amount_from" => $unique_terms_detail["amountfrom"],
-                "amount_to" => $unique_terms_detail["amountto"],
+                "amount_from" => floatval(str_replace(',', '', $unique_terms_detail["amountfrom"])),
+                "amount_to" => floatval(str_replace(',', '', $unique_terms_detail["amountto"])),
                 "month" => $unique_terms_detail["payroll_months"],
             ]);
         }

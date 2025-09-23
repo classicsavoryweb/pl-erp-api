@@ -23,7 +23,7 @@ class IncentivesBracketSeeder extends Seeder
                 "incentives_bracket_id" => $unique_incentives_bracket_detail["bracket_id2"],
                 "bracket_name" => $unique_incentives_bracket_detail["bracketname"],
                 "month" => $unique_incentives_bracket_detail["month"],
-                "amount" => $unique_incentives_bracket_detail["amount"],
+                "amount" => floatval(str_replace(',', '', $unique_incentives_bracket_detail["amount"])),
             ]);
         }
     }

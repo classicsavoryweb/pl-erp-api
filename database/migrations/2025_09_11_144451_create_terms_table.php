@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string("description")->nullable();
             $table->string("cutoff")->nullable();
-            $table->string("amount_from")->nullable();
-            $table->string("amount_to")->nullable();
+            $table->decimal("amount_from")->nullable();
+            $table->decimal("amount_to")->nullable();
             $table->string("month")->nullable();
             $table->timestamps();
         });

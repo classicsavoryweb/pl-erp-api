@@ -24,8 +24,8 @@ class IncentivesPerEmployeeSeeder extends Seeder
 
             IncentivesPerEmployee::create([
                 "employee_id" => $employee->id,
-                "amount" => $unique_incentives_per_employee_detail["amount"],
-                "max_amount" => $unique_incentives_per_employee_detail["maxamount"]
+                "amount" => floatval(str_replace(',', '', $unique_incentives_per_employee_detail["amount"])),
+                "max_amount" => floatval(str_replace(',', '', $unique_incentives_per_employee_detail["maxamount"]))
             ]);
         }
     }

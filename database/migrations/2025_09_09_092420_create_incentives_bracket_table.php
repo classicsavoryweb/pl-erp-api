@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string("incentives_bracket_id")->nullable();
             $table->string("bracket_name")->nullable();
             $table->string("month")->nullable();
-            $table->string("amount")->nullable();
+            $table->decimal("amount")->nullable();
             $table->timestamps();
         });
     }

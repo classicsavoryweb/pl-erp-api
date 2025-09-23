@@ -45,7 +45,7 @@ class DeductionHistorySeeder extends Seeder
                     "employee_id" => $employee ? $employee->id : null,
                     "reference_doc" => $deduction["reference_doc"],
                     "deduction_id" => $deduction["deduction_id2"],
-                    "amount" => $deduction["amount"],
+                    "amount" => floatval(str_replace(',', '', $deduction["amount"])),
                     "pay_date" => $deduction["pay_date"],
                     "date_time" => $deduction["datetime"],
                 ]);
