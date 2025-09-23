@@ -25,5 +25,6 @@ Route::middleware('auth:sanctum')->group( function () {
 
     //payroll
     Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);
+    Route::get("/get-payroll/{id}", [PayrollController::class, "getPayrollDetails"]);
 
 });

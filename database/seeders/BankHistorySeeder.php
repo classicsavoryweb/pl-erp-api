@@ -21,7 +21,7 @@ class BankHistorySeeder extends Seeder
 
         foreach ($bank_details["tbl_bankdetails"] as $detail) {
             $employee = Employee::where("employee_number", $detail["emp_id"])->first();
-            $bank = BankAccountType::where("description", $detail["emp_id"] === 5 ? "Cash Card" : "Savings Account")->first();
+            $bank = BankAccountType::where("description", $detail["account_id"] == "5" ? "Cash Card" : "Savings Account")->first();
 
             if ($employee) {
                 BankDetail::create([

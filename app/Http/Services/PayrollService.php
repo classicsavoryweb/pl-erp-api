@@ -57,6 +57,10 @@ class PayrollService {
             $totalDeductions = 0;
             $manualDeductions = 0;
 
+            $contributionTotal = 0;
+            $additionalWorkingHoursTotal = 0;
+            $workingHoursDeductionTotal = 0;
+
             if ($paymentType === "Monthly") {
                 if ($timeKeepingSummary->regular_days < $baseRegularDays) {
                     $salary = $daily_rate * $timeKeepingSummary->regular_days;
@@ -87,7 +91,6 @@ class PayrollService {
                 $cancelledOffAmount += (float)$payment->cancelled_off;
             }
 
-            $salary += $cancelledOffAmount;
             $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
             $philHealthAmount = round(( $basicSalary * 0.05) / 2 , 2);
 
@@ -112,7 +115,7 @@ class PayrollService {
                 $undertimeAmount -
                 $tardinessAmount;
 
-            $taxableIncome = $grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount;
+            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
             $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
             ->where("range_max", '>=',round($taxableIncome, 2))
             ->first();
@@ -121,16 +124,14 @@ class PayrollService {
             $exemption = $tax->exemption;
             $percentage = $tax->percentage;
 
-            // $taxAmount = (($taxableIncome - $tax->salary_base) +$tax->exemption) * ($tax->percentage * 0.01) > 0
-            //     ? (($taxableIncome - $tax->salary_base) +$tax->exemption) * ($tax->percentage * 0.01)
-            //     : 0;
-
             $taxAmount = ((($taxableIncome - $salaryBase) + $exemption) * ($percentage* 0.01)) > 0
                 ? round( (($taxableIncome - $salaryBase) + $exemption) * ($percentage * 0.01), 2)
                 : 0;
 
-            $totalDeductions = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount + $taxAmount;
 
+            $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
+            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount + $taxableAdustmentAmount + $nonTaxableAmount;
+            $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
             $netPayAmount = $taxableIncome - $taxAmount;
 
             Payroll::updateOrCreate(
@@ -171,14 +172,19 @@ class PayrollService {
                 "deductions" => json_encode([]),
                 "total_deductions" => $totalDeductions,
                 "manual_deductions" => $manualDeductions,
+                "cancelled_off" => $cancelledOffAmount,
                 "net_pay" => $netPayAmount,
+                "taxable_income" => $taxableIncome,
+                "contribution_total" => $contributionTotal,
+                "additional_working_hours_total" => $additionalWorkingHoursTotal,
+                "working_hours_deduction_total" => $workingHoursDeductionTotal,
                 "status" => "initial",
             ]);
 
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error("ERROR COMPUTING PAYROLL TIMEKEEPING: " .$timeKeepingSummary->id." ERROR: ". $e);
+            Log::error("ERROR COMPUTING PAYROLL TIMEKEEPING: " .$timeKeepingSummary->id." EMPLOYEE: " .$employee->full_name. " ERROR: ". $e->getMessage());
             
             return [
                 "error" => true,

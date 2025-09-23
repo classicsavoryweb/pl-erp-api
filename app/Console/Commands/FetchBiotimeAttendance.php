@@ -59,10 +59,10 @@ class FetchBiotimeAttendance extends Command
                 ->timeout(60)
                 ->retry(3)
                 ->get($url,[
-                    "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    "end_time" => $endTime->format('Y-m-d H:i:s'),
-                    // "start_time" => "2025-07-25 00:00:00",
-                    // "end_time" => "2025-08-26 23:59:59",
+                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    "start_time" => "2025-08-25 00:00:00",
+                    "end_time" => "2025-09-10 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
@@ -77,20 +77,11 @@ class FetchBiotimeAttendance extends Command
                         $time = $parsedDate->toTimeString();
                         $branch = Branch::where("device_name", $log["terminal_sn"])->first();
 
-                        // $isExisting = BiotimeLog::where("employee_id", $employee->id)
-                        //     ->where("date",$date)
-                        //     ->orderBy("date", "DESC")
-                        //     ->first();
-
-                        // if ($isExisting) {
-                        //     $isExisting->punches()->delete();
-                        //     $isExisting->delete();
-                        // }
-
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
                             $latest = BiotimeLog::where("employee_id", $employee->id)
                             ->orderBy("date", "DESC")
                             ->where("date", '<=', $date)
+                            ->where("date", '>=', $startTime->subDay()->format("Y-m-d"))
                             ->first();
 
                             if ($latest) {
@@ -181,10 +172,10 @@ class FetchBiotimeAttendance extends Command
                 ->timeout(60)
                 ->retry(3)
                 ->get($url,[
-                    "start_time" => $startTime->format('Y-m-d H:i:s'),
-                    "end_time" => $endTime->format('Y-m-d H:i:s'),
-                    // "start_time" => "2025-07-25 00:00:00",
-                    // "end_time" => "2025-08-26 23:59:59",
+                    // "start_time" => $startTime->format('Y-m-d H:i:s'),
+                    // "end_time" => $endTime->format('Y-m-d H:i:s'),
+                    "start_time" => "2025-08-25 00:00:00",
+                    "end_time" => "2025-09-10 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
@@ -199,20 +190,11 @@ class FetchBiotimeAttendance extends Command
                         $time = $parsedDate->toTimeString();
                         $branch = Branch::where("device_name", $log["terminal_sn"])->first();
 
-                        // $isExisting = BiotimeLog::where("employee_id", $employee->id)
-                        //     ->where("date",$date)
-                        //     ->orderBy("date", "DESC")
-                        //     ->first();
-
-                        // if ($isExisting) {
-                        //     $isExisting->punches()->delete();
-                        //     $isExisting->delete();
-                        // }
-
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
                             $latest = BiotimeLog::where("employee_id", $employee->id)
                             ->orderBy("date", "DESC")
                             ->where("date", '<=', $date)
+                            ->where("date", '>=', $startTime->subDay()->format("Y-m-d"))
                             ->first();
 
                             if ($latest) {
@@ -227,7 +209,6 @@ class FetchBiotimeAttendance extends Command
                                 ->first();
 
                                 if ($bio1) {
-
                                     $punch = $bio1->punches()
                                     ->whereTime("punch_time", $time)
                                     ->Where("date", $date)

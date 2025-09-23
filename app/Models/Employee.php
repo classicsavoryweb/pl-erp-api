@@ -271,6 +271,10 @@ class Employee extends Model
         return $this->hasMany(BankDetail::class,'employee_id','id');
     }
 
+    public function latest_bank_details() {
+        return $this->hasOne(BankDetail::class,'employee_id','id')->latest("updated_at");
+    }
+
     public function offenses() {
         return $this->hasMany(EmployeeOffense::class,'employee_id','id');
     }

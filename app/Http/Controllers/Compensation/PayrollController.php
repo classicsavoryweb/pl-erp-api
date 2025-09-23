@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payroll;
+use App\Models\TimeKeeping;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class PayrollController extends Controller
                 ? $year . '-' . $request->cutoff["end_time"]
                 : $currentCutOff['end_time'];
 
-            $payroll = Payroll::with(["employee","employee.current_branch", "timekeeping_branch", "timekeeping_summary", "lates"])
+            $payroll = Payroll::with(["employee","employee.current_branch", "timekeeping_summary",])
             ->where("cut_off", $start_time."-".$end_time);
 
             if ($request->has(["branch_id"])) {
@@ -75,6 +76,41 @@ class PayrollController extends Controller
             return $this->sendResponse($payroll);
         } catch(Exception $e) {
 
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getPayrollDetails ($id) {
+        try {
+            $payroll = Payroll::with([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($id);
+
+            if ($payroll) {
+                $tardiness = TimeKeeping::with(["payment"])
+                ->where("employee_id", $payroll->employee_id)
+                ->whereBetween("date", [$payroll->start_date, $payroll->end_date])
+                ->where("tardiness", ">" ,0)
+                ->get();
+
+                $undertime = TimeKeeping::with(["payment"])
+                ->where("employee_id", $payroll->employee_id)
+                ->whereBetween("date", [$payroll->start_date, $payroll->end_date])
+                ->where("undertime", ">", 0)
+                ->get();
+
+                $payroll["tardiness_list"] = $tardiness;
+                $payroll["undertime_list"] = $undertime;
+
+                return $this->sendResponse($payroll);
+            }
+
+            return $this->sendError(["message" => "Payroll not found"]);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }

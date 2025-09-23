@@ -51,6 +51,10 @@ class Payroll extends Model
         "manual_deductions",
         "net_pay",
         "status",
+        "taxable_income",
+        "contribution_total",
+        "additional_working_hours_total",
+        "working_hours_deduction_total",
         "remarks",
     ];
 
