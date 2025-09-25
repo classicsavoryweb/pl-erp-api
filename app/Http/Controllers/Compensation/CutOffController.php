@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessFinalizeCutOff;
 use App\Jobs\ProcessInitializeCutOff;
 use App\Models\Cutoff;
 use Illuminate\Http\Request;
@@ -113,6 +114,50 @@ class CutOffController extends Controller
                 return $this->sendResponse([
                     "cut_off" => $createdCutOff,
                     "message" => "Cut off initialized successfully"
+                ]);
+            }
+
+            return $this->sendError(["message" => "Cut off not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function finalizeCutOff($id) {
+        try {
+            DB::beginTransaction();
+
+            $createdCutOff = Cutoff::find($id);
+
+            if ($createdCutOff) {                
+                $initializedJson = [];
+
+                if ($createdCutOff->initializations) {
+                    $initializedJson = json_decode($createdCutOff->initializations, true);
+                }
+
+                $newJson = [
+                    [
+                        "finalized_at" => now(),
+                        "finalized_by" => Auth::user()->full_name
+                    ],
+                    ...$initializedJson
+                ];
+
+                $createdCutOff->update([
+                    "is_cutoff_locked" => true,
+                    "is_timekeeping_locked" => true,
+                    "initializations" => json_encode($newJson)
+                ]);
+
+                //trigger a cut off initialization job
+                ProcessFinalizeCutOff::dispatch($createdCutOff);
+
+                DB::commit();
+                return $this->sendResponse([
+                    "cut_off" => $createdCutOff,
+                    "message" => "Cut off finalized successfully"
                 ]);
             }
 

@@ -12,6 +12,7 @@ use App\Models\TimeKeepingSummary;
 use App\Exports\Transactions\TimeKeepingExport;
 use App\Exports\Transactions\TimeKeepingSummaryExport;
 use App\Models\Branch;
+use App\Models\Cutoff;
 use Illuminate\Support\Facades\Artisan;
 use Carbon\Carbon;
 use Exception;
@@ -231,6 +232,12 @@ class TimeKeepingController extends Controller
                 "start_time" => $start_time,
                 "end_time" => $end_time
             ];
+
+            $fetchedCutOff = Cutoff::where("cut_off", $start_time."-".$end_time)->first();
+
+            if ($fetchedCutOff && ($fetchedCutOff->is_timekeeping_locked || $fetchedCutOff->is_cutoff_locked)) {
+                return $this->sendError(["message" => "Timekeeping or Cutoff is already locked."]);
+            }
 
             $employees = Employee::whereHas("timekeeping", function ($query) use ($request) {
                 $query->where("branch_id", $request->branch_id);

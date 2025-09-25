@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 use App\Models\Cutoff;
+use App\Models\EmployeeDeduction;
 use App\Models\Pagibig;
 use App\Models\Payroll;
 use App\Models\SSS;
@@ -53,9 +54,9 @@ class PayrollService {
             $taxAmount = 0;
             $grossPayAmount = 0;
             $netPayAmount = 0;
-            $deductionAmount = 0;
             $totalDeductions = 0;
             $manualDeductions = 0;
+            $remarks = null;
 
             $contributionTotal = 0;
             $additionalWorkingHoursTotal = 0;
@@ -130,9 +131,49 @@ class PayrollService {
 
 
             $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
-            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount + $taxableAdustmentAmount + $nonTaxableAmount;
+            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount + $taxableAdustmentAmount;
             $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
             $netPayAmount = $taxableIncome - $taxAmount;
+
+            $deductions = [];
+            $totalDeductions = 0;
+
+            $existingPayroll = Payroll::where("employee_id", $employee->id)
+            ->where("cut_off", $cutOff->cut_off)
+            ->where("start_date", $cutOff->start_date)
+            ->where("end_date", $cutOff->end_date)
+            ->first();
+
+            if (!$existingPayroll) {
+                $employeeDeductions = EmployeeDeduction::with(["deduction"])
+                ->where("employee_id", $employee->id)
+                ->where("balance", ">", 1)
+                ->get();
+    
+                foreach($employeeDeductions as $deduction) {
+                    $amountToDeduct = $deduction->monthly_amortization / 2;
+    
+                    if ($amountToDeduct > $deduction->balance) {
+                        $amountToDeduct = $deduction->balance;
+                    }
+    
+                    $deductions[] = [
+                        "deduction_id" => $deduction->id,
+                        "type" => $deduction->deduction->description,
+                        "monthly_amortization" => $deduction->monthly_amortization,
+                        "deducted_amount" => $amountToDeduct,
+                    ];
+                    $totalDeductions += $amountToDeduct;
+                }
+            } else {
+                $totalDeductions = $existingPayroll->total_deductions;
+                $deductions = json_decode($existingPayroll->deductions, true);
+                $manualDeductions = $existingPayroll->manual_deductions;
+                $nonTaxableAmount = $existingPayroll->non_taxable_adjustment;
+                $remarks = $existingPayroll->remarks;
+            }
+
+            $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
 
             Payroll::updateOrCreate(
                 [
@@ -169,7 +210,7 @@ class PayrollService {
                 "employee_philhealth" => $philHealthAmount,
                 "employer_philhealth" => $philHealthAmount,
                 "withholding_tax" => $taxAmount,
-                "deductions" => json_encode([]),
+                "deductions" => json_encode($deductions),
                 "total_deductions" => $totalDeductions,
                 "manual_deductions" => $manualDeductions,
                 "cancelled_off" => $cancelledOffAmount,
@@ -179,6 +220,7 @@ class PayrollService {
                 "additional_working_hours_total" => $additionalWorkingHoursTotal,
                 "working_hours_deduction_total" => $workingHoursDeductionTotal,
                 "status" => "initial",
+                "remarks" => $remarks
             ]);
 
             DB::commit();

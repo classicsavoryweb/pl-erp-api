@@ -14,7 +14,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/create-cut-off", [CutOffController::class, "createCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/edit-cut-off/{id}", [CutOffController::class, "editCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->get("/initialize-cut-off/{id}", [CutOffController::class, "initializeCutOff"]);
-    
+    Route::middleware("permission:perform_compensation_cutoff_setup")->get("/finalize-cut-off/{id}", [CutOffController::class, "finalizeCutOff"]);
+
     //employee deductions
     Route::get("/get-all-employee-deductions", [EmployeeDeductionsController::class, "getAllEmployeeDeductions"]);
     Route::get("/get-employee-deductions", [EmployeeDeductionsController::class, "getEmployeeDeductions"]);
@@ -26,5 +27,6 @@ Route::middleware('auth:sanctum')->group( function () {
     //payroll
     Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);
     Route::get("/get-payroll/{id}", [PayrollController::class, "getPayrollDetails"]);
-
+    Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-deduction/{payrollId}", [PayrollController::class, "updateCompanyDeductions"]);
+    Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-details/{payrollId}", [PayrollController::class, "updatePayrollDetails"]);
 });

@@ -114,4 +114,105 @@ class PayrollController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function updateCompanyDeductions(Request $request, $payrollId) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "deduction_id" => "required"
+            ]);
+
+            $payroll = Payroll::with(["employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($payrollId);
+
+            if ($payroll) {
+                $deductions = json_decode($payroll->deductions, true);
+                $newDeductions = [];
+                $totalDeductions = $payroll->total_deductions;
+                $amountToBeAdded = 0;
+
+                foreach ($deductions as $deduction) {
+                    if ($deduction["deduction_id"] != $request->deduction_id) {
+                        $newDeductions[] = $deduction;
+                    } else {
+                        $totalDeductions -= $deduction["deducted_amount"];
+                        $amountToBeAdded += $deduction["deducted_amount"];
+                    }
+                }
+
+                $netPay = $payroll->net_pay + $amountToBeAdded;
+
+                $payroll->update([
+                    "net_pay" => $netPay,
+                    "deductions" => json_encode($newDeductions),
+                    "total_deductions" => $totalDeductions
+                ]);
+
+                DB::commit();
+                return $this->sendResponse([
+                    "message" => "Deduction updated successfully",
+                    "details" => $payroll
+                ]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Payroll not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function updatePayrollDetails (Request $request, $payrollId) {
+        try {
+            DB::beginTransaction();
+
+            $payroll = Payroll::with(["employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($payrollId);
+
+            if ($payroll) {
+                $remarks = $request->remarks ?? null;
+                $manual_deductions = $request->manual_deductions;
+                $non_taxable_adjustments = $request->non_taxable_adjustments;
+
+                $newNetPay = $payroll->net_pay;
+                $newNetPay += $non_taxable_adjustments;
+                
+                $amountToDeduct = 0;
+
+                if ($manual_deductions != $payroll->manual_deductions) {
+                    $amountToDeduct = $manual_deductions - $payroll->manual_deductions;
+                    $newNetPay -= $amountToDeduct;
+                }
+
+                $payroll->update([
+                    "non_taxable_adjustment" => $non_taxable_adjustments,
+                    "manual_deductions" => $manual_deductions,
+                    "net_pay" => $newNetPay,
+                    "remarks" => $remarks
+                ]);
+
+                DB::commit();
+                return $this->sendResponse([
+                    "message" => "Payroll updated successfully",
+                    "details" => $payroll
+                ]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Payroll not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
 }
