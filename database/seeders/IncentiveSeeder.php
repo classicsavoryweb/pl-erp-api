@@ -15,7 +15,7 @@ class IncentiveSeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <= 3; $i++) {
-            $jsonPath = public_path("jsons/payroll/incentive_history_{$i}.json");
+            $jsonPath = public_path("jsons/payroll/incentives_{$i}.json");
 
             $jsonData = file_get_contents($jsonPath);
             $data = json_decode($jsonData, true);
@@ -36,7 +36,7 @@ class IncentiveSeeder extends Seeder
                     "status" => "final"
                 ]);
 
-                $this->command->info("ID: {$incentiveHistory->id} out of 219951, File: incentive_history_{$i}.json out of 3");
+                $this->command->info("ID: {$incentiveHistory->id} out of 219951, File: incentives_{$i}.json out of 3");
             }
         }
     }
