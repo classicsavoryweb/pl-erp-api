@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\IncentiveHistory;
 use App\Models\Incentives;
+use App\Models\Position;
 use Illuminate\Database\Seeder;
 
 class IncentiveSeeder extends Seeder
@@ -21,10 +23,16 @@ class IncentiveSeeder extends Seeder
             $data = json_decode($jsonData, true);
 
             foreach ($data["tbl_incentives"] as $incentive) {
+
+                $position = ltrim($incentive["position_id"], '0');
+
+                $branch = Branch::where("branch_number", $incentive["tbranch"])->first();
                 $employee = Employee::where("employee_number", $incentive["emp_id"])->first();
 
-                $incentiveHistory = Incentives::create([
+                $incentives = Incentives::create([
                     "employee_id" => $employee ? $employee->id : null,
+                    "position_id" => $position ? $position : null,
+                    "branch_id" => $branch ? $branch->id : null,
                     "incentive_amount" => $incentive["amount"],
                     "max_amount" => $incentive["maxamount"],
                     "remarks" => $incentive["remarks"],
@@ -36,7 +44,7 @@ class IncentiveSeeder extends Seeder
                     "status" => "final"
                 ]);
 
-                $this->command->info("ID: {$incentiveHistory->id} out of 219951, File: incentives_{$i}.json out of 3");
+                $this->command->info("ID: {$incentives->id} out of 219951, File: incentives_{$i}.json out of 3");
             }
         }
     }

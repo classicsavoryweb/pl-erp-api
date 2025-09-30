@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('incentives', function (Blueprint $table) {
             $table->id();
             $table->string("employee_id")->nullable();
+            $table->string("position_id")->nullable();
+            $table->string("branch_id")->nullable();
             $table->decimal("incentive_amount")->nullable();
             $table->decimal("max_amount")->nullable();
             $table->string("remarks")->nullable();
