@@ -21,10 +21,11 @@ class PositionIncentivesSeeder extends Seeder
         foreach ($unique_position_incentives_details as $unique_position_incentives_detail) {
 
             $position_id = ltrim($unique_position_incentives_detail["position_id2"], '0');
+            $bracket_id = str_replace(['BID000', 'BID00'], '', $unique_position_incentives_detail["bracket_id2"]);
 
             PositionIncentives::create([
                 "position_id" => $position_id,
-                "incentives_bracket_id" => $unique_position_incentives_detail["bracket_id2"],
+                "incentives_bracket_id" => $bracket_id,
             ]);
         }
     }

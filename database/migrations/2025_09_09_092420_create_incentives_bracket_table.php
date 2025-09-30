@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('incentives_bracket', function (Blueprint $table) {
             $table->id();
-            $table->string("incentives_bracket_id")->nullable();
+            $table->integer("incentives_bracket_id")->nullable();
             $table->string("bracket_name")->nullable();
             $table->string("month")->nullable();
             $table->decimal("amount")->nullable();
