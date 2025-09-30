@@ -19,8 +19,10 @@ class IncentivesBracketSeeder extends Seeder
 
         foreach ($unique_incentives_bracket_details as $unique_incentives_bracket_detail) {
 
+            $bracket_id = str_replace(['BID000', 'BID00'], '', $unique_incentives_bracket_detail["bracket_id2"]);
+
             IncentivesBracket::create([
-                "incentives_bracket_id" => $unique_incentives_bracket_detail["bracket_id2"],
+                "incentives_bracket_id" => $bracket_id,
                 "bracket_name" => $unique_incentives_bracket_detail["bracketname"],
                 "month" => $unique_incentives_bracket_detail["month"],
                 "amount" => floatval(str_replace(',', '', $unique_incentives_bracket_detail["amount"])),

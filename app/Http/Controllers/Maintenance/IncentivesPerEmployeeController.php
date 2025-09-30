@@ -99,10 +99,15 @@ class IncentivesPerEmployeeController extends Controller
                 return $this->sendError(["message" => "Employee is already existing."]);
             }
 
+            $clean = [];
+            foreach (['amount', 'max_amount'] as $field) {
+                $clean[$field] = str_replace(',', '', $request->$field);
+            }
+
             IncentivesPerEmployee::create([
                 "employee_id" => $request->employee_id,
-                "amount" => $request->amount,
-                "max_amount" => $request->max_amount,
+                "amount" => $clean['amount'],
+                "max_amount" => $clean['max_amount'],
             ]);
 
             return $this->sendResponse(["message" => "Incentives created succesfully"]);
@@ -120,10 +125,15 @@ class IncentivesPerEmployeeController extends Controller
                 'employee_id.unique' => 'Employee is already existing.',
             ]);
 
+            $clean = [];
+            foreach (['amount', 'max_amount'] as $field) {
+                $clean[$field] = str_replace(',', '', $request->$field);
+            }
+
             IncentivesPerEmployee::where("id", $id)->update([
                 "employee_id" => $request->employee_id,
-                "amount" => $request->amount,
-                "max_amount" => $request->max_amount,
+                "amount" => $clean['amount'],
+                "max_amount" => $clean['max_amount'],
             ]);
 
             return $this->sendResponse(["message" => "Incentives updated succesfully"]);

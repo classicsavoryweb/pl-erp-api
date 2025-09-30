@@ -94,11 +94,13 @@ class IncentivesBracketController extends Controller
             $incentives_bracket_id = (int) IncentivesBracket::max('incentives_bracket_id') + 1;
 
             foreach ($request->increments as $increment) {
+                $amount = str_replace(',', '', $increment['amount']);
+
                 IncentivesBracket::create([
                     'incentives_bracket_id' => $incentives_bracket_id,
                     'bracket_name' => $request->bracket_name,
                     'month' => $increment['month'],
-                    'amount' => $increment['amount'],
+                    'amount' => $amount,
                 ]);
             }
 
@@ -126,24 +128,22 @@ class IncentivesBracketController extends Controller
                 "position_id" => "required|array",
             ]);
 
-            $existing = IncentivesBracket::where("incentives_bracket_id", $request->incentives_bracket_id)
-                ->get()
-                ->keyBy('month');
-
             $submitted = collect($request->increments)->keyBy('month');
 
             foreach ($submitted as $month => $data) {
-                if (isset($existing[$month])) {
-                    $existing[$month]->update([
+                $amount = str_replace(',', '', $data['amount']);
+
+                IncentivesBracket::where("incentives_bracket_id", $request->incentives_bracket_id)
+                    ->where("month", $month)
+                    ->update([
                         'bracket_name' => $request->bracket_name,
-                        'amount' => $data['amount'],
+                        'amount' => $amount,
                     ]);
-                }
             }
 
-            $first = $existing->first();
+            $incentivesBracket = IncentivesBracket::find($request->incentives_bracket_id);
 
-            $first->positions()->sync($request->position_id);
+            $incentivesBracket->positions()->sync($request->position_id);
 
             DB::commit();
             return $this->sendResponse(["message" => "Incentives bracket updated successfully"]);
