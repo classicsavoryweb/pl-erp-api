@@ -13,7 +13,7 @@ class Incentives extends Model
     use HasFactory, LogsActivity;
 
     protected $table = "incentives";
-    protected $fillable = ["employee_id", "incentive_amount", "max_amount", "remarks", "pay_date", "amount_rate", "additional_incentive", "adjustment_days", "adjustment_percent", "status"];
+    protected $fillable = ["employee_id", "position_id", "branch_id", "incentive_amount", "max_amount", "remarks", "pay_date", "amount_rate", "additional_incentive", "adjustment_days", "adjustment_percent", "status"];
 
     public function employee() {
         return $this->belongsTo(Employee::class);
