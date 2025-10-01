@@ -23,6 +23,10 @@ class EmployeeDeductionsController extends Controller
 
             $deductions = EmployeeDeduction::query();
 
+            if ($request->has("employee_id") && $request->employee_id) {
+                $deductions = $deductions->where('employee_id', $request->employee_id);
+            }
+
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
                 $keyword = $request->key_word;
