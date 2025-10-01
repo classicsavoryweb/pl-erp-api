@@ -43,8 +43,8 @@ class MaintenanceSeeder extends Seeder
         $this->call(AdjustmentTypeSeeder::class);
         $this->call(IncentivesManagementSeeder::class);
         $this->call(ContributionAndTaxSeeder::class);
-        $this->call(PositionIncentivesSeeder::class);
         $this->call(IncentivesBracketSeeder::class);
+        $this->call(PositionIncentivesSeeder::class);
         $this->call(IncentivesPerEmployeeSeeder::class);
         $this->call(TermSeeder::class);
         $this->call(LastPaySetupSeeder::class);

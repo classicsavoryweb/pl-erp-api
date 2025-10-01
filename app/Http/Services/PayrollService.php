@@ -2,14 +2,22 @@
 
 namespace App\Http\Services;
 
+use App\Models\Branch;
 use App\Models\Cutoff;
+use App\Models\Employee;
 use App\Models\EmployeeDeduction;
+use App\Models\Incentives;
+use App\Models\IncentivesBracket;
+use App\Models\IncentivesManagement;
+use App\Models\IncentivesPerEmployee;
 use App\Models\Pagibig;
 use App\Models\Payroll;
+use App\Models\Position;
 use App\Models\SSS;
 use App\Models\Tax;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use DB;
@@ -223,7 +231,17 @@ class PayrollService {
                 "remarks" => $remarks
             ]);
 
+            $incentives = $this->computeIncentives(
+                $cutOff,
+                $employee,
+                $timeKeepingSummary->branch
+            );
+
             DB::commit();
+            return [
+                "error" => false,
+                "payroll" => $payroll
+            ];
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("ERROR COMPUTING PAYROLL TIMEKEEPING: " .$timeKeepingSummary->id." EMPLOYEE: " .$employee->full_name. " ERROR: ". $e->getMessage());
@@ -233,5 +251,161 @@ class PayrollService {
                 "payroll" => $payroll
             ];
         }
+    }
+
+    public function computeIncentives(Cutoff $cutOff, Employee $employee, Branch $branch) {
+
+        $incentivesAmount = 0;
+
+        $position = $employee->current_position;
+        $formerIncentives = Incentives::where("employee_id", $employee->id)
+        ->orderBy("pay_date", "DESC")
+        ->first();
+
+        if ($formerIncentives && Carbon::parse($cutOff->start_date)->day === 15) {
+            $position = Position::where("id", $formerIncentives->position_id)->first();
+        }
+
+        if ($position->rank === 1) {
+            $months = Carbon::now()->diffInMonths($employee->date_hired);
+            $bracket = IncentivesBracket::where("month", "<=", $months)
+                ->whereHas('positions', function ($query) use ($employee) {
+                    $query->where('id', $employee->position_id);
+                })
+                ->orderBy("month", "DESC")
+                ->first();
+            
+            if ($bracket) {
+                $incentivesAmount = $bracket->amount;
+            }
+            
+            if (Carbon::parse($employee->date_hired)->greaterThanOrEqualTo(Carbon::now()->subYears(2))) {
+                $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $employee->id)->first();
+
+                if ($rankAndFileIncentive) {
+                    $incentivesAmount = $rankAndFileIncentive->max_amount;
+                }
+            }
+        } else {
+            $managementIncentives = IncentivesManagement::where("employee_id", $employee->id)->first();
+
+            if ($managementIncentives) {
+                $incentivesAmount = $managementIncentives->max_amount;
+            }
+        }
+
+        $employeeId = $employee->position;
+        $positionId = $position->id;
+        $branchId = $branch->id;
+        $incentiveAmount = 0;
+        $maxAmount = $incentivesAmount;
+        $remarks = "";
+        $payDate = $cutOff->pay_date;
+        $amountRate = $incentivesAmount;
+        $additionalIncentive = 0;
+        $adjustmentDays = 0;
+        $adjustmentPercent = 0;
+        $status = "initial";
+
+        //cutoff 26-10
+        if (Carbon::parse($cutOff->start_date)->day == 26) {
+            
+            $startDate = Carbon::parse($cutOff->start_date)->subMonths(1)->day(26)->format("Y-m-d");
+            $endDate = Carbon::parse($cutOff->start_date)->day(25)->format("Y-m-d");
+            $firstCutOff = $this->getCutOffForDate($startDate);
+            $secondCutOff = $this->getCutOffForDate($endDate);
+            
+            $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+            ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
+            ->first();
+
+            $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+            ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
+            ->first();
+
+            $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
+            $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
+
+            $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
+
+            $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
+            $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
+
+            $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
+            + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
+            $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
+
+            // if ($firstTimeKeeping->adjustment_amount == 0) {
+
+            // }
+
+            // if ($secondTimeKeeping->adjustment_amount == 0) {
+
+            // }
+
+            if ($monthWorkedDays > 0 && $monthWorkedDays >= $monthShouldBeWorkDays) {
+                $incentiveAmount = $incentivesAmount;
+            } else if ($monthWorkedDays > 0 && $monthShouldBeWorkDays > $monthWorkedDays) {
+                $absent = $monthShouldBeWorkDays - $monthWorkedDays;
+
+                $dailyIncentives = $incentivesAmount / 26;
+
+                if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+                    $dailyIncentives = $incentivesAmount / 22; 
+                }
+
+                if ($monthWorkedDays === $monthShouldBeWorkDays / 2) {
+                    $incentiveAmount = $incentivesAmount / 2;
+                } else {
+                    $incentiveAmount = $incentivesAmount - ($absent * $dailyIncentives);
+                }
+
+
+                $remarks = "With ".$absent." absents";
+            }
+        }
+
+        $incentive = Incentives::updateOrCreate([
+            "employee_id" => $employeeId,
+            "position_id" => $positionId,
+            "pay_date" => $payDate,
+        ],[
+            "branch_id" => $branchId,
+            "incentive_amount" => $incentiveAmount,
+            "max_amount" => $maxAmount,
+            "remarks" => $remarks,
+            "amount_rate" => $amountRate,
+            "additional_incentive" => $additionalIncentive,
+            "adjustment_days" => $adjustmentDays,
+            "adjustment_percent" => $adjustmentPercent,
+            "status" => $status
+        ]);
+
+        return $incentive;
+    }
+
+    public function getCutOffForDate($date){
+        $carbonDate = Carbon::parse($date);
+        $day = $carbonDate->day;
+
+        $cutOff1 = [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+        $cutOff2 = [26,27,28,29,30,31,1,2,3,4,5,6,7,8,9,10];
+        if (in_array($day, $cutOff2)) {
+            if ($day <= 10) { 
+                $startTime = $carbonDate->copy()->setDay(26)->subMonth()->startOfDay();
+                $endTime = $carbonDate->copy()->setDay(10)->endOfDay();
+            } else {
+                $startTime = $carbonDate->copy()->setDay(26)->startOfDay();
+                $endTime = $carbonDate->copy()->setDay(10)->addMonth()->endOfDay();
+            }
+        } else {
+            $startTime = $carbonDate->copy()->setDay(11)->startOfDay();
+            $endTime = $carbonDate->copy()->setDay(25)->endOfDay();
+        }
+
+        return [
+            'start_time' => $startTime->toDateString(),
+            'end_time' => $endTime->toDateString(),
+        ];
     }
 }
