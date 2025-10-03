@@ -117,7 +117,6 @@ class ScheduleTimeController extends Controller
         array &$restDaysPerWeek
     ): void {
         foreach ($dataRows as $index => $row) {
-            $rowNumber = $index + 3;
             $rowAssoc  = array_combine($headerRow, $row);
 
             $employeeId     = $rowAssoc['employee_id'] ?? null;
@@ -348,8 +347,8 @@ class ScheduleTimeController extends Controller
 
                 $dataRows = Excel::toArray([], $file);
 
-                $rawHeaderRow = $dataRows[0][1]; 
-                $dataRows     = array_slice($dataRows[0], 2); 
+                $rawHeaderRow = $dataRows[0][0]; 
+                $dataRows     = array_slice($dataRows[0], 1); 
 
                 $headerRow = array_map(function ($header) {
                     return strtolower(trim(preg_replace('/[^a-zA-Z0-9_]/', '_', $header)));
@@ -365,7 +364,7 @@ class ScheduleTimeController extends Controller
                         continue;
                     }
 
-                    $rowNumber   = $index + 3;
+                    $rowNumber   = $index + 2;
                     $rowAssoc = array_combine($headerRow, $row);
 
                     $employeeId = trim((string) ($rowAssoc['employee_id'] ?? ''));
@@ -392,7 +391,7 @@ class ScheduleTimeController extends Controller
                     ];
 
                     foreach ($requiredFields as $field => $label) {
-                        if (empty($$field)) {
+                        if (empty($field)) {
                             return $this->sendError([
                                 "message" => "{$label} value is missing at row {$rowNumber}"
                             ]);

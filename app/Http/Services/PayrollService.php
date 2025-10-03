@@ -2,6 +2,8 @@
 
 namespace App\Http\Services;
 
+use App\Models\Adjustment;
+use App\Models\AdjustmentTimeKeeping;
 use App\Models\Branch;
 use App\Models\Cutoff;
 use App\Models\Employee;
@@ -294,7 +296,7 @@ class PayrollService {
             }
         }
 
-        $employeeId = $employee->position;
+        $employeeId = $employee->id;
         $positionId = $position->id;
         $branchId = $branch->id;
         $incentiveAmount = 0;
@@ -335,13 +337,79 @@ class PayrollService {
             + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
             $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
 
-            // if ($firstTimeKeeping->adjustment_amount == 0) {
+            if ($firstTimeKeeping->adjustment_amount == 0) {
 
-            // }
+                $adjustments = Adjustment::whereBetween("date", [$firstCutOff['start_time'], $firstCutOff['end_time']])
+                ->where("employee_id", $employee->id)
+                ->whereIn("status", ["Approved", "Adjusted"])
+                ->get();
 
-            // if ($secondTimeKeeping->adjustment_amount == 0) {
+                $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
 
-            // }
+                foreach ($adjustments as $adjustment) {
+                    $timeKeeping = TimeKeeping::where("date", $adjustment->date)
+                    ->where("employee_id", $employee->id)
+                    ->first();
+
+                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("employee_id", $employee->id)
+                    ->where("date", $adjustment->date)
+                    ->first();
+
+                    if ($timeKeeping->final_worked_hours !== $adjustmentTimeKeeping->final_worked_hours) {
+                        $tobeDeducted = 0;
+                        if ($hours >= $timeKeeping->final_worked_hours) {
+                            $tobeDeducted = 1;
+                        } else if ($hours / 2 == $timeKeeping->final_worked_hours) {
+                            $tobeDeducted = 0.5;
+                        }
+                        
+                        $monthWorkedDays -= $tobeDeducted;
+
+                        if ($hours >= $adjustmentTimeKeeping->final_worked_hours) {
+                            $monthWorkedDays += 1;
+                        } else if ($hours / 2 == $timeKeeping->final_worked_hours) {
+                            $monthWorkedDays += 0.5;
+                        }
+                    }
+                }
+            }
+
+            if ($secondTimeKeeping->adjustment_amount == 0) {
+
+                $adjustments = Adjustment::whereBetween("date", [$secondCutOff['start_time'], $secondCutOff['end_time']])
+                ->where("employee_id", $employee->id)
+                ->whereIn("status", ["Approved", "Adjusted"])
+                ->get();
+                
+                $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
+
+                foreach ($adjustments as $adjustment) {
+                    $timeKeeping = TimeKeeping::where("date", $adjustment->date)
+                    ->where("employee_id", $employee->id)
+                    ->first();
+
+                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("employee_id", $employee->id)
+                    ->where("date", $adjustment->date)
+                    ->first();
+
+                    if ($timeKeeping->final_worked_hours !== $adjustmentTimeKeeping->final_worked_hours) {
+                        $tobeDeducted = 0;
+                        if ($hours >= $timeKeeping->final_worked_hours) {
+                            $tobeDeducted = 1;
+                        } else if ($hours / 2 == $timeKeeping->final_worked_hours) {
+                            $tobeDeducted = 0.5;
+                        }
+                        
+                        $monthWorkedDays -= $tobeDeducted;
+
+                        if ($hours >= $adjustmentTimeKeeping->final_worked_hours) {
+                            $monthWorkedDays += 1;
+                        } else if ($hours / 2 == $timeKeeping->final_worked_hours) {
+                            $monthWorkedDays += 0.5;
+                        }
+                    }
+                }
+            }
 
             if ($monthWorkedDays > 0 && $monthWorkedDays >= $monthShouldBeWorkDays) {
                 $incentiveAmount = $incentivesAmount;
