@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\TimeKeeping;
 use Carbon\Carbon;
@@ -103,8 +104,13 @@ class PayrollController extends Controller
                 ->where("undertime", ">", 0)
                 ->get();
 
+                $incentives = Incentives::where("employee_id", $payroll->employee_id)
+                ->where("pay_date", $payroll->pay_date)
+                ->first();
+
                 $payroll["tardiness_list"] = $tardiness;
                 $payroll["undertime_list"] = $undertime;
+                $payroll["incentives"] = $incentives;
 
                 return $this->sendResponse($payroll);
             }
