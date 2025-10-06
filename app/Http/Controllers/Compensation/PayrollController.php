@@ -66,8 +66,6 @@ class PayrollController extends Controller
                 }
             }
 
-            
-
             // if ($request->has(["export"]) && $request->export) {
             //     $payroll = $payroll->get();
             //     return Excel::download(new EmployeeDeductionExport($payroll), "payroll.xls");

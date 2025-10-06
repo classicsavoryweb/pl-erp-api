@@ -4,10 +4,14 @@ use App\Http\Controllers\Compensation\CutOffController;
 use App\Http\Controllers\Compensation\EmployeeDeductionsController;
 use App\Http\Controllers\Compensation\DeductionHistoryController;
 use App\Http\Controllers\Compensation\PayrollController;
+use App\Http\Controllers\Compensation\PayrollListController;
 use Illuminate\Support\Facades\Route;
 
 //compensation routes
 Route::middleware('auth:sanctum')->group( function () {
+
+    //payroll list
+    Route::get("/get-all-payroll-list",[PayrollListController::class, "getAllPayrollList"]);
 
     //cutoff
     Route::get("/get-all-cut-off",[CutOffController::class, "getAllCutOffs"]);
