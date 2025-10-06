@@ -31,5 +31,6 @@ class EmployeeRecordSeeder extends Seeder
         $this->call(UnduplicateEmployeeNumberSeeder::class);
         $this->call(DeductionHistorySeeder::class);
         $this->call(EmployeeDeductionSeeder::class);
+        $this->call(PayrollListSeeder::class);
     }
 }
