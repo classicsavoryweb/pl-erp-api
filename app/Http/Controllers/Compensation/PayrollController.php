@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Str;
+use Log;
 
 class PayrollController extends Controller
 {
@@ -168,6 +169,70 @@ class PayrollController extends Controller
 
             DB::rollBack();
             return $this->sendError(["message" => "Payroll not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function updatePayrollIncentive(Request $request, $payrollId) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "adjustment_percent" => "required"
+            ]);
+
+            $payroll = Payroll::with(["employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($payrollId);
+
+            if ($payroll) {
+
+                $employee = $payroll->employee;
+
+                $adjustment_percent = $request->adjustment_percent;
+
+                $incentives = Incentives::where("employee_id", $payroll->employee_id)
+                ->where("pay_date", $payroll->pay_date)
+                ->first();
+
+                $amount_rate = $incentives->amount_rate;
+                $adjustment_days = $incentives->adjustment_days;
+                $additional_incentive = $incentives->additional_incentive;
+
+                $startDate = $payroll->start_date;
+                $endDate = $payroll->end_date;
+
+                $firstCutOff = $this->getCutOffForDate($startDate);
+                $secondCutOff = $this->getCutOffForDate($endDate);
+
+                $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
+
+                $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
+                $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
+
+                $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
+                + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
+
+                $final_incentive_amount = ($amount_rate + $additional_incentive) - ((($amount_rate + $additional_incentive) * ($adjustment_percent / 100)) + ((($amount_rate + $additional_incentive) / $monthShouldBeWorkDays) * $adjustment_days));
+
+                $incentives->update([
+                    "incentive_amount" => $final_incentive_amount,
+                    "adjustment_percent" => $adjustment_percent,
+                ]);
+
+                DB::commit();
+                return $this->sendResponse([
+                    "message" => "Incentive updated successfully",
+                    "incentives" => $incentives
+                ]);
+            } else {
+                return $this->sendError(["message" => "Payroll not found"]);
+            }
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
