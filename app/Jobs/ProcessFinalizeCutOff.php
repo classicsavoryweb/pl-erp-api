@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Services\PayrollService;
+use App\Models\Adjustment;
 use App\Models\Cutoff;
 use App\Models\DeductionHistory;
 use App\Models\EmployeeDeduction;
@@ -41,6 +42,15 @@ class ProcessFinalizeCutOff implements ShouldQueue
             ]);
 
             $deductions = json_decode($payroll->deductions, true);
+            $adjustments = Adjustment::where("employee_id", $payroll->empployee_id)
+            ->where("status", "Adjusted")
+            ->get();
+
+            foreach ($adjustments as $adjustment) {
+                $adjustment->update([
+                    "is_timekeeping_locked" => true
+                ]);
+            }
 
             foreach ($deductions as $deduction) {
                 $employeeDeduction = EmployeeDeduction::find($deduction["deduction_id"]);

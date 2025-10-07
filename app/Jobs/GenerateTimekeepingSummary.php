@@ -289,6 +289,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 $adjustments = Adjustment::whereBetween("date", [$previousCutOff['start_time'], $previousCutOff['end_time']])
                 ->where("employee_id", $employee->id)
+                ->where("is_timekeeping_locked", 0)
                 ->whereNot("type", "Overtime Force Adjustments")
                 ->whereIn("status", ["Approved", "Adjusted"])
                 ->get();
@@ -296,6 +297,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 $anotherAdjustments = Adjustment::where("date","<" ,$cutOff["start_time"])
                 ->where("employee_id", $employee->id)
                 ->where("type", "Overtime Force Adjustments")
+                ->where("is_timekeeping_locked", 0)
                 ->whereIn("status", ["Approved", "Adjusted"])
                 ->get();
 
