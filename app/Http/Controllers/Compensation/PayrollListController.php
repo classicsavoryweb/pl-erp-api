@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\PayrollList;
 use Illuminate\Http\Request;
 use Exception;
@@ -57,6 +58,57 @@ class PayrollListController extends Controller
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function createPayrollList(Request $request) {
+        try {
+            $request->validate([
+                "employee_id" => "required",
+                "is_included" => "required",
+                "is_statutory_only" => "required",
+            ]);
+
+            $employee = Employee::where("id", $request->employee_id)->first();
+
+            $isExisting = PayrollList::where("employee_id", $employee->id)->first();
+
+            if ($isExisting) {
+                return $this->sendError(["message" => "Employee is already existing."]);
+            }
+
+            PayrollList::create([
+                "employee_id" => $request->employee_id,
+                "is_included" => $request->is_included,
+                "is_statutory_only" => $request->is_statutory_only,
+                "remarks" => $request->remarks,
+            ]);
+
+            return $this->sendResponse(["message" => "Payroll created succesfully"]);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function editPayrollList(Request $request, $id) {
+        try {
+            $request->validate([
+                "employee_id" => 'required',
+                "is_included" => "required",
+                "is_statutory_only" => "required",
+            ]);
+
+            PayrollList::where("id", $id)->update([
+                "is_included" => $request->is_included,
+                "is_statutory_only" => $request->is_statutory_only,
+                "remarks" => $request->remarks
+            ]);
+
+            return $this->sendResponse(["message" => "Payroll updated succesfully"]);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 }
