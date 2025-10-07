@@ -52,6 +52,10 @@ class PayrollListController extends Controller
                 }
             }
 
+            if ($request->has(["status"])) {
+                $payrollList = $payrollList->where("is_included", $request->status == "included" ? 1 : 0);
+            }
+
             $payrollList = $payrollList->paginate($perPage);
 
             return $this->sendResponse($payrollList);

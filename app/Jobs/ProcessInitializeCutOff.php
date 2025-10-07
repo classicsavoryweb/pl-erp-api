@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Http\Services\PayrollService;
 use App\Models\Cutoff;
+use App\Models\PayrollList;
 use App\Models\TimeKeepingSummary;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,12 +31,22 @@ class ProcessInitializeCutOff implements ShouldQueue
      */
     public function handle(): void
     {
-        $timeKeepingSummaries = TimeKeepingSummary::with(["employee"])
-        ->where("cut_off", $this->cutOff->start_date."-".$this->cutOff->end_date)
+        $includedEmployees = PayrollList::with(["employee"])
+        ->where("is_included", 1)
         ->get();
 
-        foreach ($timeKeepingSummaries as $timeKeepingSummary) {
-            $this->payrollService->computePayroll($timeKeepingSummary);
+        foreach ($includedEmployees as $includedEmployee) {
+            $employee = $includedEmployee->employee;
+            $timeKeepingSummary = TimeKeepingSummary::with(["employee"])
+            ->where("cut_off", $this->cutOff->start_date."-".$this->cutOff->end_date)
+            ->where("employee_id",  $employee->id)
+            ->first();
+
+            if ($includedEmployee->isStatutoryOnly()) {
+                $this->payrollService->computeStatutoryOnly($employee, $this->cutOff);
+            } else if ($timeKeepingSummary && !$includedEmployee->isStatutoryOnly()) {
+                $this->payrollService->computePayroll($timeKeepingSummary);
+            }
         }
     }
 }

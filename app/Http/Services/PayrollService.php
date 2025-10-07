@@ -55,7 +55,7 @@ class PayrollService {
             $nightDifferentialOvertimeAmount = 0;
             $cancelledOffAmount = 0;
             $nonTaxableAmount = 0;
-            $taxableAdustmentAmount = $timeKeepingSummary->adjustment_amount;
+            $taxableAdustmentAmount = $timeKeepingSummary->adjustment_amount ?? 0;
             $philHealthAmount = 0;
             $pagibigEmployee = $pagibigRate->employee_share / 2;
             $pagibigEmployer = $pagibigRate->employer_share / 2;
@@ -131,9 +131,9 @@ class PayrollService {
             ->where("range_max", '>=',round($taxableIncome, 2))
             ->first();
 
-            $salaryBase = $tax->salary_base;
-            $exemption = $tax->exemption;
-            $percentage = $tax->percentage;
+            $salaryBase = $tax->salary_base ?? 0;
+            $exemption = $tax->exemption ?? 0;
+            $percentage = $tax->percentage ?? 0;
 
             $taxAmount = ((($taxableIncome - $salaryBase) + $exemption) * ($percentage* 0.01)) > 0
                 ? round( (($taxableIncome - $salaryBase) + $exemption) * ($percentage * 0.01), 2)
@@ -255,6 +255,132 @@ class PayrollService {
         }
     }
 
+    public function computeStatutoryOnly (Employee $employee, $cutOff) {
+        $payroll = null;
+        try {
+            DB::beginTransaction();
+
+            $daily_rate = round($employee->daily_salary, 2);
+            $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule" 
+                ? round($daily_rate / 9.5, 2)
+                : round($daily_rate / 8, 2);
+            $minute_rate = $hourly_rate / 60;
+            
+            $pagibigRate = Pagibig::first();
+
+            $paymentType = $employee->current_position->timekeeping_type;
+            $cutOffBaseSalary = $employee->cut_off_base_salary;
+            $baseRegularDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
+            $salary = 0;
+            $tardinessAmount = 0;
+            $undertimeAmount = 0;
+            $overtimeAmount = 0;
+            $legalHolidayAmount = 0;
+            $legalHolidayOvertimeAmount = 0;
+            $specialHolidayAmount = 0;
+            $specialHolidayOvertimeAmount = 0;
+            $nightDifferentialAmount = 0;
+            $nightDifferentialOvertimeAmount = 0;
+            $cancelledOffAmount = 0;
+            $nonTaxableAmount = 0;
+            $taxableAdustmentAmount = 0;
+            $philHealthAmount = 0;
+            $pagibigEmployee = $pagibigRate->employee_share / 2;
+            $pagibigEmployer = $pagibigRate->employer_share / 2;
+            $sssEmployeeAmount = 0;
+            $sssEmployerAmount = 0;
+            $taxAmount = 0;
+            $grossPayAmount = 0;
+            $netPayAmount = 0;
+            $totalDeductions = 0;
+            $manualDeductions = 0;
+            $remarks = null;
+
+            $contributionTotal = 0;
+            $additionalWorkingHoursTotal = 0;
+            $workingHoursDeductionTotal = 0;
+
+            $basicSalary = $cutOffBaseSalary;
+            $philHealthAmount = round(( $basicSalary * 0.05) / 2 , 2);
+
+            $sss = SSS::where('salary_range_min', '<=', $basicSalary)
+            ->where('salary_range_max', '>=', $basicSalary)
+            ->first();
+
+            $sssEmployeeAmount = round($sss->employee_ss, 2);
+            $sssEmployerAmount = round($sss->employer_ss, 2);
+
+            $basicSalary = 0;
+
+            $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
+
+            $totalDeductions = 0;
+
+            Payroll::updateOrCreate(
+                [
+                "employee_id" => $employee->id,
+                "cut_off" => $cutOff->cut_off,
+                "start_date" => $cutOff->start_date,
+                "end_date" => $cutOff->end_date,
+                ],
+                [
+                "timekeeping_summary_id" => 0,
+                "timekeeping_branch_id" => $employee->branch_id,
+                "pay_date" => $cutOff->pay_date,
+                "daily_rate" => $daily_rate,
+                "hourly_rate" => $hourly_rate,
+                "pay_type" => $paymentType,
+                "tax_status" => $employee->tax_type,
+                "salary" => $salary,
+                "tardiness_amount" => $tardinessAmount,
+                "undertime_amount" => $undertimeAmount,
+                "overtime_amount" => $overtimeAmount,
+                "legal_holiday_amount" => $legalHolidayAmount,
+                "legal_holiday_overtime_amount" => $legalHolidayOvertimeAmount,
+                "special_holiday_amount" => $specialHolidayAmount,
+                "special_holiday_overtime_amount" => $specialHolidayOvertimeAmount,
+                "night_differential_amount" => $nightDifferentialAmount,
+                "night_differential_overtime_amount" => $nightDifferentialOvertimeAmount,
+                "taxable_adjustment" => $taxableAdustmentAmount,
+                "non_taxable_adjustment" => $nonTaxableAmount,
+                "gross_pay" => $grossPayAmount,
+                "employee_sss" => $sssEmployeeAmount,
+                "employer_sss" => $sssEmployerAmount,
+                "employee_pagibig" => $pagibigEmployee,
+                "employer_pagibig" => $pagibigEmployer,
+                "employee_philhealth" => $philHealthAmount,
+                "employer_philhealth" => $philHealthAmount,
+                "withholding_tax" => $taxAmount,
+                "deductions" => json_encode([]),
+                "total_deductions" => $totalDeductions,
+                "manual_deductions" => $manualDeductions,
+                "cancelled_off" => $cancelledOffAmount,
+                "net_pay" => $netPayAmount,
+                "taxable_income" => 0,
+                "contribution_total" => $contributionTotal,
+                "additional_working_hours_total" => $additionalWorkingHoursTotal,
+                "working_hours_deduction_total" => $workingHoursDeductionTotal,
+                "status" => "initial",
+                "remarks" => $remarks
+            ]);
+
+            $this->computeIncentives($cutOff, $employee, $employee->current_branch);
+            DB::commit();
+            return [
+                "error" => false,
+                "payroll" => $payroll
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("ERROR COMPUTING PAYROLL STATUTORY TIMEKEEPING OF EMPLOYEE: " .$employee->full_name. " ERROR: ". $e->getMessage());
+            
+            return [
+                "error" => true,
+                "payroll" => $payroll
+            ];
+        }
+    }
+
     public function computeIncentives(Cutoff $cutOff, Employee $employee, Branch $branch) {
 
         $incentivesAmount = 0;
@@ -337,8 +463,7 @@ class PayrollService {
             + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
             $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
 
-            if ($firstTimeKeeping->adjustment_amount == 0) {
-
+            if ($firstTimeKeeping && $firstTimeKeeping->adjustment_amount == 0) {
                 $adjustments = Adjustment::whereBetween("date", [$firstCutOff['start_time'], $firstCutOff['end_time']])
                 ->where("employee_id", $employee->id)
                 ->whereIn("status", ["Approved", "Adjusted"])
@@ -374,8 +499,7 @@ class PayrollService {
                 }
             }
 
-            if ($secondTimeKeeping->adjustment_amount == 0) {
-
+            if ($secondTimeKeeping && $secondTimeKeeping->adjustment_amount == 0) {
                 $adjustments = Adjustment::whereBetween("date", [$secondCutOff['start_time'], $secondCutOff['end_time']])
                 ->where("employee_id", $employee->id)
                 ->whereIn("status", ["Approved", "Adjusted"])
