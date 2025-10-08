@@ -16,7 +16,6 @@ class PhilhealthPercentageBaseSeeder extends Seeder
         PhilhealthPercentageBase::create([
             "philhealth_formula" => "Percentage Based",
             "percentage" => 5,
-            "management_max" => 10000,
             "philhealth_cap" => 10500,
             "philhealth_max" => 2500,
         ]);
