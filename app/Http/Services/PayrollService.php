@@ -14,6 +14,7 @@ use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
 use App\Models\Pagibig;
 use App\Models\Payroll;
+use App\Models\PhilhealthPercentageBase;
 use App\Models\Position;
 use App\Models\SSS;
 use App\Models\Tax;
@@ -103,8 +104,12 @@ class PayrollService {
             }
 
             $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
-            $philHealthAmount = round(( $basicSalary * 0.05) / 2 , 2);
+            $philHealth = PhilhealthPercentageBase::first();
+            $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
 
+            if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
+                $philHealthAmount = $philHealth->philhealth_max / 2;
+            }
             $sss = SSS::where('salary_range_min', '<=', $basicSalary)
             ->where('salary_range_max', '>=', $basicSalary)
             ->first();
@@ -135,8 +140,8 @@ class PayrollService {
             $exemption = $tax->exemption ?? 0;
             $percentage = $tax->percentage ?? 0;
 
-            $taxAmount = ((($taxableIncome - $salaryBase) + $exemption) * ($percentage* 0.01)) > 0
-                ? round( (($taxableIncome - $salaryBase) + $exemption) * ($percentage * 0.01), 2)
+            $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
                 : 0;
 
 
