@@ -20,12 +20,12 @@ class PhilhealthSeeder extends Seeder
 
         foreach ($unique_philhealth_details as $philhealth_detail) {
             Philhealth::create([
-                "salary_range_min" => $philhealth_detail["salary_range_from"],
-                "salary_range_max" => $philhealth_detail["salary_range_to"],
-                "salary_base" => $philhealth_detail["salary_base"],
-                "employee_share" => $philhealth_detail["employee_share"],
-                "employer_share" => $philhealth_detail["employer_share"],
-                "total_monthly_contribution" => $philhealth_detail["total_monthly_premium"]
+                "salary_range_min" => floatval(str_replace(',', '', $philhealth_detail["salary_range_from"])),
+                "salary_range_max" => floatval(str_replace(',', '', $philhealth_detail["salary_range_to"])),
+                "salary_base" => floatval(str_replace(',', '', $philhealth_detail["salary_base"])),
+                "employee_share" => floatval(str_replace(',', '', $philhealth_detail["employee_share"])),
+                "employer_share" => floatval(str_replace(',', '', $philhealth_detail["employer_share"])),
+                "total_monthly_contribution" => floatval(str_replace(',', '', $philhealth_detail["total_monthly_premium"]))
             ]);
         }
     }
