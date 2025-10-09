@@ -110,12 +110,6 @@ class PayrollService {
             if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
                 $philHealthAmount = $philHealth->philhealth_max / 2;
             }
-            $sss = SSS::where('salary_range_min', '<=', $basicSalary)
-            ->where('salary_range_max', '>=', $basicSalary)
-            ->first();
-
-            $sssEmployeeAmount = round($sss->employee_ss, 2);
-            $sssEmployerAmount = round($sss->employer_ss, 2);
 
             $grossPayAmount = ( $salary +
                 $overtimeAmount +
@@ -130,6 +124,34 @@ class PayrollService {
                 $nonTaxableAmount ) -
                 $undertimeAmount -
                 $tardinessAmount;
+
+            $sss = SSS::where('salary_range_min', '<=', $grossPayAmount)
+            ->where('salary_range_max', '>=', $grossPayAmount)
+            ->first();
+
+            if (Carbon::parse($cutOff->start_date)->day === 11) {
+                $sssEmployeeAmount = round($sss->employee_ss, 2);
+                $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+            } else {
+                $latestPayroll = Payroll::where("employee_id", $employee->id)
+                ->whereNot("start_date", $cutOff->start_date)
+                ->orderBy("start_date", "DESC")
+                ->first();
+
+                if ($latestPayroll) {
+                    $totalSalary = $basicSalary + $latestPayroll->gross_pay;
+
+                    $sss = SSS::where('salary_range_min', '<=', $totalSalary)
+                    ->where('salary_range_max', '>=', $totalSalary)
+                    ->first();
+
+                    $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
+                    $sssEmployerAmount = round(($sss->employer_ss + $sss->employer_cc) - $latestPayroll->employer_sss, 2);   
+                } else {
+                    $sssEmployeeAmount = round($sss->employee_ss, 2);
+                    $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+                }
+            }        
 
             $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
             $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
@@ -176,6 +198,7 @@ class PayrollService {
                         "deduction_id" => $deduction->id,
                         "type" => $deduction->deduction->description,
                         "monthly_amortization" => $deduction->monthly_amortization,
+                        "balance" => $deduction->balance,
                         "deducted_amount" => $amountToDeduct,
                     ];
                     $totalDeductions += $amountToDeduct;
