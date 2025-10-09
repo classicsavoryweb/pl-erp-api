@@ -250,11 +250,14 @@ class PayrollController extends Controller
 
             if ($payroll) {
                 $remarks = $request->remarks ?? null;
-                $manual_deductions = $request->manual_deductions;
-                $non_taxable_adjustments = $request->non_taxable_adjustments;
+                $manual_deductions = $request->manual_deductions ?? 0;
+                $non_taxable_adjustments = $request->non_taxable_adjustment ?? 0;
 
                 $newNetPay = $payroll->net_pay;
-                $newNetPay += $non_taxable_adjustments;
+
+                if ($non_taxable_adjustments != $payroll->$non_taxable_adjustments) {
+                    $newNetPay += $non_taxable_adjustments - $payroll->$non_taxable_adjustments;
+                }
                 
                 $amountToDeduct = 0;
 
