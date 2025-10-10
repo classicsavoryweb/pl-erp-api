@@ -192,15 +192,16 @@ class PayrollController extends Controller
 
                 $employee = $payroll->employee;
 
+                $adjustment_days = $request->adjustment_days;
                 $adjustment_percent = $request->adjustment_percent;
+                $additional_incentive = $request->additional_incentive;
+                $remarks = $request->remarks;
 
                 $incentives = Incentives::where("employee_id", $payroll->employee_id)
                 ->where("pay_date", $payroll->pay_date)
                 ->first();
 
-                $amount_rate = $incentives->amount_rate;
-                $adjustment_days = $incentives->adjustment_days;
-                $additional_incentive = $incentives->additional_incentive;
+                $incentive_amount = $incentives->incentive_amount;
 
                 $startDate = $payroll->start_date;
                 $endDate = $payroll->end_date;
@@ -216,17 +217,21 @@ class PayrollController extends Controller
                 $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
                 + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
 
-                $final_incentive_amount = ($amount_rate + $additional_incentive) - ((($amount_rate + $additional_incentive) * ($adjustment_percent / 100)) + ((($amount_rate + $additional_incentive) / $monthShouldBeWorkDays) * $adjustment_days));
+                $final_incentive_amount = ($incentive_amount + $additional_incentive) - ((($incentive_amount + $additional_incentive) * ($adjustment_percent / 100)) + ((($incentive_amount + $additional_incentive) / $monthShouldBeWorkDays) * $adjustment_days));
 
                 $incentives->update([
                     "incentive_amount" => $final_incentive_amount,
+                    "adjustment_days" => $adjustment_days,
                     "adjustment_percent" => $adjustment_percent,
+                    "additional_incentive" => $additional_incentive,
+                    "remarks" => $remarks,
                 ]);
 
                 DB::commit();
                 return $this->sendResponse([
                     "message" => "Incentive updated successfully",
-                    "incentives" => $incentives
+                    "incentives" => $incentives,
+                    "days" => $monthShouldBeWorkDays
                 ]);
             } else {
                 return $this->sendError(["message" => "Payroll not found"]);

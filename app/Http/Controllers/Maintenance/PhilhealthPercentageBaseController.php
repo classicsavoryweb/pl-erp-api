@@ -25,14 +25,13 @@ class PhilhealthPercentageBaseController extends Controller
             $request->validate([
                 "philhealth_formula" => "required",
                 "percentage" => "required",
-                "management_max" => "required",
                 "philhealth_cap" => "required",
+                "philhealh_max" => "required"
             ]);
 
             PhilhealthPercentageBase::where("id", $id)->update([
                 "philhealth_formula" => $request->philhealth_formula,
                 "percentage" => $request->percentage,
-                "management_max" => $request->management_max,
                 "philhealth_cap" => $request->philhealth_cap,
                 "philhealth_max" => $request->philhealth_max,
             ]);

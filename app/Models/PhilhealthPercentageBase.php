@@ -12,7 +12,7 @@ class PhilhealthPercentageBase extends Model
     use HasFactory, LogsActivity;
 
     protected $table = "philhealth_percentage_base";
-    protected $fillable = ["philhealth_formula", "percentage", "management_max", "philhealth_cap", "philhealth_max"];
+    protected $fillable = ["philhealth_formula", "percentage", "philhealth_cap", "philhealth_max"];
 
     public function getActivitylogOptions(): LogOptions
     {
