@@ -173,6 +173,73 @@ class PayrollController extends Controller
         }
     }
 
+    public function editCompanyDeductions(Request $request, $payrollId) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "deduction_id" => "required",
+                "deducted_amount" => "required",
+            ]);
+
+            $payroll = Payroll::with(["employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($payrollId);
+
+            if ($payroll) {
+                $deductions = json_decode($payroll->deductions, true);
+                $newDeductions = [];
+                $totalDeductions = $payroll->total_deductions;
+                $amountToBeAdded = 0;
+                $amountToDeduct = 0;
+
+                foreach ($deductions as $deduction) {
+                    if ($deduction["deduction_id"] != $request->deduction_id) {
+                        $newDeductions[] = $deduction;
+                    } else {
+                        if ($request->deducted_amount > $deduction["deducted_amount"]) {
+                            $amountToDeduct = $request->deducted_amount - $deduction["deducted_amount"];
+                        } else {
+                            $amountToBeAdded = $deduction["deducted_amount"] - $request->deducted_amount;
+                        }
+
+                        $totalDeductions += $request->deducted_amount - $deduction["deducted_amount"];
+                        $newDeductions[] = [
+                            "deduction_id" => $deduction["deduction_id"],
+                            "type" => $deduction["type"],
+                            "monthly_amortization" => $deduction["monthly_amortization"],
+                            "balance" => $deduction["balance"],
+                            "deducted_amount" => $request->deducted_amount
+                        ];
+                    }
+                }
+
+                $netPay = ($payroll->net_pay + $amountToBeAdded) - $amountToDeduct;
+
+                $payroll->update([
+                    "net_pay" => $netPay,
+                    "deductions" => json_encode($newDeductions),
+                    "total_deductions" => $totalDeductions
+                ]);
+
+                DB::commit();
+                return $this->sendResponse([
+                    "message" => "Deduction updated successfully",
+                    "details" => $payroll
+                ]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Payroll not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function updatePayrollIncentive(Request $request, $payrollId) {
         try {
             DB::beginTransaction();

@@ -36,4 +36,5 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-deduction/{payrollId}", [PayrollController::class, "updateCompanyDeductions"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-details/{payrollId}", [PayrollController::class, "updatePayrollDetails"]);
     Route::middleware(["permission:perform_compensation_incentives"])->post("/update-payroll-incentive/{payrollId}", [PayrollController::class, "updatePayrollIncentive"]);
+    Route::middleware(["permission:perform_compensation_payroll"])->post("/edit-payroll-deduction-details/{payrollId}", [PayrollController::class, "editCompanyDeductions"]);
 });
