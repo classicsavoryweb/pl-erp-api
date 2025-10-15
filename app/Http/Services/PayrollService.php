@@ -213,6 +213,86 @@ class PayrollService {
 
             $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
 
+            $removedDeductions = [];
+
+            $newDeductions = [];
+
+            if ($netPayAmount < 1000) {
+
+                $employeeDeductions = EmployeeDeduction::with(["deduction"])
+                    ->where("employee_id", $employee->id)
+                    ->where("balance", ">", 1)
+                    ->get();
+
+                $companyLoans = $employeeDeductions->filter(fn($deduct) => !in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
+
+                $governmentLoans = $employeeDeductions->filter(fn($deduct) => in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
+
+                $companyLoans = $companyLoans->sortBy('monthly_amortization');
+                $governmentLoans = $governmentLoans->sortBy('monthly_amortization');
+
+                foreach ($companyLoans as $deduction) {
+                    $amountToDeduct = $deduction->monthly_amortization / 2;
+                    if ($amountToDeduct > $deduction->balance) {
+                        $amountToDeduct = $deduction->balance;
+                    }
+
+                    $computedNetPay = $netPayAmount + $amountToDeduct;
+
+                    if ($computedNetPay >= 1000) {
+                        $totalDeductions -= $amountToDeduct;
+                        $netPayAmount = $computedNetPay;
+
+                        $removedDeductions[] = $deduction->deduction->id;
+
+                        $deduction->delete();
+                        break;
+                    } else {
+                        $totalDeductions -= $amountToDeduct;
+                        $netPayAmount += $amountToDeduct;
+    
+                        $removedDeductions[] = $deduction->deduction->id;
+    
+                        $deduction->delete();
+                    }
+                }
+
+                if ($netPayAmount < 1000) {
+                    $amountToDeduct = 0;
+                    foreach ($governmentLoans as $deduction) {
+                        $amountToDeduct = $deduction->monthly_amortization / 2;
+                        if ($amountToDeduct > $deduction->balance) {
+                            $amountToDeduct = $deduction->balance;
+                        }
+
+                        $computedNetPay = $netPayAmount + $amountToDeduct;
+
+                        if ($computedNetPay >= 1000) {
+                            $totalDeductions -= $amountToDeduct;
+                            $netPayAmount = $computedNetPay;
+
+                            $removedDeductions[] = $deduction->deduction->id;
+
+                            $deduction->delete();
+                            break;
+                        } else {
+                            $totalDeductions -= $amountToDeduct;
+                            $netPayAmount += $amountToDeduct;
+        
+                            $removedDeductions[] = $deduction->deduction->id;
+        
+                            $deduction->delete();
+                        }
+                    }
+                }
+            }
+
+            foreach ($deductions as $deduction) {
+                if (!in_array($deduction["deduction_id"], $removedDeductions)) {
+                    $newDeductions[] = $deduction;
+                }
+            }
+
             Payroll::updateOrCreate(
                 [
                 "employee_id" => $employee->id,
@@ -248,7 +328,7 @@ class PayrollService {
                 "employee_philhealth" => $philHealthAmount,
                 "employer_philhealth" => $philHealthAmount,
                 "withholding_tax" => $taxAmount,
-                "deductions" => json_encode($deductions),
+                "deductions" => json_encode($newDeductions),
                 "total_deductions" => $totalDeductions,
                 "manual_deductions" => $manualDeductions,
                 "cancelled_off" => $cancelledOffAmount,
