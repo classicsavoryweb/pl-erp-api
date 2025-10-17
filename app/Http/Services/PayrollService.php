@@ -14,6 +14,7 @@ use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
 use App\Models\Pagibig;
 use App\Models\Payroll;
+use App\Models\PayrollList;
 use App\Models\PhilhealthPercentageBase;
 use App\Models\Position;
 use App\Models\SSS;
@@ -418,7 +419,11 @@ class PayrollService {
             $sssEmployeeAmount = round($sss->employee_ss, 2);
             $sssEmployerAmount = round($sss->employer_ss, 2);
 
-            $basicSalary = 0;
+            $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
+
+            if ($payrollRollListEmployee->isOnMaternityLeave()) {
+                $basicSalary = 0;
+            }
 
             $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
 

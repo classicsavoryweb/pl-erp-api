@@ -15,12 +15,16 @@ class PayrollListSeeder extends Seeder
     public function run(): void
     {
         $employees = Employee::all();
-        
+
         foreach ($employees as $employee) {
+            $isMancom = str_starts_with($employee->employee_number, 'M');
+
             PayrollList::create([
                 "employee_id" => $employee->id,
                 "is_included" => $employee->status === "active",
-                "is_statutory_only" => false,
+                "is_statutory_only" => $isMancom,
+                "is_mancom" => $isMancom,
+                "is_on_maternity_leave" => false
             ]);
         }
     }
