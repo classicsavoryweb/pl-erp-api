@@ -15,6 +15,8 @@ class PayrollList extends Model
         "employee_id",
         "is_included",
         "is_statutory_only",
+        "is_mancom",
+        "is_on_maternity_leave",
         "remarks",
     ];
 
@@ -28,5 +30,13 @@ class PayrollList extends Model
 
     public function isStatutoryOnly() {
         return $this->is_statutory_only === 1;
+    }
+
+    public function isMancom() {
+        return $this->is_mancom === 1;
+    }
+
+    public function isOnMaternityLeave() {
+        return $this->is_on_maternity_leave === 1;
     }
 }
