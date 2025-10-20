@@ -27,8 +27,17 @@ class DeductionSeeder extends Seeder
                 $status = 'inactive';
             }
 
+            if ($unique_deductions_detail["description"] === "SSS Loans") {
+                $category = "SSS";
+            } else if (in_array($unique_deductions_detail["description"], ["Pag-ibig/HDMF Loans", "Pag-ibig MP2"])) {
+                $category = "Pag-ibig";
+            } else {
+                $category = "Company";
+            }
+
             Deduction::create([
                 "description" => $unique_deductions_detail["description"],
+                "category" => $category,
                 "debit_id" => $unique_deductions_detail["debit_id"],
                 "credit_id" => $unique_deductions_detail["credit_id"],
                 "amortization_vendor_id" => $unique_deductions_detail["vendor_id"],

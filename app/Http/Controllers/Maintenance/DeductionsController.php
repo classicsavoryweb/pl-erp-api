@@ -58,6 +58,7 @@ class DeductionsController extends Controller
         try {
             $request->validate([
                 "description" => "required",
+                "category" => "required",
                 "debit_id" => "required",
                 "credit_id" => "required",
                 "amortization_vendor_id" => "required",
@@ -71,6 +72,7 @@ class DeductionsController extends Controller
 
             Deduction::create([
                 "description" => $request->description,
+                "category" => $request->category,
                 "debit_id" => $request->debit_id,
                 "credit_id" => $request->credit_id,
                 "amortization_vendor_id" => $request->amortization_vendor_id,
@@ -93,6 +95,7 @@ class DeductionsController extends Controller
         try {
             $request->validate([
                 "description" => "required|unique:deductions,description,".$id,
+                "category" => "required",
                 "debit_id" => "required",
                 "credit_id" => "required",
                 "amortization_vendor_id" => "required",
@@ -106,6 +109,7 @@ class DeductionsController extends Controller
 
             Deduction::where("id", $id)->update([
                 "description" => $request->description,
+                "category" => $request->category,
                 "debit_id" => $request->debit_id,
                 "credit_id" => $request->credit_id,
                 "amortization_vendor_id" => $request->amortization_vendor_id,
