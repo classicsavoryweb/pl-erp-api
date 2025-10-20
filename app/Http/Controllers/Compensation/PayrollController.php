@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Compensation;
 use App\Http\Controllers\Controller;
 use App\Models\Incentives;
 use App\Models\Payroll;
+use App\Models\Tardiness;
 use App\Models\TimeKeeping;
 use Carbon\Carbon;
 use Exception;
@@ -107,9 +108,17 @@ class PayrollController extends Controller
                 ->where("pay_date", $payroll->pay_date)
                 ->first();
 
+                $tardinessOffenses = Tardiness::with(["tardiness_sanction"])
+                ->where("employee_id", $payroll->employee_id)
+                ->where("status", "Approved")
+                ->orderBy("month", "DESC")
+                ->where("year", now()->year)
+                ->get();
+
                 $payroll["tardiness_list"] = $tardiness;
                 $payroll["undertime_list"] = $undertime;
                 $payroll["incentives"] = $incentives;
+                $payroll["tardiness_offenses"] = $tardinessOffenses;
 
                 return $this->sendResponse($payroll);
             }
@@ -215,6 +224,10 @@ class PayrollController extends Controller
                             "deducted_amount" => $request->deducted_amount
                         ];
                     }
+                }
+
+                if ($totalDeductions > $payroll->net_pay) {
+                    return $this->sendError(["message" => "Net pay cannot be a negative amount."]);
                 }
 
                 $netPay = ($payroll->net_pay + $amountToBeAdded) - $amountToDeduct;
@@ -327,8 +340,8 @@ class PayrollController extends Controller
 
                 $newNetPay = $payroll->net_pay;
 
-                if ($non_taxable_adjustments != $payroll->$non_taxable_adjustments) {
-                    $newNetPay += $non_taxable_adjustments - $payroll->$non_taxable_adjustments;
+                if ($non_taxable_adjustments != $payroll->non_taxable_adjustments) {
+                    $newNetPay += $non_taxable_adjustments - $payroll->non_taxable_adjustments;
                 }
                 
                 $amountToDeduct = 0;

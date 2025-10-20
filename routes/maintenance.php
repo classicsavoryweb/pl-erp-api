@@ -30,6 +30,7 @@ use App\Http\Controllers\Maintenance\SanctionsController;
 use App\Http\Controllers\Maintenance\ScheduleMasterlistController;
 use App\Http\Controllers\Maintenance\SSSController;
 use App\Http\Controllers\Maintenance\StationController;
+use App\Http\Controllers\Maintenance\TardinessSanctionController;
 use App\Http\Controllers\Maintenance\TaxController;
 use App\Http\Controllers\Maintenance\TermsController;
 use App\Http\Controllers\Maintenance\LastPaySetupController;
@@ -248,4 +249,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-philhealth-percentage-base", [PhilhealthPercentageBaseController::class, "getAllPhilhealthPercentageBase"]);
     Route::get("/get-philhealth-percentage-base", [PhilhealthPercentageBaseController::class, "getPhilhealthPercentageBase"]);
     Route::middleware(["permission:perform_philhealth"])->post("/edit-philhealth-percentage-base/{id}", [PhilhealthPercentageBaseController::class, "editPhilhealthPercentageBase"]);
+    //tardiness sanctions
+    Route::get("/get-all-tardiness-sanctions", [TardinessSanctionController::class, "getAllTardinessSanctions"]);
+    Route::get("/export-all-tardiness-sanctions", [TardinessSanctionController::class, "exportAllTardinessSanctions"]);
+    Route::middleware(["permission:perform_tardiness_sanctions"])->post("/create-tardiness-sanction", [TardinessSanctionController::class, "createTardinessSanctions"]);
+    Route::middleware(["permission:perform_tardiness_sanctions"])->post("/edit-tardiness-sanction/{id}", [TardinessSanctionController::class, "editTardinessSanctions"]);
 });

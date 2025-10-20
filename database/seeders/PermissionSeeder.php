@@ -95,6 +95,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_terms"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_last_pay_setup"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_last_pay_setup"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_tardiness_sanctions"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_tardiness_sanctions"], ["module" => "maintenance"]);
 
         //employees module
         

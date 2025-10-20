@@ -14,7 +14,8 @@ class TardinessSanction extends Model
         "count",
         "punishment",
         "rank",
-        "status"
+        "status",
+        "incentives_deduction"
     ];
 
     public function tardiness () {

@@ -18,6 +18,7 @@ use App\Models\PayrollList;
 use App\Models\PhilhealthPercentageBase;
 use App\Models\Position;
 use App\Models\SSS;
+use App\Models\Tardiness;
 use App\Models\Tax;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
@@ -668,6 +669,31 @@ class PayrollService {
 
                 $remarks = "With ".$absent." absents";
             }
+
+            $year = Carbon::parse($firstCutOff['end_time'])->year;
+            $month = Carbon::parse($firstCutOff['end_time'])->month;
+
+            $tardiness = Tardiness::with(["tardiness_sanction"])
+            ->where("year", $year)
+            ->where("month", $month)
+            ->where("employee_id", $employee->id)
+            ->where("status", "Approved")
+            ->where(function($query) {
+                return $query->where("nte_status", "Sent")
+                ->orWhere("da_status", "Sent");
+            })->first();
+
+            if ($tardiness) {
+                $percentage = $tardiness->tardiness_sanction->incentives_deduction;
+                $deduction = $maxAmount * ($percentage * 0.01);
+
+                if ($deduction >= $incentiveAmount) {
+                    $incentiveAmount = 0;
+                } else {
+                    $incentiveAmount -= $deduction;
+                }
+            }
+
         }
 
         $incentive = Incentives::updateOrCreate([
