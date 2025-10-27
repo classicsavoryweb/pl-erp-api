@@ -22,7 +22,7 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow, WithMultipleSh
 
     public function headingRow(): int
     {
-        return 1; 
+        return 2; 
     }
 
     public function sheets(): array

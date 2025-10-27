@@ -348,7 +348,7 @@ class ScheduleTimeController extends Controller
                 $dataRows = Excel::toArray([], $file);
 
                 $rawHeaderRow = $dataRows[0][0]; 
-                $dataRows     = array_slice($dataRows[0], 1); 
+                $dataRows     = array_slice($dataRows[0], 2); 
 
                 $headerRow = array_map(function ($header) {
                     return strtolower(trim(preg_replace('/[^a-zA-Z0-9_]/', '_', $header)));

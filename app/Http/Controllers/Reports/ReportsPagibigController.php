@@ -10,6 +10,8 @@ use App\Models\Payroll;
 use Illuminate\Http\Request;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Carbon\Carbon;
 
 class ReportsPagibigController extends Controller
 {
@@ -38,7 +40,42 @@ class ReportsPagibigController extends Controller
                 );
             }
 
-            $paginated = $query->paginate($perPage);
+            $groupedPayroll = $query->get()->groupBy('employee_id')->map(function ($employeePayrolls) {
+                $employee_pagibig_first_cutoff = 0;
+                $employee_pagibig_second_cutoff = 0;
+
+                $unique_payrollEmployee = $employeePayrolls->first();
+
+                foreach ($employeePayrolls as $payroll) {
+                    $start_date_day = Carbon::parse($payroll->start_date)->day;
+
+                    if ($start_date_day == 26) {
+                        $employee_pagibig_first_cutoff = $payroll->employee_pagibig;
+                    } elseif ($start_date_day == 11) {
+                        $employee_pagibig_second_cutoff = $payroll->employee_pagibig;
+                    }
+                }
+
+                return (object) [
+                    'employee' => $unique_payrollEmployee->employee,
+                    'first_cutoff_employee_contribution' => $employee_pagibig_first_cutoff,
+                    'second_cutoff_employee_contribution' => $employee_pagibig_second_cutoff,
+                    'total_employee_contribution' => $employee_pagibig_first_cutoff + $employee_pagibig_second_cutoff,
+                ];
+            });
+
+            $items = $groupedPayroll->values();
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $paginatedItems = $items->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+            $paginated = new LengthAwarePaginator(
+                $paginatedItems,
+                $items->count(),
+                $perPage,
+                $currentPage,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
+
             return $this->sendResponse($paginated);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
@@ -85,9 +122,8 @@ class ReportsPagibigController extends Controller
             $withDash = $request->with_dash ?? 0;
 
             if ($request->has('export') && $request->export) { 
-                $payrollEmployee = $query->get();
-                return Excel::download( new ReportsPagibigLoansExport($payrollEmployee, $withDash), 
-                "pagibig_loans.xls" ); 
+                $payrollEmployee = $query->get()->unique('employee_id');
+                return Excel::download(new ReportsPagibigLoansExport($payrollEmployee, $withDash), "pagibig_loans.xls"); 
             }
 
             $paginated = $query->paginate($perPage);
