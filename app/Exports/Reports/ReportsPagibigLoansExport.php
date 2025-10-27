@@ -43,15 +43,14 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
                 $unique_payrollEmployee->employee->first_name,
                 $unique_payrollEmployee->employee->middle_name,
                 $this->formatNumber($unique_payrollEmployee->amount),
-                $unique_payrollEmployee->employee->birthday,
-                $unique_payrollEmployee->pay_date
+                $unique_payrollEmployee->employee->birthday
             ];
         });
     }
 
     private function formatNumber($value)
     {
-        return $value == 0 ? '' : number_format($value, 2, '.', '');
+        return $value == 0 ? '' : number_format($value, 2, '.', ',');
     }
 
     public function headings(): array
@@ -63,8 +62,7 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
             'First Name',
             'Middle Name',
             'Amount Paid',
-            'Birthday',
-            'Pay Date'
+            'Birthday'
         ];
 
         return $headings;
@@ -88,13 +86,6 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
 
         $headerRow     = 1;
         $dataStartRow  = $headerRow + 1;
-        $dataCount     = $this->payrollEmployee->count();
-        $lastRow       = $dataStartRow + max($dataCount - 1, 0);
-
-        $sheet->getStyle('A' . $headerRow . ':' . $lastColumnLetter . $lastRow)->getAlignment()
-        ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-
-        // $sheet->freezePane('B1');
 
         $columns = [];
         for ($i = 0; $i <= $maxColIndex; $i++) {
@@ -102,9 +93,44 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
         }
 
         $maxLengths = array_fill_keys($columns, 0);
-        $rows = $this->payrollEmployee;
+        $rows = $this->payrollEmployee->groupBy('employee_id');
 
-        foreach ($rows as $index => $unique_payrollEmployee) {
+        $dataCount     = $rows->count();
+        $lastRow       = $dataStartRow + max($dataCount - 1, 0);
+
+        $sheet->getStyle('A' . $headerRow . ':' . $lastColumnLetter . $lastRow)->applyFromArray([
+            'font' => [
+                'name' => 'Arial',
+                'size' => 11,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ]
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+
+        $headerRange = 'A' . $headerRow . ':' . $lastColumnLetter . $headerRow;
+        $sheet->getStyle($headerRange)->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'name' => 'Arial',
+                'size' => 11,
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'color' => ['rgb' => 'D3D3D3'],
+            ],
+        ]);
+
+        foreach ($rows as $index => $employeePayrolls) {
+
+            $unique_payrollEmployee = $employeePayrolls->first();
 
             $pagibigId = $unique_payrollEmployee->employee->pagibig;
 
@@ -112,7 +138,6 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
                 $pagibigId = (string) str_replace('-', '', $pagibigId);
             }
 
-            $rowNumber = $dataStartRow + $index;
             $data = [
                 $index + 1,
                 $unique_payrollEmployee->employee->employee_number,
@@ -121,8 +146,7 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
                 $unique_payrollEmployee->employee->first_name,
                 $unique_payrollEmployee->employee->middle_name,
                 $this->formatNumber($unique_payrollEmployee->amount),
-                $unique_payrollEmployee->employee->birthday,
-                $unique_payrollEmployee->pay_date
+                $unique_payrollEmployee->employee->birthday
             ];
 
             foreach ($columns as $colIndex => $col) {
@@ -137,26 +161,6 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
                     $sheet->getColumnDimension($col)->setWidth($maxContentLength + 2)->setAutoSize(true);
                 }
             }
-
-            $headerRange = 'A' . $headerRow . ':' . $lastColumnLetter . $headerRow;
-            $sheet->getStyle($headerRange)->applyFromArray([
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => '000000'],
-                    ]
-                ],
-                'font' => ['bold' => true],
-            ]);
-
-            $sheet->getStyle('A' . $rowNumber . ':' . $lastColumnLetter . $rowNumber)->applyFromArray([
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => '000000'],
-                    ]
-                ]
-            ]);
         }
     }
 }
