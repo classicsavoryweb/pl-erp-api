@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Reports\ReportsPagibigController;
 use App\Http\Controllers\Reports\ReportsPhilhealthController;
+use App\Http\Controllers\Reports\ReportsSSSController;
 use Illuminate\Support\Facades\Route;
 
 // REPORTS MODULE
@@ -15,4 +16,10 @@ Route::middleware('auth:sanctum')->group(function() {
     //philhealth
     Route::get("/get-all-reports-philhealth-contributions", [ReportsPhilhealthController::class, "getAllReportsPhilhealthContributions"]);
     Route::get("/export-all-reports-philhealth-contributions", [ReportsPhilhealthController::class, "exportAllReportsPhilhealthContributions"]);
+
+    //sss
+    Route::get("/get-all-reports-sss-contributions", [ReportsSSSController::class, "getAllReportsSSSContributions"]);
+    Route::get("/get-all-reports-sss-loans", [ReportsSSSController::class, "getAllReportsSSSLoans"]);
+    Route::get("/export-all-reports-sss-contributions", [ReportsSSSController::class, "exportAllReportsSSSContributions"]);
+    Route::get("/export-all-reports-sss-loans", [ReportsSSSController::class, "exportAllReportsSSSLoans"]);
 });
