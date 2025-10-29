@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Compensation\ConverterController;
 use App\Http\Controllers\Compensation\CutOffController;
 use App\Http\Controllers\Compensation\EmployeeDeductionsController;
 use App\Http\Controllers\Compensation\DeductionHistoryController;
@@ -37,4 +38,12 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-details/{payrollId}", [PayrollController::class, "updatePayrollDetails"]);
     Route::middleware(["permission:perform_compensation_incentives"])->post("/update-payroll-incentive/{payrollId}", [PayrollController::class, "updatePayrollIncentive"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/edit-payroll-deduction-details/{payrollId}", [PayrollController::class, "editCompanyDeductions"]);
+
+    //converter
+    Route::get("/get-all-converter-details", [ConverterController::class, "getAllConverterDetails"]);
+    Route::get("/get-all-converter-main", [ConverterController::class, "getAllConverterMain"]);
+    Route::middleware(["permission:perform_compensation_converter"])->post("/create-converter-details", [ConverterController::class, "createConverterDetails"]);
+    Route::middleware(["permission:perform_compensation_converter"])->post("/edit-converter-details/{detailId}", [ConverterController::class, "editConverterDetails"]);
+    Route::middleware(["permission:perform_compensation_converter"])->get("/void-converter-details/{detailId}", [ConverterController::class, "voidConverterDetails"]);
+    Route::middleware(["permission:perform_compensation_converter"])->post("/create-converter-main", [ConverterController::class, "createConverterMain"]);
 });
