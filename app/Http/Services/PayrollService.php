@@ -666,7 +666,6 @@ class PayrollService {
                     $incentiveAmount = $incentivesAmount - ($absent * $dailyIncentives);
                 }
 
-
                 $remarks = "With ".$absent." absents";
             }
 
@@ -678,13 +677,12 @@ class PayrollService {
             ->where("month", $month)
             ->where("employee_id", $employee->id)
             ->where("status", "Approved")
-            ->where(function($query) {
-                return $query->where("nte_status", "Sent")
-                ->orWhere("da_status", "Sent");
-            })->first();
+            ->where("da_status", "Sent")
+            ->first();
 
             if ($tardiness) {
                 $percentage = $tardiness->tardiness_sanction->incentives_deduction;
+                $adjustmentPercent = $percentage;
                 $deduction = $maxAmount * ($percentage * 0.01);
 
                 if ($deduction >= $incentiveAmount) {
@@ -693,7 +691,6 @@ class PayrollService {
                     $incentiveAmount -= $deduction;
                 }
             }
-
         }
 
         $incentive = Incentives::updateOrCreate([
