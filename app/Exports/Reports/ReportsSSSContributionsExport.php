@@ -58,18 +58,24 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
                 $sssId = (string) str_replace('-', '', $sssId);
             }
 
+            $concatenate = '03-92068417'. ';' .$unique_payrollEmployee->employee->current_branch->short_name. ';' .$sssId. ';' .$unique_payrollEmployee->employee->employee_number
+            . ';' .$unique_payrollEmployee->employee->last_name. ';' .$unique_payrollEmployee->employee->first_name. ';' .$middleInitial. ';' .
+            $this->formatNumber($unique_payrollEmployee->employee->monthly_salary). ';' .$unique_payrollEmployee->employee->employee_status->description. ';' .$unique_payrollEmployee->employee->date_hired
+            . ';' .$unique_payrollEmployee->employee->current_position->description;
+
             return [
                 '03-92068417',
-                $unique_payrollEmployee->employee->employee_number,
+                $unique_payrollEmployee->employee->current_branch->short_name,
                 $sssId,
+                $unique_payrollEmployee->employee->employee_number,
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
                 $middleInitial,
-                $unique_payrollEmployee->employee->current_branch->short_name,
-                $unique_payrollEmployee->employee->current_position->description,
-                $unique_payrollEmployee->employee->date_hired,
                 $this->formatNumber($unique_payrollEmployee->employee->monthly_salary),
-                $unique_payrollEmployee->employee->status,
+                $unique_payrollEmployee->employee->employee_status->description,
+                $unique_payrollEmployee->employee->date_hired,
+                $unique_payrollEmployee->employee->current_position->description,
+                $concatenate,
                 $this->formatNumber($employee_sss_first_cutoff),
                 $this->formatNumber($employee_sss_second_cutoff),
                 $this->formatNumber($employer_sss_first_cutoff),
@@ -89,16 +95,17 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
     {
         $headings = [
             'Company SSS ID',
-            'Employee Number',
+            'Branch Code',
             'Employee SSS ID',
+            'Employee Number',
             'Last Name',
             'First Name',
             'Middle Initial',
-            'Branch Code',
-            'Position',
-            'Date Hired',
             'Monthly Compensation',
             'Remarks/Status',
+            'Date Hired',
+            'Position',
+            'Concatenate',
             '1st Cutoff (EE Share)',
             '2nd Cutoff (EE Share)',
             '1st Cutoff (ER Share)',
@@ -192,23 +199,31 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
 
             $sssId = $unique_payrollEmployee->employee->sss;
 
+            $middleInitial = strtoupper(substr($unique_payrollEmployee->employee->middle_name, 0, 1));
+
             if ($this->withDash == 0) {
                 $sssId = (string) str_replace('-', '', $sssId);
             }
 
+            $concatenate = '03-92068417'. ';' .$unique_payrollEmployee->employee->current_branch->short_name. ';' .$sssId. ';' .$unique_payrollEmployee->employee->employee_number
+            . ';' .$unique_payrollEmployee->employee->last_name. ';' .$unique_payrollEmployee->employee->first_name. ';' .$middleInitial. ';' .
+            $this->formatNumber($unique_payrollEmployee->employee->monthly_salary). ';' .$unique_payrollEmployee->employee->employee_status->description. ';' .$unique_payrollEmployee->employee->date_hired
+            . ';' .$unique_payrollEmployee->employee->current_position->description;
+
             $data = [
                 $index + 1,
                 '03-92068417',
-                $unique_payrollEmployee->employee->employee_number,
+                $unique_payrollEmployee->employee->current_branch->short_name,
                 $sssId,
+                $unique_payrollEmployee->employee->employee_number,
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
-                $unique_payrollEmployee->employee->middle_name,
-                $unique_payrollEmployee->employee->current_branch->short_name,
-                $unique_payrollEmployee->employee->current_position->description,
-                $unique_payrollEmployee->employee->date_hired,
+                $middleInitial,
                 $this->formatNumber($unique_payrollEmployee->employee->monthly_salary),
-                $unique_payrollEmployee->employee->status,
+                $unique_payrollEmployee->employee->employee_status->description,
+                $unique_payrollEmployee->employee->date_hired,
+                $unique_payrollEmployee->employee->current_position->description,
+                $concatenate,
                 $this->formatNumber($employee_sss_first_cutoff),
                 $this->formatNumber($employee_sss_second_cutoff),
                 $this->formatNumber($employer_sss_first_cutoff),

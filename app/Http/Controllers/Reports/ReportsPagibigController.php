@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Reports;
 use App\Exports\Reports\ReportsPagibigContributionsExport;
 use App\Exports\Reports\ReportsPagibigLoansExport;
 use App\Http\Controllers\Controller;
+use App\Models\Deduction;
 use App\Models\DeductionHistory;
 use App\Models\Payroll;
 use Illuminate\Http\Request;
@@ -88,6 +89,19 @@ class ReportsPagibigController extends Controller
         return $this->getAllReportsPagibigContributions($request);
     }
 
+    public function getReportsPagibigLoanTypes()
+    {
+        try {
+            $reportsPagibig = Deduction::where('category', 'Pag-ibig')
+                ->distinct('description')
+                ->pluck('description');
+                
+            return $this->sendResponse($reportsPagibig);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function getAllReportsPagibigLoans(Request $request)
     {
         try {
@@ -112,9 +126,13 @@ class ReportsPagibigController extends Controller
                     $query->whereHas('employeeDeductions', function($q) {
                         $q->where('remarks', 'like', 'Calamity%');
                     });
-                } else {
+                } else if ($loanType === "Short Term") {
                     $query->whereDoesntHave('employeeDeductions', function($q) {
                         $q->where('remarks', 'like', 'Calamity%');
+                    });
+                } else {
+                    $query->whereHas('deduction', function ($q) use ($loanType) {
+                        $q->where('description', $loanType);
                     });
                 }
             }
