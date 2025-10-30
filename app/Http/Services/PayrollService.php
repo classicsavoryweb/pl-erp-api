@@ -666,6 +666,7 @@ class PayrollService {
                     $incentiveAmount = $incentivesAmount - ($absent * $dailyIncentives);
                 }
 
+                $adjustmentDays = $absent;
                 $remarks = "With ".$absent." absents";
             }
 
