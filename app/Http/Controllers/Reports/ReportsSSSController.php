@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Reports;
 use App\Exports\Reports\ReportsSSSContributionsExport;
 use App\Exports\Reports\ReportsSSSLoansExport;
 use App\Http\Controllers\Controller;
+use App\Models\Deduction;
 use App\Models\DeductionHistory;
 use App\Models\Payroll;
 use Illuminate\Http\Request;
@@ -88,6 +89,19 @@ class ReportsSSSController extends Controller
         return $this->getAllReportsSSSContributions($request);
     }
 
+    public function getReportsSSSLoanTypes()
+    {
+        try {
+            $reportsSSS = Deduction::where('category', 'SSS')
+                ->distinct('description')
+                ->pluck('description');
+                
+            return $this->sendResponse($reportsSSS);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function getAllReportsSSSLoans(Request $request)
     {
         try {
@@ -103,6 +117,14 @@ class ReportsSSSController extends Controller
 
             if ($request->has('month')) {
                 $query->whereMonth('pay_date', $request->month);
+            }
+
+            if ($request->has('loan_type')) {
+                $loanType = $request->loan_type;
+
+                $query->whereHas('deduction', function ($q) use ($loanType) {
+                    $q->where('description', $loanType);
+                });
             }
 
             $withDash = $request->with_dash ?? 0;
