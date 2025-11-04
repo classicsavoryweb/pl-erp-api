@@ -92,6 +92,22 @@ class PayrollController extends Controller
             ])->find($id);
 
             if ($payroll) {
+                $employee = $payroll->employee;
+
+                $startDate = $payroll->start_date;
+                $endDate = $payroll->end_date;
+
+                $firstCutOff = $this->getCutOffForDate($startDate);
+                $secondCutOff = $this->getCutOffForDate($endDate);
+
+                $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
+
+                $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
+                $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
+
+                $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
+                + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
+
                 $tardiness = TimeKeeping::with(["payment"])
                 ->where("employee_id", $payroll->employee_id)
                 ->whereBetween("date", [$payroll->start_date, $payroll->end_date])
@@ -119,6 +135,7 @@ class PayrollController extends Controller
                 $payroll["undertime_list"] = $undertime;
                 $payroll["incentives"] = $incentives;
                 $payroll["tardiness_offenses"] = $tardinessOffenses;
+                $payroll["days"] = $monthShouldBeWorkDays;
 
                 return $this->sendResponse($payroll);
             }
@@ -281,7 +298,7 @@ class PayrollController extends Controller
                 ->where("pay_date", $payroll->pay_date)
                 ->first();
 
-                $incentive_amount = $incentives->incentive_amount;
+                $incentive_amount = $incentives->amount_rate;
 
                 $startDate = $payroll->start_date;
                 $endDate = $payroll->end_date;
@@ -289,7 +306,7 @@ class PayrollController extends Controller
                 $firstCutOff = $this->getCutOffForDate($startDate);
                 $secondCutOff = $this->getCutOffForDate($endDate);
 
-                $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
+                $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
 
                 $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
                 $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
@@ -297,7 +314,7 @@ class PayrollController extends Controller
                 $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
                 + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
 
-                $final_incentive_amount = ($incentive_amount + $additional_incentive) - ((($incentive_amount + $additional_incentive) * ($adjustment_percent / 100)) + ((($incentive_amount + $additional_incentive) / $monthShouldBeWorkDays) * $adjustment_days));
+                $final_incentive_amount = $incentive_amount + $additional_incentive;
 
                 $incentives->update([
                     "incentive_amount" => $final_incentive_amount,
