@@ -692,6 +692,41 @@ class PayrollService {
                     $incentiveAmount -= $deduction;
                 }
             }
+
+            $firstCutoffUndertime = $firstTimeKeeping->undertime ?? 0;
+            $secondCutoffUndertime = $secondTimeKeeping->undertime ?? 0;
+            $totalUndertimeForMonth = $firstCutoffUndertime + $secondCutoffUndertime;
+
+            if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+                $allowedUndertimePerMonth = 900; 
+                $basisForDeduction = 240; 
+
+                $excessiveUndertime = $totalUndertimeForMonth - $allowedUndertimePerMonth;
+
+                if ($excessiveUndertime > 0) {
+                    $numberToDeduct = floor($excessiveUndertime / $basisForDeduction);
+
+                    if ($numberToDeduct > 0) {
+                        $amountToBeDeduct = $numberToDeduct * 0.5;
+                        $adjustmentDays += $amountToBeDeduct;
+
+                        $incentiveAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $adjustmentDays;
+                    }
+                }       
+            } else {
+                if ($totalUndertimeForMonth >= 240) {
+                    $basisForDeduction = 240;
+
+                    $numberToDeduct = floor($totalUndertimeForMonth / $basisForDeduction);
+
+                    if ($numberToDeduct > 0) {
+                        $amountToBeDeduct = $numberToDeduct * 0.5;
+                        $adjustmentDays += $amountToBeDeduct;
+
+                        $incentiveAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $adjustmentDays;
+                    }
+                }
+            }
         }
 
         $incentive = Incentives::updateOrCreate([

@@ -10,6 +10,7 @@ Route::middleware('auth:sanctum')->group(function() {
     //pagibig
     Route::get("/get-all-reports-pagibig-contributions", [ReportsPagibigController::class, "getAllReportsPagibigContributions"]);
     Route::get("/get-all-reports-pagibig-loans", [ReportsPagibigController::class, "getAllReportsPagibigLoans"]);
+    Route::get("/get-reports-pagibig-loan-types", [ReportsPagibigController::class, "getReportsPagibigLoanTypes"]);
     Route::get("/export-all-reports-pagibig-contributions", [ReportsPagibigController::class, "exportAllReportsPagibigContributions"]);
     Route::get("/export-all-reports-pagibig-loans", [ReportsPagibigController::class, "exportAllReportsPagibigLoans"]);
 
@@ -20,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function() {
     //sss
     Route::get("/get-all-reports-sss-contributions", [ReportsSSSController::class, "getAllReportsSSSContributions"]);
     Route::get("/get-all-reports-sss-loans", [ReportsSSSController::class, "getAllReportsSSSLoans"]);
+    Route::get("/get-reports-sss-loan-types", [ReportsSSSController::class, "getReportsSSSLoanTypes"]);
     Route::get("/export-all-reports-sss-contributions", [ReportsSSSController::class, "exportAllReportsSSSContributions"]);
     Route::get("/export-all-reports-sss-loans", [ReportsSSSController::class, "exportAllReportsSSSLoans"]);
 });

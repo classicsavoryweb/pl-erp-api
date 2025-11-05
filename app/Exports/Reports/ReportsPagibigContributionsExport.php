@@ -51,21 +51,20 @@ class ReportsPagibigContributionsExport implements FromCollection, WithHeadings,
             }
 
             $pagibigId = $unique_payrollEmployee->employee->pagibig;
+            $sssId = $unique_payrollEmployee->employee->sss;
 
             if ($this->withDash == 0) {
                 $pagibigId = (string) str_replace('-', '', $pagibigId);
+                $sssId = (string) str_replace('-', '', $sssId);
             }
 
             return [
                 $unique_payrollEmployee->employee->employee_number,
                 $pagibigId,
+                $sssId,
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
                 $unique_payrollEmployee->employee->middle_name,
-                $this->formatNumber($employee_pagibig_first_cutoff),
-                $this->formatNumber($employee_pagibig_second_cutoff),
-                $this->formatNumber($employer_pagibig_first_cutoff),
-                $this->formatNumber($employer_pagibig_second_cutoff),
                 $this->formatNumber($employee_pagibig_first_cutoff + $employee_pagibig_second_cutoff),
                 $this->formatNumber($employer_pagibig_first_cutoff + $employer_pagibig_second_cutoff),
                 $unique_payrollEmployee->employee->birthday,
@@ -83,16 +82,13 @@ class ReportsPagibigContributionsExport implements FromCollection, WithHeadings,
         $headings = [
             'Employee Number',
             'Pagibig ID',
+            'SSS ID',
             'Last Name',
             'First Name',
             'Middle Name',
-            '1st Cutoff (EE Share)',
-            '2nd Cutoff (EE Share)',
-            '1st Cutoff (ER Share)',
-            '2nd Cutoff (ER Share)',
             'Total (EE Share)',
             'Total (ER Share)',
-            'Birthday'
+            'Birth Date'
         ];
 
         return $headings;
@@ -179,22 +175,21 @@ class ReportsPagibigContributionsExport implements FromCollection, WithHeadings,
             }
 
             $pagibigId = $unique_payrollEmployee->employee->pagibig;
+            $sssId = $unique_payrollEmployee->employee->sss;
 
             if ($this->withDash == 0) {
                 $pagibigId = (string) str_replace('-', '', $pagibigId);
+                $sssId = (string) str_replace('-', '', $sssId);
             }
 
             $data = [
                 $index + 1,
                 $unique_payrollEmployee->employee->employee_number,
                 $pagibigId,
+                $sssId,
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
                 $unique_payrollEmployee->employee->middle_name,
-                $this->formatNumber($employee_pagibig_first_cutoff),
-                $this->formatNumber($employee_pagibig_second_cutoff),
-                $this->formatNumber($employer_pagibig_first_cutoff),
-                $this->formatNumber($employer_pagibig_second_cutoff),
                 $this->formatNumber($employee_pagibig_first_cutoff + $employee_pagibig_second_cutoff),
                 $this->formatNumber($employer_pagibig_first_cutoff + $employer_pagibig_second_cutoff),
                 $unique_payrollEmployee->employee->birthday
