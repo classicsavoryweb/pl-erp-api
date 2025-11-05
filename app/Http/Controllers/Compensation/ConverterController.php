@@ -10,15 +10,59 @@ use App\Models\Term;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use DOMDocument;
 use Illuminate\Support\Facades\Auth;
+use Str;
+use ZipArchive;
 
 class ConverterController extends Controller
 {
     public function getAllConverterDetails(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
+            $converters = ConverterDetail::query();
 
-            $converters = ConverterDetail::with(["employee", "transaction_type", "branch"])            
+            if ($request->has(["column_type", "key_word"])) {
+                $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if (Str::contains($column, '.')) {
+                    [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                    if ($relatedColumn == "full_name") {
+                        $converters = $converters->whereHas($relation, function ($query) use ($keyword) {
+                            $query->whereAny(
+                                ["first_name", "last_name", "middle_name"],
+                                'LIKE',
+                                "%$keyword%"
+                            )->orWhere(function ($q) use ($keyword) {
+                                $q->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                            });
+                        });
+                    } else {
+                        $converters = $converters->whereHas($relation, function ($query) use ($relatedColumn, $keyword) {
+                            $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                        });
+                    }
+
+                } else {
+                    $converters = $converters->where($column, 'LIKE', "%$keyword%");
+                }
+            }
+
+            if ($request->has(["date_from", "date_to"])) {
+                $converters = $converters->whereBetween("created_at", [$request->date_from, $request->date_to]);
+            }
+
+            if ($request->has(["status"])) {
+                $converters = $converters->where("status", $request->status);
+            }
+
+            if ($request->has(["branch_id"])) {
+                $converters = $converters->where("branch_id", $request->branch_id);
+            }
+
+            $converters = $converters->with(["employee", "transaction_type", "branch"])            
             ->orderBy("created_at", "DESC")
             ->paginate($perPage);
 
@@ -32,7 +76,41 @@ class ConverterController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $converters = ConverterMain::with(["added_by", "posted_by", "generated_by", "voided_by"])
+            $converters = ConverterMain::query();
+            
+            if ($request->has(["column_type", "key_word"])) {
+                $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if (Str::contains($column, '.')) {
+                    [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                    $converters = $converters->whereHas($relation, function ($query) use ($relatedColumn, $keyword) {
+                        $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                    });
+
+                } else {
+                    $converters = $converters->where($column, 'LIKE', "%$keyword%");
+                }
+            }
+
+            if ($request->has(["status"])) {
+                $converters = $converters->where("status", $request->status);
+            }
+
+            if ($request->has(["date_from", "date_to"])) {
+                $converters = $converters->whereBetween("created_at", [$request->date_from, $request->date_to]);
+            }
+
+            $converters = $converters->with([
+                "added_by",
+                "posted_by",
+                "generated_by",
+                "voided_by",
+                "converter_details",
+                "converter_details.employee",
+                "converter_details.transaction_type"
+            ])
             ->orderBy("created_at", "DESC")
             ->paginate($perPage);
 
@@ -123,12 +201,161 @@ class ConverterController extends Controller
         }
     }
 
+    public function getTransactions(Request $request) {
+        try {
+            DB::beginTransaction();
+
+            $transactions = ConverterDetail::query();
+            
+            if ($request->has(["transaction_type_id"])) {
+                $transactions = $transactions->where("transaction_type_id", $request->transaction_type_id);
+            }
+
+            if ($request->has(["batch_number"])) {
+                $transactions = $transactions->where("batch_number", $request->batch_number);
+            } else {
+                $transactions = $transactions->where("status", $request->status)
+                ->whereHas("employee", function ($query) use ($request) {
+                    $query->whereHas("latest_bank_details", function ($q) use ($request) {
+                        $q->where("bank_account_type_id", $request->bank_account_type_id);
+                    });
+                });
+            }
+
+            $transactions = $transactions->with(["employee", "transaction_type", "branch"])
+            ->orderBy("created_at", "DESC")
+            ->get();
+
+            DB::commit();
+            return $this->sendResponse(["transactions" => $transactions]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function createConverterMain(Request $request) {
         try {
             DB::beginTransaction();
 
+            $request->validate([
+                "selected_transactions" => "required",
+                "bank_account_type_id" => "required"
+            ]);
+
+            $transactions = ConverterDetail::whereIn("id", $request->selected_transactions)->get();
+            $total_amount = 0;
+
+            foreach ($transactions as $trans) {
+                $total_amount += $trans->amount;
+            }
+
+            $batch = ConverterMain::create([
+                "count" => $transactions->count(),
+                "total_amount" => $total_amount,
+                "added_by" => Auth::user()->id,
+                "status" => "Pending",
+                "bank_account_type_id" => $request->bank_account_type_id,
+                "transaction_type_id" => $request->transaction_type_id ?? null
+            ]);
+
+            foreach ($transactions as $trans) {
+                $trans->update([
+                    "converter_main_id" => $batch->id
+                ]);
+            }
+
             DB::commit();
             return $this->sendResponse(["message" => "Batch successfully created"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function generateConverter(Request $request, $batchId) {
+        try {
+            DB::beginTransaction();
+            $converterBatch = ConverterMain::find($batchId);
+
+            if ($converterBatch) {
+                $transactions = $converterBatch->converter_details()
+                ->with(["employee", "employee.latest_bank_details"])
+                ->get();
+
+                $converterBatch->update([
+                    "status" => "Generated",
+                    "generated_by" => Auth::user()->id,
+                    "generated_at" => now(),
+                ]);
+
+                $converterToUse = $converterBatch->bank_account_type_id == 1 ? "CASH_CARD_CONVERTER" : "SAVINGS_CONVERTER";
+                $templatePath = public_path('converter/'.$converterToUse.'.xlsm');
+                $tempCopyPath = storage_path('app/public/'.$converterBatch->batch_number.'.xlsm');
+                copy($templatePath, $tempCopyPath);
+
+                $zip = new ZipArchive;
+                if ($zip->open($tempCopyPath) === TRUE) {
+                    $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+
+                    $dom = new DOMDocument();
+                    $dom->loadXML($sheetXml);
+                    $sheetData = $dom->getElementsByTagName('sheetData')->item(0);
+
+                    $rowIndex = 7;
+                    foreach ($transactions as $transaction) {
+
+                        $transaction->update([
+                            "status" => "Generated"
+                        ]);
+
+                        $colA = "A".$rowIndex;
+                        $colB = "B".$rowIndex;
+                        $colC = "C".$rowIndex;
+
+                        $this->writeCell($dom, $sheetData, $colA, (string)$transaction->employee->latest_bank_details->bank_number);
+                        $this->writeCell($dom, $sheetData, $colB, (string)$transaction->amount);
+                        $this->writeCell($dom, $sheetData, $colC, (string)$transaction->employee->full_name);
+
+                        $rowIndex++;
+                    }
+
+                    $newXml = $dom->saveXML();
+                    $zip->addFromString('xl/worksheets/sheet1.xml', $newXml);
+                    $zip->close();
+                }
+
+                DB::commit();
+                return response()->download($tempCopyPath, $converterBatch->batch_number.'.xlsm')->deleteFileAfterSend(true);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Batch not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function voidBatch($batchId) {
+        try {
+            DB::beginTransaction();
+
+            $batch = ConverterMain::find($batchId);
+
+            if ($batch) {
+                $batch->update([
+                    "status" => "Voided",
+                    "voided_by" => Auth::user()->id,
+                    "voided_at" => now()
+                ]);
+
+                DB::commit();
+                return $this->sendResponse(["message" => "Batch voided successfully"]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Batch not found"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);

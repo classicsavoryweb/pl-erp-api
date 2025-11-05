@@ -48,6 +48,8 @@ class ConverterMainSeeder extends Seeder
                 "count" => $detail["count"],
                 "status" => $detail["status"],
                 "remarks" => $detail["remarks"],
+                "bank_account_type_id" => $detail["card_type"] == 5 ? 1 : 2,
+                "transaction_type_id" => $detail["transtype_filter"],
                 "created_at" => $detail["added_date"],
                 "generated_at" => $detail["generated_date"],
                 "posted_at" => $detail["posted_date"],

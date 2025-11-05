@@ -7,6 +7,7 @@ use App\Models\Adjustment;
 use App\Models\Cutoff;
 use App\Models\DeductionHistory;
 use App\Models\EmployeeDeduction;
+use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\TimeKeepingSummary;
 use Illuminate\Bus\Queueable;
@@ -33,6 +34,10 @@ class ProcessFinalizeCutOff implements ShouldQueue
     public function handle(): void
     {
         $payrolls = Payroll::where("cut_off", $this->cutOff->cut_off)
+        ->where("status", "initial")
+        ->get();
+
+        $incentives = Incentives::where("pay_date", $this->cutOff->pay_date)
         ->where("status", "initial")
         ->get();
 
@@ -70,6 +75,12 @@ class ProcessFinalizeCutOff implements ShouldQueue
                     "date_time" => now()
                 ]);
             }
+        }
+
+        foreach ($incentives as $incentive) {
+            $incentive->update([
+                "status" => "final"
+            ]);
         }
     }
 }

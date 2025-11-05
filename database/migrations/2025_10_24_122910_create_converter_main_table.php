@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('converter_main', function (Blueprint $table) {
             $table->id();
-            $table->string("batch_number");
+            $table->string("batch_number")->nullable();
             $table->decimal("total_amount");
             $table->string("count");
             $table->string("status");

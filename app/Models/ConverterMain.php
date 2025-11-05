@@ -23,7 +23,18 @@ class ConverterMain extends Model
         "posted_at",
         "generated_at",
         "voided_at",
+        "bank_account_type_id",
+        "transaction_type_id",
     ];
+
+    protected static function booted()
+    {
+        static::created(function ($model) {
+            $model->update([
+                'batch_number' => 'CON-' . str_pad($model->id, 7, '0', STR_PAD_LEFT)
+            ]);
+        });
+    }
 
     public function added_by() {
         return $this->hasOne(Employee::class, "id", "added_by");

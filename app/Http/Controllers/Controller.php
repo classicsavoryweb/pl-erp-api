@@ -7,6 +7,8 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use NumberFormatter;
 use Carbon\Carbon;
+use DOMDocument;
+use DOMElement;
 
 class Controller extends BaseController
 {
@@ -136,4 +138,73 @@ class Controller extends BaseController
         }
         return $excelDate;
     }
+
+    function writeCell(DOMDocument $dom, DOMElement $sheetData, string $cellRef, string $value)
+    {
+        preg_match('/\d+/', $cellRef, $matches);
+        $rowNumber = (int)$matches[0];
+
+        $rowNode = null;
+        foreach ($sheetData->getElementsByTagName('row') as $row) {
+            if ((int)$row->getAttribute('r') === $rowNumber) {
+                $rowNode = $row;
+                break;
+            }
+        }
+
+        if (!$rowNode) {
+            $rowNode = $dom->createElement('row');
+            $rowNode->setAttribute('r', $rowNumber);
+            $sheetData->appendChild($rowNode);
+        }
+
+        $cellNode = null;
+        foreach ($rowNode->getElementsByTagName('c') as $cell) {
+            if ($cell->getAttribute('r') === $cellRef) {
+                $cellNode = $cell;
+                break;
+            }
+        }
+
+        if (!$cellNode) {
+            $cellNode = $dom->createElement('c');
+            $cellNode->setAttribute('r', $cellRef);
+            $cellNode->setAttribute('t', 'str');
+            $rowNode->appendChild($cellNode);
+        } else {
+            $cellNode->setAttribute('t', 'str');
+        }
+
+        $vNode = null;
+        foreach ($cellNode->getElementsByTagName('v') as $v) {
+            $vNode = $v;
+            break;
+        }
+
+        if (!$vNode) {
+            $vNode = $dom->createElement('v');
+            $cellNode->appendChild($vNode);
+        }
+
+        $vNode->nodeValue = htmlspecialchars($value);
+    }
+
+
+    function hashExcelPassword($password)
+    {
+        $password = (string) $password;
+        $passwordLength = strlen($password);
+        $hash = 0;
+        for ($i = $passwordLength - 1; $i >= 0; $i--) {
+            $charCode = ord($password[$i]);
+            $hash = (($hash >> 14) & 0x01) | (($hash << 1) & 0x7fff);
+            $hash ^= $charCode;
+        }
+
+        $hash ^= 0x8000 | (ord('N') << 8) | ord('K');
+        $hash &= 0x7fff;
+
+        return strtoupper(dechex($hash));
+    }
+
 }
