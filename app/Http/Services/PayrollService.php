@@ -536,6 +536,8 @@ class PayrollService {
             }
         }
 
+        $formeradditionalIncentive = $formerIncentives->additional_incentive;
+        
         $employeeId = $employee->id;
         $positionId = $position->id;
         $branchId = $branch->id;
@@ -544,7 +546,7 @@ class PayrollService {
         $remarks = "";
         $payDate = $cutOff->pay_date;
         $amountRate = $incentivesAmount;
-        $additionalIncentive = 0;
+        $additionalIncentive = $formeradditionalIncentive;
         $adjustmentDays = 0;
         $adjustmentPercent = 0;
         $status = "initial";
@@ -710,7 +712,15 @@ class PayrollService {
                         $amountToBeDeduct = $numberToDeduct * 0.5;
                         $adjustmentDays += $amountToBeDeduct;
 
-                        $incentiveAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $adjustmentDays;
+                        $deductionAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $amountToBeDeduct;
+
+                        $incentiveAmount -= $deductionAmount;
+
+                        if (!empty($remarks)) {
+                            $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                        } else {
+                            $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                        }
                     }
                 }       
             } else {
@@ -723,7 +733,15 @@ class PayrollService {
                         $amountToBeDeduct = $numberToDeduct * 0.5;
                         $adjustmentDays += $amountToBeDeduct;
 
-                        $incentiveAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $adjustmentDays;
+                        $deductionAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $amountToBeDeduct;
+
+                        $incentiveAmount -= $deductionAmount;
+
+                        if (!empty($remarks)) {
+                            $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                        } else {
+                            $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                        }
                     }
                 }
             }
