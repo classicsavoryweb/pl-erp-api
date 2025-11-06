@@ -26,6 +26,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use DB;
+use Illuminate\Validation\Rules\Exists;
 
 class PayrollService {
     public function computePayroll (TimeKeepingSummary $timeKeepingSummary) {
@@ -710,7 +711,15 @@ class PayrollService {
                         $amountToBeDeduct = $numberToDeduct * 0.5;
                         $adjustmentDays += $amountToBeDeduct;
 
-                        $incentiveAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $adjustmentDays;
+                        $deductionAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $amountToBeDeduct;
+
+                        $incentiveAmount -= $deductionAmount;
+
+                        if (!empty($remarks)) {
+                            $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                        } else {
+                            $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                        }
                     }
                 }       
             } else {
@@ -723,11 +732,26 @@ class PayrollService {
                         $amountToBeDeduct = $numberToDeduct * 0.5;
                         $adjustmentDays += $amountToBeDeduct;
 
-                        $incentiveAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $adjustmentDays;
+                        $deductionAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $amountToBeDeduct;
+
+                        $incentiveAmount -= $deductionAmount;
+
+                        if (!empty($remarks)) {
+                            $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                        } else {
+                            $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                        }
                     }
                 }
             }
         }
+
+        $existingIncentives = Incentives::where("employee_id", $employee->id)
+        ->where("pay_date", $payDate)
+        ->first();
+
+        $additionalIncentive = $existingIncentives->additional_incentive ?? $additionalIncentive;
+        $adjustmentPercent = $existingIncentives->adjustment_percent ?? $adjustmentPercent;
 
         $incentive = Incentives::updateOrCreate([
             "employee_id" => $employeeId,
