@@ -95,8 +95,8 @@ class PayrollController extends Controller
             if ($payroll) {
                 $employee = $payroll->employee;
 
-                $startDate = $payroll->start_date;
-                $endDate = $payroll->end_date;
+                $startDate = Carbon::parse($payroll->start_date)->subMonths(1)->day(26)->format("Y-m-d");
+                $endDate = Carbon::parse($payroll->start_date)->day(25)->format("Y-m-d");
 
                 $firstCutOff = $this->getCutOffForDate($startDate);
                 $secondCutOff = $this->getCutOffForDate($endDate);
@@ -289,10 +289,6 @@ class PayrollController extends Controller
         try {
             DB::beginTransaction();
 
-            $request->validate([
-                "adjustment_percent" => "required"
-            ]);
-
             $payroll = Payroll::with(["employee",
                 "employee.current_branch",
                 "employee.latest_bank_details",
@@ -304,8 +300,6 @@ class PayrollController extends Controller
 
                 $employee = $payroll->employee;
 
-                $adjustment_days = $request->adjustment_days;
-                $adjustment_percent = $request->adjustment_percent;
                 $additional_incentive = $request->additional_incentive;
                 $remarks = $request->remarks;
 
@@ -313,10 +307,12 @@ class PayrollController extends Controller
                 ->where("pay_date", $payroll->pay_date)
                 ->first();
 
-                $incentive_amount = $incentives->amount_rate;
+                $amount_rate = $incentives->amount_rate;
+                $adjustment_days = $incentives->adjustment_days;
+                $adjustment_percent = $incentives->adjustment_percent;
 
-                $startDate = $payroll->start_date;
-                $endDate = $payroll->end_date;
+                $startDate = Carbon::parse($payroll->start_date)->subMonths(1)->day(26)->format("Y-m-d");
+                $endDate = Carbon::parse($payroll->start_date)->day(25)->format("Y-m-d");
 
                 $firstCutOff = $this->getCutOffForDate($startDate);
                 $secondCutOff = $this->getCutOffForDate($endDate);
@@ -342,10 +338,12 @@ class PayrollController extends Controller
 
                 $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
 
-                $final_incentive_amount = $incentive_amount + $additional_incentive;
+                $final_incentives_amount = ($amount_rate + $additional_incentive) - (($amount_rate) 
+                * ($adjustment_percent / 100)) - (($amount_rate) 
+                / $monthShouldBeWorkDays * ($adjustment_days));
 
                 $incentives->update([
-                    "incentive_amount" => $final_incentive_amount,
+                    "incentive_amount" => $final_incentives_amount,
                     "adjustment_days" => $adjustment_days,
                     "adjustment_percent" => $adjustment_percent,
                     "additional_incentive" => $additional_incentive,
