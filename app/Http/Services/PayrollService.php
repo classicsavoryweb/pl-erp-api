@@ -536,7 +536,7 @@ class PayrollService {
                 $incentivesAmount = $managementIncentives->max_amount;
             }
         }
-        
+
         $employeeId = $employee->id;
         $positionId = $position->id;
         $branchId = $branch->id;
