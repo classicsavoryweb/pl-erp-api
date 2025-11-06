@@ -7,6 +7,7 @@ use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\Tardiness;
 use App\Models\TimeKeeping;
+use App\Models\TimeKeepingSummary;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -100,6 +101,17 @@ class PayrollController extends Controller
                 $firstCutOff = $this->getCutOffForDate($startDate);
                 $secondCutOff = $this->getCutOffForDate($endDate);
 
+                $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+                ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
+                ->first();
+
+                $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+                ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
+                ->first();
+
+                $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
+                $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
+
                 $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
 
                 $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
@@ -107,6 +119,8 @@ class PayrollController extends Controller
 
                 $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
                 + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
+
+                $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
 
                 $tardiness = TimeKeeping::with(["payment"])
                 ->where("employee_id", $payroll->employee_id)
@@ -135,6 +149,7 @@ class PayrollController extends Controller
                 $payroll["undertime_list"] = $undertime;
                 $payroll["incentives"] = $incentives;
                 $payroll["tardiness_offenses"] = $tardinessOffenses;
+                $payroll["worked_days"] = $monthWorkedDays;
                 $payroll["days"] = $monthShouldBeWorkDays;
 
                 return $this->sendResponse($payroll);
@@ -306,6 +321,17 @@ class PayrollController extends Controller
                 $firstCutOff = $this->getCutOffForDate($startDate);
                 $secondCutOff = $this->getCutOffForDate($endDate);
 
+                $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+                ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
+                ->first();
+
+                $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+                ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
+                ->first();
+
+                $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
+                $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
+
                 $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
 
                 $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
@@ -313,6 +339,8 @@ class PayrollController extends Controller
 
                 $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
                 + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
+
+                $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
 
                 $final_incentive_amount = $incentive_amount + $additional_incentive;
 
@@ -328,7 +356,8 @@ class PayrollController extends Controller
                 return $this->sendResponse([
                     "message" => "Incentive updated successfully",
                     "incentives" => $incentives,
-                    "days" => $monthShouldBeWorkDays
+                    "days" => $monthShouldBeWorkDays,
+                    "worked_days" => $monthWorkedDays
                 ]);
             } else {
                 return $this->sendError(["message" => "Payroll not found"]);
