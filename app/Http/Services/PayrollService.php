@@ -555,6 +555,7 @@ class PayrollService {
             
             $startDate = Carbon::parse($cutOff->start_date)->subMonths(1)->day(26)->format("Y-m-d");
             $endDate = Carbon::parse($cutOff->start_date)->day(25)->format("Y-m-d");
+
             $firstCutOff = $this->getCutOffForDate($startDate);
             $secondCutOff = $this->getCutOffForDate($endDate);
             
@@ -576,6 +577,7 @@ class PayrollService {
 
             $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
             + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
+            
             $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
 
             if ($firstTimeKeeping && $firstTimeKeeping->adjustment_amount == 0) {
@@ -711,7 +713,7 @@ class PayrollService {
                         $amountToBeDeduct = $numberToDeduct * 0.5;
                         $adjustmentDays += $amountToBeDeduct;
 
-                        $deductionAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $amountToBeDeduct;
+                        $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
 
                         $incentiveAmount -= $deductionAmount;
 
@@ -732,7 +734,7 @@ class PayrollService {
                         $amountToBeDeduct = $numberToDeduct * 0.5;
                         $adjustmentDays += $amountToBeDeduct;
 
-                        $deductionAmount = ($incentiveAmount / $monthShouldBeWorkDays) * $amountToBeDeduct;
+                        $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
 
                         $incentiveAmount -= $deductionAmount;
 
@@ -750,8 +752,15 @@ class PayrollService {
         ->where("pay_date", $payDate)
         ->first();
 
-        $additionalIncentive = $existingIncentives->additional_incentive ?? $additionalIncentive;
-        $adjustmentPercent = $existingIncentives->adjustment_percent ?? $adjustmentPercent;
+        if ($existingIncentives) {
+            if ($existingIncentives->additional_incentive > 0) {
+                $additionalIncentive = $existingIncentives->additional_incentive;
+            }
+
+            if ($existingIncentives->adjustment_percent > 0) {
+                $adjustmentPercent = $existingIncentives->adjustment_percent;
+            }
+        }
 
         $incentive = Incentives::updateOrCreate([
             "employee_id" => $employeeId,
