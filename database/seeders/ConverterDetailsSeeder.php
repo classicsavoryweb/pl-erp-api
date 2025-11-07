@@ -55,6 +55,7 @@ class ConverterDetailsSeeder extends Seeder
                     "status" => $detail["status"],
                     "remarks" => $detail["remarks"],
                     "added_by" => null,
+                    "transaction_number" => $detail["transno"] ?? null,
                     "created_at" => $detail["added_date"]
                 ]);
             }

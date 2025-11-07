@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendTransactionToEmployeeJob;
 use App\Models\ConverterDetail;
 use App\Models\ConverterMain;
+use App\Models\CSHubTransactionType;
 use App\Models\Employee;
 use App\Models\Term;
 use Illuminate\Http\Request;
@@ -12,6 +14,7 @@ use Exception;
 use DB;
 use DOMDocument;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Str;
 use ZipArchive;
 
@@ -358,6 +361,95 @@ class ConverterController extends Controller
             return $this->sendError(["message" => "Batch not found"]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getCSHubAppliedTransactions(Request $request) {
+        try {
+            $request->validate([
+                "type" => "required",
+                "posted_from" => "required",
+                "posted_to" => "required"
+            ]);
+
+            $transactionLink = env('CS_HUB_URL_LINK')."/get-transactions";
+            $user = env('CS_HUB_ADMIN_EMAIL');
+            $password = env('CS_HUB_ADMIN_PASSWORD');
+            $company = env('COMPANY_NAME');
+
+            $response = Http::withBasicAuth($user, $password)
+            ->withHeaders([
+                "Accept" => "application/json",
+                "Content-Type" => "application/json"
+            ])->timeout(60)
+            ->get($transactionLink,[
+                "company" => $company,
+                "type" => $request->type,
+                "posted_from" => $request->posted_from,
+                "posted_to" => $request->posted_to
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $transactions = $data['data']['transactions'];
+
+                return $this->sendResponse(["transactions" => $transactions]);
+            }
+
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function createCSHubTransactions(Request $request) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "selected_transactions" => "required|array",
+            ]);
+
+            foreach ($request->selected_transactions as $transaction) {
+                $employee = Employee::with(["current_branch"])
+                ->where("employee_number", $transaction["employee_number"])
+                ->first();
+                $transactionType = CSHubTransactionType::where("description", $transaction["transaction_type"])->first();
+
+                ConverterDetail::create([
+                    "employee_id" => $employee->id,
+                    "branch_id" => $employee->current_branch->id,
+                    "status" => "Pending",
+                    "source" => "CSHUB",
+                    "terms" => $transaction["terms"],
+                    "transaction_number" => $transaction["transaction_number"],
+                    "amount" => $transaction["amount"],
+                    "remarks" => $transaction["purpose"],
+                    "transaction_type_id" => $transactionType->id,
+                    "added_by" => Auth::user()->id
+                ]);
+            }
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Transactions successfully created"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function sendTransactionEmail ($batchId) {
+        try {
+            $batch = ConverterMain::find($batchId);
+
+            if ($batch) {
+                SendTransactionToEmployeeJob::dispatch($batch);
+
+                return $this->sendResponse(["message" => "Batch voided successfully"]);
+            }
+
+            return $this->sendError(["message" => "Batch not found"]);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }

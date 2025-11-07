@@ -21,6 +21,7 @@ class ConverterDetail extends Model
         "status",
         "remarks",
         "added_by",
+        "transaction_number"
     ];
 
     public function converter_main() {

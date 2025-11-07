@@ -49,4 +49,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-transactions", [ConverterController::class, "getTransactions"]);
     Route::get("/void-batch-convereter/{batchId}", [ConverterController::class, "voidBatch"]);
     Route::get("/generate-converter/{batchId}", [ConverterController::class, "generateConverter"]);
+    Route::get("/get-cshub-applied-transactions", [ConverterController::class, "getCSHubAppliedTransactions"]);
+    Route::middleware(["permission:perform_compensation_converter"])->post("/create-cshub-applied-transactions", [ConverterController::class, "createCSHubTransactions"]);
+    Route::get("/send-transaction-email/{batchId}", [ConverterController::class, "sendTransactionEmail"]);
 });
