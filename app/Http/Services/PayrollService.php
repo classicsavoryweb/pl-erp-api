@@ -687,12 +687,18 @@ class PayrollService {
             if ($tardiness) {
                 $percentage = $tardiness->tardiness_sanction->incentives_deduction;
                 $adjustmentPercent = $percentage;
-                $deduction = $maxAmount * ($percentage * 0.01);
 
-                if ($deduction >= $incentiveAmount) {
-                    $incentiveAmount = 0;
-                } else {
-                    $incentiveAmount -= $deduction;
+                if ($percentage > 0) {
+                    $deduction = $maxAmount * ($percentage * 0.01);
+
+                    if ($deduction >= $incentiveAmount) {
+                        $incentiveAmount = 0;
+                    } else {
+                        $incentiveAmount -= $deduction;
+                    }
+
+                    $tardiness->deduction_status = 1;
+                    $tardiness->save();
                 }
             }
 
