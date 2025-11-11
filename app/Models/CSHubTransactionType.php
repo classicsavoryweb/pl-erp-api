@@ -48,4 +48,12 @@ class CSHubTransactionType extends Model
     public function unique_exam_type() {
         return $this->hasOne(CSHubSourceType::class,'id','exam_type');
     }
+
+    public function isDeduction() {
+        return $this->deduction_status_positive == "Yes";
+    }
+
+    public function isCredit() {
+        return $this->credit_status_positive == "Yes";
+    }
 }

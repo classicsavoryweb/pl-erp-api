@@ -445,7 +445,7 @@ class ConverterController extends Controller
             if ($batch) {
                 SendTransactionToEmployeeJob::dispatch($batch);
 
-                return $this->sendResponse(["message" => "Batch voided successfully"]);
+                return $this->sendResponse(["message" => "Transaction email sending"]);
             }
 
             return $this->sendError(["message" => "Batch not found"]);

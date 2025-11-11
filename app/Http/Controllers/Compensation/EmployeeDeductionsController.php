@@ -126,29 +126,11 @@ class EmployeeDeductionsController extends Controller
 
             $deduction_id = $request->deduction_id;
 
-            $last_reference = EmployeeDeduction::where("deduction_id", $deduction_id)
-                ->orderByDesc("reference_doc")
-                ->value("reference_doc");
-
             $deduction = Deduction::where("id", $deduction_id)->first();
-
-            if (!$last_reference) {
-                $reference_prefix = str_pad($deduction_id, 3, "0", STR_PAD_LEFT);
-                $reference_docs = $reference_prefix . "000001";
-            } else {
-                $numeric_reference = (int)$last_reference + 1;
-                $reference_docs = str_pad($numeric_reference, 9, "0", STR_PAD_LEFT);
-            }
-
-            while (EmployeeDeduction::where("reference_doc", $reference_docs)->exists()) {
-                $numeric_reference++;
-                $reference_docs = str_pad($numeric_reference, 9, "0", STR_PAD_LEFT);
-            }
 
             EmployeeDeduction::create([
                 "employee_id" => $request->employee_id,
                 "deduction_id" => $request->deduction_id,
-                "reference_doc" => $reference_docs,
                 "months" => $request->months,
                 "amount" => $request->amount,
                 "source_of_fund" => $branch->short_name,
