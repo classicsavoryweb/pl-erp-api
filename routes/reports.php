@@ -3,6 +3,7 @@
 use App\Http\Controllers\Reports\ReportsPagibigController;
 use App\Http\Controllers\Reports\ReportsPhilhealthController;
 use App\Http\Controllers\Reports\ReportsSSSController;
+use App\Http\Controllers\Reports\ReportsBDOCashCardController;
 use Illuminate\Support\Facades\Route;
 
 // REPORTS MODULE
@@ -24,4 +25,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-reports-sss-loan-types", [ReportsSSSController::class, "getReportsSSSLoanTypes"]);
     Route::get("/export-all-reports-sss-contributions", [ReportsSSSController::class, "exportAllReportsSSSContributions"]);
     Route::get("/export-all-reports-sss-loans", [ReportsSSSController::class, "exportAllReportsSSSLoans"]);
+
+    //BDO cash card
+    Route::get("/get-all-reports-bdo-cash-card", [ReportsBDOCashCardController::class, "getAllReportsBDOCashCard"]);
+    Route::get("/get-all-reports-bdo-cash-card-history", [ReportsBDOCashCardController::class, "getAllReportsBDOCashCardHistory"]);
+    Route::get("/export-all-reports-bdo-cash-card", [ReportsBDOCashCardController::class, "exportAllReportsBDOCashCard"]);
+    Route::get("/export-all-reports-bdo-cash-card-history", [ReportsBDOCashCardController::class, "exportAllReportsBDOCashCardHistory"]);
 });

@@ -203,5 +203,6 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_reports_pagibig"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_philhealth"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_sss"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_bdo_cash_card"], ["module" => "reports"]);
     }
 }
