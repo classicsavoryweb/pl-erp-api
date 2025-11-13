@@ -6,6 +6,7 @@ use App\Http\Controllers\Compensation\EmployeeDeductionsController;
 use App\Http\Controllers\Compensation\DeductionHistoryController;
 use App\Http\Controllers\Compensation\PayrollController;
 use App\Http\Controllers\Compensation\PayrollListController;
+use App\Http\Controllers\Compensation\PayrollProofListController;
 use Illuminate\Support\Facades\Route;
 
 //compensation routes
@@ -51,5 +52,9 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/generate-converter/{batchId}", [ConverterController::class, "generateConverter"]);
     Route::get("/get-cshub-applied-transactions", [ConverterController::class, "getCSHubAppliedTransactions"]);
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-cshub-applied-transactions", [ConverterController::class, "createCSHubTransactions"]);
-    Route::get("/send-transaction-email/{batchId}", [ConverterController::class, "sendTransactionEmail"]);
+    Route::middleware(["permission:perform_compensation_converter"])->get("/send-transaction-email/{batchId}", [ConverterController::class, "sendTransactionEmail"]);
+
+    //prooflist
+    Route::get("/get-all-payroll-prooflist", [PayrollProofListController::class, "getProofList"]);
+    Route::middleware(["permission:perform_compensation_payroll_prooflist"])->get("/generate-payroll-prooflist-converter", [PayrollProofListController::class, "generateConverterForProoflist"]);
 });

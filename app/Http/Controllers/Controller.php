@@ -189,7 +189,6 @@ class Controller extends BaseController
         $vNode->nodeValue = htmlspecialchars($value);
     }
 
-
     function hashExcelPassword($password)
     {
         $password = (string) $password;
