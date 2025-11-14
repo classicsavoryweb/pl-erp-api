@@ -54,14 +54,14 @@ class PayrollProofListController extends Controller
                     "id",
                     "employee_id",
                     "incentive_amount as amount"
-                ]);
+                ])->where("incentive_amount", ">", 0);
             } else {
                 $proofList = $proofList->select([
                     "status",
                     "id",
                     "employee_id",
                     "net_pay as amount"
-                ]);
+                ])->where("net_pay", ">", 0);
             }
 
             if ($request->export === true) {
