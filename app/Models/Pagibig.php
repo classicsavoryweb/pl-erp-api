@@ -12,7 +12,12 @@ class Pagibig extends Model
     use HasFactory, LogsActivity;
 
     protected $table = "pagibig";
-    protected $fillable = ["employer_share", "employee_share"];
+    protected $fillable = [
+        "min_amount",
+        "max_amount",
+        "percentage",
+        "max_deduction",
+    ];
 
     public function getActivitylogOptions(): LogOptions
     {

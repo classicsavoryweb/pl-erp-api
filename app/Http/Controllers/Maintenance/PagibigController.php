@@ -53,13 +53,17 @@ class PagibigController extends Controller
     public function editPagibig(Request $request, $id) {
         try {
             $request->validate([
-                "employer_share" => "required",
-                "employee_share" => "required",
+                "min_amount" => "required",
+                "max_amount" => "required",
+                "percentage" => "required",
+                "max_deduction" => "required",
             ]);
 
             Pagibig::where("id", $id)->update([
-                "employer_share" => $request->employer_share,
-                "employee_share" => $request->employee_share
+                "min_amount" => $request->min_amount,
+                "max_amount" => $request->max_amount,
+                "percentage" => $request->percentage,
+                "max_deduction" => $request->max_deduction,
             ]);
 
             return $this->sendResponse(["message" => "Pagibig updated succesfully"]);

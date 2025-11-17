@@ -13,16 +13,25 @@ class PagibigSeeder extends Seeder
      */
     public function run(): void
     {
-        $jsonPath = public_path('jsons/payroll/pagibig.json');
-        $jsonData = file_get_contents($jsonPath);
-        $pagibig_details = json_decode($jsonData, true);
-        $unique_pagibig_details = array_map("unserialize", array_unique(array_map("serialize", $pagibig_details["tbl_pagibigshare"])));
+        Pagibig::create([
+            "min_amount" => 1,
+            "max_amount" => 1499,
+            "percentage" => 1,
+            "max_deduction" => 14.99,
+        ]);
 
-        foreach ($unique_pagibig_details as $pagibig_detail) {
-            Pagibig::create([
-                "employer_share" => $pagibig_detail["employer_share"],
-                "employee_share" => $pagibig_detail["employee_share"],
-            ]);
-        }
+        Pagibig::create([
+            "min_amount" => 1500,
+            "max_amount" => 9999,
+            "percentage" => 2,
+            "max_deduction" => 199.98,
+        ]);
+
+        Pagibig::create([
+            "min_amount" => 10000,
+            "max_amount" => 100000,
+            "percentage" => 2,
+            "max_deduction" => 200,
+        ]);
     }
 }
