@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BankDetail;
 use App\Models\Employee;
 use App\Models\PayrollList;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -19,12 +20,17 @@ class PayrollListSeeder extends Seeder
         foreach ($employees as $employee) {
             $isMancom = str_starts_with($employee->employee_number, 'M');
 
+            $latestBank = $employee->latest_bank_details()->first();
+
+            $isBank = $latestBank && $latestBank->bank_number !== '';
+
             PayrollList::create([
                 "employee_id" => $employee->id,
                 "is_included" => $employee->status === "active",
                 "is_statutory_only" => $isMancom,
                 "is_mancom" => $isMancom,
-                "is_on_maternity_leave" => false
+                "is_on_maternity_leave" => false,
+                "is_bank" => $isBank
             ]);
         }
     }
