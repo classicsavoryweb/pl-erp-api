@@ -17,6 +17,8 @@ class PayrollList extends Model
         "is_statutory_only",
         "is_mancom",
         "is_on_maternity_leave",
+        "is_bank",
+        "is_hold",
         "remarks",
     ];
 
