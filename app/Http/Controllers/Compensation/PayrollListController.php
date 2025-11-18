@@ -72,7 +72,8 @@ class PayrollListController extends Controller
                 "is_included" => "required",
                 "is_statutory_only" => "required",
                 "is_mancom" => "required",
-                "is_on_maternity_leave" => "required"
+                "is_on_maternity_leave" => "required",
+                "is_bank" => "required"
             ]);
 
             $employee = Employee::where("id", $request->employee_id)->first();
@@ -89,6 +90,7 @@ class PayrollListController extends Controller
                 "is_statutory_only" => $request->is_statutory_only,
                 "is_mancom" => $request->is_mancom,
                 "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                "is_bank" => $request->is_bank,
                 "remarks" => $request->remarks,
             ]);
 
@@ -106,7 +108,8 @@ class PayrollListController extends Controller
                 "is_included" => "required",
                 "is_statutory_only" => "required",
                 "is_mancom" => "required",
-                "is_on_maternity_leave" => "required"
+                "is_on_maternity_leave" => "required",
+                "is_bank" => "required"
             ]);
 
             PayrollList::where("id", $id)->update([
@@ -114,6 +117,7 @@ class PayrollListController extends Controller
                 "is_statutory_only" => $request->is_statutory_only,
                 "is_mancom" => $request->is_mancom,
                 "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                "is_bank" => $request->is_bank,
                 "remarks" => $request->remarks
             ]);
 
