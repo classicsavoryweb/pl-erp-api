@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Accounting\Account;
+use App\Models\Accounting\Vendor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
@@ -21,6 +23,18 @@ class Deduction extends Model
 
     public function employee_deduction() {
         return $this->belongsTo(EmployeeDeduction::class);
+    }
+
+    public function amortization_debit() {
+        return $this->belongsTo(Account::class, 'amortization_debit_id', 'acc_no');
+    }
+
+    public function amortization_credit() {
+        return $this->belongsTo(Account::class, 'amortization_credit_id', 'acc_no');
+    }
+
+    public function amortization_vendor() {
+        return $this->belongsTo(Vendor::class, 'amortization_vendor_id', 'ven_no');
     }
 
     public function getActivitylogOptions(): LogOptions

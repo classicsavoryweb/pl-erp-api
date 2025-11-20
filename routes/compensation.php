@@ -4,6 +4,7 @@ use App\Http\Controllers\Compensation\ConverterController;
 use App\Http\Controllers\Compensation\CutOffController;
 use App\Http\Controllers\Compensation\EmployeeDeductionsController;
 use App\Http\Controllers\Compensation\DeductionHistoryController;
+use App\Http\Controllers\Compensation\EntryController;
 use App\Http\Controllers\Compensation\PayrollController;
 use App\Http\Controllers\Compensation\PayrollListController;
 use App\Http\Controllers\Compensation\PayrollProofListController;
@@ -57,4 +58,10 @@ Route::middleware('auth:sanctum')->group( function () {
     //prooflist
     Route::get("/get-all-payroll-prooflist", [PayrollProofListController::class, "getProofList"]);
     Route::middleware(["permission:perform_compensation_payroll_prooflist"])->get("/generate-payroll-prooflist-converter", [PayrollProofListController::class, "generateConverterForProoflist"]);
+
+    //entries
+    Route::get("/get-all-entries", [EntryController::class, "getAllEntries"]);
+    Route::middleware(["permission:perform_compensation_entries"])->post("/generate-entries", [EntryController::class, "generateEntries"]);
+    Route::middleware(["permission:export_all_compensation_entries"])->get("/export-all-entries", [EntryController::class, "exportAllEntries"]);
+
 });
