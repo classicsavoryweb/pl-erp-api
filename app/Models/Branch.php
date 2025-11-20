@@ -66,19 +66,19 @@ class Branch extends Model
         return $this->hasOne(Employee::class, "employee_number", "group_head_employee_number");
     }
     public function expense_debit() {
-        return $this->hasOne(Account::class,'acc_no','expense_debit');
+        return $this->belongsTo(Account::class, 'expense_debit', 'acc_no');
     }
 
     public function expense_credit() {
-        return $this->hasOne(Account::class,'acc_no','expense_credit');
+        return $this->belongsTo(Account::class, 'expense_credit', 'acc_no');
     }
 
     public function advance_debit() {
-        return $this->hasOne(Account::class,'acc_no','advance_debit');
+        return $this->belongsTo(Account::class, 'advance_debit', 'acc_no');
     }
 
     public function advance_credit() {
-        return $this->hasOne(Account::class,'acc_no','advance_credit');
+        return $this->belongsTo(Account::class, 'advance_credit', 'acc_no');
     }
 
     public function schedule_time() {
