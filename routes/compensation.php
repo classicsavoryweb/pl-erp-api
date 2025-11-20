@@ -40,20 +40,23 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_incentives"])->post("/update-payroll-incentive/{payrollId}", [PayrollController::class, "updatePayrollIncentive"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/edit-payroll-deduction-details/{payrollId}", [PayrollController::class, "editCompanyDeductions"]);
 
-    //converter
+    //converter transactions
     Route::get("/get-all-converter-details", [ConverterController::class, "getAllConverterDetails"]);
     Route::get("/get-all-converter-main", [ConverterController::class, "getAllConverterMain"]);
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-converter-details", [ConverterController::class, "createConverterDetails"]);
     Route::middleware(["permission:perform_compensation_converter"])->post("/edit-converter-details/{detailId}", [ConverterController::class, "editConverterDetails"]);
     Route::middleware(["permission:perform_compensation_converter"])->get("/void-converter-details/{detailId}", [ConverterController::class, "voidConverterDetails"]);
+    
+    //converter batch
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-converter-main", [ConverterController::class, "createConverterMain"]);
     Route::get("/get-transactions", [ConverterController::class, "getTransactions"]);
     Route::get("/void-batch-convereter/{batchId}", [ConverterController::class, "voidBatch"]);
+    Route::get("/post-batch-convereter/{batchId}", [ConverterController::class, "postBatch"]);
     Route::get("/generate-converter/{batchId}", [ConverterController::class, "generateConverter"]);
     Route::get("/get-cshub-applied-transactions", [ConverterController::class, "getCSHubAppliedTransactions"]);
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-cshub-applied-transactions", [ConverterController::class, "createCSHubTransactions"]);
     Route::middleware(["permission:perform_compensation_converter"])->get("/send-transaction-email/{batchId}", [ConverterController::class, "sendTransactionEmail"]);
-
+    Route::middleware(["permission:perform_compensation_converter"])->post("/resend-transaction-email/{batchId}", [ConverterController::class, "resendTransactionEmail"]);
     //prooflist
     Route::get("/get-all-payroll-prooflist", [PayrollProofListController::class, "getProofList"]);
     Route::middleware(["permission:perform_compensation_payroll_prooflist"])->get("/generate-payroll-prooflist-converter", [PayrollProofListController::class, "generateConverterForProoflist"]);

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendTransactionToEmployeeJob;
 use App\Models\ConverterDetail;
 use App\Models\ConverterMain;
+use App\Models\CSHubModule;
+use App\Models\CSHubSourceType;
 use App\Models\CSHubTransactionType;
 use App\Models\Employee;
 use App\Models\Term;
@@ -15,6 +17,7 @@ use DB;
 use DOMDocument;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Str;
 use ZipArchive;
 
@@ -226,6 +229,12 @@ class ConverterController extends Controller
             }
 
             $transactions = $transactions->with(["employee", "transaction_type", "branch"])
+            ->where(function ($q) {
+                $q->whereDoesntHave("converter_main")
+                ->orWhereHas("converter_main", function ($sub) {
+                    $sub->where("status", "Voided");
+                });
+            })
             ->orderBy("created_at", "DESC")
             ->get();
 
@@ -392,7 +401,17 @@ class ConverterController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-                $transactions = $data['data']['transactions'];
+                $transactions = [];
+
+                foreach ($data['data']['transactions'] as $trans) {
+                    $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])->first();
+
+                    if ($isExisting && in_array($isExisting->status, ['Pending', 'Generated'])) {
+                        continue;
+                    }
+
+                    $transactions[] = $trans;
+                }
 
                 return $this->sendResponse(["transactions" => $transactions]);
             }
@@ -414,7 +433,12 @@ class ConverterController extends Controller
                 $employee = Employee::with(["current_branch"])
                 ->where("employee_number", $transaction["employee_number"])
                 ->first();
-                $transactionType = CSHubTransactionType::where("description", $transaction["transaction_type"])->first();
+
+                $source = CSHubSourceType::where("description", $transaction["transaction_type"])->first();
+                $module = CSHubModule::where("description", $transaction["type"])->first();
+                $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
+                ->where("source_id", $module->id)
+                ->first();
 
                 ConverterDetail::create([
                     "employee_id" => $employee->id,
@@ -434,6 +458,7 @@ class ConverterController extends Controller
             return $this->sendResponse(["message" => "Transactions successfully created"]);
         } catch (Exception $e) {
             DB::rollBack();
+            Log::info($e);
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
@@ -445,7 +470,51 @@ class ConverterController extends Controller
             if ($batch) {
                 SendTransactionToEmployeeJob::dispatch($batch);
 
+                $batch->update([
+                    "status" => "Sent",
+                ]);
+
                 return $this->sendResponse(["message" => "Transaction email sending"]);
+            }
+
+            return $this->sendError(["message" => "Batch not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function resendTransactionEmail ($batchId, Request $request) {
+        try {
+            $request->validate([
+                "selected_transactions" => "required"
+            ]);
+
+            $batch = ConverterMain::find($batchId);
+
+            if ($batch) {
+                SendTransactionToEmployeeJob::dispatch($batch, $request->selected_transactions);
+
+                return $this->sendResponse(["message" => "Transaction email resending"]);
+            }
+
+            return $this->sendError(["message" => "Batch not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function postBatch ($batchId) {
+        try {
+            $batch = ConverterMain::find($batchId);
+
+            if ($batch && $batch->status === "Pending") {                
+                $batch->update([
+                    "status" => "Posted",
+                    "posted_by" => Auth::user()->id,
+                    "posted_at" => now()
+                ]);
+
+                return $this->sendResponse(["message" => "Batch updated successfully"]);
             }
 
             return $this->sendError(["message" => "Batch not found"]);
