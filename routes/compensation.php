@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //prooflist
     Route::get("/get-all-payroll-prooflist", [PayrollProofListController::class, "getProofList"]);
     Route::middleware(["permission:perform_compensation_payroll_prooflist"])->get("/generate-payroll-prooflist-converter", [PayrollProofListController::class, "generateConverterForProoflist"]);
+    Route::middleware(["permission:perform_compensation_payroll_prooflist"])->get("/export-payroll-prooflist-converter", [PayrollProofListController::class, "exportProoflist"]);
 
     //entries
     Route::get("/get-all-entries", [EntryController::class, "getAllEntries"]);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Compensation;
 
+use App\Exports\Compensation\PayrollProofListExport;
 use App\Http\Controllers\Controller;
 use App\Models\Cutoff;
 use App\Models\Incentives;
@@ -11,6 +12,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use ZipArchive;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PayrollProofListController extends Controller
 {
@@ -41,12 +43,7 @@ class PayrollProofListController extends Controller
             }
 
             $proofList = $proofList->with(["employee"])
-            ->where("pay_date", $cutOff->pay_date)
-            ->whereHas("employee", function ($query) use ($request) {
-                $query->whereHas("latest_bank_details", function ($q) use ($request) {
-                    $q->where("bank_account_type_id", $request->bank_account_type_id);
-                });
-            });
+            ->where("pay_date", $cutOff->pay_date);
 
             if ($request->type === "INCENTIVES") {
                 $proofList = $proofList->select([
@@ -66,12 +63,25 @@ class PayrollProofListController extends Controller
                 ])->where("net_pay", ">", 0);
             }
 
+            if ($request->bank_account_type_id !== '0') {
+                $proofList = $proofList->whereHas("employee", function ($query) use ($request) {
+                    $query->whereHas("latest_bank_details", function ($q) use ($request) {
+                        $q->where("bank_account_type_id", $request->bank_account_type_id);
+                    });
+                });
+            } else {
+                $proofList = $proofList->whereHas("payroll_list", function ($query) {
+                    $query->where("is_bank", false);
+                });
+            }
+
             if ($request->export === true) {
                 $proofList = $proofList->get();
                 return $proofList;
             }
 
             $proofList = $proofList->paginate(10);
+
             return $this->sendResponse($proofList);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
@@ -137,6 +147,24 @@ class PayrollProofListController extends Controller
             }
 
             return response()->download($tempCopyPath, $request->type."-".now()->format("Y-m-d").'.xlsm')->deleteFileAfterSend(true);
+        } catch (Exception $e) {
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+    public function exportProoflist(Request $request) {
+        try {
+            $request->validate([
+                "cutoff" => "required|array",
+                "year" => "required",
+                "type" => "required",
+                "bank_account_type_id" => "required"
+            ]);
+
+            $request["export"] = true;
+            $proofLists = $this->getProofList($request);
+
+            return Excel::download(new PayrollProofListExport($proofLists), "prooflist.xls");
         } catch (Exception $e) {
             return $this->sendError($e->getMessage());
         }
