@@ -21,11 +21,11 @@ class Controller extends BaseController
         ], 200);
     }
 
-    public function sendError($data) {
+    public function sendError($data, $status = 400) {
         return response()->json([
             "error" => true,
             "data" => $data,
-        ], 400);
+        ], $status);
     }
 
     public function ordinal($number)

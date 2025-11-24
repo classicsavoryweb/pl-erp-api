@@ -53,6 +53,8 @@ class PayrollProofListController extends Controller
                     "status",
                     "id",
                     "employee_id",
+                    "adjustment_percent",
+                    "additional_incentive",
                     "incentive_amount as amount"
                 ])->where("incentive_amount", ">", 0);
             } else {
@@ -85,6 +87,21 @@ class PayrollProofListController extends Controller
                 "bank_account_type_id" => "required"
             ]);
 
+            $start_time = $request->year . '-' . $request->cutoff["start_time"];
+            $end_time = $request->year . '-' . $request->cutoff["end_time"];
+
+            $cutOff = Cutoff::where("start_date", $start_time)
+            ->where("end_date", $end_time)
+            ->first();
+
+            if (!$cutOff || $cutOff->status !== "active") {
+                return $this->sendError(["message" => "You cant generate inactive cutoff"], 404);
+            }
+
+            if ($cutOff && $cutOff->is_cutoff_locked !== 1 && $cutOff->status === "active") {
+                return $this->sendError(["message" => "You cant generate unfinalized cutoff"], 409);
+            }
+
             $request["export"] = true;
             $proofLists = $this->getProofList($request);
 
@@ -112,7 +129,6 @@ class PayrollProofListController extends Controller
                     $this->writeCell($dom, $sheetData, $colC, (string)$transaction->employee->full_name);
 
                     $rowIndex++;
-
                 }
 
                 $newXml = $dom->saveXML();
