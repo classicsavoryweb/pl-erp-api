@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         $this->call(HRRoleSeeder::class);
         $this->call(MaintenanceSeeder::class);
         $this->call(EmployeeRecordSeeder::class);
+        $this->call(EntrySeeder::class);
     }
 }
