@@ -12,6 +12,8 @@ class Entry extends Model
     protected $table = "entries";
     protected $fillable = [
         "entry_id",
+        "pay_date",
+        "document_no",
         "branch_id",
         "branch_number",
         "amount",
