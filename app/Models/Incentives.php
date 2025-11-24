@@ -19,6 +19,10 @@ class Incentives extends Model
         return $this->belongsTo(Employee::class);
     }
 
+    public function payroll_list() {
+        return $this->hasOne(PayrollList::class, "employee_id", "employee_id");
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

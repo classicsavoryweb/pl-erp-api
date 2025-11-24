@@ -334,35 +334,35 @@ class PayrollService {
                 "hourly_rate" => $hourly_rate,
                 "pay_type" => $paymentType,
                 "tax_status" => $employee->tax_type,
-                "salary" => $salary,
-                "tardiness_amount" => $tardinessAmount,
-                "undertime_amount" => $undertimeAmount,
-                "overtime_amount" => $overtimeAmount,
-                "legal_holiday_amount" => $legalHolidayAmount,
-                "legal_holiday_overtime_amount" => $legalHolidayOvertimeAmount,
-                "special_holiday_amount" => $specialHolidayAmount,
-                "special_holiday_overtime_amount" => $specialHolidayOvertimeAmount,
-                "night_differential_amount" => $nightDifferentialAmount,
-                "night_differential_overtime_amount" => $nightDifferentialOvertimeAmount,
-                "taxable_adjustment" => $taxableAdustmentAmount,
-                "non_taxable_adjustment" => $nonTaxableAmount,
-                "gross_pay" => $grossPayAmount,
+                "salary" => round($salary,2),
+                "tardiness_amount" => round($tardinessAmount,2),
+                "undertime_amount" => round($undertimeAmount,2),
+                "overtime_amount" => round($overtimeAmount,2),
+                "legal_holiday_amount" => round($legalHolidayAmount,2),
+                "legal_holiday_overtime_amount" => round($legalHolidayOvertimeAmount,2),
+                "special_holiday_amount" => round($specialHolidayAmount,2),
+                "special_holiday_overtime_amount" => round($specialHolidayOvertimeAmount,2),
+                "night_differential_amount" => round($nightDifferentialAmount,2),
+                "night_differential_overtime_amount" => round($nightDifferentialOvertimeAmount,2),
+                "taxable_adjustment" => round($taxableAdustmentAmount,2),
+                "non_taxable_adjustment" => round($nonTaxableAmount,2),
+                "gross_pay" => round($grossPayAmount,2),
                 "employee_sss" => $sssEmployeeAmount,
                 "employer_sss" => $sssEmployerAmount,
                 "employee_pagibig" => $pagibigEmployee,
                 "employer_pagibig" => $pagibigEmployer,
                 "employee_philhealth" => $philHealthAmount,
                 "employer_philhealth" => $philHealthAmount,
-                "withholding_tax" => $taxAmount,
+                "withholding_tax" => round($taxAmount,2),
                 "deductions" => json_encode($newDeductions),
-                "total_deductions" => $totalDeductions,
+                "total_deductions" => round($totalDeductions,2),
                 "manual_deductions" => $manualDeductions,
-                "cancelled_off" => $cancelledOffAmount,
-                "net_pay" => $netPayAmount,
-                "taxable_income" => $taxableIncome,
-                "contribution_total" => $contributionTotal,
-                "additional_working_hours_total" => $additionalWorkingHoursTotal,
-                "working_hours_deduction_total" => $workingHoursDeductionTotal,
+                "cancelled_off" => round($cancelledOffAmount,2),
+                "net_pay" => round($netPayAmount, 2),
+                "taxable_income" => round($taxableIncome, 2),
+                "contribution_total" => round($contributionTotal,2),
+                "additional_working_hours_total" => round($additionalWorkingHoursTotal, 2),
+                "working_hours_deduction_total" => round($workingHoursDeductionTotal, 2),
                 "status" => "initial",
                 "remarks" => $remarks
             ]);
@@ -399,8 +399,6 @@ class PayrollService {
                 ? round($daily_rate / 9.5, 2)
                 : round($daily_rate / 8, 2);
             $minute_rate = $hourly_rate / 60;
-            
-            $pagibigRate = Pagibig::first();
 
             $paymentType = $employee->current_position->timekeeping_type;
             $cutOffBaseSalary = $employee->cut_off_base_salary;
@@ -419,8 +417,8 @@ class PayrollService {
             $nonTaxableAmount = 0;
             $taxableAdustmentAmount = 0;
             $philHealthAmount = 0;
-            $pagibigEmployee = $pagibigRate->employee_share / 2;
-            $pagibigEmployer = $pagibigRate->employer_share / 2;
+            $pagibigEmployee = 0;
+            $pagibigEmployer = 0;
             $sssEmployeeAmount = 0;
             $sssEmployerAmount = 0;
             $taxAmount = 0;
@@ -436,6 +434,15 @@ class PayrollService {
 
             $basicSalary = $cutOffBaseSalary;
             $philHealthAmount = round(( $basicSalary * 0.05) / 2 , 2);
+
+            $pagibig = Pagibig::where('min_amount', '<=', $basicSalary)
+            ->where('max_amount', '>=', $basicSalary)
+            ->first();
+
+            $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+            $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
+            $pagibigEmployee = round($pagibigAmount / 2, 2);
+            $pagibigEmployer = round($pagibigAmount / 2, 2);
 
             $sss = SSS::where('salary_range_min', '<=', $basicSalary)
             ->where('salary_range_max', '>=', $basicSalary)
@@ -469,7 +476,7 @@ class PayrollService {
                 "hourly_rate" => $hourly_rate,
                 "pay_type" => $paymentType,
                 "tax_status" => $employee->tax_type,
-                "salary" => $salary,
+                "salary" => $basicSalary,
                 "tardiness_amount" => $tardinessAmount,
                 "undertime_amount" => $undertimeAmount,
                 "overtime_amount" => $overtimeAmount,

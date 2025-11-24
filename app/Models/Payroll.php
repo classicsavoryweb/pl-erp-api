@@ -62,6 +62,10 @@ class Payroll extends Model
         return $this->belongsTo(Employee::class);
     }
 
+    public function payroll_list() {
+        return $this->hasOne(PayrollList::class, "employee_id", "employee_id");
+    }
+
     public function timekeeping_summary () {
         return $this->hasOne(TimeKeepingSummary::class, "id", "timekeeping_summary_id");
     }

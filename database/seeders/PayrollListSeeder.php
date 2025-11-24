@@ -19,10 +19,7 @@ class PayrollListSeeder extends Seeder
 
         foreach ($employees as $employee) {
             $isMancom = str_starts_with($employee->employee_number, 'M');
-
-            $latestBank = $employee->latest_bank_details()->first();
-
-            $isBank = $latestBank && $latestBank->bank_number !== '';
+            $isBank = $employee->status === "active";
 
             PayrollList::create([
                 "employee_id" => $employee->id,
@@ -30,7 +27,8 @@ class PayrollListSeeder extends Seeder
                 "is_statutory_only" => $isMancom,
                 "is_mancom" => $isMancom,
                 "is_on_maternity_leave" => false,
-                "is_bank" => $isBank
+                "is_bank" => $isBank,
+                "is_hold" => $employee->status !== "active"
             ]);
         }
     }

@@ -311,6 +311,10 @@ class Employee extends Model
         return $this->belongsTo(User::class, "employee_number", "employee_number");
     }
 
+    public function payroll_list() {
+        return $this->hasOne(PayrollList::class, "employee_id", "id");
+    }
+
     public function vendor() {
         return $this->belongsTo(Vendor::class, 'employee_number', 'ven_no');
     }
