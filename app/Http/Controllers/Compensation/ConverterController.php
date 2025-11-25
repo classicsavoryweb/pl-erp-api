@@ -468,7 +468,7 @@ class ConverterController extends Controller
             $batch = ConverterMain::find($batchId);
 
             if ($batch) {
-                SendTransactionToEmployeeJob::dispatch($batch);
+                SendTransactionToEmployeeJob::dispatch($batch, Auth::user()->id, [], false);
 
                 $batch->update([
                     "status" => "Sent",
@@ -492,7 +492,7 @@ class ConverterController extends Controller
             $batch = ConverterMain::find($batchId);
 
             if ($batch) {
-                SendTransactionToEmployeeJob::dispatch($batch, $request->selected_transactions);
+                SendTransactionToEmployeeJob::dispatch($batch, Auth::user()->id, $request->selected_transactions, true);
 
                 return $this->sendResponse(["message" => "Transaction email resending"]);
             }

@@ -3,14 +3,23 @@
 namespace App\Jobs;
 
 use App\Mail\SendTransactionToEmployeeMail;
+use App\Models\Accounting\Account;
+use App\Models\Accounting\ApsysEntry;
+use App\Models\Accounting\Vendor;
+use App\Models\Branch;
 use App\Models\ConverterMain;
+use App\Models\ConverterDetail;
+use App\Models\Deduction;
 use App\Models\EmployeeDeduction;
+use App\Models\Entry;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class SendTransactionToEmployeeJob implements ShouldQueue
@@ -18,14 +27,35 @@ class SendTransactionToEmployeeJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $converterBatch;
+    protected $userId;
     protected $details;
+    protected $isResend;
     /**
      * Create a new job instance.
      */
-    public function __construct(ConverterMain $batch, $details = [])
+
+    public function __construct(ConverterMain $batch, $userId, $details = [], $isResend = false)
     {
         $this->converterBatch = $batch;
+        $this->userId = $userId;
         $this->details = $details ?? [];
+        $this->isResend = $isResend;
+    }
+
+    private function generateEntryId(&$counter)
+    {
+        if ($counter === null) {
+            $lastEntry = Entry::orderBy('entry_id', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->entry_id, 3);
+                $counter = $lastEntryIdNumber + 1;
+            } else {
+                $counter = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counter++, 8, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -34,7 +64,13 @@ class SendTransactionToEmployeeJob implements ShouldQueue
     public function handle(): void
     {
         $batch = $this->converterBatch;
+
         $transactionsIds = $this->details;
+
+        $userId = $this->userId;
+        $user = User::find($userId);
+        $userId = $user->employee->id;
+
         $converter_details = $batch->converter_details()
         ->with(["employee", "employee.latest_bank_details","transaction_type"]);
 
@@ -44,8 +80,111 @@ class SendTransactionToEmployeeJob implements ShouldQueue
 
         $converter_details = $converter_details->get();
 
+        $counter = null;
+
         foreach ($converter_details as $transaction) {
+            $entryId = $this->generateEntryId($counter);
+
             $employee = $transaction->employee;
+            $employeeNumber = $transaction->employee->employee_number;
+
+            $vendorHO = Vendor::where("ven_name", "HO")->first();
+            $vendorHONo = $vendorHO->ven_no;
+
+            $branchHO = Branch::where('short_name', 'HO')
+            ->first();
+            $branchHOId = $branchHO->id;
+            $branchHOName = $branchHO->name;
+            $branchHONumber = $branchHO->branch_number;
+
+            $batchNumber = $transaction->converter_main->batch_number;
+            $amount = $transaction->amount;
+            $description = $transaction->transaction_type->description;
+            $hoDebit = $transaction->transaction_type->ho_debit;
+            $hoCredit = $transaction->transaction_type->ho_credit;
+            $branchDebit = $transaction->transaction_type->branch_debit;
+            $branchCredit = $transaction->transaction_type->branch_credit;
+            $advancesDebit = $transaction->transaction_type->advance_debit;
+            $branchNumber = $transaction->branch->branch_number;
+            $branchShortName = $transaction->branch->short_name;
+            $branchName = $transaction->branch->name;
+            $branchId = $transaction->branch_id;
+
+            //HO Entry Setup
+            if ($hoDebit) {
+
+                $accountHODebitId = null;
+
+                if ($advancesDebit == 'Yes') {
+                    $accountHODebitId = Account::where('acc_name', 'Advances - ' . $branchShortName)
+                    ->value('acc_no');
+                }
+
+                $hoEntries = [
+                    [
+                        'entry_id'            => $entryId,
+                        'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchHOName,
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'ven_no'              => $vendorHONo,
+                        'amount'              => $amount,
+                        'acc_no'              => $accountHODebitId ?? $hoDebit,
+                        'description_per_acc' => $description,
+                        'balance_type'        => 'Debit',
+                        'is_block_payment'    => 0,
+                    ],
+                    [
+                        'entry_id'            => $entryId,
+                        'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchHOName,
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'ven_no'              => $vendorHONo,
+                        'amount'              => $amount,
+                        'acc_no'              => $hoCredit,
+                        'description_per_acc' => $description,
+                        'balance_type'        => 'Credit',
+                        'is_block_payment'    => 0,
+                    ]
+                ];
+
+                if (!$this->isResend) {
+                    $this->createEntries($hoEntries, $userId);
+                }
+            }
+
+            //Branch Entry Setup
+            if ($branchDebit) {
+                $branchEntries = [
+                    [
+                        'entry_id'            => $entryId,
+                        'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchName,
+                        'branch_id'           => $branchId,
+                        'branch_number'       => $branchNumber,
+                        'ven_no'              => $vendorHONo,
+                        'amount'              => $amount,
+                        'acc_no'              => $branchDebit,
+                        'description_per_acc' => $description,
+                        'balance_type'        => 'Debit',
+                        'is_block_payment'    => 0,
+                    ],
+                    [
+                        'entry_id'            => $entryId,
+                        'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchName,
+                        'branch_id'           => $branchId,
+                        'branch_number'       => $branchNumber,
+                        'ven_no'              => $vendorHONo,
+                        'amount'              => $amount,
+                        'acc_no'              => $branchCredit,
+                        'description_per_acc' => $description,
+                        'balance_type'        => 'Credit',
+                        'is_block_payment'    => 0,
+                    ],
+                ];
+
+                if (!$this->isResend) {
+                    $this->createEntries($branchEntries, $userId);
+                }
+            }
 
             Mail::mailer("PAYROLL_MAILER")->to($employee->email)
             ->send(new SendTransactionToEmployeeMail($transaction));
@@ -85,6 +224,59 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                     ]);
                 }
             }            
+        }
+    }
+
+    private function createEntries($entries, $userId)
+    {
+        foreach ($entries as $entry) {
+
+            Entry::create([
+                'entry_id'                   => $entry['entry_id'],
+                'document_no'                => $entry['document_no'],
+                'branch_id'                  => $entry['branch_id'],
+                'branch_number'              => $entry['branch_number'],
+                'vendor_no'                  => $entry['ven_no'],
+                'amount'                     => $entry['amount'],
+                'account_no'                 => $entry['acc_no'],
+                'description'                => $entry['description_per_acc'],
+                'balance_type'               => $entry['balance_type'],
+                'is_block_payment'           => $entry['is_block_payment'],
+                'status'                     => 'Unapplied',
+                'generated_at'               => now(),
+                'generated_by'               => $userId,
+            ]);
+
+            ApsysEntry::create([
+                'ent_tran_no'       => $entry['entry_id'],
+                'branch_id'         => $entry['branch_number'],
+                'ent_post_date'     => now(),
+                'ven_no'            => $entry['ven_no'],
+                'ent_doc_no'        => $entry['document_no'],
+                'ent_doc_date'      => now(),
+                'ent_due_date'      => now(),
+                'ent_header'        => $entry['document_no'],
+                'ent_crf_no'        => '',
+                'ent_trans_amt'     => $entry['amount'],
+                'ent_amt_due'       => $entry['amount'],
+                'ent_module'        => 'Payroll',
+                'acc_no'            => $entry['acc_no'],
+                'ent_amt_per_cc'    => $entry['amount'],
+                'ent_desc_per_acc'  => $entry['description_per_acc'],
+                'ent_norm_bal'      => $entry['balance_type'],
+                'ent_total'         => $entry['amount'],
+                'ent_module_type'   => 'Single',
+                'ent_app_amt'       => $entry['amount'],
+                'ent_unapp_amt'     => 0,
+                'ent_vat_amt'       => 0,
+                'ent_nonvat_amt'    => 0,
+                'ent_na_amt'        => $entry['amount'],
+                'ent_inp_tax_amt'   => 0,
+                'ent_block_payment' => $entry['is_block_payment'] ? 'Yes' : 'No',
+                'ent_status'        => 'Unapplied',
+                'ent_chk'           => 'No',
+                'date_added'        => now(),
+            ]);
         }
     }
 }
