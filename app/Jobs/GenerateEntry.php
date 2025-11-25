@@ -38,14 +38,23 @@ class GenerateEntry implements ShouldQueue
 
     private function generateEntryId(&$counter)
     {
+        if ($counter === null) {
+            $lastEntry = Entry::orderBy('entry_id', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->entry_id, 3);
+                $counter = $lastEntryIdNumber + 1;
+            } else {
+                $counter = 1; 
+            }
+        }
+
         return 'PSD' . str_pad($counter++, 8, '0', STR_PAD_LEFT);
     }
 
     public function handle(): void
     {
         
-        $this->counter = 1;
-
         $vendorNames = [
             'EESSS',
             'EEPH',
