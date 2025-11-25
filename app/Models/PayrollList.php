@@ -20,6 +20,7 @@ class PayrollList extends Model
         "is_bank",
         "is_hold",
         "remarks",
+        "holded_at"
     ];
 
     public function employee() {

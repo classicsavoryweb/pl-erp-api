@@ -93,6 +93,7 @@ class PayrollListController extends Controller
                 "is_on_maternity_leave" => $request->is_on_maternity_leave,
                 "is_bank" => $request->is_bank,
                 "is_hold" => $request->is_hold,
+                "holded_at" => $request->is_hold ? now() : null,
                 "remarks" => $request->remarks,
             ]);
 
@@ -122,6 +123,7 @@ class PayrollListController extends Controller
                 "is_on_maternity_leave" => $request->is_on_maternity_leave,
                 "is_bank" => $request->is_bank,
                 "is_hold" => $request->is_hold,
+                "holded_at" => $request->is_hold ? now() : null,
                 "remarks" => $request->remarks
             ]);
 
