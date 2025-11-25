@@ -199,6 +199,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_compensation_converter"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "view_compensation_payroll_prooflist"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_payroll_prooflist"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "view_compensation_last_pay"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "perform_compensation_last_pay"], ["module" => "compensation"]);
 
         //reports modules
         Permission::updateOrCreate(["name" => "view_reports_module"], ["module" => "reports"]);
@@ -207,5 +209,6 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_reports_philhealth"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_sss"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_bdo_cash_card"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_13th_month_pay"], ["module" => "reports"]);
     }
 }
