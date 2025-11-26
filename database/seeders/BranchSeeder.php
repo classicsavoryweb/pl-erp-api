@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Branch;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -63,15 +64,16 @@ class BranchSeeder extends Seeder
                 "Content-Type" => "application/json"
             ])
             ->timeout(60)
-            ->get($url);
+            ->get($url, [
+                "page_size" => 10000000000
+            ]);
 
         if ($response->successful()) {
             $resp = $response->json();
             $terminals = $resp["data"];
-
             foreach($terminals as $terminal) {
                 $branch = Branch::where("short_name", $terminal["area_name"])->first();
-                if ($branch && $branch->status === "active") {
+                if ($branch && strtolower($branch->status) === "active") {
                     $branch->update([
                         "device_name" => $terminal["sn"]
                     ]);
