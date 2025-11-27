@@ -76,7 +76,9 @@ class PayrollProofListController extends Controller
             }
 
             if ($request->export === true) {
-                $proofList = $proofList->get();
+                $proofList = $proofList->whereHas("payroll_list", function ($query) {
+                    $query->where("is_hold", false);
+                })->get();
                 return $proofList;
             }
 

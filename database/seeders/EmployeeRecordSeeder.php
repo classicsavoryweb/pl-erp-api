@@ -38,5 +38,6 @@ class EmployeeRecordSeeder extends Seeder
         //payroll
         $this->call(ConverterDetailsSeeder::class);
         $this->call(ConverterMainSeeder::class);
+        $this->call(LastPaySeeder::class);
     }
 }

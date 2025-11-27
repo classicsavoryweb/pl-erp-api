@@ -49,5 +49,6 @@ class MaintenanceSeeder extends Seeder
         $this->call(TermSeeder::class);
         $this->call(LastPaySetupSeeder::class);
         $this->call(CutOffInitializeSeeder::class);
+        $this->call(AnnualTaxSeeder::class);
     }
 }

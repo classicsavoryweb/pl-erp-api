@@ -374,6 +374,14 @@ class Employee extends Model
         return $this->hasMany(TimeKeepingSummary::class, "employee_id", "id");
     }
 
+    public function government_deductions() {
+        return $this->hasMany(EmployeeDeduction::class, "employee_id", "id")
+        ->whereHas("deduction", function ($query) {
+            $query->whereIn("category", ["Pag-ibig", "SSS"]);
+        })->where("end_loan_status", "!=", "Yes")
+        ->where("balance", ">=", 1);
+    }
+
     public function diagnosis() {
         return $this->belongsToMany(Diagnosis::class)
         ->using(EmployeeHealthSafety::class)

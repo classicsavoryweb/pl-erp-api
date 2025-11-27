@@ -5,6 +5,7 @@ use App\Http\Controllers\Compensation\CutOffController;
 use App\Http\Controllers\Compensation\EmployeeDeductionsController;
 use App\Http\Controllers\Compensation\DeductionHistoryController;
 use App\Http\Controllers\Compensation\EntryController;
+use App\Http\Controllers\Compensation\LastPayController;
 use App\Http\Controllers\Compensation\PayrollController;
 use App\Http\Controllers\Compensation\PayrollListController;
 use App\Http\Controllers\Compensation\PayrollProofListController;
@@ -58,6 +59,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-cshub-applied-transactions", [ConverterController::class, "createCSHubTransactions"]);
     Route::middleware(["permission:perform_compensation_converter"])->get("/send-transaction-email/{batchId}", [ConverterController::class, "sendTransactionEmail"]);
     Route::middleware(["permission:perform_compensation_converter"])->post("/resend-transaction-email/{batchId}", [ConverterController::class, "resendTransactionEmail"]);
+    
     //prooflist
     Route::get("/get-all-payroll-prooflist", [PayrollProofListController::class, "getProofList"]);
     Route::middleware(["permission:perform_compensation_payroll_prooflist"])->get("/generate-payroll-prooflist-converter", [PayrollProofListController::class, "generateConverterForProoflist"]);
@@ -68,4 +70,11 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_entries"])->post("/generate-entries", [EntryController::class, "generateEntries"]);
     Route::middleware(["permission:export_all_compensation_entries"])->get("/export-all-entries", [EntryController::class, "exportAllEntries"]);
 
+    //last pay
+    Route::get("/get-all-last-pay", [LastPayController::class, "getAllLastPay"]);
+    Route::get("/get-all-holded-employees", [LastPayController::class, "getHoldedEmployees"]);
+    Route::get("/get-initial-last-pay/{employeeNumber}", [LastPayController::class, "getEmployeeInitialLastPayDetails"]);
+    Route::middleware(["permission:perform_compensation_last_pay"])->post("/create-last-pay/{employeeNumber}", [LastPayController::class, "createLastPayRecord"]);
+    Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay/{lastPayId}", [LastPayController::class, "editLastPayRecord"]);
+    Route::get("/post-last-pay/{lastPayId}", [LastPayController::class, "postLastPay"]);
 });

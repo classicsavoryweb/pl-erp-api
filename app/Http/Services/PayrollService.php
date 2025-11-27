@@ -211,6 +211,7 @@ class PayrollService {
                 $employeeDeductions = EmployeeDeduction::with(["deduction"])
                 ->where("employee_id", $employee->id)
                 ->where("balance", ">", 1)
+                ->where("end_loan_status", "!=", "Yes")
                 ->get();
     
                 foreach($employeeDeductions as $deduction) {
