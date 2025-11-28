@@ -34,6 +34,7 @@ class EmployeeRecordSeeder extends Seeder
         $this->call(PayrollListSeeder::class);
         $this->call(TimekeepingSeeder::class);
         $this->call(TimekeepingSummarySeeder::class);
+        $this->call(ScheduleTimeAndLogsSeeder::class);
 
         //payroll
         $this->call(ConverterDetailsSeeder::class);
