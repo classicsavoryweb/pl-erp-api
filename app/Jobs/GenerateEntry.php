@@ -13,6 +13,7 @@ use App\Models\EmployeeDeduction;
 use App\Models\Entry;
 use App\Models\Incentives;
 use App\Models\Payroll;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,6 +21,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Log;
+use DB;
 
 class GenerateEntry implements ShouldQueue
 {
@@ -153,7 +155,9 @@ class GenerateEntry implements ShouldQueue
         $debitStoreId = $additionalIncome->store_debit_id;
         $creditStoreId = $additionalIncome->store_credit_id;
 
-        $employee_id = $this->user->employee->id;
+        $userId = $this->user;
+        $user = User::find($userId);
+        $employee_id = $user->employee->id;
 
         $branchHO = Branch::where('short_name', 'HO')
             ->first();
@@ -228,11 +232,16 @@ class GenerateEntry implements ShouldQueue
                         $employeeId = $payrollBankDeduction->employee_id;
                         $bankDeductionId = $bankDeductionJson['deduction_id'] ?? null;
 
+                        $employeeBankDeduction = EmployeeDeduction::find($bankDeductionId);
+
+                        if (!$employeeBankDeduction){
+                            continue;
+                        }
+
                         $monthlyAmortization = floatval(str_replace(',', '', $bankDeductionJson['monthly_amortization'] ?? 0));
 
                         $bankTotalMonthlyAmortization += $monthlyAmortization;
 
-                        $employeeBankDeduction = EmployeeDeduction::find($bankDeductionId);
                         $employeeBankDeductionId = $employeeBankDeduction->deduction_id;
 
                         $bankDeductionModel = Deduction::with([
@@ -315,11 +324,16 @@ class GenerateEntry implements ShouldQueue
                         $employeeId = $payrollCashDeduction->employee_id;
                         $cashDeductionId = $cashDeductionJson['deduction_id'] ?? null;
 
+                        $employeeCashDeduction = EmployeeDeduction::find($cashDeductionId);
+
+                        if (!$employeeBankDeduction){
+                            continue;
+                        }
+
                         $monthlyAmortization = floatval(str_replace(',', '', $cashDeductionJson['monthly_amortization'] ?? 0));
 
                         $cashTotalMonthlyAmortization += $monthlyAmortization;
 
-                        $employeeCashDeduction = EmployeeDeduction::find($cashDeductionId);
                         $employeeCashDeductionId = $employeeCashDeduction->deduction_id;
 
                         $cashDeductionModel = Deduction::with([
@@ -2953,8 +2967,11 @@ class GenerateEntry implements ShouldQueue
                 }
             }
 
-            foreach ($entries as $entry) {
-                try {
+            try {
+                DB::beginTransaction();
+
+                foreach ($entries as $entry) {
+
                     Entry::create([
                         'entry_id'                   => $entry['entry_id'],
                         'pay_date'                   => $pay_date,
@@ -2971,7 +2988,6 @@ class GenerateEntry implements ShouldQueue
                         'generated_at'               => now(),
                         'generated_by'               => $employee_id,
                     ]);
-
                     ApsysEntry::create([
                         'ent_tran_no'       => $entry['entry_id'],
                         'branch_id'         => $entry['branch_number'],
@@ -3002,12 +3018,15 @@ class GenerateEntry implements ShouldQueue
                         'ent_chk'           => 'No',
                         'date_added'        => now(),
                     ]);
-                } catch (\Exception $e) {
-                    Log::error('Failed to create entry', [
-                        'entry' => $entry,
-                        'error' => $e->getMessage(),
-                    ]);
                 }
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                Log::error('Failed to create entry', [
+                    'entry' => $entry,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
     }
