@@ -164,6 +164,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-tax", [TaxController::class, "exportAllTax"]);
     Route::middleware(["permission:perform_tax"])->post("/create-tax", [TaxController::class, "createTax"]);
     Route::middleware(["permission:perform_tax"])->post("/edit-tax/{id}", [TaxController::class, "editTax"]);
+    Route::get("/get-annual-tax-table", [TaxController::class, "getAllAnnualTax"]);
+    Route::get("/export-annual-tax-table", [TaxController::class, "exportAllAnnualTax"]);
+
     //philhealth
     Route::get("/get-all-philhealth", [PhilhealthController::class, "getAllPhilhealth"]);
     Route::get("/get-philhealth", [PhilhealthController::class, "getPhilhealth"]);

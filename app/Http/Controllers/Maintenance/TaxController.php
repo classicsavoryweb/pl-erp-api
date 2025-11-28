@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Exports\Maintenance\AnnualTaxExport;
 use App\Exports\Maintenance\TaxExport;
 use App\Http\Controllers\Controller;
+use App\Models\AnnualTax;
 use App\Models\Tax;
 use Illuminate\Http\Request;
 use DB;
@@ -106,5 +108,33 @@ class TaxController extends Controller
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function getAllAnnualTax(Request $request) {
+        try {
+            $perPage = $request->per_page ?? 10;
+
+            $tax = AnnualTax::query();
+            if ($request->has(["column_type", "key_word"])) {
+                $tax = $tax->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["export"]) && $request->export) {
+                $tax = $tax->get();
+                return Excel::download(new AnnualTaxExport($tax), "tax.xls");
+            }
+
+            $tax = $tax->paginate($perPage);
+            return $this->sendResponse($tax);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function exportAllAnnualTax(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllAnnualTax($request);
     }
 }
