@@ -60,7 +60,7 @@ class EntryController extends Controller
             ->where("end_date", $request->date_to)
             ->get();
 
-            GenerateEntry::dispatch($payroll, Auth::user());
+            GenerateEntry::dispatch($payroll, Auth::user()->id);
 
             return $this->sendResponse(["message" => "Entry are in queue for processing."]);
         } catch(Exception $e) {

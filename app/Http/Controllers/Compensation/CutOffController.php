@@ -152,7 +152,7 @@ class CutOffController extends Controller
                 ]);
 
                 //trigger a cut off initialization job
-                ProcessFinalizeCutOff::dispatch($createdCutOff);
+                ProcessFinalizeCutOff::dispatch($createdCutOff, Auth::user()->id);
 
                 DB::commit();
                 return $this->sendResponse([

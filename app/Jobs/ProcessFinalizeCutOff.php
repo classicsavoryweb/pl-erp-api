@@ -20,12 +20,14 @@ class ProcessFinalizeCutOff implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected Cutoff $cutOff;
+    protected $user;
     /**
      * Create a new job instance.
      */
-    public function __construct(Cutoff $cutoff)
+    public function __construct(Cutoff $cutoff, $user)
     {
         $this->cutOff = $cutoff;
+        $this->user = $user;
     }
 
     /**
@@ -60,6 +62,10 @@ class ProcessFinalizeCutOff implements ShouldQueue
             foreach ($deductions as $deduction) {
                 $employeeDeduction = EmployeeDeduction::find($deduction["deduction_id"]);
 
+                if (!$employeeDeduction){
+                    continue;
+                }
+
                 $newBalance = $employeeDeduction->balance - $deduction["deducted_amount"];
 
                 $employeeDeduction->update([
@@ -82,5 +88,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
                 "status" => "final"
             ]);
         }
+
+        GenerateEntry::dispatch($payrolls, $this->user);
     }
 }
