@@ -186,7 +186,7 @@ class LastPayController extends Controller
                     $annualSalary += $salary;
                     $totalWithholdingTax += $payroll->withholding_tax;
                 }
-                $month13th = $annualSalary / 24;
+                $month13th = $annualSalary / 12;
 
                 $annualTax = AnnualTax::where("minimum_amount", "<=" , $annualTaxableIncome)
                 ->where("max_amount", ">=" , $annualTaxableIncome)
@@ -314,7 +314,7 @@ class LastPayController extends Controller
                     $annualSalary += $salary;
                     $totalWithholdingTax += $payroll->withholding_tax;
                 }
-                $month13th = $annualSalary / 24;
+                $month13th = $annualSalary / 12;
 
                 $annualTax = AnnualTax::where("minimum_amount", "<=" , $annualTaxableIncome)
                 ->where("max_amount", ">=" , $annualTaxableIncome)

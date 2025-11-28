@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Compensation;
 use App\Exports\Compensation\PayrollProofListExport;
 use App\Http\Controllers\Controller;
 use App\Models\Cutoff;
+use App\Models\Employee;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use DOMDocument;
@@ -53,14 +54,22 @@ class PayrollProofListController extends Controller
                     "adjustment_percent",
                     "additional_incentive",
                     "incentive_amount as amount"
-                ])->where("incentive_amount", ">", 0);
+                ])->where("incentive_amount", ">", 0)
+                ->orderBy(
+                    Employee::select("last_name")
+                        ->whereColumn("employees.id", "incentives.employee_id")
+                );
             } else {
                 $proofList = $proofList->select([
                     "status",
                     "id",
                     "employee_id",
                     "net_pay as amount"
-                ])->where("net_pay", ">", 0);
+                ])->where("net_pay", ">", 0)
+                ->orderBy(
+                    Employee::select("last_name")
+                        ->whereColumn("employees.id", "payroll.employee_id")
+                );
             }
 
             if ($request->bank_account_type_id !== '0') {
