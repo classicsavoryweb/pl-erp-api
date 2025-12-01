@@ -32,9 +32,10 @@ class EmployeeRecordSeeder extends Seeder
         $this->call(DeductionHistorySeeder::class);
         $this->call(EmployeeDeductionSeeder::class);
         $this->call(PayrollListSeeder::class);
+        $this->call(ScheduleTimeAndLogsSeeder::class);
         $this->call(TimekeepingSeeder::class);
         $this->call(TimekeepingSummarySeeder::class);
-        $this->call(ScheduleTimeAndLogsSeeder::class);
+        $this->call(PayrollSeeder::class);
 
         //payroll
         $this->call(ConverterDetailsSeeder::class);

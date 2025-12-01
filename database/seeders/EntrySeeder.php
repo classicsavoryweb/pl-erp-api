@@ -16,7 +16,7 @@ class EntrySeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <= 43; $i++) {
-            $jsonPath = public_path("jsons/compensation/entry_{$i}.json");
+            $jsonPath = public_path("jsons/compensation/entries/entry_{$i}.json");
 
             $jsonData = file_get_contents($jsonPath);
             $data = json_decode($jsonData, true);
@@ -31,6 +31,9 @@ class EntrySeeder extends Seeder
 
                 $entries = Entry::create([
                     "entry_id" => $entry["ent_tran_no"],
+                    "pay_date" => null,
+                    "document_no" => $entry["ent_doc_no"],
+                    "branch_id" => null,
                     "branch_number" => $entry["branch_id"],
                     "amount" => floatval(str_replace(',', '', $entry["ent_trans_amt"])),
                     "vendor_no" => $entry["ven_no"],

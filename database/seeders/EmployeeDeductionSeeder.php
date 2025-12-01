@@ -15,7 +15,7 @@ class EmployeeDeductionSeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <= 6; $i++) {
-            $jsonPath = public_path("jsons/payroll/transaction_deduction_{$i}.json");
+            $jsonPath = public_path("jsons/payroll/employee_deductions/transaction_deduction_{$i}.json");
 
             $jsonData = file_get_contents($jsonPath);
             $data = json_decode($jsonData, true);
