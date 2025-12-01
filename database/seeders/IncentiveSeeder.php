@@ -17,7 +17,7 @@ class IncentiveSeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <= 3; $i++) {
-            $jsonPath = public_path("jsons/payroll/incentives_{$i}.json");
+            $jsonPath = public_path("jsons/payroll/incentives/incentives_{$i}.json");
 
             $jsonData = file_get_contents($jsonPath);
             $data = json_decode($jsonData, true);

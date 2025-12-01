@@ -15,7 +15,7 @@ class DeductionHistorySeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <= 3; $i++) {
-            $jsonPath = public_path("jsons/payroll/deduction_history_{$i}.json");
+            $jsonPath = public_path("jsons/payroll/deduction_history/deduction_history_{$i}.json");
 
             $jsonData = file_get_contents($jsonPath);
             $data = json_decode($jsonData, true);
