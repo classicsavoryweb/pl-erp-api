@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Branch;
+use App\Models\Employee;
 use App\Models\TimeKeepingSummary;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class TimekeepingSummarySeeder extends Seeder
@@ -13,32 +15,81 @@ class TimekeepingSummarySeeder extends Seeder
      */
     public function run(): void
     {
-        $jsonPath = public_path('jsons/biometrics/timekeeping_summary.json');
-        $jsonData = file_get_contents($jsonPath);
-        $timekeeping_details = json_decode($jsonData, true);
-        $unique_timekeeping_details = array_map("unserialize", array_unique(array_map("serialize", $timekeeping_details["timekeeping_summary"])));
+        for ($i = 1; $i <= 4; $i++) {
+            $jsonPath = public_path("jsons/biometrics/timekeeping_summary/timekeeping_summary_{$i}.json");
 
-        foreach ($unique_timekeeping_details as $unique_timekeeping_detail) {
-            TimeKeepingSummary::create([
-                "cut_off" => $unique_timekeeping_detail["cut_off"],
-                "employee_id" => $unique_timekeeping_detail["employee_id"],
-                "branch_id" => $unique_timekeeping_detail["branch_id"],
-                "regular_days" => $unique_timekeeping_detail["regular_days"],
-                "special_leave" => $unique_timekeeping_detail["special_leave"],
-                "cancelled_off" => $unique_timekeeping_detail["cancelled_off"],
-                "special_holiday" => $unique_timekeeping_detail["special_holiday"],
-                "legal_holiday" => $unique_timekeeping_detail["legal_holiday"],
-                "regular_overtime" => $unique_timekeeping_detail["regular_overtime"],
-                "night_differential" => $unique_timekeeping_detail["night_differential"],
-                "night_differential_overtime" => $unique_timekeeping_detail["night_differential_overtime"],
-                "legal_holiday_overtime" => $unique_timekeeping_detail["legal_holiday_overtime"],
-                "special_holiday_overtime" => $unique_timekeeping_detail["special_holiday_overtime"],
-                "undertime" => $unique_timekeeping_detail["undertime"],
-                "tardiness" => $unique_timekeeping_detail["tardiness"],
-                "travel_time" => $unique_timekeeping_detail["travel_time"],
-                "adjustment_amount" => $unique_timekeeping_detail["adjustment_amount"],
-                "remarks" => $unique_timekeeping_detail["remarks"],
-            ]);
+            $jsonData = file_get_contents($jsonPath);
+            $data = json_decode($jsonData, true);
+
+            foreach ($data["tbl_bio_payrollprocess_hist"] as $unique_timekeeping) {
+
+                $employee = Employee::where("biometric_number", $unique_timekeeping["employee_id2"])->first();
+
+                if (!$employee) {
+                    continue;
+                }
+
+                $branch = Branch::where("short_name", $unique_timekeeping["branch"])->first();
+
+                if (!$branch) {
+                    continue;
+                }
+
+                $tardiness = 0;
+
+                for ($i = 1; $i <= 9; $i++) {
+                    $tardiness += $unique_timekeeping["late{$i}"];
+                }
+
+                $cutoff = $this->getCutOffForDate($unique_timekeeping["late1_date"]);
+
+                $timekeeping_summary = TimeKeepingSummary::create([
+                    "cut_off" => $cutoff['start_time'] . '-' . $cutoff['end_time'],
+                    "employee_id" => $employee->id,
+                    "branch_id" => $branch->id ?? $employee->branch_id,
+                    "regular_days" => $unique_timekeeping["reg_days"],
+                    "special_leave" => $unique_timekeeping["special_leave"],
+                    "cancelled_off" => $unique_timekeeping["cancelled_off"],
+                    "special_holiday" => $unique_timekeeping["special_holiday"],
+                    "legal_holiday" => $unique_timekeeping["legal_holiday"],
+                    "regular_overtime" => $unique_timekeeping["ot_reg"],
+                    "night_differential" => $unique_timekeeping["night_diff"],
+                    "night_differential_overtime" => $unique_timekeeping["night_diffot"],
+                    "legal_holiday_overtime" => $unique_timekeeping["legal_holot"],
+                    "special_holiday_overtime" => $unique_timekeeping["special_holot"],
+                    "tardiness" => $tardiness,
+                    "undertime" => $unique_timekeeping["undertime"],
+                    "travel_time" => 0,
+                    "adjustment_amount" => $unique_timekeeping["adjustment_amt"],
+                ]);
+
+                $this->command->info("ID: {$timekeeping_summary->id} out of 173941, File: timekeeping_summary_{$i}.json out of 4");
+            }
         }
+    }
+
+    public function getCutOffForDate($date){
+        $carbonDate = Carbon::parse($date);
+        $day = $carbonDate->day;
+
+        $cutOff1 = [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+        $cutOff2 = [26,27,28,29,30,31,1,2,3,4,5,6,7,8,9,10];
+        if (in_array($day, $cutOff2)) {
+            if ($day <= 10) { 
+                $startTime = $carbonDate->copy()->setDay(26)->subMonth()->startOfDay();
+                $endTime = $carbonDate->copy()->setDay(10)->endOfDay();
+            } else {
+                $startTime = $carbonDate->copy()->setDay(26)->startOfDay();
+                $endTime = $carbonDate->copy()->setDay(10)->addMonth()->endOfDay();
+            }
+        } else {
+            $startTime = $carbonDate->copy()->setDay(11)->startOfDay();
+            $endTime = $carbonDate->copy()->setDay(25)->endOfDay();
+        }
+
+        return [
+            'start_time' => $startTime->toDateString(),
+            'end_time' => $endTime->toDateString(),
+        ];
     }
 }
