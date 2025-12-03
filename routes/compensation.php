@@ -9,6 +9,7 @@ use App\Http\Controllers\Compensation\LastPayController;
 use App\Http\Controllers\Compensation\PayrollController;
 use App\Http\Controllers\Compensation\PayrollListController;
 use App\Http\Controllers\Compensation\PayrollProofListController;
+use App\Http\Controllers\Compensation\PayslipController;
 use Illuminate\Support\Facades\Route;
 
 //compensation routes
@@ -21,6 +22,7 @@ Route::middleware('auth:sanctum')->group( function () {
 
     //cutoff
     Route::get("/get-all-cut-off",[CutOffController::class, "getAllCutOffs"]);
+    Route::get("/get-all-finalized-cut-offs",[CutOffController::class, "getAllFinalizedCutOffs"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/create-cut-off", [CutOffController::class, "createCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/edit-cut-off/{id}", [CutOffController::class, "editCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->get("/initialize-cut-off/{id}", [CutOffController::class, "initializeCutOff"]);
@@ -77,4 +79,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/create-last-pay/{employeeNumber}", [LastPayController::class, "createLastPayRecord"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay/{lastPayId}", [LastPayController::class, "editLastPayRecord"]);
     Route::get("/post-last-pay/{lastPayId}", [LastPayController::class, "postLastPay"]);
+
+    //pay slip
+    Route::middleware(["permission:perform_reports_pay_slip"])->post("/submit-payslips", [PayslipController::class, "submitPayslip"]);
 });

@@ -3,7 +3,7 @@
     use Carbon\Carbon;
 @endphp
 
-<b>Savory Fastfood Inc.</b>
+<b>{{ $company }}</b>
 <br/>
 <p>A deposit has been credited to your account ending in <b>{{ Str::substr($transaction->employee->latest_bank_details->bank_number, -4) }}</b>.</p>
 <br/>

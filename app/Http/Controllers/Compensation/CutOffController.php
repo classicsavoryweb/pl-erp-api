@@ -203,4 +203,16 @@ class CutOffController extends Controller
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
+
+    public function getAllFinalizedCutOffs() {
+        try {
+            $cut_offs = Cutoff::where("is_cutoff_locked", 1)
+            ->orderBy("pay_date", "DESC")
+            ->get();
+
+            return $this->sendResponse($cut_offs);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
 }

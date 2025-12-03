@@ -33,10 +33,12 @@ class SendTransactionToEmployeeMail extends Mailable
      */
     public function content(): Content
     {
+        $company = env("COMPANY_NAME") === "SFI" ? "Savory Fastfood Inc." : "Tony Ting Food Concepts";
         return new Content(
             view: 'emails.TransactionEmail',
             with: [
-                "transaction" => $this->transactionDetails
+                "transaction" => $this->transactionDetails,
+                "company" => $company
             ]
         );
     }

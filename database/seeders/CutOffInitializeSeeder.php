@@ -41,7 +41,9 @@ class CutOffInitializeSeeder extends Seeder
                     "is_cutoff_initialized" => true,
                     "pay_date" => $cutOff["pay_date"],
                     "status" => "inactive",
-                    "initializations" => null
+                    "initializations" => null,
+                    "is_timekeeping_locked" => true,
+                    "is_cutoff_locked" => true
                 ]);
             }
         }
