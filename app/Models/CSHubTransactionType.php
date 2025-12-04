@@ -30,6 +30,7 @@ class CSHubTransactionType extends Model
         "branch_debit",
         "branch_credit",
         "advances_debit",
+        "is_block_payment",
         "status",
     ];
 
