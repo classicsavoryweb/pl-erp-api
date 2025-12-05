@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Compensation\BranchAdditionalIncomeController;
 use App\Http\Controllers\Compensation\ConverterController;
 use App\Http\Controllers\Compensation\CutOffController;
 use App\Http\Controllers\Compensation\EmployeeDeductionsController;
@@ -80,6 +81,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay/{lastPayId}", [LastPayController::class, "editLastPayRecord"]);
     Route::get("/post-last-pay/{lastPayId}", [LastPayController::class, "postLastPay"]);
 
-    //pay slip
-    Route::middleware(["permission:perform_reports_pay_slip"])->post("/submit-payslips", [PayslipController::class, "submitPayslip"]);
+    //additional income
+    Route::get("/get-all-branch-additional-income", [BranchAdditionalIncomeController::class, "getAllBranchAdditionalIncome"]);
+    Route::middleware(["permission:perform_compensation_additional_income"])->post("/save-branch-additional-income", [BranchAdditionalIncomeController::class, "updateOrCreateIncome"]);
 });

@@ -1,0 +1,6610 @@
+{
+  "tbl_additionalincome_hr_hist": [
+    {
+      "additionalincome_id": "1",
+      "branch_id2": "SFI00002",
+      "amount": "40200.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "2",
+      "branch_id2": "SFI00016",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "3",
+      "branch_id2": "SFI00004",
+      "amount": "24500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "4",
+      "branch_id2": "SFI00121",
+      "amount": "7750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "5",
+      "branch_id2": "SFI00117",
+      "amount": "5000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "6",
+      "branch_id2": "SFI00022",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "7",
+      "branch_id2": "SFI00024",
+      "amount": "7000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "8",
+      "branch_id2": "SFI00025",
+      "amount": "15000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "9",
+      "branch_id2": "SFI00105",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "10",
+      "branch_id2": "SFI00030",
+      "amount": "10250.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "11",
+      "branch_id2": "SFI00034",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "12",
+      "branch_id2": "SFI00035",
+      "amount": "12000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "13",
+      "branch_id2": "SFI00036",
+      "amount": "17250.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "14",
+      "branch_id2": "SFI00006",
+      "amount": "65125.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "15",
+      "branch_id2": "SFI00007",
+      "amount": "31750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "16",
+      "branch_id2": "SFI00008",
+      "amount": "7250.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "17",
+      "branch_id2": "SFI00009",
+      "amount": "19625.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "18",
+      "branch_id2": "SFI00118",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "19",
+      "branch_id2": "SFI00010",
+      "amount": "541251.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "20",
+      "branch_id2": "SFI00122",
+      "amount": "5500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "21",
+      "branch_id2": "SFI00011",
+      "amount": "52000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "22",
+      "branch_id2": "SFI00012",
+      "amount": "18270.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "23",
+      "branch_id2": "SFI00040",
+      "amount": "12750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "24",
+      "branch_id2": "SFI00042",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "25",
+      "branch_id2": "SFI00043",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "26",
+      "branch_id2": "SFI00045",
+      "amount": "8462.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "27",
+      "branch_id2": "SFI00046",
+      "amount": "6856.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "28",
+      "branch_id2": "SFI00047",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "29",
+      "branch_id2": "SFI00048",
+      "amount": "10250.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "30",
+      "branch_id2": "SFI00050",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "31",
+      "branch_id2": "SFI00051",
+      "amount": "5000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "32",
+      "branch_id2": "SFI00013",
+      "amount": "13500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "33",
+      "branch_id2": "SFI00053",
+      "amount": "3289.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "34",
+      "branch_id2": "SFI00054",
+      "amount": "5000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "35",
+      "branch_id2": "SFI00055",
+      "amount": "14000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "36",
+      "branch_id2": "SFI00057",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "37",
+      "branch_id2": "SFI00058",
+      "amount": "17750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "38",
+      "branch_id2": "SFI00059",
+      "amount": "5000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "39",
+      "branch_id2": "SFI00108",
+      "amount": "7806.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "40",
+      "branch_id2": "SFI00060",
+      "amount": "7750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "41",
+      "branch_id2": "SFI00062",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "42",
+      "branch_id2": "SFI00127",
+      "amount": "12750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "43",
+      "branch_id2": "SFI00063",
+      "amount": "8981.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "44",
+      "branch_id2": "SFI00064",
+      "amount": "15000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "45",
+      "branch_id2": "SFI00065",
+      "amount": "12750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "46",
+      "branch_id2": "SFI00066",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "47",
+      "branch_id2": "SFI00067",
+      "amount": "15250.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "48",
+      "branch_id2": "SFI00107",
+      "amount": "5000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "49",
+      "branch_id2": "SFI00069",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "50",
+      "branch_id2": "SFI00113",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "51",
+      "branch_id2": "SFI00070",
+      "amount": "12125.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "52",
+      "branch_id2": "SFI00071",
+      "amount": "12750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "53",
+      "branch_id2": "SFI00120",
+      "amount": "3981.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "54",
+      "branch_id2": "SFI00072",
+      "amount": "5000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "55",
+      "branch_id2": "SFI00073",
+      "amount": "14289.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "56",
+      "branch_id2": "SFI00074",
+      "amount": "8475.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "57",
+      "branch_id2": "SFI00075",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "58",
+      "branch_id2": "SFI00076",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "59",
+      "branch_id2": "SFI00077",
+      "amount": "2500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "60",
+      "branch_id2": "SFI00078",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "61",
+      "branch_id2": "SFI00079",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "62",
+      "branch_id2": "SFI00081",
+      "amount": "7750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "63",
+      "branch_id2": "SFI00083",
+      "amount": "14500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "64",
+      "branch_id2": "SFI00084",
+      "amount": "15000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "65",
+      "branch_id2": "SFI00085",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "66",
+      "branch_id2": "SFI00109",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "67",
+      "branch_id2": "SFI00086",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "68",
+      "branch_id2": "SFI00088",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "69",
+      "branch_id2": "SFI00089",
+      "amount": "17250.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "70",
+      "branch_id2": "SFI00090",
+      "amount": "7750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "71",
+      "branch_id2": "SFI00092",
+      "amount": "5000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "72",
+      "branch_id2": "SFI00094",
+      "amount": "15000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "73",
+      "branch_id2": "SFI00112",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "74",
+      "branch_id2": "SFI00096",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "75",
+      "branch_id2": "SFI00097",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "76",
+      "branch_id2": "SFI00116",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "77",
+      "branch_id2": "SFI00098",
+      "amount": "9500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "78",
+      "branch_id2": "SFI00099",
+      "amount": "12750.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "79",
+      "branch_id2": "SFI00102",
+      "amount": "5000.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "80",
+      "branch_id2": "SFI00103",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "81",
+      "branch_id2": "SFI00104",
+      "amount": "4500.00",
+      "paydate": "2019-06-15"
+    },
+    {
+      "additionalincome_id": "82",
+      "branch_id2": "SFI00002",
+      "amount": "34000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "83",
+      "branch_id2": "SFI00016",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "84",
+      "branch_id2": "SFI00004",
+      "amount": "30500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "85",
+      "branch_id2": "SFI00121",
+      "amount": "17750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "86",
+      "branch_id2": "SFI00117",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "87",
+      "branch_id2": "SFI00024",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "88",
+      "branch_id2": "SFI00025",
+      "amount": "17500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "89",
+      "branch_id2": "SFI00029",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "90",
+      "branch_id2": "SFI00105",
+      "amount": "7000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "91",
+      "branch_id2": "SFI00030",
+      "amount": "19750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "92",
+      "branch_id2": "SFI00034",
+      "amount": "24500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "93",
+      "branch_id2": "SFI00035",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "94",
+      "branch_id2": "SFI00114",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "95",
+      "branch_id2": "SFI00036",
+      "amount": "17500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "96",
+      "branch_id2": "SFI00006",
+      "amount": "67250.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "97",
+      "branch_id2": "SFI00007",
+      "amount": "39500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "98",
+      "branch_id2": "SFI00008",
+      "amount": "9000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "99",
+      "branch_id2": "SFI00126",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "100",
+      "branch_id2": "SFI00009",
+      "amount": "27577.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "101",
+      "branch_id2": "SFI00038",
+      "amount": "7000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "102",
+      "branch_id2": "SFI00118",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "103",
+      "branch_id2": "SFI00010",
+      "amount": "509136.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "104",
+      "branch_id2": "SFI00122",
+      "amount": "8525.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "105",
+      "branch_id2": "SFI00011",
+      "amount": "63425.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "106",
+      "branch_id2": "SFI00012",
+      "amount": "28500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "107",
+      "branch_id2": "SFI00040",
+      "amount": "16712.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "108",
+      "branch_id2": "SFI00043",
+      "amount": "14500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "109",
+      "branch_id2": "SFI00046",
+      "amount": "12750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "110",
+      "branch_id2": "SFI00047",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "111",
+      "branch_id2": "SFI00048",
+      "amount": "17500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "112",
+      "branch_id2": "SFI00050",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "113",
+      "branch_id2": "SFI00125",
+      "amount": "12000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "114",
+      "branch_id2": "SFI00013",
+      "amount": "17000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "115",
+      "branch_id2": "SFI00053",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "116",
+      "branch_id2": "SFI00054",
+      "amount": "5000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "117",
+      "branch_id2": "SFI00055",
+      "amount": "14000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "118",
+      "branch_id2": "SFI00056",
+      "amount": "7000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "119",
+      "branch_id2": "SFI00057",
+      "amount": "15250.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "120",
+      "branch_id2": "SFI00058",
+      "amount": "10250.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "121",
+      "branch_id2": "SFI00059",
+      "amount": "9000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "122",
+      "branch_id2": "SFI00108",
+      "amount": "1800.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "123",
+      "branch_id2": "SFI00060",
+      "amount": "14866.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "124",
+      "branch_id2": "SFI00062",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "125",
+      "branch_id2": "SFI00063",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "126",
+      "branch_id2": "SFI00064",
+      "amount": "24500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "127",
+      "branch_id2": "SFI00065",
+      "amount": "7750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "128",
+      "branch_id2": "SFI00066",
+      "amount": "11020.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "129",
+      "branch_id2": "SFI00067",
+      "amount": "12750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "130",
+      "branch_id2": "SFI00107",
+      "amount": "5000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "131",
+      "branch_id2": "SFI00069",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "132",
+      "branch_id2": "SFI00113",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "133",
+      "branch_id2": "SFI00070",
+      "amount": "10000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "134",
+      "branch_id2": "SFI00071",
+      "amount": "15250.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "135",
+      "branch_id2": "SFI00120",
+      "amount": "5000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "136",
+      "branch_id2": "SFI00110",
+      "amount": "3289.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "137",
+      "branch_id2": "SFI00072",
+      "amount": "12000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "138",
+      "branch_id2": "SFI00073",
+      "amount": "14866.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "139",
+      "branch_id2": "SFI00074",
+      "amount": "22500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "140",
+      "branch_id2": "SFI00075",
+      "amount": "12750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "141",
+      "branch_id2": "SFI00076",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "142",
+      "branch_id2": "SFI00077",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "143",
+      "branch_id2": "SFI00078",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "144",
+      "branch_id2": "SFI00079",
+      "amount": "2500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "145",
+      "branch_id2": "SFI00080",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "146",
+      "branch_id2": "SFI00081",
+      "amount": "15000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "147",
+      "branch_id2": "SFI00082",
+      "amount": "7750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "148",
+      "branch_id2": "SFI00127",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "149",
+      "branch_id2": "SFI00083",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "150",
+      "branch_id2": "SFI00084",
+      "amount": "17500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "151",
+      "branch_id2": "SFI00085",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "152",
+      "branch_id2": "SFI00109",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "153",
+      "branch_id2": "SFI00086",
+      "amount": "6135.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "154",
+      "branch_id2": "SFI00088",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "155",
+      "branch_id2": "SFI00089",
+      "amount": "20750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "156",
+      "branch_id2": "SFI00090",
+      "amount": "7750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "157",
+      "branch_id2": "SFI00093",
+      "amount": "7000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "158",
+      "branch_id2": "SFI00094",
+      "amount": "11500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "159",
+      "branch_id2": "SFI00112",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "160",
+      "branch_id2": "SFI00096",
+      "amount": "5000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "161",
+      "branch_id2": "SFI00097",
+      "amount": "8825.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "162",
+      "branch_id2": "SFI00116",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "163",
+      "branch_id2": "SFI00098",
+      "amount": "8347.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "164",
+      "branch_id2": "SFI00099",
+      "amount": "12750.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "165",
+      "branch_id2": "SFI00102",
+      "amount": "5000.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "166",
+      "branch_id2": "SFI00103",
+      "amount": "4500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "167",
+      "branch_id2": "SFI00104",
+      "amount": "9500.00",
+      "paydate": "2020-03-13"
+    },
+    {
+      "additionalincome_id": "168",
+      "branch_id2": "SFI00002",
+      "amount": "33500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "169",
+      "branch_id2": "SFI00016",
+      "amount": "9500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "170",
+      "branch_id2": "SFI00004",
+      "amount": "30500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "171",
+      "branch_id2": "SFI00121",
+      "amount": "5000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "172",
+      "branch_id2": "SFI00117",
+      "amount": "8825.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "173",
+      "branch_id2": "SFI00024",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "174",
+      "branch_id2": "SFI00027",
+      "amount": "7750.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "175",
+      "branch_id2": "SFI00029",
+      "amount": "7577.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "176",
+      "branch_id2": "SFI00105",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "177",
+      "branch_id2": "SFI00030",
+      "amount": "15900.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "178",
+      "branch_id2": "SFI00034",
+      "amount": "19500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "179",
+      "branch_id2": "SFI00035",
+      "amount": "12000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "180",
+      "branch_id2": "SFI00114",
+      "amount": "7577.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "181",
+      "branch_id2": "SFI00036",
+      "amount": "6923.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "182",
+      "branch_id2": "SFI00006",
+      "amount": "67472.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "183",
+      "branch_id2": "SFI00007",
+      "amount": "39500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "184",
+      "branch_id2": "SFI00008",
+      "amount": "9000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "185",
+      "branch_id2": "SFI00126",
+      "amount": "14000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "186",
+      "branch_id2": "SFI00009",
+      "amount": "28500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "187",
+      "branch_id2": "SFI00038",
+      "amount": "7000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "188",
+      "branch_id2": "SFI00118",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "189",
+      "branch_id2": "SFI00010",
+      "amount": "517900.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "190",
+      "branch_id2": "SFI00122",
+      "amount": "11000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "191",
+      "branch_id2": "SFI00011",
+      "amount": "62712.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "192",
+      "branch_id2": "SFI00012",
+      "amount": "28500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "193",
+      "branch_id2": "SFI00040",
+      "amount": "15847.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "194",
+      "branch_id2": "SFI00041",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "195",
+      "branch_id2": "SFI00042",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "196",
+      "branch_id2": "SFI00043",
+      "amount": "13825.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "197",
+      "branch_id2": "SFI00046",
+      "amount": "7750.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "198",
+      "branch_id2": "SFI00047",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "199",
+      "branch_id2": "SFI00048",
+      "amount": "10000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "200",
+      "branch_id2": "SFI00050",
+      "amount": "8481.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "201",
+      "branch_id2": "SFI00125",
+      "amount": "10500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "202",
+      "branch_id2": "SFI00013",
+      "amount": "17000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "203",
+      "branch_id2": "SFI00053",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "204",
+      "branch_id2": "SFI00054",
+      "amount": "5000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "205",
+      "branch_id2": "SFI00055",
+      "amount": "12748.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "206",
+      "branch_id2": "SFI00056",
+      "amount": "3150.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "207",
+      "branch_id2": "SFI00057",
+      "amount": "13000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "208",
+      "branch_id2": "SFI00058",
+      "amount": "9962.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "209",
+      "branch_id2": "SFI00059",
+      "amount": "10635.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "210",
+      "branch_id2": "SFI00108",
+      "amount": "3635.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "211",
+      "branch_id2": "SFI00060",
+      "amount": "15250.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "212",
+      "branch_id2": "SFI00062",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "213",
+      "branch_id2": "SFI00063",
+      "amount": "18981.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "214",
+      "branch_id2": "SFI00064",
+      "amount": "20000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "215",
+      "branch_id2": "SFI00065",
+      "amount": "5425.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "216",
+      "branch_id2": "SFI00066",
+      "amount": "11588.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "217",
+      "branch_id2": "SFI00067",
+      "amount": "13587.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "218",
+      "branch_id2": "SFI00107",
+      "amount": "5000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "219",
+      "branch_id2": "SFI00069",
+      "amount": "9500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "220",
+      "branch_id2": "SFI00113",
+      "amount": "3150.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "221",
+      "branch_id2": "SFI00071",
+      "amount": "15250.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "222",
+      "branch_id2": "SFI00120",
+      "amount": "8981.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "223",
+      "branch_id2": "SFI00110",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "224",
+      "branch_id2": "SFI00072",
+      "amount": "7000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "225",
+      "branch_id2": "SFI00073",
+      "amount": "24088.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "226",
+      "branch_id2": "SFI00074",
+      "amount": "5000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "227",
+      "branch_id2": "SFI00075",
+      "amount": "22750.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "228",
+      "branch_id2": "SFI00076",
+      "amount": "9500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "229",
+      "branch_id2": "SFI00077",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "230",
+      "branch_id2": "SFI00078",
+      "amount": "9500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "231",
+      "branch_id2": "SFI00080",
+      "amount": "3808.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "232",
+      "branch_id2": "SFI00081",
+      "amount": "15000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "233",
+      "branch_id2": "SFI00082",
+      "amount": "9031.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "234",
+      "branch_id2": "SFI00127",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "235",
+      "branch_id2": "SFI00083",
+      "amount": "9500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "236",
+      "branch_id2": "SFI00084",
+      "amount": "9500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "237",
+      "branch_id2": "SFI00085",
+      "amount": "6875.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "238",
+      "branch_id2": "SFI00109",
+      "amount": "9500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "239",
+      "branch_id2": "SFI00086",
+      "amount": "6135.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "240",
+      "branch_id2": "SFI00088",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "241",
+      "branch_id2": "SFI00089",
+      "amount": "20500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "242",
+      "branch_id2": "SFI00090",
+      "amount": "7750.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "243",
+      "branch_id2": "SFI00091",
+      "amount": "7500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "244",
+      "branch_id2": "SFI00092",
+      "amount": "5000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "245",
+      "branch_id2": "SFI00093",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "246",
+      "branch_id2": "SFI00094",
+      "amount": "16693.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "247",
+      "branch_id2": "SFI00112",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "248",
+      "branch_id2": "SFI00097",
+      "amount": "7400.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "249",
+      "branch_id2": "SFI00116",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "250",
+      "branch_id2": "SFI00098",
+      "amount": "8731.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "251",
+      "branch_id2": "SFI00099",
+      "amount": "11588.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "252",
+      "branch_id2": "SFI00102",
+      "amount": "5000.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "253",
+      "branch_id2": "SFI00103",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "254",
+      "branch_id2": "SFI00104",
+      "amount": "4500.00",
+      "paydate": "2020-04-15"
+    },
+    {
+      "additionalincome_id": "255",
+      "branch_id2": "SFI00002",
+      "amount": "48684.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "256",
+      "branch_id2": "SFI00016",
+      "amount": "7952.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "257",
+      "branch_id2": "SFI00004",
+      "amount": "27115.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "258",
+      "branch_id2": "SFI00121",
+      "amount": "3750.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "259",
+      "branch_id2": "SFI00117",
+      "amount": "7308.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "260",
+      "branch_id2": "SFI00024",
+      "amount": "7010.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "261",
+      "branch_id2": "SFI00025",
+      "amount": "3375.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "262",
+      "branch_id2": "SFI00027",
+      "amount": "6260.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "263",
+      "branch_id2": "SFI00029",
+      "amount": "3269.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "264",
+      "branch_id2": "SFI00105",
+      "amount": "1385.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "265",
+      "branch_id2": "SFI00030",
+      "amount": "15038.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "266",
+      "branch_id2": "SFI00034",
+      "amount": "11020.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "267",
+      "branch_id2": "SFI00035",
+      "amount": "4846.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "268",
+      "branch_id2": "SFI00114",
+      "amount": "7442.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "269",
+      "branch_id2": "SFI00036",
+      "amount": "2788.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "270",
+      "branch_id2": "SFI00006",
+      "amount": "52125.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "271",
+      "branch_id2": "SFI00007",
+      "amount": "28577.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "272",
+      "branch_id2": "SFI00126",
+      "amount": "3808.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "273",
+      "branch_id2": "SFI00009",
+      "amount": "12500.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "274",
+      "branch_id2": "SFI00038",
+      "amount": "3981.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "275",
+      "branch_id2": "SFI00118",
+      "amount": "2423.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "276",
+      "branch_id2": "SFI00010",
+      "amount": "404360.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "277",
+      "branch_id2": "SFI00122",
+      "amount": "3134.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "278",
+      "branch_id2": "SFI00011",
+      "amount": "44432.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "279",
+      "branch_id2": "SFI00012",
+      "amount": "8769.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "280",
+      "branch_id2": "SFI00040",
+      "amount": "13270.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "281",
+      "branch_id2": "SFI00043",
+      "amount": "3462.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "282",
+      "branch_id2": "SFI00046",
+      "amount": "10202.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "283",
+      "branch_id2": "SFI00047",
+      "amount": "4154.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "284",
+      "branch_id2": "SFI00048",
+      "amount": "9231.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "285",
+      "branch_id2": "SFI00125",
+      "amount": "10596.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "286",
+      "branch_id2": "SFI00013",
+      "amount": "13731.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "287",
+      "branch_id2": "SFI00053",
+      "amount": "4750.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "288",
+      "branch_id2": "SFI00055",
+      "amount": "7202.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "289",
+      "branch_id2": "SFI00057",
+      "amount": "12029.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "290",
+      "branch_id2": "SFI00058",
+      "amount": "6394.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "291",
+      "branch_id2": "SFI00059",
+      "amount": "5365.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "292",
+      "branch_id2": "SFI00060",
+      "amount": "12616.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "293",
+      "branch_id2": "SFI00062",
+      "amount": "3894.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "294",
+      "branch_id2": "SFI00063",
+      "amount": "7221.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "295",
+      "branch_id2": "SFI00064",
+      "amount": "3894.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "296",
+      "branch_id2": "SFI00065",
+      "amount": "9914.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "297",
+      "branch_id2": "SFI00066",
+      "amount": "11981.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "298",
+      "branch_id2": "SFI00067",
+      "amount": "9722.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "299",
+      "branch_id2": "SFI00107",
+      "amount": "8077.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "300",
+      "branch_id2": "SFI00113",
+      "amount": "2856.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "301",
+      "branch_id2": "SFI00071",
+      "amount": "13932.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "302",
+      "branch_id2": "SFI00120",
+      "amount": "6769.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "303",
+      "branch_id2": "SFI00072",
+      "amount": "17145.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "304",
+      "branch_id2": "SFI00073",
+      "amount": "11894.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "305",
+      "branch_id2": "SFI00075",
+      "amount": "9779.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "306",
+      "branch_id2": "SFI00077",
+      "amount": "2596.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "307",
+      "branch_id2": "SFI00078",
+      "amount": "9807.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "308",
+      "branch_id2": "SFI00080",
+      "amount": "2596.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "309",
+      "branch_id2": "SFI00081",
+      "amount": "4231.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "310",
+      "branch_id2": "SFI00082",
+      "amount": "3726.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "311",
+      "branch_id2": "SFI00127",
+      "amount": "3981.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "312",
+      "branch_id2": "SFI00083",
+      "amount": "11131.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "313",
+      "branch_id2": "SFI00084",
+      "amount": "4615.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "314",
+      "branch_id2": "SFI00085",
+      "amount": "7885.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "315",
+      "branch_id2": "SFI00111",
+      "amount": "3115.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "316",
+      "branch_id2": "SFI00086",
+      "amount": "3548.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "317",
+      "branch_id2": "SFI00089",
+      "amount": "8692.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "318",
+      "branch_id2": "SFI00090",
+      "amount": "6558.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "319",
+      "branch_id2": "SFI00091",
+      "amount": "13461.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "320",
+      "branch_id2": "SFI00093",
+      "amount": "3808.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "321",
+      "branch_id2": "SFI00094",
+      "amount": "6409.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "322",
+      "branch_id2": "SFI00112",
+      "amount": "3808.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "323",
+      "branch_id2": "SFI00097",
+      "amount": "6750.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "324",
+      "branch_id2": "SFI00116",
+      "amount": "3635.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "325",
+      "branch_id2": "SFI00098",
+      "amount": "3635.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "326",
+      "branch_id2": "SFI00099",
+      "amount": "9914.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "327",
+      "branch_id2": "SFI00102",
+      "amount": "4423.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "328",
+      "branch_id2": "SFI00103",
+      "amount": "3115.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "329",
+      "branch_id2": "SFI00104",
+      "amount": "7481.00",
+      "paydate": "2021-06-30"
+    },
+    {
+      "additionalincome_id": "330",
+      "branch_id2": "SFI00002",
+      "amount": "58777.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "331",
+      "branch_id2": "SFI00016",
+      "amount": "8317.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "332",
+      "branch_id2": "SFI00004",
+      "amount": "32875.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "333",
+      "branch_id2": "SFI00121",
+      "amount": "4231.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "334",
+      "branch_id2": "SFI00117",
+      "amount": "7846.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "335",
+      "branch_id2": "SFI00024",
+      "amount": "7519.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "336",
+      "branch_id2": "SFI00025",
+      "amount": "4413.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "337",
+      "branch_id2": "SFI00027",
+      "amount": "6856.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "338",
+      "branch_id2": "SFI00029",
+      "amount": "4517.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "339",
+      "branch_id2": "SFI00105",
+      "amount": "3202.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "340",
+      "branch_id2": "SFI00030",
+      "amount": "18731.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "341",
+      "branch_id2": "SFI00034",
+      "amount": "8173.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "342",
+      "branch_id2": "SFI00035",
+      "amount": "7212.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "343",
+      "branch_id2": "SFI00114",
+      "amount": "6442.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "344",
+      "branch_id2": "SFI00036",
+      "amount": "3846.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "345",
+      "branch_id2": "SFI00006",
+      "amount": "47471.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "346",
+      "branch_id2": "SFI00007",
+      "amount": "34192.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "347",
+      "branch_id2": "SFI00126",
+      "amount": "3635.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "348",
+      "branch_id2": "SFI00009",
+      "amount": "15616.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "349",
+      "branch_id2": "SFI00038",
+      "amount": "3981.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "350",
+      "branch_id2": "SFI00118",
+      "amount": "2942.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "351",
+      "branch_id2": "SFI00010",
+      "amount": "435085.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "352",
+      "branch_id2": "SFI00122",
+      "amount": "6914.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "353",
+      "branch_id2": "SFI00011",
+      "amount": "49720.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "354",
+      "branch_id2": "SFI00012",
+      "amount": "10846.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "355",
+      "branch_id2": "SFI00040",
+      "amount": "15183.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "356",
+      "branch_id2": "SFI00043",
+      "amount": "3635.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "357",
+      "branch_id2": "SFI00046",
+      "amount": "7880.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "358",
+      "branch_id2": "SFI00047",
+      "amount": "4154.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "359",
+      "branch_id2": "SFI00048",
+      "amount": "10096.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "360",
+      "branch_id2": "SFI00125",
+      "amount": "11500.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "361",
+      "branch_id2": "SFI00013",
+      "amount": "15038.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "362",
+      "branch_id2": "SFI00053",
+      "amount": "6635.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "363",
+      "branch_id2": "SFI00055",
+      "amount": "8404.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "364",
+      "branch_id2": "SFI00057",
+      "amount": "12515.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "365",
+      "branch_id2": "SFI00058",
+      "amount": "9707.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "366",
+      "branch_id2": "SFI00059",
+      "amount": "8741.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "367",
+      "branch_id2": "SFI00060",
+      "amount": "10866.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "368",
+      "branch_id2": "SFI00062",
+      "amount": "3981.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "369",
+      "branch_id2": "SFI00063",
+      "amount": "8000.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "370",
+      "branch_id2": "SFI00064",
+      "amount": "4067.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "371",
+      "branch_id2": "SFI00065",
+      "amount": "12067.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "372",
+      "branch_id2": "SFI00066",
+      "amount": "10414.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "373",
+      "branch_id2": "SFI00067",
+      "amount": "11577.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "374",
+      "branch_id2": "SFI00107",
+      "amount": "7500.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "375",
+      "branch_id2": "SFI00113",
+      "amount": "3721.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "376",
+      "branch_id2": "SFI00071",
+      "amount": "14877.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "377",
+      "branch_id2": "SFI00120",
+      "amount": "6731.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "378",
+      "branch_id2": "SFI00072",
+      "amount": "26048.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "379",
+      "branch_id2": "SFI00073",
+      "amount": "11923.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "380",
+      "branch_id2": "SFI00075",
+      "amount": "12245.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "381",
+      "branch_id2": "SFI00077",
+      "amount": "4154.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "382",
+      "branch_id2": "SFI00078",
+      "amount": "7308.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "383",
+      "branch_id2": "SFI00080",
+      "amount": "5712.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "384",
+      "branch_id2": "SFI00081",
+      "amount": "4615.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "385",
+      "branch_id2": "SFI00127",
+      "amount": "4327.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "386",
+      "branch_id2": "SFI00083",
+      "amount": "12116.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "387",
+      "branch_id2": "SFI00084",
+      "amount": "4615.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "388",
+      "branch_id2": "SFI00085",
+      "amount": "9154.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "389",
+      "branch_id2": "SFI00111",
+      "amount": "3029.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "390",
+      "branch_id2": "SFI00086",
+      "amount": "3635.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "391",
+      "branch_id2": "SFI00089",
+      "amount": "10394.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "392",
+      "branch_id2": "SFI00090",
+      "amount": "7452.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "393",
+      "branch_id2": "SFI00091",
+      "amount": "12788.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "394",
+      "branch_id2": "SFI00093",
+      "amount": "4327.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "395",
+      "branch_id2": "SFI00094",
+      "amount": "6856.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "396",
+      "branch_id2": "SFI00112",
+      "amount": "3635.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "397",
+      "branch_id2": "SFI00097",
+      "amount": "9346.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "398",
+      "branch_id2": "SFI00116",
+      "amount": "3981.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "399",
+      "branch_id2": "SFI00098",
+      "amount": "4500.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "400",
+      "branch_id2": "SFI00099",
+      "amount": "12216.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "401",
+      "branch_id2": "SFI00102",
+      "amount": "4039.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "402",
+      "branch_id2": "SFI00103",
+      "amount": "3288.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "403",
+      "branch_id2": "SFI00104",
+      "amount": "7404.00",
+      "paydate": "2021-07-30"
+    },
+    {
+      "additionalincome_id": "404",
+      "branch_id2": "SFI00002",
+      "amount": "57543.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "405",
+      "branch_id2": "SFI00016",
+      "amount": "8558.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "406",
+      "branch_id2": "SFI00004",
+      "amount": "37789.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "407",
+      "branch_id2": "SFI00121",
+      "amount": "4615.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "408",
+      "branch_id2": "SFI00117",
+      "amount": "2769.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "409",
+      "branch_id2": "SFI00024",
+      "amount": "7750.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "410",
+      "branch_id2": "SFI00025",
+      "amount": "4154.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "411",
+      "branch_id2": "SFI00027",
+      "amount": "7154.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "412",
+      "branch_id2": "SFI00029",
+      "amount": "4519.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "413",
+      "branch_id2": "SFI00105",
+      "amount": "3548.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "414",
+      "branch_id2": "SFI00030",
+      "amount": "19616.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "415",
+      "branch_id2": "SFI00034",
+      "amount": "9327.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "416",
+      "branch_id2": "SFI00035",
+      "amount": "8308.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "417",
+      "branch_id2": "SFI00114",
+      "amount": "3404.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "418",
+      "branch_id2": "SFI00036",
+      "amount": "4231.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "419",
+      "branch_id2": "SFI00006",
+      "amount": "51270.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "420",
+      "branch_id2": "SFI00007",
+      "amount": "35741.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "421",
+      "branch_id2": "SFI00126",
+      "amount": "3981.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "422",
+      "branch_id2": "SFI00009",
+      "amount": "13750.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "423",
+      "branch_id2": "SFI00038",
+      "amount": "4154.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "424",
+      "branch_id2": "SFI00010",
+      "amount": "479242.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "425",
+      "branch_id2": "SFI00122",
+      "amount": "12124.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "426",
+      "branch_id2": "SFI00011",
+      "amount": "52423.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "427",
+      "branch_id2": "SFI00012",
+      "amount": "9231.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "428",
+      "branch_id2": "SFI00040",
+      "amount": "5500.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "429",
+      "branch_id2": "SFI00046",
+      "amount": "7899.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "430",
+      "branch_id2": "SFI00047",
+      "amount": "4067.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "431",
+      "branch_id2": "SFI00048",
+      "amount": "11058.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "432",
+      "branch_id2": "SFI00125",
+      "amount": "11654.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "433",
+      "branch_id2": "SFI00013",
+      "amount": "13731.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "434",
+      "branch_id2": "SFI00053",
+      "amount": "6712.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "435",
+      "branch_id2": "SFI00055",
+      "amount": "8327.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "436",
+      "branch_id2": "SFI00057",
+      "amount": "13597.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "437",
+      "branch_id2": "SFI00058",
+      "amount": "9558.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "438",
+      "branch_id2": "SFI00059",
+      "amount": "8048.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "439",
+      "branch_id2": "SFI00060",
+      "amount": "13674.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "440",
+      "branch_id2": "SFI00062",
+      "amount": "3635.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "441",
+      "branch_id2": "SFI00063",
+      "amount": "8750.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "442",
+      "branch_id2": "SFI00064",
+      "amount": "3721.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "443",
+      "branch_id2": "SFI00065",
+      "amount": "12558.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "444",
+      "branch_id2": "SFI00066",
+      "amount": "10491.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "445",
+      "branch_id2": "SFI00067",
+      "amount": "16577.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "446",
+      "branch_id2": "SFI00107",
+      "amount": "7788.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "447",
+      "branch_id2": "SFI00113",
+      "amount": "3808.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "448",
+      "branch_id2": "SFI00070",
+      "amount": "4423.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "449",
+      "branch_id2": "SFI00071",
+      "amount": "16183.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "450",
+      "branch_id2": "SFI00120",
+      "amount": "6481.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "451",
+      "branch_id2": "SFI00072",
+      "amount": "15693.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "452",
+      "branch_id2": "SFI00073",
+      "amount": "12231.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "453",
+      "branch_id2": "SFI00075",
+      "amount": "11764.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "454",
+      "branch_id2": "SFI00076",
+      "amount": "4067.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "455",
+      "branch_id2": "SFI00077",
+      "amount": "4587.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "456",
+      "branch_id2": "SFI00078",
+      "amount": "12827.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "457",
+      "branch_id2": "SFI00080",
+      "amount": "4500.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "458",
+      "branch_id2": "SFI00081",
+      "amount": "4712.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "459",
+      "branch_id2": "SFI00127",
+      "amount": "4154.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "460",
+      "branch_id2": "SFI00083",
+      "amount": "13192.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "461",
+      "branch_id2": "SFI00084",
+      "amount": "5000.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "462",
+      "branch_id2": "SFI00085",
+      "amount": "8365.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "463",
+      "branch_id2": "SFI00111",
+      "amount": "3894.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "464",
+      "branch_id2": "SFI00086",
+      "amount": "3981.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "465",
+      "branch_id2": "SFI00089",
+      "amount": "10749.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "466",
+      "branch_id2": "SFI00090",
+      "amount": "7452.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "467",
+      "branch_id2": "SFI00091",
+      "amount": "13269.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "468",
+      "branch_id2": "SFI00093",
+      "amount": "7452.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "469",
+      "branch_id2": "SFI00094",
+      "amount": "6856.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "470",
+      "branch_id2": "SFI00112",
+      "amount": "3894.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "471",
+      "branch_id2": "SFI00097",
+      "amount": "9395.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "472",
+      "branch_id2": "SFI00116",
+      "amount": "2077.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "473",
+      "branch_id2": "SFI00098",
+      "amount": "7750.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "474",
+      "branch_id2": "SFI00099",
+      "amount": "6716.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "475",
+      "branch_id2": "SFI00102",
+      "amount": "4615.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "476",
+      "branch_id2": "SFI00103",
+      "amount": "2856.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "477",
+      "branch_id2": "SFI00104",
+      "amount": "6962.00",
+      "paydate": "2021-08-31"
+    },
+    {
+      "additionalincome_id": "478",
+      "branch_id2": "SFI00002",
+      "amount": "56774.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "479",
+      "branch_id2": "SFI00016",
+      "amount": "7326.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "480",
+      "branch_id2": "SFI00004",
+      "amount": "32857.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "481",
+      "branch_id2": "SFI00121",
+      "amount": "4038.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "482",
+      "branch_id2": "SFI00117",
+      "amount": "5222.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "483",
+      "branch_id2": "SFI00024",
+      "amount": "4192.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "484",
+      "branch_id2": "SFI00025",
+      "amount": "3721.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "485",
+      "branch_id2": "SFI00027",
+      "amount": "7154.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "486",
+      "branch_id2": "SFI00029",
+      "amount": "2885.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "487",
+      "branch_id2": "SFI00105",
+      "amount": "3462.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "488",
+      "branch_id2": "SFI00030",
+      "amount": "15760.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "489",
+      "branch_id2": "SFI00034",
+      "amount": "6731.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "490",
+      "branch_id2": "SFI00035",
+      "amount": "6096.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "491",
+      "branch_id2": "SFI00114",
+      "amount": "3702.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "492",
+      "branch_id2": "SFI00036",
+      "amount": "2500.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "493",
+      "branch_id2": "SFI00006",
+      "amount": "46270.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "494",
+      "branch_id2": "SFI00007",
+      "amount": "33259.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "495",
+      "branch_id2": "SFI00126",
+      "amount": "3202.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "496",
+      "branch_id2": "SFI00009",
+      "amount": "12115.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "497",
+      "branch_id2": "SFI00038",
+      "amount": "3635.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "498",
+      "branch_id2": "SFI00118",
+      "amount": "3462.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "499",
+      "branch_id2": "SFI00010",
+      "amount": "409276.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "500",
+      "branch_id2": "SFI00122",
+      "amount": "11019.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "501",
+      "branch_id2": "SFI00011",
+      "amount": "48596.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "502",
+      "branch_id2": "SFI00012",
+      "amount": "9000.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "503",
+      "branch_id2": "SFI00040",
+      "amount": "10615.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "504",
+      "branch_id2": "SFI00046",
+      "amount": "7120.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "505",
+      "branch_id2": "SFI00047",
+      "amount": "3115.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "506",
+      "branch_id2": "SFI00048",
+      "amount": "15000.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "507",
+      "branch_id2": "SFI00125",
+      "amount": "7693.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "508",
+      "branch_id2": "SFI00013",
+      "amount": "10087.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "509",
+      "branch_id2": "SFI00053",
+      "amount": "4480.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "510",
+      "branch_id2": "SFI00055",
+      "amount": "7038.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "511",
+      "branch_id2": "SFI00057",
+      "amount": "7081.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "512",
+      "branch_id2": "SFI00058",
+      "amount": "9068.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "513",
+      "branch_id2": "SFI00059",
+      "amount": "5711.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "514",
+      "branch_id2": "SFI00060",
+      "amount": "6793.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "515",
+      "branch_id2": "SFI00062",
+      "amount": "3202.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "516",
+      "branch_id2": "SFI00063",
+      "amount": "8586.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "517",
+      "branch_id2": "SFI00064",
+      "amount": "3202.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "518",
+      "branch_id2": "SFI00065",
+      "amount": "8317.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "519",
+      "branch_id2": "SFI00066",
+      "amount": "10981.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "520",
+      "branch_id2": "SFI00067",
+      "amount": "9552.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "521",
+      "branch_id2": "SFI00107",
+      "amount": "7500.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "522",
+      "branch_id2": "SFI00113",
+      "amount": "2856.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "523",
+      "branch_id2": "SFI00070",
+      "amount": "2885.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "524",
+      "branch_id2": "SFI00071",
+      "amount": "12509.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "525",
+      "branch_id2": "SFI00120",
+      "amount": "8125.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "526",
+      "branch_id2": "SFI00072",
+      "amount": "15597.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "527",
+      "branch_id2": "SFI00073",
+      "amount": "12029.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "528",
+      "branch_id2": "SFI00075",
+      "amount": "9139.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "529",
+      "branch_id2": "SFI00076",
+      "amount": "3808.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "530",
+      "branch_id2": "SFI00077",
+      "amount": "3981.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "531",
+      "branch_id2": "SFI00078",
+      "amount": "8884.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "532",
+      "branch_id2": "SFI00079",
+      "amount": "8846.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "533",
+      "branch_id2": "SFI00080",
+      "amount": "3462.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "534",
+      "branch_id2": "SFI00081",
+      "amount": "3654.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "535",
+      "branch_id2": "SFI00082",
+      "amount": "4413.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "536",
+      "branch_id2": "SFI00083",
+      "amount": "10394.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "537",
+      "branch_id2": "SFI00084",
+      "amount": "5000.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "538",
+      "branch_id2": "SFI00085",
+      "amount": "7029.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "539",
+      "branch_id2": "SFI00111",
+      "amount": "3721.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "540",
+      "branch_id2": "SFI00086",
+      "amount": "3808.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "541",
+      "branch_id2": "SFI00089",
+      "amount": "7288.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "542",
+      "branch_id2": "SFI00090",
+      "amount": "6558.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "543",
+      "branch_id2": "SFI00091",
+      "amount": "11250.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "544",
+      "branch_id2": "SFI00093",
+      "amount": "5514.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "545",
+      "branch_id2": "SFI00094",
+      "amount": "6111.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "546",
+      "branch_id2": "SFI00112",
+      "amount": "2638.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "547",
+      "branch_id2": "SFI00097",
+      "amount": "8125.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "548",
+      "branch_id2": "SFI00116",
+      "amount": "3981.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "549",
+      "branch_id2": "SFI00098",
+      "amount": "6707.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "550",
+      "branch_id2": "SFI00099",
+      "amount": "9914.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "551",
+      "branch_id2": "SFI00119",
+      "amount": "3635.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "552",
+      "branch_id2": "SFI00102",
+      "amount": "1923.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "553",
+      "branch_id2": "SFI00103",
+      "amount": "1558.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "554",
+      "branch_id2": "SFI00104",
+      "amount": "4298.00",
+      "paydate": "2021-09-30"
+    },
+    {
+      "additionalincome_id": "555",
+      "branch_id2": "SFI00002",
+      "amount": "52750.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "556",
+      "branch_id2": "SFI00016",
+      "amount": "3759.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "557",
+      "branch_id2": "SFI00004",
+      "amount": "29616.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "558",
+      "branch_id2": "SFI00121",
+      "amount": "3846.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "559",
+      "branch_id2": "SFI00117",
+      "amount": "7827.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "560",
+      "branch_id2": "SFI00024",
+      "amount": "7317.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "561",
+      "branch_id2": "SFI00025",
+      "amount": "3548.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "562",
+      "branch_id2": "SFI00029",
+      "amount": "2885.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "563",
+      "branch_id2": "SFI00105",
+      "amount": "3202.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "564",
+      "branch_id2": "SFI00030",
+      "amount": "16117.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "565",
+      "branch_id2": "SFI00032",
+      "amount": "3029.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "566",
+      "branch_id2": "SFI00034",
+      "amount": "7077.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "567",
+      "branch_id2": "SFI00035",
+      "amount": "5529.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "568",
+      "branch_id2": "SFI00114",
+      "amount": "5991.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "569",
+      "branch_id2": "SFI00036",
+      "amount": "4038.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "570",
+      "branch_id2": "SFI00006",
+      "amount": "52433.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "571",
+      "branch_id2": "SFI00007",
+      "amount": "28393.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "572",
+      "branch_id2": "SFI00009",
+      "amount": "13039.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "573",
+      "branch_id2": "SFI00038",
+      "amount": "3462.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "574",
+      "branch_id2": "SFI00010",
+      "amount": "381371.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "575",
+      "branch_id2": "SFI00122",
+      "amount": "10655.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "576",
+      "branch_id2": "SFI00011",
+      "amount": "47293.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "577",
+      "branch_id2": "SFI00012",
+      "amount": "8308.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "578",
+      "branch_id2": "SFI00040",
+      "amount": "10634.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "579",
+      "branch_id2": "SFI00046",
+      "amount": "12384.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "580",
+      "branch_id2": "SFI00047",
+      "amount": "3202.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "581",
+      "branch_id2": "SFI00048",
+      "amount": "11442.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "582",
+      "branch_id2": "SFI00125",
+      "amount": "7251.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "583",
+      "branch_id2": "SFI00013",
+      "amount": "7673.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "584",
+      "branch_id2": "SFI00053",
+      "amount": "2635.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "585",
+      "branch_id2": "SFI00055",
+      "amount": "6894.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "586",
+      "branch_id2": "SFI00057",
+      "amount": "8371.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "587",
+      "branch_id2": "SFI00058",
+      "amount": "8621.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "588",
+      "branch_id2": "SFI00059",
+      "amount": "5884.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "589",
+      "branch_id2": "SFI00060",
+      "amount": "10086.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "590",
+      "branch_id2": "SFI00062",
+      "amount": "3635.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "591",
+      "branch_id2": "SFI00063",
+      "amount": "8029.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "592",
+      "branch_id2": "SFI00064",
+      "amount": "2596.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "593",
+      "branch_id2": "SFI00131",
+      "amount": "15750.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "594",
+      "branch_id2": "SFI00065",
+      "amount": "7654.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "595",
+      "branch_id2": "SFI00066",
+      "amount": "10510.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "596",
+      "branch_id2": "SFI00067",
+      "amount": "10404.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "597",
+      "branch_id2": "SFI00107",
+      "amount": "7923.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "598",
+      "branch_id2": "SFI00113",
+      "amount": "8472.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "599",
+      "branch_id2": "SFI00070",
+      "amount": "4423.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "600",
+      "branch_id2": "SFI00071",
+      "amount": "13943.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "601",
+      "branch_id2": "SFI00120",
+      "amount": "3894.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "602",
+      "branch_id2": "SFI00072",
+      "amount": "12961.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "603",
+      "branch_id2": "SFI00073",
+      "amount": "9780.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "604",
+      "branch_id2": "SFI00075",
+      "amount": "10029.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "605",
+      "branch_id2": "SFI00076",
+      "amount": "3894.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "606",
+      "branch_id2": "SFI00077",
+      "amount": "3635.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "607",
+      "branch_id2": "SFI00078",
+      "amount": "10807.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "608",
+      "branch_id2": "SFI00080",
+      "amount": "4154.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "609",
+      "branch_id2": "SFI00081",
+      "amount": "3846.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "610",
+      "branch_id2": "SFI00127",
+      "amount": "4327.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "611",
+      "branch_id2": "SFI00083",
+      "amount": "10770.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "612",
+      "branch_id2": "SFI00084",
+      "amount": "3365.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "613",
+      "branch_id2": "SFI00085",
+      "amount": "7586.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "614",
+      "branch_id2": "SFI00111",
+      "amount": "4067.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "615",
+      "branch_id2": "SFI00086",
+      "amount": "3375.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "616",
+      "branch_id2": "SFI00089",
+      "amount": "8404.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "617",
+      "branch_id2": "SFI00090",
+      "amount": "6558.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "618",
+      "branch_id2": "SFI00091",
+      "amount": "10865.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "619",
+      "branch_id2": "SFI00093",
+      "amount": "6260.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "620",
+      "branch_id2": "SFI00094",
+      "amount": "3029.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "621",
+      "branch_id2": "SFI00112",
+      "amount": "2337.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "622",
+      "branch_id2": "SFI00097",
+      "amount": "7539.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "623",
+      "branch_id2": "SFI00116",
+      "amount": "2163.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "624",
+      "branch_id2": "SFI00098",
+      "amount": "6856.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "625",
+      "branch_id2": "SFI00099",
+      "amount": "11726.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "626",
+      "branch_id2": "SFI00119",
+      "amount": "3808.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "627",
+      "branch_id2": "SFI00102",
+      "amount": "962.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "628",
+      "branch_id2": "SFI00103",
+      "amount": "1664.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "629",
+      "branch_id2": "SFI00104",
+      "amount": "5365.00",
+      "paydate": "2021-10-29"
+    },
+    {
+      "additionalincome_id": "630",
+      "branch_id2": "SFI00002",
+      "amount": "57228.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "631",
+      "branch_id2": "SFI00016",
+      "amount": "8298.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "632",
+      "branch_id2": "SFI00004",
+      "amount": "33913.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "633",
+      "branch_id2": "SFI00121",
+      "amount": "4808.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "634",
+      "branch_id2": "SFI00117",
+      "amount": "6058.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "635",
+      "branch_id2": "SFI00024",
+      "amount": "7856.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "636",
+      "branch_id2": "SFI00025",
+      "amount": "9154.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "637",
+      "branch_id2": "SFI00029",
+      "amount": "8663.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "638",
+      "branch_id2": "SFI00105",
+      "amount": "3981.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "639",
+      "branch_id2": "SFI00030",
+      "amount": "25067.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "640",
+      "branch_id2": "SFI00032",
+      "amount": "3635.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "641",
+      "branch_id2": "SFI00034",
+      "amount": "9010.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "642",
+      "branch_id2": "SFI00035",
+      "amount": "7279.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "643",
+      "branch_id2": "SFI00114",
+      "amount": "7721.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "644",
+      "branch_id2": "SFI00036",
+      "amount": "4808.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "645",
+      "branch_id2": "SFI00006",
+      "amount": "48001.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "646",
+      "branch_id2": "SFI00007",
+      "amount": "33308.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "647",
+      "branch_id2": "SFI00126",
+      "amount": "4154.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "648",
+      "branch_id2": "SFI00009",
+      "amount": "11538.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "649",
+      "branch_id2": "SFI00038",
+      "amount": "4154.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "650",
+      "branch_id2": "SFI00118",
+      "amount": "3808.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "651",
+      "branch_id2": "SFI00010",
+      "amount": "403292.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "652",
+      "branch_id2": "SFI00122",
+      "amount": "12067.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "653",
+      "branch_id2": "SFI00011",
+      "amount": "46730.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "654",
+      "branch_id2": "SFI00012",
+      "amount": "9692.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "655",
+      "branch_id2": "SFI00040",
+      "amount": "13596.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "656",
+      "branch_id2": "SFI00043",
+      "amount": "4135.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "657",
+      "branch_id2": "SFI00046",
+      "amount": "8721.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "658",
+      "branch_id2": "SFI00047",
+      "amount": "4154.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "659",
+      "branch_id2": "SFI00048",
+      "amount": "12115.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "660",
+      "branch_id2": "SFI00049",
+      "amount": "4154.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "661",
+      "branch_id2": "SFI00125",
+      "amount": "6461.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "662",
+      "branch_id2": "SFI00013",
+      "amount": "8077.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "663",
+      "branch_id2": "SFI00053",
+      "amount": "3981.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "664",
+      "branch_id2": "SFI00055",
+      "amount": "6971.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "665",
+      "branch_id2": "SFI00057",
+      "amount": "10010.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "666",
+      "branch_id2": "SFI00058",
+      "amount": "8673.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "667",
+      "branch_id2": "SFI00059",
+      "amount": "8391.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "668",
+      "branch_id2": "SFI00060",
+      "amount": "12986.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "669",
+      "branch_id2": "SFI00062",
+      "amount": "3721.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "670",
+      "branch_id2": "SFI00063",
+      "amount": "10952.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "671",
+      "branch_id2": "SFI00064",
+      "amount": "3981.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "672",
+      "branch_id2": "SFI00131",
+      "amount": "20673.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "673",
+      "branch_id2": "SFI00065",
+      "amount": "10683.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "674",
+      "branch_id2": "SFI00066",
+      "amount": "10683.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "675",
+      "branch_id2": "SFI00067",
+      "amount": "11769.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "676",
+      "branch_id2": "SFI00107",
+      "amount": "4808.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "677",
+      "branch_id2": "SFI00113",
+      "amount": "11587.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "678",
+      "branch_id2": "SFI00070",
+      "amount": "4615.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "679",
+      "branch_id2": "SFI00071",
+      "amount": "15904.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "680",
+      "branch_id2": "SFI00120",
+      "amount": "3288.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "681",
+      "branch_id2": "SFI00072",
+      "amount": "10471.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "682",
+      "branch_id2": "SFI00073",
+      "amount": "8577.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "683",
+      "branch_id2": "SFI00075",
+      "amount": "12721.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "684",
+      "branch_id2": "SFI00076",
+      "amount": "865.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "685",
+      "branch_id2": "SFI00077",
+      "amount": "8682.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "686",
+      "branch_id2": "SFI00078",
+      "amount": "8596.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "687",
+      "branch_id2": "SFI00080",
+      "amount": "5452.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "688",
+      "branch_id2": "SFI00081",
+      "amount": "9500.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "689",
+      "branch_id2": "SFI00127",
+      "amount": "4500.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "690",
+      "branch_id2": "SFI00083",
+      "amount": "13577.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "691",
+      "branch_id2": "SFI00084",
+      "amount": "9827.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "692",
+      "branch_id2": "SFI00085",
+      "amount": "4154.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "693",
+      "branch_id2": "SFI00111",
+      "amount": "3721.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "694",
+      "branch_id2": "SFI00086",
+      "amount": "3029.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "695",
+      "branch_id2": "SFI00089",
+      "amount": "10068.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "696",
+      "branch_id2": "SFI00090",
+      "amount": "8779.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "697",
+      "branch_id2": "SFI00091",
+      "amount": "12307.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "698",
+      "branch_id2": "SFI00093",
+      "amount": "7750.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "699",
+      "branch_id2": "SFI00094",
+      "amount": "6856.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "700",
+      "branch_id2": "SFI00112",
+      "amount": "4154.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "701",
+      "branch_id2": "SFI00097",
+      "amount": "4808.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "702",
+      "branch_id2": "SFI00116",
+      "amount": "3462.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "703",
+      "branch_id2": "SFI00098",
+      "amount": "7750.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "704",
+      "branch_id2": "SFI00099",
+      "amount": "12111.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "705",
+      "branch_id2": "SFI00119",
+      "amount": "4154.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "706",
+      "branch_id2": "SFI00102",
+      "amount": "4808.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "707",
+      "branch_id2": "SFI00103",
+      "amount": "3115.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "708",
+      "branch_id2": "SFI00104",
+      "amount": "6558.00",
+      "paydate": "2021-11-29"
+    },
+    {
+      "additionalincome_id": "709",
+      "branch_id2": "SFI00002",
+      "amount": "50808.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "710",
+      "branch_id2": "SFI00016",
+      "amount": "14000.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "711",
+      "branch_id2": "SFI00004",
+      "amount": "37634.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "712",
+      "branch_id2": "SFI00121",
+      "amount": "5288.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "713",
+      "branch_id2": "SFI00117",
+      "amount": "5000.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "714",
+      "branch_id2": "SFI00024",
+      "amount": "9413.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "715",
+      "branch_id2": "SFI00025",
+      "amount": "8346.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "716",
+      "branch_id2": "SFI00027",
+      "amount": "7750.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "717",
+      "branch_id2": "SFI00029",
+      "amount": "9500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "718",
+      "branch_id2": "SFI00105",
+      "amount": "12298.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "719",
+      "branch_id2": "SFI00030",
+      "amount": "17423.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "720",
+      "branch_id2": "SFI00032",
+      "amount": "3548.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "721",
+      "branch_id2": "SFI00034",
+      "amount": "11827.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "722",
+      "branch_id2": "SFI00035",
+      "amount": "9500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "723",
+      "branch_id2": "SFI00114",
+      "amount": "7778.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "724",
+      "branch_id2": "SFI00036",
+      "amount": "4904.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "725",
+      "branch_id2": "SFI00006",
+      "amount": "44942.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "726",
+      "branch_id2": "SFI00007",
+      "amount": "38432.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "727",
+      "branch_id2": "SFI00126",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "728",
+      "branch_id2": "SFI00009",
+      "amount": "14135.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "729",
+      "branch_id2": "SFI00038",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "730",
+      "branch_id2": "SFI00010",
+      "amount": "483267.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "731",
+      "branch_id2": "SFI00122",
+      "amount": "12163.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "732",
+      "branch_id2": "SFI00011",
+      "amount": "47884.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "733",
+      "branch_id2": "SFI00012",
+      "amount": "9231.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "734",
+      "branch_id2": "SFI00040",
+      "amount": "14500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "735",
+      "branch_id2": "SFI00043",
+      "amount": "4423.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "736",
+      "branch_id2": "SFI00046",
+      "amount": "16962.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "737",
+      "branch_id2": "SFI00047",
+      "amount": "9500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "738",
+      "branch_id2": "SFI00048",
+      "amount": "12500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "739",
+      "branch_id2": "SFI00049",
+      "amount": "4846.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "740",
+      "branch_id2": "SFI00125",
+      "amount": "10116.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "741",
+      "branch_id2": "SFI00013",
+      "amount": "9894.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "742",
+      "branch_id2": "SFI00053",
+      "amount": "2942.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "743",
+      "branch_id2": "SFI00055",
+      "amount": "10365.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "744",
+      "branch_id2": "SFI00056",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "745",
+      "branch_id2": "SFI00057",
+      "amount": "10250.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "746",
+      "branch_id2": "SFI00058",
+      "amount": "9962.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "747",
+      "branch_id2": "SFI00059",
+      "amount": "8913.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "748",
+      "branch_id2": "SFI00060",
+      "amount": "12452.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "749",
+      "branch_id2": "SFI00062",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "750",
+      "branch_id2": "SFI00063",
+      "amount": "9673.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "751",
+      "branch_id2": "SFI00064",
+      "amount": "3548.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "752",
+      "branch_id2": "SFI00131",
+      "amount": "20673.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "753",
+      "branch_id2": "SFI00065",
+      "amount": "15836.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "754",
+      "branch_id2": "SFI00066",
+      "amount": "12654.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "755",
+      "branch_id2": "SFI00067",
+      "amount": "12452.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "756",
+      "branch_id2": "SFI00107",
+      "amount": "9500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "757",
+      "branch_id2": "SFI00113",
+      "amount": "6904.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "758",
+      "branch_id2": "SFI00070",
+      "amount": "5000.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "759",
+      "branch_id2": "SFI00071",
+      "amount": "17606.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "760",
+      "branch_id2": "SFI00120",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "761",
+      "branch_id2": "SFI00072",
+      "amount": "14500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "762",
+      "branch_id2": "SFI00073",
+      "amount": "9500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "763",
+      "branch_id2": "SFI00074",
+      "amount": "7303.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "764",
+      "branch_id2": "SFI00075",
+      "amount": "9327.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "765",
+      "branch_id2": "SFI00076",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "766",
+      "branch_id2": "SFI00077",
+      "amount": "9500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "767",
+      "branch_id2": "SFI00078",
+      "amount": "9865.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "768",
+      "branch_id2": "SFI00080",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "769",
+      "branch_id2": "SFI00081",
+      "amount": "9500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "770",
+      "branch_id2": "SFI00127",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "771",
+      "branch_id2": "SFI00083",
+      "amount": "14692.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "772",
+      "branch_id2": "SFI00084",
+      "amount": "12000.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "773",
+      "branch_id2": "SFI00085",
+      "amount": "4904.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "774",
+      "branch_id2": "SFI00111",
+      "amount": "4240.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "775",
+      "branch_id2": "SFI00086",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "776",
+      "branch_id2": "SFI00089",
+      "amount": "9067.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "777",
+      "branch_id2": "SFI00090",
+      "amount": "7750.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "778",
+      "branch_id2": "SFI00091",
+      "amount": "10577.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "779",
+      "branch_id2": "SFI00093",
+      "amount": "12423.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "780",
+      "branch_id2": "SFI00094",
+      "amount": "7750.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "781",
+      "branch_id2": "SFI00112",
+      "amount": "7750.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "782",
+      "branch_id2": "SFI00097",
+      "amount": "9317.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "783",
+      "branch_id2": "SFI00116",
+      "amount": "4673.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "784",
+      "branch_id2": "SFI00098",
+      "amount": "7452.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "785",
+      "branch_id2": "SFI00099",
+      "amount": "12505.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "786",
+      "branch_id2": "SFI00102",
+      "amount": "5000.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "787",
+      "branch_id2": "SFI00103",
+      "amount": "4500.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "788",
+      "branch_id2": "SFI00104",
+      "amount": "7154.00",
+      "paydate": "2022-01-31"
+    },
+    {
+      "additionalincome_id": "789",
+      "branch_id2": "SFI00002",
+      "amount": "63192.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "790",
+      "branch_id2": "SFI00016",
+      "amount": "13635.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "791",
+      "branch_id2": "SFI00004",
+      "amount": "35865.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "792",
+      "branch_id2": "SFI00121",
+      "amount": "4519.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "793",
+      "branch_id2": "SFI00117",
+      "amount": "4808.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "794",
+      "branch_id2": "SFI00024",
+      "amount": "8404.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "795",
+      "branch_id2": "SFI00025",
+      "amount": "7106.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "796",
+      "branch_id2": "SFI00027",
+      "amount": "7750.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "797",
+      "branch_id2": "SFI00105",
+      "amount": "7452.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "798",
+      "branch_id2": "SFI00030",
+      "amount": "19135.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "799",
+      "branch_id2": "SFI00032",
+      "amount": "4500.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "800",
+      "branch_id2": "SFI00034",
+      "amount": "11443.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "801",
+      "branch_id2": "SFI00035",
+      "amount": "9212.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "802",
+      "branch_id2": "SFI00114",
+      "amount": "7981.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "803",
+      "branch_id2": "SFI00036",
+      "amount": "4615.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "804",
+      "branch_id2": "SFI00006",
+      "amount": "52269.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "805",
+      "branch_id2": "SFI00007",
+      "amount": "39173.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "806",
+      "branch_id2": "SFI00126",
+      "amount": "3981.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "807",
+      "branch_id2": "SFI00009",
+      "amount": "14423.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "808",
+      "branch_id2": "SFI00038",
+      "amount": "4154.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "809",
+      "branch_id2": "SFI00010",
+      "amount": "467330.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "810",
+      "branch_id2": "SFI00122",
+      "amount": "12894.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "811",
+      "branch_id2": "SFI00011",
+      "amount": "55557.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "812",
+      "branch_id2": "SFI00012",
+      "amount": "12000.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "813",
+      "branch_id2": "SFI00040",
+      "amount": "12337.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "814",
+      "branch_id2": "SFI00046",
+      "amount": "8779.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "815",
+      "branch_id2": "SFI00047",
+      "amount": "9144.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "816",
+      "branch_id2": "SFI00048",
+      "amount": "14500.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "817",
+      "branch_id2": "SFI00049",
+      "amount": "4240.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "818",
+      "branch_id2": "SFI00125",
+      "amount": "9327.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "819",
+      "branch_id2": "SFI00013",
+      "amount": "10500.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "820",
+      "branch_id2": "SFI00053",
+      "amount": "7693.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "821",
+      "branch_id2": "SFI00055",
+      "amount": "11154.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "822",
+      "branch_id2": "SFI00056",
+      "amount": "3808.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "823",
+      "branch_id2": "SFI00057",
+      "amount": "9558.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "824",
+      "branch_id2": "SFI00058",
+      "amount": "9409.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "825",
+      "branch_id2": "SFI00059",
+      "amount": "8481.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "826",
+      "branch_id2": "SFI00060",
+      "amount": "12260.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "827",
+      "branch_id2": "SFI00062",
+      "amount": "4154.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "828",
+      "branch_id2": "SFI00063",
+      "amount": "8846.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "829",
+      "branch_id2": "SFI00064",
+      "amount": "4067.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "830",
+      "branch_id2": "SFI00131",
+      "amount": "15684.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "831",
+      "branch_id2": "SFI00065",
+      "amount": "14952.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "832",
+      "branch_id2": "SFI00066",
+      "amount": "11928.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "833",
+      "branch_id2": "SFI00067",
+      "amount": "12356.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "834",
+      "branch_id2": "SFI00107",
+      "amount": "9413.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "835",
+      "branch_id2": "SFI00113",
+      "amount": "5971.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "836",
+      "branch_id2": "SFI00070",
+      "amount": "5000.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "837",
+      "branch_id2": "SFI00071",
+      "amount": "13159.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "838",
+      "branch_id2": "SFI00120",
+      "amount": "3635.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "839",
+      "branch_id2": "SFI00072",
+      "amount": "11086.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "840",
+      "branch_id2": "SFI00073",
+      "amount": "8769.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "841",
+      "branch_id2": "SFI00074",
+      "amount": "7154.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "842",
+      "branch_id2": "SFI00075",
+      "amount": "9500.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "843",
+      "branch_id2": "SFI00076",
+      "amount": "4500.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "844",
+      "branch_id2": "SFI00077",
+      "amount": "9327.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "845",
+      "branch_id2": "SFI00078",
+      "amount": "9500.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "846",
+      "branch_id2": "SFI00080",
+      "amount": "4154.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "847",
+      "branch_id2": "SFI00081",
+      "amount": "11125.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "848",
+      "branch_id2": "SFI00127",
+      "amount": "4067.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "849",
+      "branch_id2": "SFI00083",
+      "amount": "9154.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "850",
+      "branch_id2": "SFI00084",
+      "amount": "9028.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "851",
+      "branch_id2": "SFI00111",
+      "amount": "3808.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "852",
+      "branch_id2": "SFI00086",
+      "amount": "2942.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "853",
+      "branch_id2": "SFI00089",
+      "amount": "8019.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "854",
+      "branch_id2": "SFI00090",
+      "amount": "9269.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "855",
+      "branch_id2": "SFI00091",
+      "amount": "14327.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "856",
+      "branch_id2": "SFI00093",
+      "amount": "12352.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "857",
+      "branch_id2": "SFI00094",
+      "amount": "5962.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "858",
+      "branch_id2": "SFI00112",
+      "amount": "7154.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "859",
+      "branch_id2": "SFI00097",
+      "amount": "9212.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "860",
+      "branch_id2": "SFI00115",
+      "amount": "4240.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "861",
+      "branch_id2": "SFI00116",
+      "amount": "3981.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "862",
+      "branch_id2": "SFI00098",
+      "amount": "7303.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "863",
+      "branch_id2": "SFI00099",
+      "amount": "15193.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "864",
+      "branch_id2": "SFI00102",
+      "amount": "3846.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "865",
+      "branch_id2": "SFI00103",
+      "amount": "3548.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "866",
+      "branch_id2": "SFI00104",
+      "amount": "7154.00",
+      "paydate": "2022-03-31"
+    },
+    {
+      "additionalincome_id": "867",
+      "branch_id2": "SFI00002",
+      "amount": "60711.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "868",
+      "branch_id2": "SFI00016",
+      "amount": "12942.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "869",
+      "branch_id2": "SFI00004",
+      "amount": "34885.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "870",
+      "branch_id2": "SFI00117",
+      "amount": "5000.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "871",
+      "branch_id2": "SFI00024",
+      "amount": "9500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "872",
+      "branch_id2": "SFI00025",
+      "amount": "8231.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "873",
+      "branch_id2": "SFI00105",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "874",
+      "branch_id2": "SFI00030",
+      "amount": "19500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "875",
+      "branch_id2": "SFI00032",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "876",
+      "branch_id2": "SFI00034",
+      "amount": "11154.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "877",
+      "branch_id2": "SFI00035",
+      "amount": "9500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "878",
+      "branch_id2": "SFI00036",
+      "amount": "5000.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "879",
+      "branch_id2": "SFI00006",
+      "amount": "52567.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "880",
+      "branch_id2": "SFI00007",
+      "amount": "38318.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "881",
+      "branch_id2": "SFI00126",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "882",
+      "branch_id2": "SFI00009",
+      "amount": "15000.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "883",
+      "branch_id2": "SFI00038",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "884",
+      "branch_id2": "SFI00010",
+      "amount": "495350.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "885",
+      "branch_id2": "SFI00122",
+      "amount": "12385.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "886",
+      "branch_id2": "SFI00011",
+      "amount": "56721.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "887",
+      "branch_id2": "SFI00012",
+      "amount": "15461.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "888",
+      "branch_id2": "SFI00134",
+      "amount": "3894.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "889",
+      "branch_id2": "SFI00040",
+      "amount": "9673.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "890",
+      "branch_id2": "SFI00045",
+      "amount": "4904.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "891",
+      "branch_id2": "SFI00046",
+      "amount": "9500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "892",
+      "branch_id2": "SFI00047",
+      "amount": "9308.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "893",
+      "branch_id2": "SFI00048",
+      "amount": "14500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "894",
+      "branch_id2": "SFI00049",
+      "amount": "4240.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "895",
+      "branch_id2": "SFI00125",
+      "amount": "9500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "896",
+      "branch_id2": "SFI00013",
+      "amount": "9894.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "897",
+      "branch_id2": "SFI00053",
+      "amount": "12750.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "898",
+      "branch_id2": "SFI00055",
+      "amount": "12000.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "899",
+      "branch_id2": "SFI00056",
+      "amount": "11462.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "900",
+      "branch_id2": "SFI00057",
+      "amount": "10154.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "901",
+      "branch_id2": "SFI00058",
+      "amount": "10058.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "902",
+      "branch_id2": "SFI00059",
+      "amount": "4327.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "903",
+      "branch_id2": "SFI00060",
+      "amount": "12750.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "904",
+      "branch_id2": "SFI00106",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "905",
+      "branch_id2": "SFI00062",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "906",
+      "branch_id2": "SFI00063",
+      "amount": "9154.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "907",
+      "branch_id2": "SFI00064",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "908",
+      "branch_id2": "SFI00131",
+      "amount": "14327.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "909",
+      "branch_id2": "SFI00065",
+      "amount": "20679.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "910",
+      "branch_id2": "SFI00066",
+      "amount": "16288.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "911",
+      "branch_id2": "SFI00067",
+      "amount": "11394.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "912",
+      "branch_id2": "SFI00107",
+      "amount": "9500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "913",
+      "branch_id2": "SFI00113",
+      "amount": "6827.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "914",
+      "branch_id2": "SFI00070",
+      "amount": "5000.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "915",
+      "branch_id2": "SFI00071",
+      "amount": "14356.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "916",
+      "branch_id2": "SFI00120",
+      "amount": "10558.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "917",
+      "branch_id2": "SFI00072",
+      "amount": "11404.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "918",
+      "branch_id2": "SFI00073",
+      "amount": "8596.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "919",
+      "branch_id2": "SFI00074",
+      "amount": "7750.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "920",
+      "branch_id2": "SFI00075",
+      "amount": "9154.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "921",
+      "branch_id2": "SFI00076",
+      "amount": "4327.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "922",
+      "branch_id2": "SFI00077",
+      "amount": "5000.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "923",
+      "branch_id2": "SFI00078",
+      "amount": "9500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "924",
+      "branch_id2": "SFI00079",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "925",
+      "branch_id2": "SFI00080",
+      "amount": "9500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "926",
+      "branch_id2": "SFI00081",
+      "amount": "6856.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "927",
+      "branch_id2": "SFI00127",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "928",
+      "branch_id2": "SFI00083",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "929",
+      "branch_id2": "SFI00084",
+      "amount": "8548.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "930",
+      "branch_id2": "SFI00111",
+      "amount": "4327.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "931",
+      "branch_id2": "SFI00086",
+      "amount": "4500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "932",
+      "branch_id2": "SFI00089",
+      "amount": "9154.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "933",
+      "branch_id2": "SFI00090",
+      "amount": "11731.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "934",
+      "branch_id2": "SFI00091",
+      "amount": "13462.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "935",
+      "branch_id2": "SFI00093",
+      "amount": "18933.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "936",
+      "branch_id2": "SFI00097",
+      "amount": "9154.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "937",
+      "branch_id2": "SFI00116",
+      "amount": "14952.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "938",
+      "branch_id2": "SFI00098",
+      "amount": "7750.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "939",
+      "branch_id2": "SFI00099",
+      "amount": "12452.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "940",
+      "branch_id2": "SFI00102",
+      "amount": "4904.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "941",
+      "branch_id2": "SFI00103",
+      "amount": "9500.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "942",
+      "branch_id2": "SFI00104",
+      "amount": "7750.00",
+      "paydate": "2022-06-30"
+    },
+    {
+      "additionalincome_id": "943",
+      "branch_id2": "SFI00002",
+      "amount": "48865.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "944",
+      "branch_id2": "SFI00016",
+      "amount": "12303.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "945",
+      "branch_id2": "SFI00004",
+      "amount": "34500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "946",
+      "branch_id2": "SFI00121",
+      "amount": "5000.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "947",
+      "branch_id2": "SFI00024",
+      "amount": "9327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "948",
+      "branch_id2": "SFI00132",
+      "amount": "5403.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "949",
+      "branch_id2": "SFI00025",
+      "amount": "8346.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "950",
+      "branch_id2": "SFI00105",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "951",
+      "branch_id2": "SFI00030",
+      "amount": "19115.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "952",
+      "branch_id2": "SFI00032",
+      "amount": "4413.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "953",
+      "branch_id2": "SFI00123",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "954",
+      "branch_id2": "SFI00034",
+      "amount": "11952.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "955",
+      "branch_id2": "SFI00035",
+      "amount": "9500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "956",
+      "branch_id2": "SFI00036",
+      "amount": "5000.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "957",
+      "branch_id2": "SFI00006",
+      "amount": "58692.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "958",
+      "branch_id2": "SFI00007",
+      "amount": "39413.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "959",
+      "branch_id2": "SFI00126",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "960",
+      "branch_id2": "SFI00009",
+      "amount": "22808.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "961",
+      "branch_id2": "SFI00038",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "962",
+      "branch_id2": "SFI00010",
+      "amount": "490586.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "963",
+      "branch_id2": "SFI00122",
+      "amount": "29002.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "964",
+      "branch_id2": "SFI00011",
+      "amount": "61080.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "965",
+      "branch_id2": "SFI00012",
+      "amount": "17538.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "966",
+      "branch_id2": "SFI00134",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "967",
+      "branch_id2": "SFI00040",
+      "amount": "9327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "968",
+      "branch_id2": "SFI00043",
+      "amount": "4327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "969",
+      "branch_id2": "SFI00045",
+      "amount": "4135.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "970",
+      "branch_id2": "SFI00046",
+      "amount": "9317.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "971",
+      "branch_id2": "SFI00047",
+      "amount": "8115.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "972",
+      "branch_id2": "SFI00048",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "973",
+      "branch_id2": "SFI00049",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "974",
+      "branch_id2": "SFI00125",
+      "amount": "9221.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "975",
+      "branch_id2": "SFI00013",
+      "amount": "10500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "976",
+      "branch_id2": "SFI00053",
+      "amount": "12365.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "977",
+      "branch_id2": "SFI00055",
+      "amount": "11827.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "978",
+      "branch_id2": "SFI00056",
+      "amount": "11250.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "979",
+      "branch_id2": "SFI00057",
+      "amount": "10154.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "980",
+      "branch_id2": "SFI00058",
+      "amount": "12019.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "981",
+      "branch_id2": "SFI00059",
+      "amount": "4327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "982",
+      "branch_id2": "SFI00060",
+      "amount": "12111.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "983",
+      "branch_id2": "SFI00106",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "984",
+      "branch_id2": "SFI00062",
+      "amount": "4327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "985",
+      "branch_id2": "SFI00063",
+      "amount": "9327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "986",
+      "branch_id2": "SFI00064",
+      "amount": "4327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "987",
+      "branch_id2": "SFI00131",
+      "amount": "14413.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "988",
+      "branch_id2": "SFI00065",
+      "amount": "15644.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "989",
+      "branch_id2": "SFI00066",
+      "amount": "15433.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "990",
+      "branch_id2": "SFI00067",
+      "amount": "16558.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "991",
+      "branch_id2": "SFI00107",
+      "amount": "8894.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "992",
+      "branch_id2": "SFI00113",
+      "amount": "6913.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "993",
+      "branch_id2": "SFI00070",
+      "amount": "4423.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "994",
+      "branch_id2": "SFI00071",
+      "amount": "13529.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "995",
+      "branch_id2": "SFI00120",
+      "amount": "7288.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "996",
+      "branch_id2": "SFI00072",
+      "amount": "11913.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "997",
+      "branch_id2": "SFI00073",
+      "amount": "9308.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "998",
+      "branch_id2": "SFI00074",
+      "amount": "7005.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "999",
+      "branch_id2": "SFI00075",
+      "amount": "11731.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1000",
+      "branch_id2": "SFI00076",
+      "amount": "9413.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1001",
+      "branch_id2": "SFI00077",
+      "amount": "5000.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1002",
+      "branch_id2": "SFI00078",
+      "amount": "9500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1003",
+      "branch_id2": "SFI00079",
+      "amount": "4327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1004",
+      "branch_id2": "SFI00080",
+      "amount": "9327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1005",
+      "branch_id2": "SFI00081",
+      "amount": "7000.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1006",
+      "branch_id2": "SFI00127",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1007",
+      "branch_id2": "SFI00083",
+      "amount": "4500.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1008",
+      "branch_id2": "SFI00084",
+      "amount": "8248.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1009",
+      "branch_id2": "SFI00111",
+      "amount": "3981.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1010",
+      "branch_id2": "SFI00086",
+      "amount": "4327.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1011",
+      "branch_id2": "SFI00089",
+      "amount": "9308.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1012",
+      "branch_id2": "SFI00090",
+      "amount": "11971.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1013",
+      "branch_id2": "SFI00091",
+      "amount": "14904.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1014",
+      "branch_id2": "SFI00093",
+      "amount": "7601.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1015",
+      "branch_id2": "SFI00097",
+      "amount": "7586.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1016",
+      "branch_id2": "SFI00116",
+      "amount": "15154.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1017",
+      "branch_id2": "SFI00098",
+      "amount": "7750.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1018",
+      "branch_id2": "SFI00099",
+      "amount": "12750.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1019",
+      "branch_id2": "SFI00102",
+      "amount": "4808.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1020",
+      "branch_id2": "SFI00103",
+      "amount": "9404.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1021",
+      "branch_id2": "SFI00104",
+      "amount": "18640.00",
+      "paydate": "2022-07-31"
+    },
+    {
+      "additionalincome_id": "1022",
+      "branch_id2": "SFI00002",
+      "amount": "64827.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1023",
+      "branch_id2": "SFI00016",
+      "amount": "13581.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1024",
+      "branch_id2": "SFI00004",
+      "amount": "33308.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1025",
+      "branch_id2": "SFI00121",
+      "amount": "4808.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1026",
+      "branch_id2": "SFI00117",
+      "amount": "5000.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1027",
+      "branch_id2": "SFI00024",
+      "amount": "8058.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1028",
+      "branch_id2": "SFI00132",
+      "amount": "8077.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1029",
+      "branch_id2": "SFI00025",
+      "amount": "4067.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1030",
+      "branch_id2": "SFI00105",
+      "amount": "4327.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1031",
+      "branch_id2": "SFI00030",
+      "amount": "17770.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1032",
+      "branch_id2": "SFI00032",
+      "amount": "4413.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1033",
+      "branch_id2": "SFI00123",
+      "amount": "4327.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1034",
+      "branch_id2": "SFI00034",
+      "amount": "7308.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1035",
+      "branch_id2": "SFI00035",
+      "amount": "9500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1036",
+      "branch_id2": "SFI00036",
+      "amount": "4808.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1037",
+      "branch_id2": "SFI00006",
+      "amount": "61913.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1038",
+      "branch_id2": "SFI00007",
+      "amount": "39317.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1039",
+      "branch_id2": "SFI00009",
+      "amount": "17904.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1040",
+      "branch_id2": "SFI00038",
+      "amount": "4500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1041",
+      "branch_id2": "SFI00010",
+      "amount": "531291.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1042",
+      "branch_id2": "SFI00122",
+      "amount": "13937.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1043",
+      "branch_id2": "SFI00011",
+      "amount": "55444.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1044",
+      "branch_id2": "SFI00012",
+      "amount": "6000.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1045",
+      "branch_id2": "SFI00134",
+      "amount": "6712.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1046",
+      "branch_id2": "SFI00040",
+      "amount": "11558.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1047",
+      "branch_id2": "SFI00043",
+      "amount": "4500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1048",
+      "branch_id2": "SFI00045",
+      "amount": "4808.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1049",
+      "branch_id2": "SFI00046",
+      "amount": "8594.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1050",
+      "branch_id2": "SFI00047",
+      "amount": "9404.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1051",
+      "branch_id2": "SFI00048",
+      "amount": "4327.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1052",
+      "branch_id2": "SFI00049",
+      "amount": "4240.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1053",
+      "branch_id2": "SFI00125",
+      "amount": "12874.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1054",
+      "branch_id2": "SFI00013",
+      "amount": "9692.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1055",
+      "branch_id2": "SFI00053",
+      "amount": "12750.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1056",
+      "branch_id2": "SFI00055",
+      "amount": "10337.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1057",
+      "branch_id2": "SFI00056",
+      "amount": "11615.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1058",
+      "branch_id2": "SFI00057",
+      "amount": "8952.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1059",
+      "branch_id2": "SFI00058",
+      "amount": "10866.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1060",
+      "branch_id2": "SFI00059",
+      "amount": "8827.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1061",
+      "branch_id2": "SFI00060",
+      "amount": "12173.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1062",
+      "branch_id2": "SFI00106",
+      "amount": "9500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1063",
+      "branch_id2": "SFI00062",
+      "amount": "4500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1064",
+      "branch_id2": "SFI00063",
+      "amount": "9327.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1065",
+      "branch_id2": "SFI00064",
+      "amount": "4500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1066",
+      "branch_id2": "SFI00131",
+      "amount": "13875.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1067",
+      "branch_id2": "SFI00065",
+      "amount": "13769.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1068",
+      "branch_id2": "SFI00066",
+      "amount": "15154.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1069",
+      "branch_id2": "SFI00067",
+      "amount": "10903.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1070",
+      "branch_id2": "SFI00107",
+      "amount": "9500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1071",
+      "branch_id2": "SFI00113",
+      "amount": "6327.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1072",
+      "branch_id2": "SFI00070",
+      "amount": "4327.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1073",
+      "branch_id2": "SFI00071",
+      "amount": "13115.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1074",
+      "branch_id2": "SFI00120",
+      "amount": "4327.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1075",
+      "branch_id2": "SFI00072",
+      "amount": "11644.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1076",
+      "branch_id2": "SFI00073",
+      "amount": "7144.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1077",
+      "branch_id2": "SFI00074",
+      "amount": "7154.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1078",
+      "branch_id2": "SFI00075",
+      "amount": "11721.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1079",
+      "branch_id2": "SFI00076",
+      "amount": "8471.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1080",
+      "branch_id2": "SFI00077",
+      "amount": "4904.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1081",
+      "branch_id2": "SFI00078",
+      "amount": "9500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1082",
+      "branch_id2": "SFI00079",
+      "amount": "6615.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1083",
+      "branch_id2": "SFI00080",
+      "amount": "11856.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1084",
+      "branch_id2": "SFI00081",
+      "amount": "6558.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1085",
+      "branch_id2": "SFI00127",
+      "amount": "4500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1086",
+      "branch_id2": "SFI00083",
+      "amount": "4500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1087",
+      "branch_id2": "SFI00084",
+      "amount": "8942.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1088",
+      "branch_id2": "SFI00085",
+      "amount": "5000.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1089",
+      "branch_id2": "SFI00111",
+      "amount": "4500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1090",
+      "branch_id2": "SFI00086",
+      "amount": "4500.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1091",
+      "branch_id2": "SFI00089",
+      "amount": "8144.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1092",
+      "branch_id2": "SFI00090",
+      "amount": "12404.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1093",
+      "branch_id2": "SFI00091",
+      "amount": "14615.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1094",
+      "branch_id2": "SFI00093",
+      "amount": "15250.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1095",
+      "branch_id2": "SFI00097",
+      "amount": "9327.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1096",
+      "branch_id2": "SFI00116",
+      "amount": "17404.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1097",
+      "branch_id2": "SFI00098",
+      "amount": "9558.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1098",
+      "branch_id2": "SFI00099",
+      "amount": "12231.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1099",
+      "branch_id2": "SFI00102",
+      "amount": "4423.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1100",
+      "branch_id2": "SFI00103",
+      "amount": "9135.00",
+      "paydate": "2022-09-30"
+    },
+    {
+      "additionalincome_id": "1101",
+      "branch_id2": "SFI00104",
+      "amount": "9615.00",
+      "paydate": "2022-09-30"
+    }
+  ]
+}

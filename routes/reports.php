@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Compensation\PayslipController;
 use App\Http\Controllers\Reports\ReportsPagibigController;
 use App\Http\Controllers\Reports\ReportsPhilhealthController;
 use App\Http\Controllers\Reports\ReportsSSSController;
@@ -31,4 +32,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-reports-bdo-cash-card-history", [ReportsBDOCashCardController::class, "getAllReportsBDOCashCardHistory"]);
     Route::get("/export-all-reports-bdo-cash-card", [ReportsBDOCashCardController::class, "exportAllReportsBDOCashCard"]);
     Route::get("/export-all-reports-bdo-cash-card-history", [ReportsBDOCashCardController::class, "exportAllReportsBDOCashCardHistory"]);
+
+    //pay slip
+    Route::middleware(["permission:perform_reports_pay_slip"])->post("/submit-payslips", [PayslipController::class, "submitPayslip"]);
 });
