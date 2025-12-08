@@ -11,6 +11,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         \App\Console\Commands\FetchBiotimeAttendance::class,
         \App\Console\Commands\FetchOvertimeInCSHub::class,
+        \App\Console\Commands\FetchEmployeeAssignedSchedule::class,
     ];
 
     protected function schedule(Schedule $schedule): void
@@ -18,6 +19,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:fetch-biotime-attendance')->dailyAt("23:59:59");
         $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(11, '23:59:59');
         $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '23:59:59');
+        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(11, '23:59:59');
+        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(26, '23:59:59');
     }
 
     protected function commands(): void
