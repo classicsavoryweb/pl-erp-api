@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Compensation;
 
+use App\Exports\Compensation\PayrollListExport;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\PayrollList;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 use DB;
 use Str;
@@ -56,6 +58,11 @@ class PayrollListController extends Controller
                 $payrollList = $payrollList->where("is_included", $request->status == "included" ? 1 : 0);
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $payrollList = $payrollList->get();
+                return Excel::download(new PayrollListExport($payrollList), "payroll_list.xls");
+            }
+
             $payrollList = $payrollList->paginate($perPage);
 
             return $this->sendResponse($payrollList);
@@ -63,6 +70,12 @@ class PayrollListController extends Controller
 
             return $this->sendError(["message" => $e->getMessage()]);
         }
+    }
+
+    public function exportPayrollList(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllPayrollList($request);
     }
 
     public function createPayrollList(Request $request) {

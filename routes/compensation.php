@@ -18,6 +18,7 @@ Route::middleware('auth:sanctum')->group( function () {
 
     //payroll list
     Route::get("/get-all-payroll-list",[PayrollListController::class, "getAllPayrollList"]);
+    Route::get("/export-all-payroll-list",[PayrollListController::class, "exportPayrollList"]);
     Route::middleware(["permission:perform_compensation_payroll_list"])->post("/create-payroll-list", [PayrollListController::class, "createPayrollList"]);
     Route::middleware(["permission:perform_compensation_payroll_list"])->post("/edit-payroll-list/{id}", [PayrollListController::class, "editPayrollList"]);
 
