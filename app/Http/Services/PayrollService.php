@@ -812,6 +812,8 @@ class PayrollService {
             "additional_incentive" => $additionalIncentive,
             "adjustment_days" => $adjustmentDays,
             "adjustment_percent" => $adjustmentPercent,
+            "first_cut_off_worked_days" => $firstCutOffDays,
+            "second_cut_off_worked_days" => $secondCutOffDays,
             "status" => $status
         ]);
 

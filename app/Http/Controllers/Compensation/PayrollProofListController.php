@@ -53,7 +53,9 @@ class PayrollProofListController extends Controller
                     "employee_id",
                     "adjustment_percent",
                     "additional_incentive",
-                    "incentive_amount as amount"
+                    "incentive_amount as amount",
+                    "first_cut_off_worked_days",
+                    "second_cut_off_worked_days",
                 ])->where("incentive_amount", ">", 0)
                 ->orderBy(
                     Employee::select("last_name")
@@ -175,7 +177,7 @@ class PayrollProofListController extends Controller
             $request["export"] = true;
             $proofLists = $this->getProofList($request);
 
-            return Excel::download(new PayrollProofListExport($proofLists), "prooflist.xls");
+            return Excel::download(new PayrollProofListExport($proofLists, $request->type), "prooflist.xls");
         } catch (Exception $e) {
             return $this->sendError($e->getMessage());
         }
