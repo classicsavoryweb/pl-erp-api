@@ -783,41 +783,41 @@ class PayrollService {
                     }
                 }
             }
-        }
 
-        $existingIncentives = Incentives::where("employee_id", $employee->id)
-        ->where("pay_date", $payDate)
-        ->first();
+            $existingIncentives = Incentives::where("employee_id", $employee->id)
+            ->where("pay_date", $payDate)
+            ->first();
 
-        if ($existingIncentives) {
-            if ($existingIncentives->additional_incentive > 0) {
-                $additionalIncentive = $existingIncentives->additional_incentive;
+            if ($existingIncentives) {
+                if ($existingIncentives->additional_incentive > 0) {
+                    $additionalIncentive = $existingIncentives->additional_incentive;
+                }
+
+                if ($existingIncentives->adjustment_percent > 0) {
+                    $adjustmentPercent = $existingIncentives->adjustment_percent;
+                }
             }
 
-            if ($existingIncentives->adjustment_percent > 0) {
-                $adjustmentPercent = $existingIncentives->adjustment_percent;
-            }
+            $incentive = Incentives::updateOrCreate([
+                "employee_id" => $employeeId,
+                "position_id" => $positionId,
+                "pay_date" => $payDate,
+            ],[
+                "branch_id" => $branchId,
+                "incentive_amount" => $incentiveAmount,
+                "max_amount" => $maxAmount,
+                "remarks" => $remarks,
+                "amount_rate" => $amountRate,
+                "additional_incentive" => $additionalIncentive,
+                "adjustment_days" => $adjustmentDays,
+                "adjustment_percent" => $adjustmentPercent,
+                "first_cut_off_worked_days" => $firstCutOffDays,
+                "second_cut_off_worked_days" => $secondCutOffDays,
+                "status" => $status
+            ]);
+
+            return $incentive;
         }
-
-        $incentive = Incentives::updateOrCreate([
-            "employee_id" => $employeeId,
-            "position_id" => $positionId,
-            "pay_date" => $payDate,
-        ],[
-            "branch_id" => $branchId,
-            "incentive_amount" => $incentiveAmount,
-            "max_amount" => $maxAmount,
-            "remarks" => $remarks,
-            "amount_rate" => $amountRate,
-            "additional_incentive" => $additionalIncentive,
-            "adjustment_days" => $adjustmentDays,
-            "adjustment_percent" => $adjustmentPercent,
-            "first_cut_off_worked_days" => $firstCutOffDays,
-            "second_cut_off_worked_days" => $secondCutOffDays,
-            "status" => $status
-        ]);
-
-        return $incentive;
     }
 
     public function getCutOffForDate($date){
