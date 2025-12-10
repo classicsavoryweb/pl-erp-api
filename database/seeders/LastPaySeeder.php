@@ -33,7 +33,7 @@ class LastPaySeeder extends Seeder
                     "last_pay_number" => $lastPay["lastpay_no"],
                     "employee_id" => $employee->id,
                     "payroll_hold" => str_replace(",", "",$lastPay["payroll_hold"]),
-                    "13th_month" => str_replace(",", "",$lastPay["13th_month"]),
+                    "thirteenth_month" => str_replace(",", "",$lastPay["13th_month"]),
                     "year" => str_replace(",", "",$lastPay["13th_year"]),
                     "sl_vl" => str_replace(",", "",$lastPay["slvl"]),
                     "tax_refund" => str_replace(",", "",$lastPay["tax_refund"]),

@@ -15,7 +15,7 @@ class LastPay extends Model
         "last_pay_number",
         "employee_id",
         "payroll_hold",
-        "13th_month",
+        "thirteenth_month",
         "year",
         "sl_vl",
         "tax_refund",

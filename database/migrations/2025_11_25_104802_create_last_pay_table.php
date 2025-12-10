@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string("last_pay_number")->nullable(true);
             $table->string("employee_id");
             $table->decimal("payroll_hold")->default(0);
-            $table->decimal("13th_month")->default(0);
+            $table->decimal("thirteenth_month")->default(0);
             $table->string("year");
             $table->decimal("sl_vl")->default(0);
             $table->decimal("tax_refund")->default(0);

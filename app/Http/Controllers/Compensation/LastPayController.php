@@ -197,7 +197,7 @@ class LastPayController extends Controller
 
                 if ($lastPayDetails) {
                     $totalPayroll = $lastPayDetails->payroll_hold;
-                    $month13th = $lastPayDetails["13th_month"];
+                    $month13th = $lastPayDetails->thirteenth_month;
                     $incentives = $lastPayDetails->incentives; 
                     $sl_vl = $lastPayDetails->sl_vl;
                     $meal_allowance = $lastPayDetails->meal;
@@ -328,7 +328,7 @@ class LastPayController extends Controller
                 $lastPayDetails = LastPay::create([
                     "employee_id" => $employee->id,
                     "payroll_hold" => $totalPayroll,
-                    "13th_month" => $month13th,
+                    "thirteenth_month" => $month13th,
                     "year" => $yearHolded,
                     "sl_vl" => $sl_vl,
                     "tax_refund" => $taxRefund,
@@ -409,7 +409,7 @@ class LastPayController extends Controller
 
             if ($lastPay) {
                 $totalPayroll = $lastPay->payroll_hold;
-                $month13th = $lastPay["13th_month"];
+                $month13th = $lastPay->thirteenth_month;
 
                 $incentives = $request->incentives ?? 0;
                 $sl_vl = $request->sl_vl ?? 0;
@@ -423,7 +423,7 @@ class LastPayController extends Controller
 
                 $lastPay->update([
                     "payroll_hold" => $totalPayroll,
-                    "13th_month" => $month13th,
+                    "thirteenth_month" => $month13th,
                     "sl_vl" => $sl_vl,
                     "tax_refund" => $taxRefund,
                     "incentives" => $incentives,
