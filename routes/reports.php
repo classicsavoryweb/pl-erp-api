@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Compensation\PayslipController;
+use App\Http\Controllers\Reports\ReportsThirteenthMonthController;
 use App\Http\Controllers\Reports\ReportsPagibigController;
 use App\Http\Controllers\Reports\ReportsPhilhealthController;
 use App\Http\Controllers\Reports\ReportsSSSController;
@@ -35,4 +36,14 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //pay slip
     Route::middleware(["permission:perform_reports_pay_slip"])->post("/submit-payslips", [PayslipController::class, "submitPayslip"]);
+
+    //13th Month Pay
+    Route::get("/get-all-thirteenth-month-pay", [ReportsThirteenthMonthController::class, "getAllThirteenthMonth"]);
+    Route::get("/get-thirteenth-month-pay/{id}", [ReportsThirteenthMonthController::class, "getThirteenthMonthPay"]);
+    Route::get("/get-employees-monthly-allocation/{id}", [ReportsThirteenthMonthController::class, "getEmployeesMonthlyAllocation"]);
+    Route::get("/get-branches-monthly-allocation/{id}", [ReportsThirteenthMonthController::class, "getBranchesMonthlyAllocation"]);
+    Route::get("/get-thirteenth-month-monthly-allocation/{id}", [ReportsThirteenthMonthController::class, "getThirteenthMonthMonthlyAllocation"]);
+    Route::post("/generate-thirteenth-month-pay", [ReportsThirteenthMonthController::class, "generateThirteenthMonthPay"]);
+    Route::post("/generate-thirteenth-month-monthly-allocation", [ReportsThirteenthMonthController::class, "generateThirteenthMonthMonthlyAllocation"]);
+    Route::middleware(["permission:generate_13th_month_pay"])->get('/download-excel-file/{filename}', [ReportsThirteenthMonthController::class, 'downloadExcelFile']);
 });

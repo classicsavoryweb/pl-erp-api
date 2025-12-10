@@ -2,11 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
 use App\Models\Payroll;
+use App\Models\PayrollList;
 use App\Models\TimeKeepingSummary;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Log;
 
 class PayrollSeeder extends Seeder
 {
@@ -20,7 +23,12 @@ class PayrollSeeder extends Seeder
         };
 
         for ($i = 1; $i <= 13; $i++) {
+
             $jsonPath = public_path("jsons/payroll/payroll/payroll_{$i}.json");
+
+            if (!file_exists($jsonPath)) {
+                continue;
+            }
 
             $jsonData = file_get_contents($jsonPath);
             $data = json_decode($jsonData, true);
@@ -33,35 +41,52 @@ class PayrollSeeder extends Seeder
                     continue;
                 }
 
+                $isHold = 0;
+                $isOnMaternityLeave = 0;
+
+                if ($unique_payroll['hold'] == 1) {
+                    $isHold = 1;
+                }
+
+                if ($unique_payroll['maternity_status'] == 1) {
+                    $isOnMaternityLeave = 1;
+                }
+
+                $branch = Branch::where("branch_number", $unique_payroll["tbranch"])->first();
+
+                if (!$branch) {
+                    continue;
+                }
+
                 $cutoff = $unique_payroll["from_date"] . '-' . $unique_payroll["to_date"];
 
                 $timekeepingSummary = TimeKeepingSummary::where("employee_id", $employee->id)
-                ->where("cut_off", $cutoff)
-                ->first();
+                    ->where("cut_off", $cutoff)
+                    ->first();
 
                 if (!$timekeepingSummary) {
-                    continue;
+                    $timekeepingSummary = (object) [
+                        "id" => 1,
+                        "branch_id" => $branch->id,
+                        "cut_off" => $cutoff,
+                    ];
                 }
 
                 $employeeDeductions = EmployeeDeduction::with(["deduction"])
-                ->where("employee_id", $employee->id)
-                ->where("balance", ">", 1)
-                ->where("end_loan_status", "!=", "Yes")
-                ->get();
-
-                if (!$employeeDeductions) {
-                    continue;
-                }
+                    ->where("employee_id", $employee->id)
+                    ->where("balance", ">", 1)
+                    ->where("end_loan_status", "!=", "Yes")
+                    ->get();
 
                 $deductions = [];
-    
-                foreach($employeeDeductions as $deduction) {
+
+                foreach ($employeeDeductions as $deduction) {
                     $amountToDeduct = $deduction->monthly_amortization / 2;
-    
+
                     if ($amountToDeduct > $deduction->balance) {
                         $amountToDeduct = $deduction->balance;
                     }
-    
+
                     $deductions[] = [
                         "deduction_id" => $deduction->id,
                         "type" => $deduction->deduction->description,
@@ -72,27 +97,26 @@ class PayrollSeeder extends Seeder
                 }
 
                 $contributionTotal = $numeric($unique_payroll["ee_sss"])
-                                + $numeric($unique_payroll["ee_pagibig"])
-                                + $numeric($unique_payroll["ee_philhealth"]);
+                                   + $numeric($unique_payroll["ee_pagibig"])
+                                   + $numeric($unique_payroll["ee_philhealth"]);
 
                 $additionalWorkingHoursTotal = $numeric($unique_payroll["total_ot2"])
-                                + $numeric($unique_payroll["legal_hol2"])
-                                + $numeric($unique_payroll["legal_holot2"])
-                                + $numeric($unique_payroll["special_hol2"])
-                                + $numeric($unique_payroll["special_holot2"])
-                                + $numeric($unique_payroll["night_diff2"])
-                                + $numeric($unique_payroll["ot_ndiff2"])
-                                + $numeric($unique_payroll["txbl_adjustment"])
-                                + $numeric($unique_payroll["cancelled_off"]);
+                                             + $numeric($unique_payroll["legal_hol2"])
+                                             + $numeric($unique_payroll["legal_holot2"])
+                                             + $numeric($unique_payroll["special_hol2"])
+                                             + $numeric($unique_payroll["special_holot2"])
+                                             + $numeric($unique_payroll["night_diff2"])
+                                             + $numeric($unique_payroll["ot_ndiff2"])
+                                             + $numeric($unique_payroll["txbl_adjustment"])
+                                             + $numeric($unique_payroll["cancelled_off"]);
 
                 $workingHoursDeductionTotal = $numeric($unique_payroll["total_late2"])
-                                + $numeric($unique_payroll["undertime2"]);
-
+                                            + $numeric($unique_payroll["undertime2"]);
 
                 $payroll = Payroll::create([
                     "employee_id" => $employee->id,
                     "timekeeping_summary_id" => $timekeepingSummary->id,
-                    "timekeeping_branch_id" => $timekeepingSummary->branch_id,
+                    "timekeeping_branch_id" => $branch->id,
                     "pay_date" => $unique_payroll["pay_date"],
                     "cut_off" => $timekeepingSummary->cut_off,
                     "start_date" => $unique_payroll["from_date"],
@@ -135,6 +159,21 @@ class PayrollSeeder extends Seeder
                 ]);
 
                 $this->command->info("ID: {$payroll->id} out of 244536, File: payroll_{$i}.json out of 13");
+
+                $isMancom = str_starts_with($employee->employee_number, 'M');
+                $isBank = $employee->latest_bank_details ? 1 : 0;
+
+                PayrollList::create([
+                    "employee_id" => $employee->id,
+                    "is_included" => 0,
+                    "is_statutory_only" => $isMancom,
+                    "is_mancom" => $isMancom,
+                    "is_on_maternity_leave" => $isOnMaternityLeave,
+                    "is_bank" => $isBank,
+                    "remarks" => null,
+                    "is_hold" => $isHold,
+                    "holded_at" => $isHold ? $cutoff : null,
+                ]);
             }
         }
     }
