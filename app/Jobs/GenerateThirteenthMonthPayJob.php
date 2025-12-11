@@ -38,7 +38,7 @@ class GenerateThirteenthMonthPayJob implements ShouldQueue
 
         $payrolls = Payroll::whereIn('id', $this->payroll)->get();
 
-        $fileName = "13TH-MONTH-PAY-" . now()->format('Y') . ".xlsx";
+        $fileName = "13TH-MONTH-PAY-" . now()->format('Y-m-d_His') .".xlsx";
         $disk = Storage::disk("hr_system_folder");
         $directory = "13th Month Files";
 
