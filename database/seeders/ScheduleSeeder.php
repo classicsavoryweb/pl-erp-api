@@ -12,7 +12,7 @@ class ScheduleSeeder extends Seeder
 {
     public function run(): void
     {
-        $employees = Employee::where("status", "active")->where("type", "direct")->get();
+        $employees = Employee::all();
 
         foreach($employees as $employee) {
             $schedule = "Others";
