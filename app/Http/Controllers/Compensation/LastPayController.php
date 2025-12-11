@@ -9,7 +9,6 @@ use App\Models\EmployeeDeduction;
 use App\Models\Incentives;
 use App\Models\LastPay;
 use App\Models\Payroll;
-use App\Models\PayrollList;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
@@ -441,6 +440,7 @@ class LastPayController extends Controller
                     "sl_vl" => $sl_vl,
                     "meal_allowance" => $meal_allowance,
                     "tax_refund" => $taxRefund,
+                    "year" => $lastPay->year,
                     "total_deductions" => $totalDeductions,
                     "last_pay" => round($lastPayAmount, 2),
                     "message" => "Last pay updated successfully"

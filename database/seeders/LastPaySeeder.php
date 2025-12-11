@@ -54,7 +54,7 @@ class LastPaySeeder extends Seeder
                         "last_pay_id" => $lastPay->id,
                         "employee_id" => $employee->id,
                         "reference_doc" => $deduction["reference_doc"],
-                        "deduction_id" => $deduction["deduction_id2"],
+                        "deduction_id" => str_replace("0", "", $deduction["deduction_id2"]),
                         "amount" => str_replace(",", "",$deduction["amount"]),
                     ]);
                 }
