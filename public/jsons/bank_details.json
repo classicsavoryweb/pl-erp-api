@@ -37,17 +37,17 @@
     },
     {
       "bank_id": "10",
-      "bank_no": "5267270027360714",
+      "bank_no": "067003644271",
       "emp_id": "0000031",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "11",
-      "bank_no": "5267270027354634",
+      "bank_no": "067003816749",
       "emp_id": "0000033",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "12",
@@ -156,10 +156,10 @@
     },
     {
       "bank_id": "27",
-      "bank_no": "5267270027354899",
+      "bank_no": "067003621697",
       "emp_id": "0000499",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "28",
@@ -254,10 +254,10 @@
     },
     {
       "bank_id": "41",
-      "bank_no": "5267270027356027",
+      "bank_no": "002491063405",
       "emp_id": "0001925",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "42",
@@ -317,10 +317,10 @@
     },
     {
       "bank_id": "50",
-      "bank_no": "5267270027357801",
+      "bank_no": "067003913213",
       "emp_id": "0003020",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "51",
@@ -345,10 +345,10 @@
     },
     {
       "bank_id": "54",
-      "bank_no": "5267270027355938",
+      "bank_no": "067003738853",
       "emp_id": "0003050",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "55",
@@ -359,10 +359,10 @@
     },
     {
       "bank_id": "56",
-      "bank_no": "5267270027359781",
+      "bank_no": "067003811593",
       "emp_id": "0003062",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "57",
@@ -373,10 +373,10 @@
     },
     {
       "bank_id": "58",
-      "bank_no": "5267270027358429",
+      "bank_no": "067003792890",
       "emp_id": "0003076",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "59",
@@ -618,10 +618,10 @@
     },
     {
       "bank_id": "93",
-      "bank_no": "5267270027356498",
+      "bank_no": "002491063421",
       "emp_id": "0003664",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "94",
@@ -751,10 +751,10 @@
     },
     {
       "bank_id": "112",
-      "bank_no": "5267270027356423",
+      "bank_no": "067003800583",
       "emp_id": "0003906",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "113",
@@ -765,10 +765,10 @@
     },
     {
       "bank_id": "114",
-      "bank_no": "5267270027358205",
+      "bank_no": "067003659821",
       "emp_id": "0003925",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "115",
@@ -884,10 +884,10 @@
     },
     {
       "bank_id": "131",
-      "bank_no": "5267270057452530",
+      "bank_no": "011950209596",
       "emp_id": "0004151",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "132",
@@ -912,10 +912,10 @@
     },
     {
       "bank_id": "135",
-      "bank_no": " 5267270051833800",
+      "bank_no": "011950209472",
       "emp_id": "0004200",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "136",
@@ -947,10 +947,10 @@
     },
     {
       "bank_id": "140",
-      "bank_no": "5267270027356530",
+      "bank_no": "067003615115",
       "emp_id": "0004234",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "141",
@@ -1038,10 +1038,10 @@
     },
     {
       "bank_id": "153",
-      "bank_no": "5267270028297873",
+      "bank_no": "067003647009",
       "emp_id": "0004354",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "154",
@@ -1080,10 +1080,10 @@
     },
     {
       "bank_id": "159",
-      "bank_no": "5267270027356571",
+      "bank_no": "067003715071",
       "emp_id": "0004406",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "160",
@@ -1115,10 +1115,10 @@
     },
     {
       "bank_id": "164",
-      "bank_no": "5267270027357983",
+      "bank_no": "067003583949",
       "emp_id": "0004457",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "165",
@@ -1143,10 +1143,10 @@
     },
     {
       "bank_id": "168",
-      "bank_no": "5267270027356696",
+      "bank_no": "067003885201",
       "emp_id": "0004517",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "169",
@@ -1157,10 +1157,10 @@
     },
     {
       "bank_id": "170",
-      "bank_no": "5267270045606320",
+      "bank_no": "067003826000",
       "emp_id": "0004546",
-      "remarks": "LOST",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "171",
@@ -1206,10 +1206,10 @@
     },
     {
       "bank_id": "177",
-      "bank_no": "5267270035756762",
+      "bank_no": "011950209421",
       "emp_id": "0004616",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "178",
@@ -1444,10 +1444,10 @@
     },
     {
       "bank_id": "211",
-      "bank_no": "5267270025460938",
+      "bank_no": "000251762564",
       "emp_id": "0004958",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "212",
@@ -1563,17 +1563,17 @@
     },
     {
       "bank_id": "228",
-      "bank_no": "5267270027357231",
+      "bank_no": "001480729378",
       "emp_id": "0005139",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "229",
-      "bank_no": "5267270027357223",
+      "bank_no": "067003828852",
       "emp_id": "0005141",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "230",
@@ -1703,10 +1703,10 @@
     },
     {
       "bank_id": "248",
-      "bank_no": "5267270045606411",
+      "bank_no": "004290270541",
       "emp_id": "0005369",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "249",
@@ -1717,10 +1717,10 @@
     },
     {
       "bank_id": "250",
-      "bank_no": " 5267270051833552",
+      "bank_no": "000251760162",
       "emp_id": "0005386",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "251",
@@ -1752,10 +1752,10 @@
     },
     {
       "bank_id": "255",
-      "bank_no": "5267270027357538",
+      "bank_no": "067003781279",
       "emp_id": "0005454",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "256",
@@ -1808,10 +1808,10 @@
     },
     {
       "bank_id": "263",
-      "bank_no": "5267270027357645",
+      "bank_no": "067003776178",
       "emp_id": "0005532",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "264",
@@ -1871,10 +1871,10 @@
     },
     {
       "bank_id": "272",
-      "bank_no": "5267270027357736",
+      "bank_no": "002361037218",
       "emp_id": "0005665",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "273",
@@ -1927,10 +1927,10 @@
     },
     {
       "bank_id": "280",
-      "bank_no": "5267270027357850",
+      "bank_no": "003670665867",
       "emp_id": "0005703",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "281",
@@ -2053,10 +2053,10 @@
     },
     {
       "bank_id": "298",
-      "bank_no": "5267270027358023",
+      "bank_no": "007990108418",
       "emp_id": "0005848",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "299",
@@ -2102,10 +2102,10 @@
     },
     {
       "bank_id": "305",
-      "bank_no": " 5267270051832455",
+      "bank_no": "001770332322",
       "emp_id": "0005891",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "306",
@@ -2221,10 +2221,10 @@
     },
     {
       "bank_id": "322",
-      "bank_no": " 5267270051833792",
+      "bank_no": "011950209367",
       "emp_id": "0006068",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "323",
@@ -2298,10 +2298,10 @@
     },
     {
       "bank_id": "333",
-      "bank_no": "5267270045606726",
+      "bank_no": "004290272072",
       "emp_id": "0006171",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "334",
@@ -2389,10 +2389,10 @@
     },
     {
       "bank_id": "346",
-      "bank_no": "5267270027358635",
+      "bank_no": "067003887042",
       "emp_id": "0006296",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "347",
@@ -2515,10 +2515,10 @@
     },
     {
       "bank_id": "364",
-      "bank_no": "5267270027360367",
+      "bank_no": "067003968719",
       "emp_id": "0006405",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "365",
@@ -2529,10 +2529,10 @@
     },
     {
       "bank_id": "366",
-      "bank_no": "5267270045606254",
+      "bank_no": "002090778209",
       "emp_id": "0006428",
-      "remarks": "LOST",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "367",
@@ -2564,17 +2564,17 @@
     },
     {
       "bank_id": "371",
-      "bank_no": "5267270035894316",
+      "bank_no": "001841122139",
       "emp_id": "0006473",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "372",
-      "bank_no": "5267270027358841",
+      "bank_no": "067003942159",
       "emp_id": "0006479",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "373",
@@ -2627,17 +2627,17 @@
     },
     {
       "bank_id": "380",
-      "bank_no": "5267270027360433",
+      "bank_no": "001831278721",
       "emp_id": "0006549",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "381",
-      "bank_no": "5267270027358916",
+      "bank_no": "012740252494",
       "emp_id": "0006560",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "382",
@@ -2648,10 +2648,10 @@
     },
     {
       "bank_id": "383",
-      "bank_no": "5267270053310096",
+      "bank_no": "001930643886",
       "emp_id": "0006562",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "384",
@@ -2662,10 +2662,10 @@
     },
     {
       "bank_id": "385",
-      "bank_no": "5267270053309395",
+      "bank_no": "000630842221",
       "emp_id": "0006571",
-      "remarks": "n./a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "386",
@@ -2823,10 +2823,10 @@
     },
     {
       "bank_id": "408",
-      "bank_no": "5267270027359237",
+      "bank_no": "001291191834",
       "emp_id": "0006772",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "409",
@@ -2942,10 +2942,10 @@
     },
     {
       "bank_id": "425",
-      "bank_no": "5267270027360193",
+      "bank_no": "067003965981",
       "emp_id": "0006889",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "426",
@@ -3068,10 +3068,10 @@
     },
     {
       "bank_id": "443",
-      "bank_no": "5267270027359682",
+      "bank_no": "067003903129",
       "emp_id": "0007054",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "444",
@@ -3117,10 +3117,10 @@
     },
     {
       "bank_id": "450",
-      "bank_no": "5267270049762343",
+      "bank_no": "001331308672",
       "emp_id": "0007133",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "451",
@@ -3131,10 +3131,10 @@
     },
     {
       "bank_id": "452",
-      "bank_no": "5267270040216083",
+      "bank_no": "067003787498",
       "emp_id": "0007159",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "453",
@@ -3145,10 +3145,10 @@
     },
     {
       "bank_id": "454",
-      "bank_no": "5267270027359856",
+      "bank_no": "067003538900",
       "emp_id": "0007163",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "455",
@@ -3159,10 +3159,10 @@
     },
     {
       "bank_id": "456",
-      "bank_no": "5267270027359823",
+      "bank_no": "067003538234",
       "emp_id": "0007189",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "457",
@@ -3229,10 +3229,10 @@
     },
     {
       "bank_id": "466",
-      "bank_no": "5267270027359989",
+      "bank_no": "067003924614",
       "emp_id": "0007231",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "467",
@@ -3334,17 +3334,17 @@
     },
     {
       "bank_id": "481",
-      "bank_no": "5267270027360227",
+      "bank_no": "067003886615",
       "emp_id": "0007356",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "482",
-      "bank_no": "5267270027353354",
+      "bank_no": "067003684249",
       "emp_id": "0007359",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "483",
@@ -3425,10 +3425,10 @@
     },
     {
       "bank_id": "494",
-      "bank_no": "5267270024766731",
+      "bank_no": "006960257203",
       "emp_id": "0007428",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "495",
@@ -3467,10 +3467,10 @@
     },
     {
       "bank_id": "500",
-      "bank_no": "5267270027360383",
+      "bank_no": "001901404275",
       "emp_id": "0007450",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "501",
@@ -3523,10 +3523,10 @@
     },
     {
       "bank_id": "508",
-      "bank_no": "5267270045606403",
+      "bank_no": "003970319573",
       "emp_id": "0007496",
-      "remarks": "LOST",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "509",
@@ -3551,10 +3551,10 @@
     },
     {
       "bank_id": "512",
-      "bank_no": "5267270037967185",
+      "bank_no": "006220356755",
       "emp_id": "0007537",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "513",
@@ -3565,10 +3565,10 @@
     },
     {
       "bank_id": "514",
-      "bank_no": "5267270027360581",
+      "bank_no": "067003684524",
       "emp_id": "0007549",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "515",
@@ -3579,10 +3579,10 @@
     },
     {
       "bank_id": "516",
-      "bank_no": "5267270027360615",
+      "bank_no": "067003763696",
       "emp_id": "0007587",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "517",
@@ -3600,10 +3600,10 @@
     },
     {
       "bank_id": "519",
-      "bank_no": "5267270027360748",
+      "bank_no": "067003964101",
       "emp_id": "0007616",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "520",
@@ -3712,10 +3712,10 @@
     },
     {
       "bank_id": "535",
-      "bank_no": "5267270043093869",
+      "bank_no": "067003948432",
       "emp_id": "0007704",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "536",
@@ -3887,10 +3887,10 @@
     },
     {
       "bank_id": "560",
-      "bank_no": "5267270034429783",
+      "bank_no": "067003586662",
       "emp_id": "0007834",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "561",
@@ -3901,17 +3901,17 @@
     },
     {
       "bank_id": "562",
-      "bank_no": "5267270027361357",
+      "bank_no": "067003810767",
       "emp_id": "0007838",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "563",
-      "bank_no": "5267270027361282",
+      "bank_no": "067003719662",
       "emp_id": "0007843",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "564",
@@ -4048,10 +4048,10 @@
     },
     {
       "bank_id": "583",
-      "bank_no": "5267270027361464",
+      "bank_no": "067003746902",
       "emp_id": "0007956",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "584",
@@ -4209,17 +4209,17 @@
     },
     {
       "bank_id": "606",
-      "bank_no": "5267270056570043",
+      "bank_no": "004860999870",
       "emp_id": "0008096",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "607",
-      "bank_no": "5267270057451367",
+      "bank_no": "000781736749",
       "emp_id": "0008101",
-      "remarks": "captured",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "608",
@@ -4244,10 +4244,10 @@
     },
     {
       "bank_id": "611",
-      "bank_no": "5267270045046600",
+      "bank_no": "067003942930",
       "emp_id": "0008117",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "612",
@@ -4286,10 +4286,10 @@
     },
     {
       "bank_id": "617",
-      "bank_no": "5267270053309098",
+      "bank_no": "005660861440",
       "emp_id": "0008137",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "618",
@@ -4426,10 +4426,10 @@
     },
     {
       "bank_id": "637",
-      "bank_no": "5267270027353107",
+      "bank_no": "000781737303",
       "emp_id": "0008250",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "638",
@@ -4454,10 +4454,10 @@
     },
     {
       "bank_id": "641",
-      "bank_no": "5267270020271850",
+      "bank_no": "001821213031",
       "emp_id": "0008257",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "642",
@@ -4503,10 +4503,10 @@
     },
     {
       "bank_id": "648",
-      "bank_no": "5267270027352885",
+      "bank_no": "067003790804",
       "emp_id": "0008276",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "649",
@@ -4594,10 +4594,10 @@
     },
     {
       "bank_id": "661",
-      "bank_no": "5267270027355185",
+      "bank_no": "067003912209",
       "emp_id": "0008358",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "662",
@@ -4629,10 +4629,10 @@
     },
     {
       "bank_id": "666",
-      "bank_no": "5267270040425304",
+      "bank_no": "013740080854",
       "emp_id": "0008389",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "667",
@@ -4727,10 +4727,10 @@
     },
     {
       "bank_id": "680",
-      "bank_no": "5267270051834238",
+      "bank_no": "001770332314",
       "emp_id": "0008484",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "681",
@@ -5084,10 +5084,10 @@
     },
     {
       "bank_id": "731",
-      "bank_no": "5267270027353990",
+      "bank_no": "067003768922",
       "emp_id": "0008809",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "732",
@@ -5252,17 +5252,17 @@
     },
     {
       "bank_id": "755",
-      "bank_no": "5267270027352950",
+      "bank_no": "000801294932",
       "emp_id": "0008971",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "756",
-      "bank_no": "5267270027354378",
+      "bank_no": "067003736850",
       "emp_id": "0008974",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "757",
@@ -5329,10 +5329,10 @@
     },
     {
       "bank_id": "766",
-      "bank_no": "5267270057449122",
+      "bank_no": "067003599942",
       "emp_id": "0009035",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "767",
@@ -5385,10 +5385,10 @@
     },
     {
       "bank_id": "774",
-      "bank_no": "5267270027353289",
+      "bank_no": "067003862554",
       "emp_id": "0009088",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "775",
@@ -5518,10 +5518,10 @@
     },
     {
       "bank_id": "793",
-      "bank_no": "5267270040890754",
+      "bank_no": "067003948122",
       "emp_id": "0009205",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "794",
@@ -5581,10 +5581,10 @@
     },
     {
       "bank_id": "802",
-      "bank_no": "5267270020389512",
+      "bank_no": "003670665433",
       "emp_id": "0009237",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "803",
@@ -5777,10 +5777,10 @@
     },
     {
       "bank_id": "830",
-      "bank_no": "5267270044031264",
+      "bank_no": "010590202545",
       "emp_id": "0009367",
-      "remarks": "LOST",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "831",
@@ -6043,10 +6043,10 @@
     },
     {
       "bank_id": "868",
-      "bank_no": "5267270022574970",
+      "bank_no": "013610123227",
       "emp_id": "0009530",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "869",
@@ -6148,10 +6148,10 @@
     },
     {
       "bank_id": "883",
-      "bank_no": "5267270034429809",
+      "bank_no": "006980620052",
       "emp_id": "0009610",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "884",
@@ -6218,10 +6218,10 @@
     },
     {
       "bank_id": "893",
-      "bank_no": "5267270049761972",
+      "bank_no": "004860999986",
       "emp_id": "0009640",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "894",
@@ -6246,10 +6246,10 @@
     },
     {
       "bank_id": "897",
-      "bank_no": "5267270057451045",
+      "bank_no": "067003542037",
       "emp_id": "0009652",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "898",
@@ -6288,10 +6288,10 @@
     },
     {
       "bank_id": "903",
-      "bank_no": "5267270053308579",
+      "bank_no": "011950209715",
       "emp_id": "0009687",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "904",
@@ -6365,10 +6365,10 @@
     },
     {
       "bank_id": "914",
-      "bank_no": "5267270036927537",
+      "bank_no": "001521422034",
       "emp_id": "0009726",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "915",
@@ -6442,10 +6442,10 @@
     },
     {
       "bank_id": "925",
-      "bank_no": "5267270056568427",
+      "bank_no": "001331308796",
       "emp_id": "0009763",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "926",
@@ -6491,10 +6491,10 @@
     },
     {
       "bank_id": "932",
-      "bank_no": "5267270024448090",
+      "bank_no": "006790505023",
       "emp_id": "0009785",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "933",
@@ -6526,10 +6526,10 @@
     },
     {
       "bank_id": "937",
-      "bank_no": "5267270025019643",
+      "bank_no": "067003744152",
       "emp_id": "0009816",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "938",
@@ -6575,10 +6575,10 @@
     },
     {
       "bank_id": "944",
-      "bank_no": "5267270025061181",
+      "bank_no": "012690085980",
       "emp_id": "0009851",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "945",
@@ -6862,10 +6862,10 @@
     },
     {
       "bank_id": "985",
-      "bank_no": "5267270057449114",
+      "bank_no": "067003759192",
       "emp_id": "0010015",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "986",
@@ -6946,10 +6946,10 @@
     },
     {
       "bank_id": "997",
-      "bank_no": "5267270028501985",
+      "bank_no": "067003865316",
       "emp_id": "0010042",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "998",
@@ -7030,10 +7030,10 @@
     },
     {
       "bank_id": "1009",
-      "bank_no": "5267270028983902",
+      "bank_no": "004600265575",
       "emp_id": "0010082",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1010",
@@ -7569,10 +7569,10 @@
     },
     {
       "bank_id": "1086",
-      "bank_no": "5267270036223036",
+      "bank_no": "067003690397",
       "emp_id": "0010236",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "1087",
@@ -8031,10 +8031,10 @@
     },
     {
       "bank_id": "1152",
-      "bank_no": "5267270032945111",
+      "bank_no": "067003746384",
       "emp_id": "0010322",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "1153",
@@ -8661,10 +8661,10 @@
     },
     {
       "bank_id": "1242",
-      "bank_no": "5267270034473542",
+      "bank_no": "067003904125",
       "emp_id": "0010421",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "1243",
@@ -8927,10 +8927,10 @@
     },
     {
       "bank_id": "1280",
-      "bank_no": "5267270027355011",
+      "bank_no": "067003809971",
       "emp_id": "1031",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "1281",
@@ -9004,10 +9004,10 @@
     },
     {
       "bank_id": "1291",
-      "bank_no": "5267270029386865",
+      "bank_no": "001400187468",
       "emp_id": "1266",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1292",
@@ -9095,10 +9095,10 @@
     },
     {
       "bank_id": "1304",
-      "bank_no": "5267270045605959",
+      "bank_no": "001400187794",
       "emp_id": "1545",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1305",
@@ -9193,10 +9193,10 @@
     },
     {
       "bank_id": "1318",
-      "bank_no": "5267270025422672",
+      "bank_no": "002290347740",
       "emp_id": "1808",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1319",
@@ -9221,10 +9221,10 @@
     },
     {
       "bank_id": "1322",
-      "bank_no": "5267270027355888",
+      "bank_no": "067003802101",
       "emp_id": "1829",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "1323",
@@ -9249,10 +9249,10 @@
     },
     {
       "bank_id": "1326",
-      "bank_no": "5267270027358254",
+      "bank_no": "006220355473",
       "emp_id": "1857",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1327",
@@ -9340,10 +9340,10 @@
     },
     {
       "bank_id": "1339",
-      "bank_no": "5267270049762129",
+      "bank_no": "002090777970",
       "emp_id": "2112",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1340",
@@ -9361,10 +9361,10 @@
     },
     {
       "bank_id": "1342",
-      "bank_no": "5267270027354709",
+      "bank_no": "067003811976",
       "emp_id": "225",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "1343",
@@ -9522,10 +9522,10 @@
     },
     {
       "bank_id": "1365",
-      "bank_no": "5267270058620671",
+      "bank_no": "001331308591",
       "emp_id": "553",
-      "remarks": "invalid",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1366",
@@ -10425,17 +10425,17 @@
     },
     {
       "bank_id": "1494",
-      "bank_no": "5267270036716104",
+      "bank_no": "001821212981",
       "emp_id": "0010554",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1495",
-      "bank_no": "5267270057451037",
+      "bank_no": "067003615190",
       "emp_id": "0010550",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "1496",
@@ -10467,10 +10467,10 @@
     },
     {
       "bank_id": "1500",
-      "bank_no": "5267270055383257",
+      "bank_no": "002371153350",
       "emp_id": "0010546",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "1501",
@@ -13491,10 +13491,10 @@
     },
     {
       "bank_id": "1932",
-      "bank_no": "5267270036661292",
+      "bank_no": "067003752139",
       "emp_id": "0010579",
-      "remarks": "new",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "1933",
@@ -14359,10 +14359,10 @@
     },
     {
       "bank_id": "2056",
-      "bank_no": "5267270044029458",
+      "bank_no": "067003658728",
       "emp_id": "0010699",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "2057",
@@ -14499,10 +14499,10 @@
     },
     {
       "bank_id": "2076",
-      "bank_no": "5267270037842222",
+      "bank_no": "067003562801",
       "emp_id": "0010716",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2077",
@@ -14660,10 +14660,10 @@
     },
     {
       "bank_id": "2099",
-      "bank_no": "5267270042422960",
+      "bank_no": "067003681568",
       "emp_id": "0010732",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2100",
@@ -15031,10 +15031,10 @@
     },
     {
       "bank_id": "2152",
-      "bank_no": "5267270045606544",
+      "bank_no": "007350657568",
       "emp_id": "0010811",
-      "remarks": "LOST",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2153",
@@ -15129,10 +15129,10 @@
     },
     {
       "bank_id": "2166",
-      "bank_no": "5267270038456048",
+      "bank_no": "002090777903",
       "emp_id": "0010779",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2167",
@@ -15304,17 +15304,17 @@
     },
     {
       "bank_id": "2191",
-      "bank_no": "5267270038506289",
+      "bank_no": "001331308907",
       "emp_id": "0010833",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2192",
-      "bank_no": "5267270053308918",
+      "bank_no": "005660861254",
       "emp_id": "0010844",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2193",
@@ -15325,10 +15325,10 @@
     },
     {
       "bank_id": "2194",
-      "bank_no": "5267270038124125",
+      "bank_no": "067003541456",
       "emp_id": "0010760",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2195",
@@ -15374,10 +15374,10 @@
     },
     {
       "bank_id": "2201",
-      "bank_no": "5267270038716805",
+      "bank_no": "067003547888",
       "emp_id": "0010885",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2202",
@@ -15409,10 +15409,10 @@
     },
     {
       "bank_id": "2206",
-      "bank_no": "5267270038716912",
+      "bank_no": "067003710924",
       "emp_id": "0010902",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2207",
@@ -15514,10 +15514,10 @@
     },
     {
       "bank_id": "2221",
-      "bank_no": "5267270038931255",
+      "bank_no": "067003683919",
       "emp_id": "0010901",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2222",
@@ -15528,17 +15528,17 @@
     },
     {
       "bank_id": "2223",
-      "bank_no": "5267270045607088",
+      "bank_no": "002470355679",
       "emp_id": "0010917",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2224",
-      "bank_no": "5267270058621158",
+      "bank_no": "007990108345",
       "emp_id": "0010905",
-      "remarks": "LOST",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2225",
@@ -15668,10 +15668,10 @@
     },
     {
       "bank_id": "2243",
-      "bank_no": "5267270041327541",
+      "bank_no": "067003929349",
       "emp_id": "0010913",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "2244",
@@ -15710,10 +15710,10 @@
     },
     {
       "bank_id": "2249",
-      "bank_no": "5267270038931263",
+      "bank_no": "067003962257",
       "emp_id": "0010787",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2250",
@@ -15913,10 +15913,10 @@
     },
     {
       "bank_id": "2278",
-      "bank_no": "5267270039072257",
+      "bank_no": "003670666529",
       "emp_id": "0010871",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2279",
@@ -15962,10 +15962,10 @@
     },
     {
       "bank_id": "2285",
-      "bank_no": "5267270039202326",
+      "bank_no": "067003842618",
       "emp_id": "0010935",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2286",
@@ -16025,10 +16025,10 @@
     },
     {
       "bank_id": "2294",
-      "bank_no": "5267270039350083",
+      "bank_no": "006790504906",
       "emp_id": "0010962",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2295",
@@ -16130,10 +16130,10 @@
     },
     {
       "bank_id": "2309",
-      "bank_no": "5267270057451177",
+      "bank_no": "067003819020",
       "emp_id": "0011017",
-      "remarks": "DEFECTIVE",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2310",
@@ -16557,10 +16557,10 @@
     },
     {
       "bank_id": "2370",
-      "bank_no": "5267270039614363",
+      "bank_no": "067003734750",
       "emp_id": "0010969",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2371",
@@ -16711,10 +16711,10 @@
     },
     {
       "bank_id": "2392",
-      "bank_no": "5267270043708912",
+      "bank_no": "001521432498",
       "emp_id": "0011122",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2393",
@@ -16781,10 +16781,10 @@
     },
     {
       "bank_id": "2402",
-      "bank_no": "5267270039916552",
+      "bank_no": "012690086111",
       "emp_id": "0011108",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2403",
@@ -17012,10 +17012,10 @@
     },
     {
       "bank_id": "2435",
-      "bank_no": "5267270040134252",
+      "bank_no": "067003821432",
       "emp_id": "0011052",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2436",
@@ -17061,10 +17061,10 @@
     },
     {
       "bank_id": "2442",
-      "bank_no": "5267270040134328",
+      "bank_no": "067003729978",
       "emp_id": "0011142",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2443",
@@ -17089,10 +17089,10 @@
     },
     {
       "bank_id": "2446",
-      "bank_no": "5267270039916602",
+      "bank_no": "001821212906",
       "emp_id": "0010988",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2447",
@@ -17103,10 +17103,10 @@
     },
     {
       "bank_id": "2448",
-      "bank_no": "5267270039727926",
+      "bank_no": "067003829557",
       "emp_id": "0010899",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "2449",
@@ -17341,10 +17341,10 @@
     },
     {
       "bank_id": "2482",
-      "bank_no": "5267270040591980",
+      "bank_no": "067003562208",
       "emp_id": "0011205",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2483",
@@ -17355,10 +17355,10 @@
     },
     {
       "bank_id": "2484",
-      "bank_no": "5267270054331729",
+      "bank_no": "005830789818",
       "emp_id": "0011181",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2485",
@@ -17376,10 +17376,10 @@
     },
     {
       "bank_id": "2487",
-      "bank_no": "5267270040591972",
+      "bank_no": "067003911121",
       "emp_id": "0011167",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2488",
@@ -17390,10 +17390,10 @@
     },
     {
       "bank_id": "2489",
-      "bank_no": "5267270042765913",
+      "bank_no": "013750062026",
       "emp_id": "0011189",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2490",
@@ -17481,10 +17481,10 @@
     },
     {
       "bank_id": "2502",
-      "bank_no": "5267270057450872",
+      "bank_no": "006220355325",
       "emp_id": "0011210",
-      "remarks": "INVALID",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2503",
@@ -17565,10 +17565,10 @@
     },
     {
       "bank_id": "2514",
-      "bank_no": "5267270056569375",
+      "bank_no": "006980619887",
       "emp_id": "0011186",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2515",
@@ -17845,10 +17845,10 @@
     },
     {
       "bank_id": "2554",
-      "bank_no": "5267270044028492",
+      "bank_no": "002290359641",
       "emp_id": "0011282",
-      "remarks": "NA",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2555",
@@ -17915,10 +17915,10 @@
     },
     {
       "bank_id": "2564",
-      "bank_no": "5267270055383174",
+      "bank_no": "067004521270",
       "emp_id": "0011257",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2565",
@@ -18132,10 +18132,10 @@
     },
     {
       "bank_id": "2595",
-      "bank_no": "5267270041617339",
+      "bank_no": "067003716256",
       "emp_id": "0011324",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2596",
@@ -18391,10 +18391,10 @@
     },
     {
       "bank_id": "2632",
-      "bank_no": "5267270041617172",
+      "bank_no": "003670665425",
       "emp_id": "0011237",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2633",
@@ -18622,10 +18622,10 @@
     },
     {
       "bank_id": "2665",
-      "bank_no": "5267270042352548",
+      "bank_no": "067003891961",
       "emp_id": "0011380",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2666",
@@ -18636,10 +18636,10 @@
     },
     {
       "bank_id": "2667",
-      "bank_no": "5267270042352571",
+      "bank_no": "002290358696",
       "emp_id": "0011401",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2668",
@@ -18909,10 +18909,10 @@
     },
     {
       "bank_id": "2706",
-      "bank_no": "5267270042423042",
+      "bank_no": "003670665662",
       "emp_id": "0011315",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2707",
@@ -18951,10 +18951,10 @@
     },
     {
       "bank_id": "2712",
-      "bank_no": "5267270042513032",
+      "bank_no": "067003798570",
       "emp_id": "0011391",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2713",
@@ -19007,10 +19007,10 @@
     },
     {
       "bank_id": "2720",
-      "bank_no": "5267270055383349",
+      "bank_no": "001272025193",
       "emp_id": "0011470",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2721",
@@ -19434,10 +19434,10 @@
     },
     {
       "bank_id": "2781",
-      "bank_no": "5267270043405253",
+      "bank_no": "001281676878",
       "emp_id": "0011560",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2782",
@@ -19658,10 +19658,10 @@
     },
     {
       "bank_id": "2813",
-      "bank_no": "5267270058622040",
+      "bank_no": "067003737415",
       "emp_id": "0011558",
-      "remarks": "defective",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2814",
@@ -19840,10 +19840,10 @@
     },
     {
       "bank_id": "2839",
-      "bank_no": "5267270043094024",
+      "bank_no": "001400187603",
       "emp_id": "0011571",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2840",
@@ -19924,10 +19924,10 @@
     },
     {
       "bank_id": "2851",
-      "bank_no": "5267270043093786",
+      "bank_no": "067003663195",
       "emp_id": "0011616",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "2852",
@@ -19973,17 +19973,17 @@
     },
     {
       "bank_id": "2858",
-      "bank_no": "5267270043093893",
+      "bank_no": "011950209642",
       "emp_id": "0011406",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2859",
-      "bank_no": "5267270043093901",
+      "bank_no": "067003722655",
       "emp_id": "0011485",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2860",
@@ -20085,10 +20085,10 @@
     },
     {
       "bank_id": "2874",
-      "bank_no": "5267270043171855",
+      "bank_no": "067003862198",
       "emp_id": "0011629",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "bdo pay",
+      "account_id": "6"
     },
     {
       "bank_id": "2875",
@@ -20295,10 +20295,10 @@
     },
     {
       "bank_id": "2904",
-      "bank_no": "5267270043408562",
+      "bank_no": "067003851617",
       "emp_id": "0011668",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2905",
@@ -20372,10 +20372,10 @@
     },
     {
       "bank_id": "2915",
-      "bank_no": "5267270043408315",
+      "bank_no": "001480724562",
       "emp_id": "0011579",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "2916",
@@ -20414,10 +20414,10 @@
     },
     {
       "bank_id": "2921",
-      "bank_no": "5267270049761105",
+      "bank_no": "001281677025",
       "emp_id": "0011545",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2922",
@@ -20428,10 +20428,10 @@
     },
     {
       "bank_id": "2923",
-      "bank_no": " 5267270051831697",
+      "bank_no": "008860114964",
       "emp_id": "0011670",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2924",
@@ -20533,10 +20533,10 @@
     },
     {
       "bank_id": "2938",
-      "bank_no": "5267270043641394",
+      "bank_no": "067003786440",
       "emp_id": "0011691",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2939",
@@ -20862,17 +20862,17 @@
     },
     {
       "bank_id": "2985",
-      "bank_no": "5267270043992391",
+      "bank_no": "001272026394",
       "emp_id": "0011739",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2986",
-      "bank_no": "5267270043992359",
+      "bank_no": "067003893360",
       "emp_id": "0011735",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "BDO PAY",
+      "account_id": "6"
     },
     {
       "bank_id": "2987",
@@ -20883,10 +20883,10 @@
     },
     {
       "bank_id": "2988",
-      "bank_no": "5267270043992292",
+      "bank_no": "001770332462",
       "emp_id": "0011716",
-      "remarks": "",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "2989",
@@ -21289,7 +21289,7 @@
     },
     {
       "bank_id": "3046",
-      "bank_no": "5267270054330598",
+      "bank_no": "5267270058623196",
       "emp_id": "0011767",
       "remarks": "REPLACEMENT",
       "account_id": "5"
@@ -21366,10 +21366,10 @@
     },
     {
       "bank_id": "3057",
-      "bank_no": "5267270049761188",
+      "bank_no": "004290272145",
       "emp_id": "0011764",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "3058",
@@ -21744,10 +21744,10 @@
     },
     {
       "bank_id": "3111",
-      "bank_no": "5267270044457873",
+      "bank_no": "001770332292",
       "emp_id": "0011777",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3112",
@@ -22423,10 +22423,10 @@
     },
     {
       "bank_id": "3208",
-      "bank_no": "5267270055381830",
+      "bank_no": "001831269145",
       "emp_id": "0011893",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3209",
@@ -22528,10 +22528,10 @@
     },
     {
       "bank_id": "3223",
-      "bank_no": "5267270045607369",
+      "bank_no": "005830788269",
       "emp_id": "0011927",
-      "remarks": "new",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3224",
@@ -22843,10 +22843,10 @@
     },
     {
       "bank_id": "3268",
-      "bank_no": "5267270044029425",
+      "bank_no": "012320265887",
       "emp_id": "0012009",
-      "remarks": "na",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3269",
@@ -23123,10 +23123,10 @@
     },
     {
       "bank_id": "3308",
-      "bank_no": "5267270057449338",
+      "bank_no": "006220355406",
       "emp_id": "0012052",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3309",
@@ -23494,10 +23494,10 @@
     },
     {
       "bank_id": "3361",
-      "bank_no": "5267270044030654",
+      "bank_no": "000801294940",
       "emp_id": "0012066",
-      "remarks": "NA",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3362",
@@ -24292,10 +24292,10 @@
     },
     {
       "bank_id": "3475",
-      "bank_no": "5267270044032064",
+      "bank_no": "006220354817",
       "emp_id": "0012217",
-      "remarks": "NA",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3476",
@@ -24439,10 +24439,10 @@
     },
     {
       "bank_id": "3496",
-      "bank_no": "5267270045606775",
+      "bank_no": "011950209464",
       "emp_id": "0012241",
-      "remarks": "NA",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3497",
@@ -24572,31 +24572,31 @@
     },
     {
       "bank_id": "3515",
-      "bank_no": "5267270045606874",
+      "bank_no": "006220355058",
       "emp_id": "0012263",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3516",
-      "bank_no": "5267270055383398",
+      "bank_no": "002371153121",
       "emp_id": "0012266",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3517",
-      "bank_no": "5267270045607005",
+      "bank_no": "006220356836",
       "emp_id": "0012274",
-      "remarks": "na",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3518",
-      "bank_no": "5267270045606981",
+      "bank_no": "006220354914",
       "emp_id": "0012272",
-      "remarks": "na",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3519",
@@ -24663,10 +24663,10 @@
     },
     {
       "bank_id": "3528",
-      "bank_no": "5267270045607229",
+      "bank_no": "006220355236",
       "emp_id": "0012288",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3529",
@@ -24698,10 +24698,10 @@
     },
     {
       "bank_id": "3533",
-      "bank_no": "5267270045607633",
+      "bank_no": "001400187581",
       "emp_id": "0012281",
       "remarks": "NEW",
-      "account_id": "5"
+      "account_id": "6"
     },
     {
       "bank_id": "3534",
@@ -24768,10 +24768,10 @@
     },
     {
       "bank_id": "3543",
-      "bank_no": "5267270045607401",
+      "bank_no": "001291189198",
       "emp_id": "0012295",
-      "remarks": "na",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3544",
@@ -24817,10 +24817,10 @@
     },
     {
       "bank_id": "3550",
-      "bank_no": "5267270045607450",
+      "bank_no": "006220357565",
       "emp_id": "0012303",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3551",
@@ -24852,10 +24852,10 @@
     },
     {
       "bank_id": "3555",
-      "bank_no": "5267270045607708",
+      "bank_no": "006220355422",
       "emp_id": "0012327",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3556",
@@ -24922,17 +24922,17 @@
     },
     {
       "bank_id": "3565",
-      "bank_no": "5267270045607971",
+      "bank_no": "001821212965",
       "emp_id": "0012311",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3566",
-      "bank_no": "5267270045605983",
+      "bank_no": "013370135838",
       "emp_id": "0012286",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3567",
@@ -24992,10 +24992,10 @@
     },
     {
       "bank_id": "3575",
-      "bank_no": "5267270045607872",
+      "bank_no": "012500246961",
       "emp_id": "0012319",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3576",
@@ -25041,10 +25041,10 @@
     },
     {
       "bank_id": "3582",
-      "bank_no": "5267270045608094",
+      "bank_no": "006220355244",
       "emp_id": "0012373",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3583",
@@ -25125,10 +25125,10 @@
     },
     {
       "bank_id": "3594",
-      "bank_no": "5267270045607823",
+      "bank_no": "012740252478",
       "emp_id": "0012321",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3595",
@@ -25202,10 +25202,10 @@
     },
     {
       "bank_id": "3605",
-      "bank_no": "5267270058620689",
+      "bank_no": "006220349872",
       "emp_id": "0012382",
-      "remarks": "LOST",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "3606",
@@ -25251,10 +25251,10 @@
     },
     {
       "bank_id": "3612",
-      "bank_no": "5267270045608433",
+      "bank_no": "001930644637",
       "emp_id": "0012385",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3613",
@@ -25300,10 +25300,10 @@
     },
     {
       "bank_id": "3619",
-      "bank_no": "5267270045608235",
+      "bank_no": "001821215034",
       "emp_id": "0012363",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "3620",
@@ -25342,17 +25342,17 @@
     },
     {
       "bank_id": "3625",
-      "bank_no": "5267270045608532",
+      "bank_no": "003670665492",
       "emp_id": "0012375",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3626",
-      "bank_no": "5267270045608656",
+      "bank_no": "006220354787",
       "emp_id": "0012418",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3627",
@@ -25510,10 +25510,10 @@
     },
     {
       "bank_id": "3649",
-      "bank_no": "5267270045608821",
+      "bank_no": "008860115103",
       "emp_id": "0012435",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3650",
@@ -25643,10 +25643,10 @@
     },
     {
       "bank_id": "3668",
-      "bank_no": "5267270049759729",
+      "bank_no": "012500247194",
       "emp_id": "0012442",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3669",
@@ -25692,10 +25692,10 @@
     },
     {
       "bank_id": "3675",
-      "bank_no": "5267270057452688",
+      "bank_no": "001331308818",
       "emp_id": "0012393",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3676",
@@ -25762,10 +25762,10 @@
     },
     {
       "bank_id": "3685",
-      "bank_no": "5267270049760131",
+      "bank_no": "006980622179",
       "emp_id": "0012491",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3686",
@@ -25853,17 +25853,17 @@
     },
     {
       "bank_id": "3698",
-      "bank_no": "5267270056570464",
+      "bank_no": "001480729327",
       "emp_id": "0012498",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3699",
-      "bank_no": "5267270049759935",
+      "bank_no": "006280868884",
       "emp_id": "0012481",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3700",
@@ -26126,10 +26126,10 @@
     },
     {
       "bank_id": "3737",
-      "bank_no": "5267270049760669",
+      "bank_no": "006220356895",
       "emp_id": "0012547",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3738",
@@ -26224,10 +26224,10 @@
     },
     {
       "bank_id": "3751",
-      "bank_no": "5267270056570779",
+      "bank_no": "006220357514",
       "emp_id": "0012559",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3752",
@@ -26245,10 +26245,10 @@
     },
     {
       "bank_id": "3754",
-      "bank_no": "5267270049760784",
+      "bank_no": "002371153342",
       "emp_id": "0012556",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3755",
@@ -26259,10 +26259,10 @@
     },
     {
       "bank_id": "3756",
-      "bank_no": "5267270057451359",
+      "bank_no": "006220356739",
       "emp_id": "0012561",
-      "remarks": "captured",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3757",
@@ -26308,10 +26308,10 @@
     },
     {
       "bank_id": "3763",
-      "bank_no": "5267270049760545",
+      "bank_no": "002290358971",
       "emp_id": "0012509",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "3764",
@@ -26322,10 +26322,10 @@
     },
     {
       "bank_id": "3765",
-      "bank_no": "5267270049760891",
+      "bank_no": "010590202731",
       "emp_id": "0012567",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3766",
@@ -26427,10 +26427,10 @@
     },
     {
       "bank_id": "3780",
-      "bank_no": "5267270049761220",
+      "bank_no": "001331308826",
       "emp_id": "0012598",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3781",
@@ -26546,24 +26546,24 @@
     },
     {
       "bank_id": "3797",
-      "bank_no": "5267270049761311",
+      "bank_no": "006220357433",
       "emp_id": "0012605",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3798",
-      "bank_no": "5267270049761295",
+      "bank_no": "002371151722",
       "emp_id": "0012602",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3799",
-      "bank_no": "5267270049761303",
+      "bank_no": "006220357425",
       "emp_id": "0012604",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3800",
@@ -26595,10 +26595,10 @@
     },
     {
       "bank_id": "3804",
-      "bank_no": "5267270049761428",
+      "bank_no": "000470964391",
       "emp_id": "0012612",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3805",
@@ -26693,10 +26693,10 @@
     },
     {
       "bank_id": "3818",
-      "bank_no": "5267270054331356",
+      "bank_no": "002361034316",
       "emp_id": "0012530",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3819",
@@ -26714,10 +26714,10 @@
     },
     {
       "bank_id": "3821",
-      "bank_no": "5267270049761618",
+      "bank_no": "004290271939",
       "emp_id": "0012631",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3822",
@@ -26793,7 +26793,7 @@
       "bank_id": "3832",
       "bank_no": "5267270049761550",
       "emp_id": "0012596",
-      "remarks": "n/a",
+      "remarks": "CASH CARD",
       "account_id": "5"
     },
     {
@@ -26854,10 +26854,10 @@
     },
     {
       "bank_id": "3841",
-      "bank_no": "5267270056570118",
+      "bank_no": "006220356968",
       "emp_id": "0012649",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3842",
@@ -26980,10 +26980,10 @@
     },
     {
       "bank_id": "3859",
-      "bank_no": "5267270049762095",
+      "bank_no": "010590204084",
       "emp_id": "0012678",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3860",
@@ -27113,17 +27113,17 @@
     },
     {
       "bank_id": "3878",
-      "bank_no": "5267270049762210",
+      "bank_no": "002491063391",
       "emp_id": "0012690",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3879",
-      "bank_no": "5267270049762350",
+      "bank_no": "001291192113",
       "emp_id": "0012650",
-      "remarks": "reolacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3880",
@@ -27351,10 +27351,10 @@
     },
     {
       "bank_id": "3912",
-      "bank_no": "5267270049762863",
+      "bank_no": "006220354760",
       "emp_id": "0012761",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3913",
@@ -27379,10 +27379,10 @@
     },
     {
       "bank_id": "3916",
-      "bank_no": "5267270049762707",
+      "bank_no": "012320266336",
       "emp_id": "0012740",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3917",
@@ -27449,17 +27449,17 @@
     },
     {
       "bank_id": "3926",
-      "bank_no": "5267270049762830",
+      "bank_no": "006220354868",
       "emp_id": "0012753",
-      "remarks": "NA",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3927",
-      "bank_no": " 5267270051831747",
+      "bank_no": "010590203215",
       "emp_id": "0012778",
-      "remarks": "NA",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3928",
@@ -27470,10 +27470,10 @@
     },
     {
       "bank_id": "3929",
-      "bank_no": "5267270049763036",
+      "bank_no": "006220357522",
       "emp_id": "0012773",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3930",
@@ -27519,10 +27519,10 @@
     },
     {
       "bank_id": "3936",
-      "bank_no": " 5267270051831655",
+      "bank_no": "006790505945",
       "emp_id": "0012776",
-      "remarks": "NA",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3937",
@@ -27554,10 +27554,10 @@
     },
     {
       "bank_id": "3941",
-      "bank_no": "5267270049762822",
+      "bank_no": "006220356909",
       "emp_id": "0012757",
-      "remarks": "NA",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3942",
@@ -27715,10 +27715,10 @@
     },
     {
       "bank_id": "3964",
-      "bank_no": "5267270049762889",
+      "bank_no": "003670666618",
       "emp_id": "0012718",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3965",
@@ -27729,10 +27729,10 @@
     },
     {
       "bank_id": "3966",
-      "bank_no": " 5267270051831929",
+      "bank_no": "012320265704",
       "emp_id": "0012798",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "3967",
@@ -27785,10 +27785,10 @@
     },
     {
       "bank_id": "3974",
-      "bank_no": " 5267270051832117",
+      "bank_no": "006220357573",
       "emp_id": "0012814",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3975",
@@ -27834,10 +27834,10 @@
     },
     {
       "bank_id": "3981",
-      "bank_no": "5267270056568120",
+      "bank_no": "002361038354",
       "emp_id": "0012770",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "3982",
@@ -28051,10 +28051,10 @@
     },
     {
       "bank_id": "4012",
-      "bank_no": " 5267270051832067",
+      "bank_no": "002361036386",
       "emp_id": "0012799",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4013",
@@ -28114,10 +28114,10 @@
     },
     {
       "bank_id": "4021",
-      "bank_no": " 5267270051832646",
+      "bank_no": "000440791308",
       "emp_id": "0012871",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "4022",
@@ -28268,10 +28268,10 @@
     },
     {
       "bank_id": "4043",
-      "bank_no": "5267270053308173",
+      "bank_no": "000251762092",
       "emp_id": "0012890",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4044",
@@ -28366,10 +28366,10 @@
     },
     {
       "bank_id": "4057",
-      "bank_no": " 5267270051832679",
+      "bank_no": "013750061216",
       "emp_id": "0012823",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4058",
@@ -28380,17 +28380,17 @@
     },
     {
       "bank_id": "4059",
-      "bank_no": " 5267270051832570",
+      "bank_no": "011950209375",
       "emp_id": "0012811",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4060",
-      "bank_no": "5267270057452662",
+      "bank_no": "001831279051",
       "emp_id": "0012926",
-      "remarks": "invalid",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4061",
@@ -28415,10 +28415,10 @@
     },
     {
       "bank_id": "4064",
-      "bank_no": " 5267270051833172",
+      "bank_no": "006980620176",
       "emp_id": "0012906",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4065",
@@ -28485,10 +28485,10 @@
     },
     {
       "bank_id": "4074",
-      "bank_no": " 5267270051832737",
+      "bank_no": "002361035177",
       "emp_id": "0012833",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4075",
@@ -28541,10 +28541,10 @@
     },
     {
       "bank_id": "4082",
-      "bank_no": " 5267270051833289",
+      "bank_no": "005830788293",
       "emp_id": "0012872",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4083",
@@ -28632,10 +28632,10 @@
     },
     {
       "bank_id": "4095",
-      "bank_no": " 5267270051833388",
+      "bank_no": "001400187611",
       "emp_id": "0012928",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4096",
@@ -28667,10 +28667,10 @@
     },
     {
       "bank_id": "4100",
-      "bank_no": " 5267270051832562",
+      "bank_no": "012690086073",
       "emp_id": "0012760",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4101",
@@ -28800,10 +28800,10 @@
     },
     {
       "bank_id": "4119",
-      "bank_no": "5267270051833081",
+      "bank_no": "001281678463",
       "emp_id": "0012826",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "4120",
@@ -28828,10 +28828,10 @@
     },
     {
       "bank_id": "4123",
-      "bank_no": "5267270051833727",
+      "bank_no": "013740080889",
       "emp_id": "0012930",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4124",
@@ -28968,10 +28968,10 @@
     },
     {
       "bank_id": "4143",
-      "bank_no": "5267270058620291",
+      "bank_no": "007990107047",
       "emp_id": "0012984",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4144",
@@ -28982,10 +28982,10 @@
     },
     {
       "bank_id": "4145",
-      "bank_no": "5267270051833925",
+      "bank_no": "004440209923",
       "emp_id": "0012963",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4146",
@@ -29059,17 +29059,17 @@
     },
     {
       "bank_id": "4156",
-      "bank_no": "5267270051834030",
+      "bank_no": "013370135803",
       "emp_id": "0012950",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4157",
-      "bank_no": "5267270051833917",
+      "bank_no": "001281677211",
       "emp_id": "0012901",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4158",
@@ -29199,10 +29199,10 @@
     },
     {
       "bank_id": "4176",
-      "bank_no": "5267270051834337",
+      "bank_no": "012740252311",
       "emp_id": "0012974",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4177",
@@ -29395,10 +29395,10 @@
     },
     {
       "bank_id": "4204",
-      "bank_no": "5267270058622529",
+      "bank_no": "000861134265",
       "emp_id": "0012995",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4205",
@@ -29458,10 +29458,10 @@
     },
     {
       "bank_id": "4213",
-      "bank_no": "5267270058620309",
+      "bank_no": "007990107152",
       "emp_id": "0013045",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4214",
@@ -29500,10 +29500,10 @@
     },
     {
       "bank_id": "4219",
-      "bank_no": "5267270051834980",
+      "bank_no": "004440209915",
       "emp_id": "0013046",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4220",
@@ -29535,10 +29535,10 @@
     },
     {
       "bank_id": "4225",
-      "bank_no": "5267270056570654",
+      "bank_no": "010590203266",
       "emp_id": "0012969",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4226",
@@ -29556,10 +29556,10 @@
     },
     {
       "bank_id": "4228",
-      "bank_no": "5267270051834626",
+      "bank_no": "006260239350",
       "emp_id": "0013021",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4229",
@@ -29619,10 +29619,10 @@
     },
     {
       "bank_id": "4237",
-      "bank_no": "5267270049762988",
+      "bank_no": "001480729947",
       "emp_id": "0013068",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4238",
@@ -29731,10 +29731,10 @@
     },
     {
       "bank_id": "4253",
-      "bank_no": "5267270053308447",
+      "bank_no": "002361035762",
       "emp_id": "0013043",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "4254",
@@ -29864,10 +29864,10 @@
     },
     {
       "bank_id": "4272",
-      "bank_no": "5267270053308215",
+      "bank_no": "012740253776",
       "emp_id": "0013055",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4273",
@@ -29899,10 +29899,10 @@
     },
     {
       "bank_id": "4277",
-      "bank_no": "5267270053308785",
+      "bank_no": "000801294975",
       "emp_id": "0013077",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4278",
@@ -29983,10 +29983,10 @@
     },
     {
       "bank_id": "4289",
-      "bank_no": "5267270053308769",
+      "bank_no": "001281677351",
       "emp_id": "0013084",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4290",
@@ -30102,10 +30102,10 @@
     },
     {
       "bank_id": "4306",
-      "bank_no": "5267270053308728",
+      "bank_no": "006220354779",
       "emp_id": "0013120",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4307",
@@ -30123,10 +30123,10 @@
     },
     {
       "bank_id": "4309",
-      "bank_no": "5267270053309056",
+      "bank_no": "002491063561",
       "emp_id": "0013138",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4310",
@@ -30158,10 +30158,10 @@
     },
     {
       "bank_id": "4314",
-      "bank_no": "5267270053309569",
+      "bank_no": "002290359218",
       "emp_id": "0013137",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4315",
@@ -30200,10 +30200,10 @@
     },
     {
       "bank_id": "4320",
-      "bank_no": "5267270058621463",
+      "bank_no": "006220356852",
       "emp_id": "0013162",
-      "remarks": "Dfective",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4321",
@@ -30235,17 +30235,17 @@
     },
     {
       "bank_id": "4325",
-      "bank_no": "5267270055383406",
+      "bank_no": "004440210255",
       "emp_id": "0013174",
-      "remarks": "Replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4326",
-      "bank_no": "5267270058622404",
+      "bank_no": "005660865500",
       "emp_id": "0013178",
-      "remarks": "damage",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4327",
@@ -30473,10 +30473,10 @@
     },
     {
       "bank_id": "4359",
-      "bank_no": "5267270053309262",
+      "bank_no": "001841122473",
       "emp_id": "0013155",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4360",
@@ -30487,10 +30487,10 @@
     },
     {
       "bank_id": "4361",
-      "bank_no": "5267270053309932",
+      "bank_no": "012320266034",
       "emp_id": "0013176",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4362",
@@ -30641,17 +30641,17 @@
     },
     {
       "bank_id": "4383",
-      "bank_no": "5267270053309999",
+      "bank_no": "005830788285",
       "emp_id": "0013213",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4384",
-      "bank_no": "5267270053308538",
+      "bank_no": "000630844569",
       "emp_id": "0013223",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "4385",
@@ -30704,10 +30704,10 @@
     },
     {
       "bank_id": "4392",
-      "bank_no": "5267270056569839",
+      "bank_no": "004440210085",
       "emp_id": "0013229",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4393",
@@ -30991,10 +30991,10 @@
     },
     {
       "bank_id": "4433",
-      "bank_no": "5267270053310906",
+      "bank_no": "005660861432",
       "emp_id": "0013285",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4434",
@@ -31005,10 +31005,10 @@
     },
     {
       "bank_id": "4435",
-      "bank_no": "5267270053309916",
+      "bank_no": "001331308486",
       "emp_id": "0013198",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4436",
@@ -31173,10 +31173,10 @@
     },
     {
       "bank_id": "4459",
-      "bank_no": "5267270058620051",
+      "bank_no": "012690085972",
       "emp_id": "0013290",
-      "remarks": "invalid",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4460",
@@ -31215,10 +31215,10 @@
     },
     {
       "bank_id": "4465",
-      "bank_no": "5267270053311318",
+      "bank_no": "006220357026",
       "emp_id": "0013325",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4466",
@@ -31495,10 +31495,10 @@
     },
     {
       "bank_id": "4505",
-      "bank_no": "5267270054332578",
+      "bank_no": "006220355376",
       "emp_id": "0013373",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4506",
@@ -31509,10 +31509,10 @@
     },
     {
       "bank_id": "4507",
-      "bank_no": "5267270053309767",
+      "bank_no": "012690086022",
       "emp_id": "0013194",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4508",
@@ -31586,10 +31586,10 @@
     },
     {
       "bank_id": "4518",
-      "bank_no": "5267270054332503",
+      "bank_no": "006790504949",
       "emp_id": "0013365",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4519",
@@ -31621,10 +31621,10 @@
     },
     {
       "bank_id": "4523",
-      "bank_no": "5267270058622206",
+      "bank_no": "004860999889",
       "emp_id": "0013376",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4524",
@@ -31803,10 +31803,10 @@
     },
     {
       "bank_id": "4549",
-      "bank_no": "5267270057451334",
+      "bank_no": "006960257440",
       "emp_id": "0013429",
-      "remarks": "LOST",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4550",
@@ -32139,10 +32139,10 @@
     },
     {
       "bank_id": "4597",
-      "bank_no": "5267270054330333",
+      "bank_no": "012500248891",
       "emp_id": "0013438",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4598",
@@ -32202,10 +32202,10 @@
     },
     {
       "bank_id": "4606",
-      "bank_no": "5267270054330721",
+      "bank_no": "008860114921",
       "emp_id": "0013468",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4607",
@@ -32300,10 +32300,10 @@
     },
     {
       "bank_id": "4620",
-      "bank_no": "5267270054330499",
+      "bank_no": "001930643428",
       "emp_id": "0013458",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "4621",
@@ -32349,10 +32349,10 @@
     },
     {
       "bank_id": "4627",
-      "bank_no": "5267270054332347",
+      "bank_no": "002470355482",
       "emp_id": "0013356",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4628",
@@ -32461,10 +32461,10 @@
     },
     {
       "bank_id": "4643",
-      "bank_no": "5267270058621547",
+      "bank_no": "002371151633",
       "emp_id": "0013499",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4644",
@@ -32475,17 +32475,17 @@
     },
     {
       "bank_id": "4645",
-      "bank_no": "5267270054330887",
+      "bank_no": "013750062352",
       "emp_id": "0013488",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4646",
-      "bank_no": "5267270055383455",
+      "bank_no": "013750062360",
       "emp_id": "0013500",
-      "remarks": "REPLACEMENT",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4647",
@@ -32643,10 +32643,10 @@
     },
     {
       "bank_id": "4669",
-      "bank_no": "5267270054331372",
+      "bank_no": "012690086065",
       "emp_id": "0013533",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4670",
@@ -32769,10 +32769,10 @@
     },
     {
       "bank_id": "4687",
-      "bank_no": "5267270054331307",
+      "bank_no": "001901404860",
       "emp_id": "0013527",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4688",
@@ -32902,10 +32902,10 @@
     },
     {
       "bank_id": "4706",
-      "bank_no": "5267270054331083",
+      "bank_no": "001331309083",
       "emp_id": "0013509",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4707",
@@ -32951,10 +32951,10 @@
     },
     {
       "bank_id": "4713",
-      "bank_no": "5267270054331117",
+      "bank_no": "002361035290",
       "emp_id": "0013505",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4714",
@@ -32965,10 +32965,10 @@
     },
     {
       "bank_id": "4715",
-      "bank_no": "5267270054331885",
+      "bank_no": "006220356690",
       "emp_id": "0013583",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4716",
@@ -33049,10 +33049,10 @@
     },
     {
       "bank_id": "4727",
-      "bank_no": "5267270058620044",
+      "bank_no": "012740252281",
       "emp_id": "0013544",
-      "remarks": "deffective",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4728",
@@ -33063,16 +33063,16 @@
     },
     {
       "bank_id": "4729",
-      "bank_no": "5267270054331588",
+      "bank_no": "002361034812",
       "emp_id": "0013554",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4730",
-      "bank_no": "5267270054331281",
+      "bank_no": "5267270058622917",
       "emp_id": "0013526",
-      "remarks": "n/a",
+      "remarks": "lost",
       "account_id": "5"
     },
     {
@@ -33224,10 +33224,10 @@
     },
     {
       "bank_id": "4752",
-      "bank_no": "5267270057451250",
+      "bank_no": "006220357018",
       "emp_id": "0013632",
-      "remarks": "INVALID",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4753",
@@ -33266,10 +33266,10 @@
     },
     {
       "bank_id": "4758",
-      "bank_no": "5267270056569219",
+      "bank_no": "001521431874",
       "emp_id": "0013630",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4759",
@@ -33441,10 +33441,10 @@
     },
     {
       "bank_id": "4783",
-      "bank_no": "5267270054332289",
+      "bank_no": "001331308893",
       "emp_id": "0013617",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4784",
@@ -33511,10 +33511,10 @@
     },
     {
       "bank_id": "4793",
-      "bank_no": "5267270054329715",
+      "bank_no": "005620467547",
       "emp_id": "0013658",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4794",
@@ -33623,10 +33623,10 @@
     },
     {
       "bank_id": "4809",
-      "bank_no": "5267270054329814",
+      "bank_no": "002470355636",
       "emp_id": "0013665",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4810",
@@ -33749,10 +33749,10 @@
     },
     {
       "bank_id": "4827",
-      "bank_no": "5267270055381467",
+      "bank_no": "001841121922",
       "emp_id": "0013694",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4828",
@@ -33840,10 +33840,10 @@
     },
     {
       "bank_id": "4840",
-      "bank_no": "5267270055381723",
+      "bank_no": "006980619895",
       "emp_id": "0013691",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4841",
@@ -33931,10 +33931,10 @@
     },
     {
       "bank_id": "4853",
-      "bank_no": "5267270055381590",
+      "bank_no": "005830788358",
       "emp_id": "0013674",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4854",
@@ -34428,10 +34428,10 @@
     },
     {
       "bank_id": "4924",
-      "bank_no": "5267270055381855",
+      "bank_no": "013740082725",
       "emp_id": "0013689",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4925",
@@ -34722,10 +34722,10 @@
     },
     {
       "bank_id": "4966",
-      "bank_no": "5267270055382671",
+      "bank_no": "001930643320",
       "emp_id": "0013782",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4967",
@@ -34827,10 +34827,10 @@
     },
     {
       "bank_id": "4981",
-      "bank_no": "5267270055383315",
+      "bank_no": "006220355090",
       "emp_id": "0013833",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4982",
@@ -34890,17 +34890,17 @@
     },
     {
       "bank_id": "4990",
-      "bank_no": "5267270055383356",
+      "bank_no": "004600269279",
       "emp_id": "0013836",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4991",
-      "bank_no": "5267270055383521",
+      "bank_no": "006220356828",
       "emp_id": "0013847",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "4992",
@@ -34981,10 +34981,10 @@
     },
     {
       "bank_id": "5003",
-      "bank_no": "5267270055383612",
+      "bank_no": "007990108477",
       "emp_id": "0013853",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5004",
@@ -35072,10 +35072,10 @@
     },
     {
       "bank_id": "5016",
-      "bank_no": "5267270055382648",
+      "bank_no": "001331309180",
       "emp_id": "0013736",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5017",
@@ -35086,10 +35086,10 @@
     },
     {
       "bank_id": "5018",
-      "bank_no": "5267270055383810",
+      "bank_no": "006220356216",
       "emp_id": "0013869",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5019",
@@ -35191,10 +35191,10 @@
     },
     {
       "bank_id": "5033",
-      "bank_no": "5267270055383703",
+      "bank_no": "002361034901",
       "emp_id": "0013861",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5034",
@@ -35254,9 +35254,9 @@
     },
     {
       "bank_id": "5042",
-      "bank_no": "5267270056569227",
+      "bank_no": "5267270058623055",
       "emp_id": "0013909",
-      "remarks": "replacement",
+      "remarks": "Lost Cash Card",
       "account_id": "5"
     },
     {
@@ -35324,10 +35324,10 @@
     },
     {
       "bank_id": "5052",
-      "bank_no": "5267270055384370",
+      "bank_no": "000251760189",
       "emp_id": "0013901",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5053",
@@ -35380,10 +35380,10 @@
     },
     {
       "bank_id": "5060",
-      "bank_no": "5267270055384453",
+      "bank_no": "002090778829",
       "emp_id": "0013907",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5061",
@@ -35583,10 +35583,10 @@
     },
     {
       "bank_id": "5089",
-      "bank_no": "5267270055384602",
+      "bank_no": "001930645153",
       "emp_id": "0013940",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5090",
@@ -35611,10 +35611,10 @@
     },
     {
       "bank_id": "5093",
-      "bank_no": "5267270055384610",
+      "bank_no": "002491066102",
       "emp_id": "0013941",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5094",
@@ -35807,10 +35807,10 @@
     },
     {
       "bank_id": "5121",
-      "bank_no": "5267270055384578",
+      "bank_no": "001821212892",
       "emp_id": "0013936",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5122",
@@ -35863,10 +35863,10 @@
     },
     {
       "bank_id": "5129",
-      "bank_no": "5267270056567379",
+      "bank_no": "003970328319",
       "emp_id": "0013988",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5130",
@@ -36010,10 +36010,10 @@
     },
     {
       "bank_id": "5150",
-      "bank_no": "5267270056567767",
+      "bank_no": "012690086421",
       "emp_id": "0014016",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "new",
+      "account_id": "6"
     },
     {
       "bank_id": "5151",
@@ -36276,10 +36276,10 @@
     },
     {
       "bank_id": "5188",
-      "bank_no": "5267270056568187",
+      "bank_no": "006220355082",
       "emp_id": "0014048",
-      "remarks": " n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5189",
@@ -36290,10 +36290,10 @@
     },
     {
       "bank_id": "5190",
-      "bank_no": "5267270056567445",
+      "bank_no": "012500248468",
       "emp_id": "0014008",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5191",
@@ -36402,10 +36402,10 @@
     },
     {
       "bank_id": "5206",
-      "bank_no": "5267270056568138",
+      "bank_no": "006960257955",
       "emp_id": "0014044",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5207",
@@ -36451,10 +36451,10 @@
     },
     {
       "bank_id": "5213",
-      "bank_no": "5267270056568534",
+      "bank_no": "005660861890",
       "emp_id": "0014078",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5214",
@@ -36626,10 +36626,10 @@
     },
     {
       "bank_id": "5238",
-      "bank_no": "5267270056568955",
+      "bank_no": "006220357530",
       "emp_id": "0014114",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5239",
@@ -36647,10 +36647,10 @@
     },
     {
       "bank_id": "5241",
-      "bank_no": "5267270056568898",
+      "bank_no": "006220356674",
       "emp_id": "0014107",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5242",
@@ -36745,10 +36745,10 @@
     },
     {
       "bank_id": "5255",
-      "bank_no": "5267270058620093",
+      "bank_no": "012740252230",
       "emp_id": "0014070",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5256",
@@ -36766,10 +36766,10 @@
     },
     {
       "bank_id": "5258",
-      "bank_no": "5267270058620101",
+      "bank_no": "004861000036",
       "emp_id": "0014128",
-      "remarks": "lost",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5259",
@@ -36801,10 +36801,10 @@
     },
     {
       "bank_id": "5263",
-      "bank_no": "5267270056569144",
+      "bank_no": "067004488672",
       "emp_id": "0014131",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5264",
@@ -36906,10 +36906,10 @@
     },
     {
       "bank_id": "5278",
-      "bank_no": "5267270057450336",
+      "bank_no": "004290271947",
       "emp_id": "0014130",
-      "remarks": "replacement",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5279",
@@ -36927,10 +36927,10 @@
     },
     {
       "bank_id": "5281",
-      "bank_no": "5267270056568310",
+      "bank_no": "001821212973",
       "emp_id": "0014060",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5282",
@@ -37165,10 +37165,10 @@
     },
     {
       "bank_id": "5315",
-      "bank_no": "5267270056569896",
+      "bank_no": "012690086553",
       "emp_id": "0014189",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5316",
@@ -37249,10 +37249,10 @@
     },
     {
       "bank_id": "5327",
-      "bank_no": "5267270056569698",
+      "bank_no": "006960257106",
       "emp_id": "0014174",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5328",
@@ -37305,10 +37305,10 @@
     },
     {
       "bank_id": "5335",
-      "bank_no": "5267270056569714",
+      "bank_no": "010590203851",
       "emp_id": "0014173",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5336",
@@ -37354,10 +37354,10 @@
     },
     {
       "bank_id": "5342",
-      "bank_no": "5267270056569383",
+      "bank_no": "012500248271",
       "emp_id": "0014144",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5343",
@@ -37410,10 +37410,10 @@
     },
     {
       "bank_id": "5350",
-      "bank_no": "5267270056569607",
+      "bank_no": "012500247313",
       "emp_id": "0014162",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5351",
@@ -37424,10 +37424,10 @@
     },
     {
       "bank_id": "5352",
-      "bank_no": "5267270056570316",
+      "bank_no": "006960257114",
       "emp_id": "0014227",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5353",
@@ -37830,10 +37830,10 @@
     },
     {
       "bank_id": "5410",
-      "bank_no": "5267270056570811",
+      "bank_no": "006960257467",
       "emp_id": "0014271",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5411",
@@ -38313,10 +38313,10 @@
     },
     {
       "bank_id": "5479",
-      "bank_no": "5267270057450518",
+      "bank_no": "002371153660",
       "emp_id": "0014239",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5480",
@@ -38362,10 +38362,10 @@
     },
     {
       "bank_id": "5486",
-      "bank_no": "5267270057449882",
+      "bank_no": "013740080846",
       "emp_id": "0014339",
-      "remarks": "n/a",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5487",
@@ -38446,9 +38446,9 @@
     },
     {
       "bank_id": "5498",
-      "bank_no": "5267270057450237",
+      "bank_no": "5267270058622925",
       "emp_id": "0014369",
-      "remarks": "n/a",
+      "remarks": "lost",
       "account_id": "5"
     },
     {
@@ -38621,10 +38621,10 @@
     },
     {
       "bank_id": "5523",
-      "bank_no": "5267270057450542",
+      "bank_no": "001272025487",
       "emp_id": "0014394",
-      "remarks": "N/A",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5524",
@@ -39811,10 +39811,10 @@
     },
     {
       "bank_id": "5693",
-      "bank_no": "5267270058619962",
+      "bank_no": "001400187441",
       "emp_id": "0014569",
-      "remarks": "new\\r\\n",
-      "account_id": "5"
+      "remarks": "NEW",
+      "account_id": "6"
     },
     {
       "bank_id": "5694",
@@ -40728,9 +40728,9 @@
     },
     {
       "bank_id": "5824",
-      "bank_no": "5267270058621745",
+      "bank_no": "5267270058622479",
       "emp_id": "0014699",
-      "remarks": "new",
+      "remarks": "Lost Cash Card",
       "account_id": "5"
     },
     {
@@ -41068,6 +41068,1231 @@
       "emp_id": "0014654",
       "remarks": "new",
       "account_id": "5"
+    },
+    {
+      "bank_id": "5873",
+      "bank_no": "5267270058622370",
+      "emp_id": "0014758",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5874",
+      "bank_no": "5267270058622073",
+      "emp_id": "0014730",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5875",
+      "bank_no": "5267270058622495",
+      "emp_id": "0014763",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5876",
+      "bank_no": "5267270058622362",
+      "emp_id": "0014757",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5877",
+      "bank_no": "5267270058622560",
+      "emp_id": "0014769",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5878",
+      "bank_no": "5267270058622578",
+      "emp_id": "0014771",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5879",
+      "bank_no": "5267270058622552",
+      "emp_id": "0014768",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5880",
+      "bank_no": "5267270058622537",
+      "emp_id": "0014766",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5881",
+      "bank_no": "5267270058622164",
+      "emp_id": "0014741",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5882",
+      "bank_no": "5267270058621927",
+      "emp_id": "0014716",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5883",
+      "bank_no": "5267270058622396",
+      "emp_id": "0014761",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5884",
+      "bank_no": "5267270058622487",
+      "emp_id": "0014762",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5885",
+      "bank_no": "5267270058622354",
+      "emp_id": "0014760",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5886",
+      "bank_no": "5267270058622099",
+      "emp_id": "0014732",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5887",
+      "bank_no": "5267270058622347",
+      "emp_id": "0014756",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5888",
+      "bank_no": "006220351915",
+      "emp_id": "0014785",
+      "remarks": "new",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5889",
+      "bank_no": "5267270058622180",
+      "emp_id": "0014740",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5890",
+      "bank_no": "5267270058622289",
+      "emp_id": "0014752",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5891",
+      "bank_no": "5267270058622628",
+      "emp_id": "0014772",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5892",
+      "bank_no": "5267270058622594",
+      "emp_id": "0014773",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5893",
+      "bank_no": "5267270058622545",
+      "emp_id": "0014770",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5894",
+      "bank_no": "5267270058622503",
+      "emp_id": "0014764",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5895",
+      "bank_no": "5267270058622677",
+      "emp_id": "0014779",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5896",
+      "bank_no": "5267270058622610",
+      "emp_id": "0014775",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5897",
+      "bank_no": "5267270058622388",
+      "emp_id": "0014759",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5898",
+      "bank_no": "5267270058621794",
+      "emp_id": "0014704",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5899",
+      "bank_no": "5267270058622644",
+      "emp_id": "0014767",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5900",
+      "bank_no": "5267270058622271",
+      "emp_id": "0014750",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5901",
+      "bank_no": "5267270058622024",
+      "emp_id": "0014721",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5902",
+      "bank_no": "5267270058621877",
+      "emp_id": "0014713",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5903",
+      "bank_no": "5267270058622727",
+      "emp_id": "0014786",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5904",
+      "bank_no": "5267270058622693",
+      "emp_id": "0014782",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5905",
+      "bank_no": "5267270058622263",
+      "emp_id": "0014751",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5906",
+      "bank_no": "5267270058622701",
+      "emp_id": "0014783",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5907",
+      "bank_no": "002140457079",
+      "emp_id": "0014806",
+      "remarks": "New",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5908",
+      "bank_no": "001400186992",
+      "emp_id": "0014813",
+      "remarks": "New",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5909",
+      "bank_no": "003970321799",
+      "emp_id": "0014811",
+      "remarks": "New",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5910",
+      "bank_no": "5267270058622339",
+      "emp_id": "0014755",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5911",
+      "bank_no": "5267270058622602",
+      "emp_id": "0014774",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5912",
+      "bank_no": "5267270058622511",
+      "emp_id": "0014765",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5913",
+      "bank_no": "5267270058622867",
+      "emp_id": "0014794",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5914",
+      "bank_no": "5267270058622651",
+      "emp_id": "0014778",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5915",
+      "bank_no": "5267270058622966",
+      "emp_id": "0014803",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5916",
+      "bank_no": "5267270058622669",
+      "emp_id": "0014780",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5917",
+      "bank_no": "5267270058622958",
+      "emp_id": "0014804",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5918",
+      "bank_no": "5267270058622875",
+      "emp_id": "0014798",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5919",
+      "bank_no": "5267270058622008",
+      "emp_id": "0014725",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5920",
+      "bank_no": "5267270058622586",
+      "emp_id": "0014776",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5921",
+      "bank_no": "5267270058622784",
+      "emp_id": "0014791",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5922",
+      "bank_no": "5267270058622750",
+      "emp_id": "0014788",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5923",
+      "bank_no": "5267270058622800",
+      "emp_id": "0014793",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5924",
+      "bank_no": "5267270058622719",
+      "emp_id": "0014784",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5925",
+      "bank_no": "5267270058622982",
+      "emp_id": "0014807",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5926",
+      "bank_no": "5267270058622792",
+      "emp_id": "0014792",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5927",
+      "bank_no": "5267270058623089",
+      "emp_id": "0014822",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5928",
+      "bank_no": "5267270058623097",
+      "emp_id": "0014817",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5929",
+      "bank_no": "5267270058622842",
+      "emp_id": "0014797",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5930",
+      "bank_no": "5267270058622974",
+      "emp_id": "0014805",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5931",
+      "bank_no": "5267270058623113",
+      "emp_id": "0014823",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5932",
+      "bank_no": "5267270058622891",
+      "emp_id": "0014801",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5933",
+      "bank_no": "5267270058622834",
+      "emp_id": "0014796",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5934",
+      "bank_no": "5267270058622859",
+      "emp_id": "0014799",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5935",
+      "bank_no": "5267270058622321",
+      "emp_id": "0014754",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5936",
+      "bank_no": "5267270058622685",
+      "emp_id": "0014781",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5937",
+      "bank_no": "5267270058623154",
+      "emp_id": "0014818",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5938",
+      "bank_no": "5267270058622768",
+      "emp_id": "0014789",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5939",
+      "bank_no": "5267270058623105",
+      "emp_id": "0014816",
+      "remarks": "New",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5940",
+      "bank_no": "002470355075",
+      "emp_id": "0014858",
+      "remarks": "New",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5941",
+      "bank_no": "000630840911",
+      "emp_id": "0014847",
+      "remarks": "new",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5942",
+      "bank_no": "001331307196",
+      "emp_id": "0014861",
+      "remarks": "New",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5943",
+      "bank_no": "5267270058623048",
+      "emp_id": "0014815",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5944",
+      "bank_no": "5267270058623204",
+      "emp_id": "0014831",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5945",
+      "bank_no": "5267270058623006",
+      "emp_id": "0014810",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5946",
+      "bank_no": "5267270058623022",
+      "emp_id": "0014808",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5947",
+      "bank_no": "5267270058623188",
+      "emp_id": "0014830",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5948",
+      "bank_no": "5267270058622826",
+      "emp_id": "0014795",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5949",
+      "bank_no": "5267270058623147",
+      "emp_id": "0014819",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5950",
+      "bank_no": "5267270058622636",
+      "emp_id": "0014777",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5951",
+      "bank_no": "5267270058623030",
+      "emp_id": "0014814",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5952",
+      "bank_no": "5267270058622776",
+      "emp_id": "0014790",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5953",
+      "bank_no": "5267270058622149",
+      "emp_id": "0014736",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5954",
+      "bank_no": "5267270058623071",
+      "emp_id": "0014820",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5955",
+      "bank_no": "5267270058623063",
+      "emp_id": "0014821",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5956",
+      "bank_no": "5267270058623246",
+      "emp_id": "0014836",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5957",
+      "bank_no": "5267270058623238",
+      "emp_id": "0014835",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5958",
+      "bank_no": "5267270058623253",
+      "emp_id": "0014834",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5959",
+      "bank_no": "006220357085",
+      "emp_id": "0014838",
+      "remarks": "NEW",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5960",
+      "bank_no": "5267270058622990",
+      "emp_id": "0014812",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5961",
+      "bank_no": "5267270058622883",
+      "emp_id": "0014800",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5962",
+      "bank_no": "5267270058622743",
+      "emp_id": "0014787",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5963",
+      "bank_no": "5267270058623220",
+      "emp_id": "0014833",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5964",
+      "bank_no": "5267270058623139",
+      "emp_id": "0014825",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5965",
+      "bank_no": "5267270058623303",
+      "emp_id": "0014839",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5966",
+      "bank_no": "5267270058623261",
+      "emp_id": "0014837",
+      "remarks": "NEW",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5967",
+      "bank_no": "006220355333",
+      "emp_id": "0014829",
+      "remarks": "New",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5968",
+      "bank_no": "006220356054",
+      "emp_id": "0014899",
+      "remarks": "New",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5969",
+      "bank_no": "003970326081",
+      "emp_id": "0014906",
+      "remarks": "NEW",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5970",
+      "bank_no": "012690086375",
+      "emp_id": "0014903",
+      "remarks": "NEW",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5971",
+      "bank_no": "5267270058623170",
+      "emp_id": "0014827",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5972",
+      "bank_no": "5267270058623014",
+      "emp_id": "0014809",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5973",
+      "bank_no": "5267270058623121",
+      "emp_id": "0014824",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5974",
+      "bank_no": "5267270058623287",
+      "emp_id": "0014841",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5975",
+      "bank_no": "5267270058623311",
+      "emp_id": "0014844",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5976",
+      "bank_no": "5267270058623329",
+      "emp_id": "0014843",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5977",
+      "bank_no": "5267270058622941",
+      "emp_id": "0014802",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5978",
+      "bank_no": "5267270058623162",
+      "emp_id": "0014826",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5979",
+      "bank_no": "5267270058623295",
+      "emp_id": "0014840",
+      "remarks": "new",
+      "account_id": "5"
+    },
+    {
+      "bank_id": "5980",
+      "bank_no": "001281679532",
+      "emp_id": "0014930",
+      "remarks": "NEW",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5981",
+      "bank_no": "067010286261",
+      "emp_id": "0014915",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5982",
+      "bank_no": "067010286229",
+      "emp_id": "0014934",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5983",
+      "bank_no": "067010285966",
+      "emp_id": "0014927",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5984",
+      "bank_no": "067010286202",
+      "emp_id": "0014917",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5985",
+      "bank_no": "067010285990",
+      "emp_id": "0014852",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5986",
+      "bank_no": "067010286121",
+      "emp_id": "0014935",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5987",
+      "bank_no": "067010286113",
+      "emp_id": "0014931",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5988",
+      "bank_no": "067010286237",
+      "emp_id": "0014933",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5989",
+      "bank_no": "067010286059",
+      "emp_id": "0014859",
+      "remarks": "bdo pay",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5990",
+      "bank_no": "067010286288",
+      "emp_id": "0014936",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5991",
+      "bank_no": "067010286016",
+      "emp_id": "0014937",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5992",
+      "bank_no": "067010286040",
+      "emp_id": "0014916",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5993",
+      "bank_no": "067010286296",
+      "emp_id": "0014919",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5994",
+      "bank_no": "067010291524",
+      "emp_id": "0014924",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5995",
+      "bank_no": "067010295619",
+      "emp_id": "0014914",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5996",
+      "bank_no": "067010298405",
+      "emp_id": "0014925",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5997",
+      "bank_no": "067010290226",
+      "emp_id": "0014890",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5998",
+      "bank_no": "067010296453",
+      "emp_id": "0014846",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "5999",
+      "bank_no": "067010292997",
+      "emp_id": "0014929",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6000",
+      "bank_no": "067010287705",
+      "emp_id": "0014880",
+      "remarks": "BDO PAY\\r\\n",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6001",
+      "bank_no": "067010296968",
+      "emp_id": "0014849",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6002",
+      "bank_no": "067010288817",
+      "emp_id": "0014891",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6003",
+      "bank_no": "067010295473",
+      "emp_id": "0014897",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6004",
+      "bank_no": "067010287691",
+      "emp_id": "0014900",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6005",
+      "bank_no": "067010288507",
+      "emp_id": "0014928",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6006",
+      "bank_no": "067010288361",
+      "emp_id": "0014923",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6007",
+      "bank_no": "067010296461",
+      "emp_id": "0014885",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6008",
+      "bank_no": "067010293489",
+      "emp_id": "0014908",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6009",
+      "bank_no": "067010297204",
+      "emp_id": "0014888",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6010",
+      "bank_no": "067010287268",
+      "emp_id": "0014909",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6011",
+      "bank_no": "067010296801",
+      "emp_id": "0014895",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6012",
+      "bank_no": "067010288027",
+      "emp_id": "0014863",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6013",
+      "bank_no": "067010299150",
+      "emp_id": "0014873",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6014",
+      "bank_no": "067010299223",
+      "emp_id": "0014887",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6015",
+      "bank_no": "067010300094",
+      "emp_id": "0014904",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6016",
+      "bank_no": "067010304146",
+      "emp_id": "0014894",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6017",
+      "bank_no": "067010304502",
+      "emp_id": "0014922",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6018",
+      "bank_no": "067010305029",
+      "emp_id": "0014865",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6019",
+      "bank_no": "067010305355",
+      "emp_id": "0014857",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6020",
+      "bank_no": "067010306386",
+      "emp_id": "0014845",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6021",
+      "bank_no": "067010306467",
+      "emp_id": "0014879",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6022",
+      "bank_no": "067010307579",
+      "emp_id": "0014882",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6023",
+      "bank_no": "067010307811",
+      "emp_id": "0014883",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6024",
+      "bank_no": "067010308362",
+      "emp_id": "0014896",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6025",
+      "bank_no": "067010309121",
+      "emp_id": "0014881",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6026",
+      "bank_no": "067010311223",
+      "emp_id": "0014856",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6027",
+      "bank_no": "067010311657",
+      "emp_id": "0014867",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6028",
+      "bank_no": "067010311711",
+      "emp_id": "0014850",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6029",
+      "bank_no": "067010312211",
+      "emp_id": "0014854",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6030",
+      "bank_no": "067010312696",
+      "emp_id": "0014921",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6031",
+      "bank_no": "067010312769",
+      "emp_id": "0014886",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6032",
+      "bank_no": "067010313560",
+      "emp_id": "0014866",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6033",
+      "bank_no": "067010315210",
+      "emp_id": "0014920",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6034",
+      "bank_no": "067010315466",
+      "emp_id": "0014860",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6035",
+      "bank_no": "067010315962",
+      "emp_id": "0014901",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6036",
+      "bank_no": "067010315989",
+      "emp_id": "0014898",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6037",
+      "bank_no": "067010316985",
+      "emp_id": "0014870",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6038",
+      "bank_no": "067010317116",
+      "emp_id": "0014889",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6039",
+      "bank_no": "067010317221",
+      "emp_id": "0014868",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6040",
+      "bank_no": "067010317825",
+      "emp_id": "0014869",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6041",
+      "bank_no": "067010319453",
+      "emp_id": "0014851",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6042",
+      "bank_no": "067010321148",
+      "emp_id": "0014864",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6043",
+      "bank_no": "067010322845",
+      "emp_id": "0014853",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6044",
+      "bank_no": "067010324147",
+      "emp_id": "0014892",
+      "remarks": "BDO PAY",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6045",
+      "bank_no": "006220358065",
+      "emp_id": "0014960",
+      "remarks": "New",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6046",
+      "bank_no": "006220358057",
+      "emp_id": "0014965",
+      "remarks": "NEW",
+      "account_id": "6"
+    },
+    {
+      "bank_id": "6047",
+      "bank_no": "005190582990",
+      "emp_id": "0014963",
+      "remarks": "NEW",
+      "account_id": "6"
     }
   ]
 }

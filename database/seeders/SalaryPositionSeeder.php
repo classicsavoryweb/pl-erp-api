@@ -22,12 +22,15 @@ class SalaryPositionSeeder extends Seeder
             $positionID = ltrim($position['Position'], '0');
 
             $pos = Position::where("id", $positionID)->first();
-            SalaryPosition::create([
-                "position_id"=> $pos->id,
-                "basic_salary"=> $position['BasicSalary'],
-                "rate_category"=> $position['RateCategory'],
-                "status"=> $position['status'],
-            ]);
+
+            if ($pos) {
+                SalaryPosition::create([
+                    "position_id"=> $pos->id,
+                    "basic_salary"=> $position['BasicSalary'],
+                    "rate_category"=> $position['RateCategory'],
+                    "status"=> $position['status'],
+                ]);
+            }
         }
           
     }
