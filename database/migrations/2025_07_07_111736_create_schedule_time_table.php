@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string("timetable");
             $table->string("check_in");
             $table->string("check_out");
+            $table->string("branch_id");
             $table->timestamps();
         });
     }
