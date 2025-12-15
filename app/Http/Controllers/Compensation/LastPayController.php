@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateLastPayEntry;
 use App\Models\AnnualTax;
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
@@ -13,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Illuminate\Support\Facades\Auth;
 use Str;
 
 class LastPayController extends Controller
@@ -380,6 +382,9 @@ class LastPayController extends Controller
             $lastPay = LastPay::find($lastPayId);
 
             if ($lastPay && $lastPay->status === "Unposted") {
+
+                GenerateLastPayEntry::dispatch($lastPay, Auth::user()->id);
+
                 $lastPay->update(["status" => "Posted"]);
 
                 DB::commit();
