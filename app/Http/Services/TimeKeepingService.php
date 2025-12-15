@@ -739,10 +739,10 @@ class TimeKeepingService
                     $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours < 9.5 ? $timeKeeping->cancelled_off_hours : 9.5;
                 }
 
-                $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.3);
+                $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 2.6);
 
                 if ($timeKeeping->legal_holiday === "Yes") {
-                    $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.6);
+                    $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 3.6);
                 }
 
                 $totalAmount = $cancelled_off;
