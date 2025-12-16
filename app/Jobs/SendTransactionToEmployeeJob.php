@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Mail\SendTransactionToEmployeeMail;
 use App\Models\Accounting\Account;
 use App\Models\Accounting\ApsysEntry;
+use App\Models\Accounting\ApsysEntryMain;
 use App\Models\Accounting\Vendor;
 use App\Models\Branch;
 use App\Models\ConverterMain;
@@ -90,6 +91,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
 
             $vendorHO = Vendor::where("ven_name", "HO")->first();
             $vendorHONo = $vendorHO->ven_no;
+            $vendorHOName = $vendorHO->ven_name;
 
             $branchHO = Branch::where('short_name', 'HO')
             ->first();
@@ -100,6 +102,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             $batchNumber = $transaction->converter_main->batch_number;
             $amount = $transaction->amount;
             $description = $transaction->transaction_type->description;
+            $isBlockPayment = $transaction->transaction_type->is_block_payment;
             $hoDebit = $transaction->transaction_type->ho_debit;
             $hoCredit = $transaction->transaction_type->ho_credit;
             $branchDebit = $transaction->transaction_type->branch_debit;
@@ -126,24 +129,28 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchHOName,
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
                         'ven_no'              => $vendorHONo,
+                        'ven_name'            => $vendorHOName,
                         'amount'              => $amount,
                         'acc_no'              => $accountHODebitId ?? $hoDebit,
                         'description_per_acc' => $description,
                         'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
+                        'is_block_payment'    => $isBlockPayment,
                     ],
                     [
                         'entry_id'            => $entryId,
                         'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchHOName,
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
                         'ven_no'              => $vendorHONo,
+                        'ven_name'            => $vendorHOName,
                         'amount'              => $amount,
                         'acc_no'              => $hoCredit,
                         'description_per_acc' => $description,
                         'balance_type'        => 'Credit',
-                        'is_block_payment'    => 0,
+                        'is_block_payment'    => $isBlockPayment,
                     ]
                 ];
 
@@ -160,24 +167,28 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchName,
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
+                        'branch_name'         => $branchHOName,
                         'ven_no'              => $vendorHONo,
+                        'ven_name'            => $vendorHOName,
                         'amount'              => $amount,
                         'acc_no'              => $branchDebit,
                         'description_per_acc' => $description,
                         'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
+                        'is_block_payment'    => $isBlockPayment,
                     ],
                     [
                         'entry_id'            => $entryId,
                         'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchName,
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
+                        'branch_name'         => $branchHOName,
                         'ven_no'              => $vendorHONo,
+                        'ven_name'            => $vendorHOName,
                         'amount'              => $amount,
                         'acc_no'              => $branchCredit,
                         'description_per_acc' => $description,
                         'balance_type'        => 'Credit',
-                        'is_block_payment'    => 0,
+                        'is_block_payment'    => $isBlockPayment,
                     ],
                 ];
 
@@ -272,10 +283,32 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 'ent_nonvat_amt'    => 0,
                 'ent_na_amt'        => $entry['amount'],
                 'ent_inp_tax_amt'   => 0,
-                'ent_block_payment' => $entry['is_block_payment'] ? 'Yes' : 'No',
+                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
                 'ent_status'        => 'Unapplied',
                 'ent_chk'           => 'No',
                 'date_added'        => now(),
+            ]);
+
+            ApsysEntryMain::create([
+                'ent_tran_no'       => $entry['entry_id'],
+                'ven_no'            => $entry['ven_no'],
+                'ven_name'          => $entry['ven_name'],
+                'ent_doc_date'      => now(),
+                'branch_id'         => $entry['branch_number'],
+                'branch_name'         => $entry['branch_name'],
+                'ent_header'        => $entry['document_no'],
+                'ent_trans_amt'     => $entry['amount'],
+                'ent_post_date'     => now(),
+                'ent_module_type'   => 'Single',
+                'ent_status'        => 'Unapplied',
+                'check_no'          => null,
+                'ent_crf_no'        => '',
+                'ent_doc_no'        => $entry['document_no'],
+                'ent_module'        => 'Payroll',
+                'ent_app_amt'       => $entry['amount'],
+                'ent_unapp_amt'     => 0,
+                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
+                'ent_due_date'      => now(),
             ]);
         }
     }
