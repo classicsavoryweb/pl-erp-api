@@ -23,7 +23,8 @@ class TimekeepingSummarySeeder extends Seeder
 
             foreach ($data["tbl_bio_payrollprocess_hist"] as $unique_timekeeping) {
 
-                $employee = Employee::where("biometric_number", $unique_timekeeping["employee_id2"])->first();
+                $employee = Employee::where("biometric_number", $unique_timekeeping["employee_id2"])
+                ->first();
 
                 if (!$employee) {
                     continue;
@@ -37,8 +38,8 @@ class TimekeepingSummarySeeder extends Seeder
 
                 $tardiness = 0;
 
-                for ($i = 1; $i <= 9; $i++) {
-                    $tardiness += $unique_timekeeping["late{$i}"];
+                for ($k = 1; $k <= 9; $k++) {
+                    $tardiness += $unique_timekeeping["late{$k}"];
                 }
 
                 $cutoff = $this->getCutOffForDate($unique_timekeeping["late1_date"]);
@@ -63,7 +64,7 @@ class TimekeepingSummarySeeder extends Seeder
                     "adjustment_amount" => $unique_timekeeping["adjustment_amt"],
                 ]);
 
-                $this->command->info("ID: {$timekeeping_summary->id} out of 173941, File: timekeeping_summary_{$i}.json out of 4");
+                // $this->command->info("ID: {$timekeeping_summary->id} out of 173941, File: timekeeping_summary_{$i}.json out of 4");
             }
         }
     }
