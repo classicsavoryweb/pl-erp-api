@@ -13,14 +13,14 @@ class UnduplicateEmployeeNumberSeeder extends Seeder
      */
     public function run(): void
     {
-        $duplicateEmployeeNumbers = Employee::select('employee_number_2')
-        ->groupBy('employee_number_2')
+        $duplicateEmployeeNumbers = Employee::select('biometric_number')
+        ->groupBy('biometric_number')
         ->havingRaw('COUNT(*) > 1')
-        ->pluck('employee_number_2');
+        ->pluck('biometric_number');
 
-        $employees = Employee::whereIn('employee_number_2', $duplicateEmployeeNumbers)->get();
+        $employees = Employee::whereIn('biometric_number', $duplicateEmployeeNumbers)->get();
 
-        $grouped = $employees->groupBy('employee_number_2');
+        $grouped = $employees->groupBy('biometric_number');
 
         $final = collect();
 
