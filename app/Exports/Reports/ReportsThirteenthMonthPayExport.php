@@ -3,6 +3,7 @@
 namespace App\Exports\Reports;
 
 use App\Models\Employee;
+use App\Models\PayrollList;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,10 +23,22 @@ class ReportsThirteenthMonthPayExport implements FromCollection, WithHeadings, W
     {
         return $this->thirteenthMonthsData->map(function ($thirteenthMonth) {
             $employee = Employee::find($thirteenthMonth->employee_id);
+            $payrollListEmployee = PayrollList::where('employee_id', $employee->id)->first();
+
+            $bankType = null;
+
+            if($payrollListEmployee->is_bank === 1) {
+                $bankType = 'Bank';
+            } else {
+                $bankType = 'Cash';
+            }
 
             return [
                 $employee->employee_number,
                 $employee->full_name,
+                $employee->current_branch->name,
+                $employee->current_position->description,
+                $bankType,
 
                 $thirteenthMonth->december_2nd_cutoff,
                 $thirteenthMonth->january_1st_cutoff,
@@ -65,7 +78,7 @@ class ReportsThirteenthMonthPayExport implements FromCollection, WithHeadings, W
 
         return [
             array_merge(
-                ['13th Month Pay', ''], 
+                ['13th Month Pay', '', '', '', ''], 
                 [$firstYear, $currentYear], 
                 array_fill(0, 24, '') 
             ),
@@ -73,6 +86,9 @@ class ReportsThirteenthMonthPayExport implements FromCollection, WithHeadings, W
             [
                 'Employee Number',
                 'Name',
+                'Branch',
+                'Position',
+                'Bank Type',
                 'December',
                 'January', 'January',
                 'February', 'February',
@@ -93,6 +109,9 @@ class ReportsThirteenthMonthPayExport implements FromCollection, WithHeadings, W
             [
                 'Employee Number',
                 'Name',
+                'Branch',
+                'Position',
+                'Bank Type',
                 '12/11 to 25',
                 '12/26 to 10', '1/11 to 25',
                 '1/26 to 10', '2/11 to 25',
@@ -129,30 +148,34 @@ class ReportsThirteenthMonthPayExport implements FromCollection, WithHeadings, W
         $lastColumnLetter = $this->getExcelColumnLetter($numColumns - 1);
 
         $sheet->mergeCells("A1:B1"); 
-        $sheet->mergeCells("C1:C1"); 
-        $sheet->mergeCells("D1:{$lastColumnLetter}1"); 
+        $sheet->mergeCells("C1:E1"); 
+        $sheet->mergeCells("F1:F1"); 
+        $sheet->mergeCells("G1:{$lastColumnLetter}1"); 
 
         $sheet->mergeCells("A2:A3");
         $sheet->mergeCells("B2:B3");
+        $sheet->mergeCells("C2:C3");
+        $sheet->mergeCells("D2:D3");
+        $sheet->mergeCells("E2:E3");
 
         $secondLastColLetter = $this->getExcelColumnLetter($numColumns - 2);
         $sheet->mergeCells("{$secondLastColLetter}2:{$secondLastColLetter}3");
         $sheet->mergeCells("{$lastColumnLetter}2:{$lastColumnLetter}3");
 
         $mergeMap = [
-            [2, 2],   
-            [3, 4],   
-            [5, 6],   
-            [7, 8],   
-            [9, 10],  
-            [11, 12], 
-            [13, 14], 
-            [15, 16], 
-            [17, 18], 
-            [19, 20], 
-            [21, 22], 
-            [23, 24], 
-            [25, 25], 
+            [5, 5],   
+            [6, 7],   
+            [8, 9],   
+            [10, 11],   
+            [12, 13],  
+            [14, 15], 
+            [16, 17], 
+            [18, 19], 
+            [20, 21], 
+            [22, 23], 
+            [24, 25], 
+            [26, 27], 
+            [28, 28], 
         ];
 
         foreach ($mergeMap as $pair) {
@@ -192,8 +215,8 @@ class ReportsThirteenthMonthPayExport implements FromCollection, WithHeadings, W
                 ],
             ]);
 
-        $numericColumnsStart = 2; 
-        $numericColumnsEnd = 27;  
+        $numericColumnsStart = 4; 
+        $numericColumnsEnd = 30;  
         for ($i = $numericColumnsStart; $i <= $numericColumnsEnd; $i++) {
             $colLetter = $this->getExcelColumnLetter($i);
             $sheet->getStyle("{$colLetter}{$dataStartRow}:{$colLetter}{$lastRow}")
