@@ -31,8 +31,12 @@ class UnduplicateEmployeeNumberSeeder extends Seeder
                 if ($emp->status === "inactive") {
                     if ($allInactive) {
                         $emp->employee_number_2 = $emp->employee_number_2 . '-D' . ($index + 1);
+                        $emp->employee_number = $emp->employee_number . '-D' . ($index + 1);
+                        $emp->biometric_number = $emp->biometric_number . '-D' . ($index + 1);
                     } else {
                         $emp->employee_number_2 = $emp->employee_number_2 . '-D';
+                        $emp->employee_number = $emp->employee_number . '-D';
+                        $emp->biometric_number = $emp->biometric_number . '-D';
                     }
                 }
                 $emp->save();
