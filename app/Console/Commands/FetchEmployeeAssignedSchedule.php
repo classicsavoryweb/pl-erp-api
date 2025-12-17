@@ -66,6 +66,7 @@ class FetchEmployeeAssignedSchedule extends Command
                         DB::beginTransaction();
                         foreach ($schedules as $schedule) {
                             $employee = Employee::where("employee_number", $schedule["employee_number"])
+                            ->where('status', 'active')
                             ->first();
 
                             $sched = ScheduleMasterlist::where("selection", $schedule["schedule_name"])
