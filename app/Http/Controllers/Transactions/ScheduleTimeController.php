@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Transactions;
 use App\Exports\Transactions\ScheduleTimeExport;
 use App\Http\Controllers\Controller;
 use App\Http\Services\TimeKeepingService;
+use App\Jobs\FetchScheduleTimeToCSHub;
 use App\Jobs\ProcessScheduleTimeImport;
+use App\Models\Branch;
+use App\Models\Cutoff;
 use App\Models\ScheduleTime;
 use App\Models\Employee;
 use Illuminate\Http\Request;
@@ -504,6 +507,31 @@ class ScheduleTimeController extends Controller
             }
 
             return $this->sendResponse(["message" => "Excel file imported successfully"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function fetchSchedules(Request $request) {
+        try {
+            $request->validate([
+                "branch_id" => "required"
+            ]);
+
+            $activeCutOff = Cutoff::where('status', 'active')->first();
+
+            if ($activeCutOff) {
+                $branch = Branch::find($request->branch_id);
+                
+                if ($branch) {
+                    FetchScheduleTimeToCSHub::dispatch($branch, $activeCutOff);
+
+                    return $this->sendResponse(["message" => "Schedules are being fetched"]);
+                }
+                return $this->sendError(["message" => "No active cutoff"]);
+            }
+
+            return $this->sendError(["message" => "No active cutoff"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }

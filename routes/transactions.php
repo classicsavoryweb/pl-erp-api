@@ -15,6 +15,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/validate-import-transactions-schedule-time", [ScheduleTimeController::class, "validateImportTransactionsScheduleTimeExcel"]);
     Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/import-transactions-schedule-time", [ScheduleTimeController::class, "importTransactionsScheduleTimeExcel"]);
     Route::middleware(["permission:export_all_transactions_schedule_time"])->get("/export-all-transactions-schedule-time", [ScheduleTimeController::class, "exportAllTransactionsScheduleTime"]);
+    Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/fetch-transactions-schedule-time", [ScheduleTimeController::class, "fetchSchedules"]);
     
     //actual logs
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
