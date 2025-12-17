@@ -73,7 +73,7 @@ class ScheduleTimeAndLogsSeeder extends Seeder
 
     public function run(): void
     {
-        for ($i = 1; $i <= 37; $i++) {
+        for ($i = 1; $i <= 41; $i++) {
             $jsonPath = public_path("jsons/biometrics/schedule_time/schedule_time_{$i}.json");
 
             $jsonData = file_get_contents($jsonPath);
@@ -86,7 +86,12 @@ class ScheduleTimeAndLogsSeeder extends Seeder
                     continue;
                 }
 
-                $scheduleFromList = ScheduleMasterlist::where('selection', trim($schedule["actual_schedule"]))->first();
+    //                   "sched_timein": "00:00:00",
+    //   "sched_timeout": "00:00:00",
+
+                $scheduleFromList = ScheduleMasterlist::where('start_time', trim($schedule["sched_timein"]))
+                ->where('end_time', trim($schedule["sched_timeout"]))
+                ->first();
 
                 if ($scheduleFromList) {
                     $scheduleValue = $scheduleFromList->selection;
@@ -134,8 +139,8 @@ class ScheduleTimeAndLogsSeeder extends Seeder
                         "biometric_number" => $employee->biometric_number,
                         "date"             => $schedule["date"],
                         "timetable"        => $scheduleValue,
-                        "check_in"         => $scheduleBasedOnActualSched->start_time,
-                        "check_out"        => $scheduleBasedOnActualSched->end_time,
+                        "check_in"         => $scheduleBasedOnActualSched->start_time ?? '00:00:00',
+                        "check_out"        => $scheduleBasedOnActualSched->end_time ?? '00:00:00',
                     ];
 
                     $scheduleTime = ScheduleTime::create($data);
@@ -204,7 +209,7 @@ class ScheduleTimeAndLogsSeeder extends Seeder
                     ]);
                 }
 
-                $this->command->info("ID: {$scheduleTime->id} out of 3,310,228, File: schedule_time_{$i}.json out of 37");
+                // $this->command->info("ID: {$scheduleTime->id} out of 3,310,228, File: schedule_time_{$i}.json out of 37");
             }
         }
     }

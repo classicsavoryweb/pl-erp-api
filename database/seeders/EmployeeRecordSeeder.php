@@ -31,13 +31,17 @@ class EmployeeRecordSeeder extends Seeder
         $this->call(UnduplicateEmployeeNumberSeeder::class);
         $this->call(DeductionHistorySeeder::class);
         $this->call(EmployeeDeductionSeeder::class);
-        $this->call(PayrollListSeeder::class);
+        // $this->call(PayrollListSeeder::class);
         $this->call(ScheduleTimeAndLogsSeeder::class);
         $this->call(TimekeepingSeeder::class);
         $this->call(TimekeepingSummarySeeder::class);
-        $this->call(PayrollSeeder::class);
+
 
         //payroll
+        $this->call(IncentivesManagementSeeder::class);
+        $this->call(ContributionAndTaxSeeder::class);
+        $this->call(IncentivesBracketSeeder::class);
+        $this->call(PayrollSeeder::class);
         $this->call(ConverterDetailsSeeder::class);
         $this->call(ConverterMainSeeder::class);
         $this->call(LastPaySeeder::class);
