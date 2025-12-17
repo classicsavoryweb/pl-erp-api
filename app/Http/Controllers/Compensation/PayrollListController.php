@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Compensation;
 
 use App\Exports\Compensation\PayrollListExport;
 use App\Http\Controllers\Controller;
+use App\Models\BankDetail;
 use App\Models\Employee;
 use App\Models\PayrollList;
 use Illuminate\Http\Request;
@@ -76,6 +77,21 @@ class PayrollListController extends Controller
         $request["export"] = true;
 
         return $this->getAllPayrollList($request);
+    }
+
+    public function getBankDetails(Request $request, $id) {
+        try {
+
+            $bankDetails = BankDetail::query()
+            ->with("bank_account_type")
+            ->where("employee_id", $id)
+            ->first();
+
+            return $this->sendResponse($bankDetails);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
     }
 
     public function createPayrollList(Request $request) {
