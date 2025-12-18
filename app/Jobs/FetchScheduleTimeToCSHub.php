@@ -20,8 +20,8 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $timeKeepingBranch;
-    protected $activeCutOff;
+    protected Branch $timeKeepingBranch;
+    protected Cutoff $activeCutOff;
     /**
      * Create a new job instance.
      */
@@ -61,11 +61,11 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
         if ($response->successful()) {
             $data = $response->json();
             $schedules = $data['data']['schedules'];
-
             try {
                 DB::beginTransaction();
                 foreach ($schedules as $schedule) {
                     $employee = Employee::where("employee_number", $schedule["employee_number"])
+                    ->where('status', 'active')
                     ->first();
 
                     $sched = ScheduleMasterlist::where("selection", $schedule["schedule_name"])
