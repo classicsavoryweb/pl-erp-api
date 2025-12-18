@@ -221,6 +221,14 @@ class Employee extends Model
         );
     }
 
+    public function hasCompleteStatutories() {
+        return !(
+            empty($this->sss) ||
+            empty($this->philhealth) ||
+            empty($this->pagibig)
+        );
+    }
+
     public function schedule() {
         return $this->hasOne(ScheduleDetail::class, "employee_id", "id");
     }
