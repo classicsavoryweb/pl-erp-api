@@ -105,12 +105,7 @@ class PayrollService {
             }
 
             $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
-            $philHealth = PhilhealthPercentageBase::first();
-            $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
-
-            if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
-                $philHealthAmount = $philHealth->philhealth_max / 2;
-            }
+        
 
             $grossPayAmount = ( $salary +
                 $overtimeAmount +
@@ -128,56 +123,65 @@ class PayrollService {
 
 
             //clarify if $grossPayAmount will be used
-            $sss = SSS::where('salary_range_min', '<=', $grossPayAmount)
-            ->where('salary_range_max', '>=', $grossPayAmount)
-            ->first();
+            if ($employee->hasCompleteStatutories()) {
+                $philHealth = PhilhealthPercentageBase::first();
+                $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
 
-            $pagibig = Pagibig::where('min_amount', '<=', $grossPayAmount)
-                ->where('max_amount', '>=', $grossPayAmount)
+                if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
+                    $philHealthAmount = $philHealth->philhealth_max / 2;
+                }
+                $sss = SSS::where('salary_range_min', '<=', $grossPayAmount)
+                ->where('salary_range_max', '>=', $grossPayAmount)
                 ->first();
-
-            if (Carbon::parse($cutOff->start_date)->day === 11) {
-                $sssEmployeeAmount = round($sss->employee_ss, 2);
-                $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
-
-                $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
-                $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
-                $pagibigEmployee = round($pagibigAmount / 2, 2);
-                $pagibigEmployer = round($pagibigAmount / 2, 2);
-            } else {
-                $latestPayroll = Payroll::where("employee_id", $employee->id)
-                ->whereNot("start_date", $cutOff->start_date)
-                ->orderBy("start_date", "DESC")
-                ->first();
-
-                if ($latestPayroll) {
-                    $totalSalary = $basicSalary + $latestPayroll->gross_pay;
-
-                    $sss = SSS::where('salary_range_min', '<=', $totalSalary)
-                    ->where('salary_range_max', '>=', $totalSalary)
+    
+                $pagibig = Pagibig::where('min_amount', '<=', $grossPayAmount)
+                    ->where('max_amount', '>=', $grossPayAmount)
                     ->first();
-                    
-                    $pagibig = Pagibig::where('min_amount', '<=', $totalSalary)
-                    ->where('max_amount', '>=', $totalSalary)
-                    ->first();
-
-                    $pagibigShares = $totalSalary * (0.01 * $pagibig->percentage);
-
-                    $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
-                    $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
-
-                    $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                    $sssEmployerAmount = round(($sss->employer_ss + $sss->employer_cc) - $latestPayroll->employer_sss, 2);   
-                } else {
+    
+                if (Carbon::parse($cutOff->start_date)->day === 11) {
+                    $sssEmployeeAmount = round($sss->employee_ss, 2);
+                    $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+    
                     $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
                     $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
                     $pagibigEmployee = round($pagibigAmount / 2, 2);
                     $pagibigEmployer = round($pagibigAmount / 2, 2);
+                } else {
+                    $latestPayroll = Payroll::where("employee_id", $employee->id)
+                    ->whereNot("start_date", $cutOff->start_date)
+                    ->orderBy("start_date", "DESC")
+                    ->first();
+    
+                    if ($latestPayroll) {
+                        $totalSalary = $basicSalary + $latestPayroll->gross_pay;
+    
+                        $sss = SSS::where('salary_range_min', '<=', $totalSalary)
+                        ->where('salary_range_max', '>=', $totalSalary)
+                        ->first();
+                        
+                        $pagibig = Pagibig::where('min_amount', '<=', $totalSalary)
+                        ->where('max_amount', '>=', $totalSalary)
+                        ->first();
+    
+                        $pagibigShares = $totalSalary * (0.01 * $pagibig->percentage);
+    
+                        $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
+                        $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
+    
+                        $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
+                        $sssEmployerAmount = round(($sss->employer_ss + $sss->employer_cc) - $latestPayroll->employer_sss, 2);   
+                    } else {
+                        $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
+                        $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
+                        $pagibigEmployee = round($pagibigAmount / 2, 2);
+                        $pagibigEmployer = round($pagibigAmount / 2, 2);
+    
+                        $sssEmployeeAmount = round($sss->employee_ss, 2);
+                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+                    }
 
-                    $sssEmployeeAmount = round($sss->employee_ss, 2);
-                    $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
                 }
-            }        
+            }     
 
             $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
             $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
@@ -432,25 +436,28 @@ class PayrollService {
             $contributionTotal = 0;
             $additionalWorkingHoursTotal = 0;
             $workingHoursDeductionTotal = 0;
-
+ 
             $basicSalary = $cutOffBaseSalary;
-            $philHealthAmount = round(( $basicSalary * 0.05) / 2 , 2);
 
-            $pagibig = Pagibig::where('min_amount', '<=', $basicSalary)
-            ->where('max_amount', '>=', $basicSalary)
-            ->first();
-
-            $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
-            $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
-            $pagibigEmployee = round($pagibigAmount / 2, 2);
-            $pagibigEmployer = round($pagibigAmount / 2, 2);
-
-            $sss = SSS::where('salary_range_min', '<=', $basicSalary)
-            ->where('salary_range_max', '>=', $basicSalary)
-            ->first();
-
-            $sssEmployeeAmount = round($sss->employee_ss, 2);
-            $sssEmployerAmount = round($sss->employer_ss, 2);
+            if ($employee->hasCompleteStatutories()) {
+                $philHealthAmount = round(( $basicSalary * 0.05) / 2 , 2);
+    
+                $pagibig = Pagibig::where('min_amount', '<=', $basicSalary)
+                ->where('max_amount', '>=', $basicSalary)
+                ->first();
+    
+                $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+                $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
+                $pagibigEmployee = round($pagibigAmount / 2, 2);
+                $pagibigEmployer = round($pagibigAmount / 2, 2);
+    
+                $sss = SSS::where('salary_range_min', '<=', $basicSalary)
+                ->where('salary_range_max', '>=', $basicSalary)
+                ->first();
+    
+                $sssEmployeeAmount = round($sss->employee_ss, 2);
+                $sssEmployerAmount = round($sss->employer_ss, 2);
+            }
 
             $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
 
