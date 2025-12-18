@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Maintenance;
 use App\Exports\Maintenance\ScheduleMasterlistExport;
 use App\Http\Controllers\Controller;
 use App\Models\ScheduleMasterlist;
+use App\Http\Services\CSHubScheduleSyncService;
 use Illuminate\Http\Request;
 use DB;
 use Exception;
@@ -12,6 +13,13 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ScheduleMasterlistController extends Controller
 {
+    protected CSHubScheduleSyncService $csHubSyncService;
+
+    public function __construct(CSHubScheduleSyncService $csHubSyncService)
+    {
+        $this->csHubSyncService = $csHubSyncService;
+    }
+
     public function getAllScheduleMasterlist(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -56,6 +64,8 @@ class ScheduleMasterlistController extends Controller
 
     public function createScheduleMasterlist(Request $request) {
         try {
+            DB::beginTransaction();
+
             $request->validate([
                 "start_time" => "required",
                 "end_time" => "required",
@@ -68,7 +78,7 @@ class ScheduleMasterlistController extends Controller
                 "status" => "required",
             ]);
 
-            ScheduleMasterlist::create([
+            $record = ScheduleMasterlist::create([
                 "start_time" => $request->start_time,
                 "end_time" => $request->end_time,
                 "selection" => $request->selection,
@@ -80,8 +90,21 @@ class ScheduleMasterlistController extends Controller
                 "status" => $request->status,
             ]);
 
+            $this->csHubSyncService->sync([
+                "selection" => $record->selection,
+                "start_time" => $record->start_time,
+                "end_time" => $record->end_time,
+                "classification" => $record->classification,
+                "time_break" => $record->time_break,
+                "total_hours" => $record->total_hours,
+                "days" => $record->days,
+                "status" => $record->status,
+            ]);
+
+            DB::commit();
             return $this->sendResponse(["message" => "Schedule created succesfully"]);
         } catch(Exception $e) {
+            DB::rollBack();
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
@@ -89,6 +112,8 @@ class ScheduleMasterlistController extends Controller
 
     public function editScheduleMasterlist(Request $request, $id) {
         try {
+            DB::beginTransaction();
+
             $request->validate([
                 "start_time" => "required",
                 "end_time" => "required",
@@ -113,8 +138,25 @@ class ScheduleMasterlistController extends Controller
                 "status" => $request->status,
             ]);
 
+            $record = ScheduleMasterlist::find($id);
+
+            if ($record) {
+                $this->csHubSyncService->sync([
+                    "selection" => $record->selection,
+                    "start_time" => $record->start_time,
+                    "end_time" => $record->end_time,
+                    "classification" => $record->classification,
+                    "time_break" => $record->time_break,
+                    "total_hours" => $record->total_hours,
+                    "days" => $record->days,
+                    "status" => $record->status,
+                ]);
+            }
+
+            DB::commit();
             return $this->sendResponse(["message" => "Schedule updated succesfully"]);
         } catch(Exception $e) {
+            DB::rollBack();
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
