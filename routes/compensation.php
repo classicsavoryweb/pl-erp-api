@@ -81,6 +81,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-initial-last-pay/{employeeNumber}", [LastPayController::class, "getEmployeeInitialLastPayDetails"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/create-last-pay/{employeeNumber}", [LastPayController::class, "createLastPayRecord"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay/{lastPayId}", [LastPayController::class, "editLastPayRecord"]);
+    Route::middleware(["permission:perform_compensation_last_pay"])->post("/remove-last-pay-deduction/{employeeNumber}", [LastPayController::class, "removeLastPayDeduction"]);
+    Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay-deduction-details/{lastPayDeductionId}", [LastPayController::class, "editLastPayDeductionDetails"]);
     Route::get("/post-last-pay/{lastPayId}", [LastPayController::class, "postLastPay"]);
 
     //additional income
