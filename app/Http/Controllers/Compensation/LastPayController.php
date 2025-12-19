@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\EmployeeDeduction;
 use App\Models\Incentives;
 use App\Models\LastPay;
+use App\Models\LastPayDeduction;
 use App\Models\Payroll;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ use Exception;
 use DB;
 use Illuminate\Support\Facades\Auth;
 use Str;
+use Log;
 
 class LastPayController extends Controller
 {
@@ -120,7 +122,9 @@ class LastPayController extends Controller
 
             if ($employee) {
 
-                $lastPayDetails = LastPay::where("employee_id", $employee->id)->first();
+                $lastPayDetails = LastPay::with(['deductions','deductions.deduction',])
+                ->where("employee_id", $employee->id)
+                ->first();
 
                 $totalPayroll = 0;
                 $month13th = 0;
@@ -147,6 +151,17 @@ class LastPayController extends Controller
                     $query->whereIn("category", ["Pag-ibig", "SSS"]);
                 })
                 ->get();
+
+                $sssLoans = collect();
+
+                if ($lastPayDetails && $lastPayDetails->deductions) {
+                    $sssLoans = $lastPayDetails->deductions->filter(function ($item) {
+                        return $item->deduction &&
+                            $item->deduction->description === 'SSS Loans';
+                    });
+                }
+
+                $companyDeductions = $companyDeductions->merge($sssLoans);
 
                 $yearHolded = Carbon::parse($employee->payroll_list->holded_at)->year;
                 $dateHolded = Carbon::parse($employee->payroll_list->holded_at)->format("Y-m-d");
@@ -309,6 +324,12 @@ class LastPayController extends Controller
                     $totalDeductions += $deduction->balance;
                 }
 
+                foreach ($governmentDeductions as $deduction) {
+                    if ($deduction->deduction->description === 'SSS Loans' && $request->sss_loans === 'Yes') {
+                        $totalDeductions += $deduction->balance;
+                    }
+                }
+
                 foreach ($allPayrolls as $payroll) {
                     $salary = $payroll->salary - ($payroll->undertime_amount + $payroll->tardiness_amount);
                     $annualTaxableIncome += $payroll->taxable_income;
@@ -350,6 +371,25 @@ class LastPayController extends Controller
                     ]);
                 }
 
+                foreach ($governmentDeductions as $deduction) {
+                    if ($deduction->deduction->description === 'SSS Loans' && $request->sss_loans === 'Yes') {
+                        $lastPayDetails->deductions()->create([
+                            "employee_id" => $employee->id,
+                            "reference_doc" => $deduction->reference_doc,
+                            "deduction_id" => $deduction->deduction_id,
+                            "amount" => $deduction->balance,
+                        ]);
+                    }
+                }
+
+                foreach ($governmentDeductions as $deduction) {
+                    if ($deduction->deduction->description === 'SSS Loans' && $request->sss_loans === 'Yes') {
+                        $deduction->update([
+                            "balance" => 0
+                        ]);
+                    }
+                }
+
                 DB::commit();
                 return $this->sendResponse([
                     "company_deductions" => $companyDeductions,
@@ -371,6 +411,95 @@ class LastPayController extends Controller
             return $this->sendError(["message" => "Employee not found"]);
 
         } catch(Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function removeLastPayDeduction(Request $request, $employeeNumber) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "reference_doc" => "required"
+            ]);
+
+            $employee = Employee::where('employee_number', $employeeNumber)->first();
+
+            $deductionFromLastPay = LastPayDeduction::where('reference_doc', $request->reference_doc)
+                ->where('employee_id', $employee->id)
+                ->first();
+
+            if ($deductionFromLastPay) {
+
+                $lastPay = LastPay::where('employee_id', $employee->id)->first();
+
+                $totalDeductions = $lastPay->total_deductions;
+                $totalDeductions -= $deductionFromLastPay->amount;
+
+                $lastPay->update([
+                    "total_deductions" => $totalDeductions
+                ]);
+
+                if ($deductionFromLastPay) {
+                    $deductionFromLastPay->delete();
+                }
+
+                $deductionFromEmployeeDeduction = EmployeeDeduction::where('reference_doc', $request->reference_doc)
+                ->where('employee_id', $employee->id)
+                ->first();
+
+                if ($deductionFromEmployeeDeduction) {
+                    $deductionFromEmployeeDeduction->delete();
+                }
+
+                DB::commit();
+                return $this->sendResponse([
+                    "message" => "Deduction updated successfully",
+                ]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Last Pay Deduction not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function editLastPayDeductionDetails(Request $request, $lastPayDeductionId) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "amount" => "required",
+            ]);
+
+            $lastPayDeduction = LastPayDeduction::find($lastPayDeductionId);
+
+            if ($lastPayDeduction) {
+
+                $lastPayDeduction->update([
+                    "amount" => $request->amount
+                ]);
+
+                $allLastPayDeduction = LastPayDeduction::where('last_pay_id',$lastPayDeduction->last_pay_id)
+                    ->sum('amount');
+
+                $lastPay = LastPay::where('id', $lastPayDeduction->last_pay_id)->first();
+                $lastPay->update([
+                    "total_deductions" => $allLastPayDeduction
+                ]);
+
+                DB::commit();
+                return $this->sendResponse([
+                    "message" => "Last Pay Deduction updated successfully"
+                ]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Last Pay Deduction not found"]);
+        } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }

@@ -57,73 +57,34 @@ class GenerateLastPayEntry implements ShouldQueue
         $user = User::find($userId);
         $employee_id = $user->employee->id;
 
-        $thirteenthMonthDebit = null;
-        $thirteenthMonthCredit = null;
-        $slVlDebit = null;
-        $slVlCredit = null;
-        $taxrefundDebit = null;
-        $taxrefundCredit = null;
-        $incentivesCredit = null;
-        $salesDebit = null;
-        $salesCredit = null;
-        $mealDebit = null;
-        $mealCredit = null;
-        $storeIncentivesDebit = null;
-        $storeIncentivesCredit = null;
-        $sssLoansDebit = null;
-        $sssLoansCredit = null;
-        $sssLoansRemittanceDebit = null;
-        $sssLoansRemittanceCredit = null;
-        $sssLoansRemittanceVendor = null;
-        
-        $lastPaySetups = LastPaySetup::all();
+        $lastPaySetups = LastPaySetup::all()->keyBy('setup_type');
 
-        foreach ($lastPaySetups as $setup) {
-            if ($setup->setup_type === '13th') {
-                $thirteenthMonthDebit  = $setup->debit_id;
-                $thirteenthMonthCredit = $setup->credit_id;
-            }
+        $thirteenthMonthDebit  = $lastPaySetups['13th']->debit_id;
+        $thirteenthMonthCredit = $lastPaySetups['13th']->credit_id;
 
-            if ($setup->setup_type === 'slvl'){
-                $slVlDebit = $setup->debit_id;
-                $slVlCredit = $setup->credit_id;
-            }
+        $slVlDebit  = $lastPaySetups['slvl']->debit_id;
+        $slVlCredit = $lastPaySetups['slvl']->credit_id;
 
-            if ($setup->setup_type === 'taxrefund'){
-                $taxrefundDebit = $setup->debit_id;
-                $taxrefundCredit = $setup->credit_id;
-            }
+        $taxrefundDebit  = $lastPaySetups['taxrefund']->debit_id;
+        $taxrefundCredit = $lastPaySetups['taxrefund']->credit_id;
 
-            if ($setup->setup_type === 'incentives'){
-                $incentivesCredit = $setup->credit_id;
-            }
+        $incentivesCredit = $lastPaySetups['incentives']->credit_id;
 
-            if ($setup->setup_type === 'sales'){
-                $salesDebit = $setup->debit_id;
-                $salesCredit = $setup->credit_id;
-            }
+        $salesDebit  = $lastPaySetups['sales']->debit_id;
+        $salesCredit = $lastPaySetups['sales']->credit_id;
 
-            if ($setup->setup_type === 'meal'){
-                $mealDebit = $setup->debit_id;
-                $mealCredit = $setup->credit_id;
-            }
+        $mealDebit  = $lastPaySetups['meal']->debit_id;
+        $mealCredit = $lastPaySetups['meal']->credit_id;
 
-            if ($setup->setup_type === 'storeincentives'){
-                $storeIncentivesDebit = $setup->debit_id;
-                $storeIncentivesCredit = $setup->credit_id;
-            }
+        $storeIncentivesDebit  = $lastPaySetups['storeincentives']->debit_id;
+        $storeIncentivesCredit = $lastPaySetups['storeincentives']->credit_id;
 
-            if ($setup->setup_type === 'sssloans'){
-                $sssLoansDebit = $setup->debit_id;
-                $sssLoansCredit = $setup->credit_id;
-            }
+        $sssLoansDebit  = $lastPaySetups['sssloans']->debit_id;
+        $sssLoansCredit = $lastPaySetups['sssloans']->credit_id;
 
-            if ($setup->setup_type === 'sssloansremittance'){
-                $sssLoansRemittanceDebit = $setup->debit_id;
-                $sssLoansRemittanceCredit = $setup->credit_id;
-                $sssLoansRemittanceVendor = $setup->vendor_id;
-            }
-        }
+        $sssLoansRemittanceDebit  = $lastPaySetups['sssloansremittance']->debit_id;
+        $sssLoansRemittanceCredit = $lastPaySetups['sssloansremittance']->credit_id;
+        $sssLoansRemittanceVendor = $lastPaySetups['sssloansremittance']->vendor_id;
 
         $branchHO = Branch::where('short_name', 'HO')->first();
         $branchHOId = $branchHO->id;
