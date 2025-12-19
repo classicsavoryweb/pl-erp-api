@@ -231,6 +231,7 @@ class PayrollService {
                         "monthly_amortization" => $deduction->monthly_amortization,
                         "balance" => $deduction->balance,
                         "deducted_amount" => $amountToDeduct,
+                        "payslip_description" => $deduction->payslip_description
                     ];
                     $totalDeductions += $amountToDeduct;
                 }
