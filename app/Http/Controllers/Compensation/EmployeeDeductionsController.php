@@ -152,6 +152,7 @@ class EmployeeDeductionsController extends Controller
                 "date_created" => date('Y-m-d'),
                 "end_loan_reason" => $request->end_loan_reason,
                 "end_loan_status" => $request->end_loan_status,
+                "source" => "MANUAL"
             ]);
 
             return $this->sendResponse(["message" => "Deduction created successfully"]);
