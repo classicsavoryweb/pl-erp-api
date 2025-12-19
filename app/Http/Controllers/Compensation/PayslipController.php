@@ -37,7 +37,7 @@ class PayslipController extends Controller
                 if ($request->pay_date == 0) {
                     $cutOffFrom = Cutoff::find($request->pay_date_from);
                     $cutOffTo = Cutoff::find($request->pay_date_to);
-                    $payroll = $payroll->whereBetween("pay_date", [$cutOffFrom->pay_date, $cutOffTo]);
+                    $payroll = $payroll->whereBetween("pay_date", [$cutOffFrom->pay_date, $cutOffTo->pay_date]);
                 } else {
                     $cutOff = Cutoff::find($request->pay_date);
                     $payroll = $payroll->where("pay_date", $cutOff->pay_date);
