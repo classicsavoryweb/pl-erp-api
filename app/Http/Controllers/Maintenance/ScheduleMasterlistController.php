@@ -113,6 +113,8 @@ class ScheduleMasterlistController extends Controller
     public function editScheduleMasterlist(Request $request, $id) {
         try {
             DB::beginTransaction();
+            $record = ScheduleMasterlist::findOrFail($id);
+            $originalSelection = $record->selection;
 
             $request->validate([
                 "start_time" => "required",
@@ -126,7 +128,7 @@ class ScheduleMasterlistController extends Controller
                 "status" => "required",
             ]);
 
-            ScheduleMasterlist::where("id", $id)->update([
+            $record->update([
                 "start_time" => $request->start_time,
                 "end_time" => $request->end_time,
                 "selection" => $request->selection,
@@ -137,21 +139,25 @@ class ScheduleMasterlistController extends Controller
                 "required" => $request->required,
                 "status" => $request->status,
             ]);
+            $record->refresh();
 
-            $record = ScheduleMasterlist::find($id);
+            $syncPayload = [
+                "schedule_id" => $record->id,
+                "selection" => $record->selection,
+                "start_time" => $record->start_time,
+                "end_time" => $record->end_time,
+                "classification" => $record->classification,
+                "time_break" => $record->time_break,
+                "total_hours" => $record->total_hours,
+                "days" => $record->days,
+                "status" => $record->status,
+            ];
 
-            if ($record) {
-                $this->csHubSyncService->sync([
-                    "selection" => $record->selection,
-                    "start_time" => $record->start_time,
-                    "end_time" => $record->end_time,
-                    "classification" => $record->classification,
-                    "time_break" => $record->time_break,
-                    "total_hours" => $record->total_hours,
-                    "days" => $record->days,
-                    "status" => $record->status,
-                ]);
+            if ($originalSelection !== $record->selection) {
+                $syncPayload["original_selection"] = $originalSelection;
             }
+
+            $this->csHubSyncService->sync($syncPayload);
 
             DB::commit();
             return $this->sendResponse(["message" => "Schedule updated succesfully"]);
