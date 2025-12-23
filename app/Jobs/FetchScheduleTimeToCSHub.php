@@ -77,8 +77,8 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
                                 "employee_id" => $employee->id,
                                 "biometric_number" => $employee->biometric_number,
                                 "date" => $schedule["work_date"],
-                                "branch_id" => $branch->id,
                             ], [
+                                "branch_id" => $branch->id,
                                 "timetable" => $sched->selection,
                                 "check_in" => $sched->start_time,
                                 "check_out" => $sched->end_time

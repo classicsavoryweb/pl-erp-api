@@ -23,7 +23,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '21:00');
         $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(10, '14:01');
         $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(25, '14:01');
-        $schedule->command('app:sync-employee-details')->dailyAt('00:00');
+        $schedule->command('app:sync-employee-details')->dailyAt('12:00');
         $schedule->command('app:sync-employee-details')->dailyAt('18:00');
     }
 
