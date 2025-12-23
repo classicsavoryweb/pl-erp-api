@@ -83,14 +83,33 @@ class ATDController extends Controller
             $password = env('CS_HUB_ADMIN_PASSWORD');
             $company = env('COMPANY_NAME');
 
+            $payLoad = [
+                "company" => $company,
+            ];
+            $branch = null;
+            if ($request->filled(["branch_id"])) {
+                $branch = Branch::find($request->branch_id);
+
+                if ($branch) {
+                    $payLoad["branch_number"] = $branch->branch_number;
+                }
+            }
+
+            if ($request->filled(["transaction_number"])) {
+                $payLoad["transaction_number"] = $request->transaction_number;
+            }
+
+            if ($request->filled(["date_from", "date_to"])) {
+                $payLoad["date_from"] = $request->date_from;
+                $payLoad["date_to"] = $request->date_to;
+            }
+
             $response = Http::withBasicAuth($user, $password)
             ->withHeaders([
                 "Accept" => "application/json",
                 "Content-Type" => "application/json"
             ])->timeout(60)
-            ->get($transactionLink,[
-                "company" => $company,
-            ]);
+            ->get($transactionLink, $payLoad);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -156,7 +175,23 @@ class ATDController extends Controller
                     ->first();
 
                     $terms = $term->month;
-                    $monthlyAmortization = $transaction["amount"] / $terms;
+
+                    if ($terms == 0) {
+                        $monthlyAmortization = $transaction["amount"];
+                    } else {
+                        $monthlyAmortization = $transaction["amount"] / $terms;
+                    }
+                }
+
+                $remarks = $transaction["transaction_number"]." | ".$transaction["transaction_date"]." | ".$transaction["type"]. " | ";
+
+                foreach ($transaction["items"] as $idx => $item) {
+
+                    if ($idx === 0) {
+                        $remarks = $remarks . $item["item_name"];
+                    } else {
+                        $remarks = $remarks . " , " . $item["item_name"];
+                    }
                 }
 
                 $atdBranch = Branch::where("branch_number", $transaction["branch_number"])->first();
@@ -171,7 +206,7 @@ class ATDController extends Controller
                     "end_date" => $dateEnd,
                     "monthly_amortization" => $monthlyAmortization,
                     "balance" => $transaction["amount"],
-                    "remarks" => $transaction["transaction_number"]." | ".$transaction["transaction_date"]." | ".$transaction["type"],
+                    "remarks" => $remarks,
                     "transaction_number" => $transaction["transaction_number"],
                     "debit_id" => $deduction->debit_id,
                     "credit_id" => $deduction->credit_id,
