@@ -59,7 +59,6 @@ class SyncEmployeeDetails extends Command
             ->toArray();
 
         DB::table('employees')
-            ->where('created_at', '>=', $date)
             ->orWhere('updated_at', '>=', $date)
             ->orderBy('id')
             ->chunkById($batchSize, function ($employees) use ($targetColumnKeys, &$existingSet, $positionNames, $branchNames, $employmentStatuses) {
