@@ -63,6 +63,46 @@ return [
             ]) : [],
         ],
 
+        'cs-erp' => [
+            'driver' => 'mysql',
+            'url' => env('CS_ERP_DATABASE_URL'),
+            'host' => env('CS_ERP_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('CS_ERP_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('CS_ERP_DB_DATABASE', env('DB_DATABASE', 'forge')),
+            'username' => env('CS_ERP_DB_USERNAME', env('DB_USERNAME', 'forge')),
+            'password' => env('CS_ERP_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('CS_ERP_DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        'savory_temp_db' => [
+            'driver' => 'mysql',
+            'url' => env('SAVORY_TEMP_DATABASE_URL'),
+            'host' => env('SAVORY_TEMP_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('SAVORY_TEMP_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('SAVORY_TEMP_DB_DATABASE', 'savory_temp_db'),
+            'username' => env('SAVORY_TEMP_DB_USERNAME', 'forge'),
+            'password' => env('SAVORY_TEMP_DB_PASSWORD', ''),
+            'unix_socket' => env('SAVORY_TEMP_DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'apsys' => [
             'driver' => 'mysql',
             'url' => env('APSYS_DATABASE_URL'),
