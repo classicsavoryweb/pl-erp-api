@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Compensation\ATDController;
 use App\Http\Controllers\Compensation\BranchAdditionalIncomeController;
 use App\Http\Controllers\Compensation\ConverterController;
 use App\Http\Controllers\Compensation\CutOffController;
@@ -38,6 +39,9 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_deductions"])->post("/create-employee-deduction", [EmployeeDeductionsController::class, "createEmployeeDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/edit-employee-deduction/{id}", [EmployeeDeductionsController::class, "editEmployeeDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/end-loan-transaction/{id}", [EmployeeDeductionsController::class, "endLoanTransaction"]);
+    Route::get("/get-all-employee-atds", [ATDController::class, "getAllEmployeeDeductions"]);
+    Route::get("/get-cshub-atds", [ATDController::class, "getCSHubATD"]);
+    Route::middleware(["permission:perform_compensation_atd"])->post("/create-cshub-atds", [ATDController::class, "createATD"]);
 
     //payroll
     Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);
@@ -81,6 +85,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-initial-last-pay/{employeeNumber}", [LastPayController::class, "getEmployeeInitialLastPayDetails"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/create-last-pay/{employeeNumber}", [LastPayController::class, "createLastPayRecord"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay/{lastPayId}", [LastPayController::class, "editLastPayRecord"]);
+    Route::middleware(["permission:perform_compensation_last_pay"])->post("/remove-last-pay-deduction/{employeeNumber}", [LastPayController::class, "removeLastPayDeduction"]);
+    Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay-deduction-details/{lastPayDeductionId}", [LastPayController::class, "editLastPayDeductionDetails"]);
     Route::get("/post-last-pay/{lastPayId}", [LastPayController::class, "postLastPay"]);
 
     //additional income

@@ -42,7 +42,7 @@ class TimekeepingSummarySeeder extends Seeder
                     $tardiness += $unique_timekeeping["late{$k}"];
                 }
 
-                $cutoff = $this->getCutOffForDate($unique_timekeeping["late1_date"]);
+                $cutoff = $this->getCutOffForDate($unique_timekeeping["process_date"]);
 
                 $timekeeping_summary = TimeKeepingSummary::create([
                     "cut_off" => $cutoff['start_time'] . '-' . $cutoff['end_time'],
@@ -73,19 +73,12 @@ class TimekeepingSummarySeeder extends Seeder
         $carbonDate = Carbon::parse($date);
         $day = $carbonDate->day;
 
-        $cutOff1 = [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
-        $cutOff2 = [26,27,28,29,30,31,1,2,3,4,5,6,7,8,9,10];
-        if (in_array($day, $cutOff2)) {
-            if ($day <= 10) { 
-                $startTime = $carbonDate->copy()->setDay(26)->subMonth()->startOfDay();
-                $endTime = $carbonDate->copy()->setDay(10)->endOfDay();
-            } else {
-                $startTime = $carbonDate->copy()->setDay(26)->startOfDay();
-                $endTime = $carbonDate->copy()->setDay(10)->addMonth()->endOfDay();
-            }
+        if ($day >= 1 && $day <= 15) {
+            $startTime = $carbonDate->copy()->subMonth()->startOfMonth()->addDays(25)->startOfDay(); //26
+            $endTime = $carbonDate->copy()->startOfMonth()->addDays(9)->endOfDay(); //10
         } else {
-            $startTime = $carbonDate->copy()->setDay(11)->startOfDay();
-            $endTime = $carbonDate->copy()->setDay(25)->endOfDay();
+            $startTime = $carbonDate->copy()->startOfMonth()->startOfMonth()->addDays(10)->startOfDay(); //11
+            $endTime = $carbonDate->copy()->startOfMonth()->addDays(24)->endOfDay(); //25
         }
 
         return [

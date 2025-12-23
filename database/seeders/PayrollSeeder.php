@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Branch;
+use App\Models\DeductionHistory;
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
 use App\Models\Payroll;
@@ -72,10 +73,9 @@ class PayrollSeeder extends Seeder
                     ];
                 }
 
-                $employeeDeductions = EmployeeDeduction::with(["deduction"])
+                $employeeDeductions = DeductionHistory::with(["deduction"])
                     ->where("employee_id", $employee->id)
-                    ->where("balance", ">", 1)
-                    ->where("end_loan_status", "!=", "Yes")
+                    ->where("pay_date", $unique_payroll["pay_date"])
                     ->get();
 
                 $deductions = [];
@@ -93,6 +93,7 @@ class PayrollSeeder extends Seeder
                         "monthly_amortization" => $deduction->monthly_amortization,
                         "balance" => $deduction->balance,
                         "deducted_amount" => $amountToDeduct,
+                        "payslip_description" => $deduction->payslip_description
                     ];
                 }
 

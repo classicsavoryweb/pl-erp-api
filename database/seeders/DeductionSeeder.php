@@ -46,7 +46,40 @@ class DeductionSeeder extends Seeder
                 "status" => $status,
                 "end_loan_vendor_id" => $unique_deductions_detail["endloan_vendor"],
                 "end_loan_debit_id" => $unique_deductions_detail["endloan_debitid"],
-                "end_loan_credit_id" => $unique_deductions_detail["endloan_creditid"]
+                "end_loan_credit_id" => $unique_deductions_detail["endloan_creditid"],
+                "payslip_description" => $unique_deductions_detail["description"],
+            ]);
+        }
+
+        $jsonPath1 = public_path('jsons/payroll/atd_maintenance_type.json');
+        $jsonData1 = file_get_contents($jsonPath1);
+        $deductions_details1 = json_decode($jsonData1, true);
+        $unique_deductions_details1 = array_map("unserialize", array_unique(array_map("serialize", $deductions_details1["atd_mntn_type"])));
+
+        foreach ($unique_deductions_details1 as $unique_deductions_detail) {
+            $category = "Company";
+            $other = Deduction::where("description", "Others")->first();
+            $description = ucwords(strtolower($unique_deductions_detail["description"]));
+            
+            $isExisting = Deduction::where("description", $description)->first();
+
+            if ($isExisting) {
+                continue;
+            }
+
+            Deduction::create([
+                "description" => $description,
+                "category" => $category,
+                "debit_id" => $other->debit_id,
+                "credit_id" => $other->credit_id,
+                "amortization_vendor_id" => $other->amortization_vendor_id,
+                "amortization_debit_id" => $other->amortization_debit_id,
+                "amortization_credit_id" => $other->amortization_credit_id,
+                "status" => $unique_deductions_detail["status"],
+                "end_loan_vendor_id" => $other->end_loan_debit_id,
+                "end_loan_debit_id" => $other->end_loan_debit_id,
+                "end_loan_credit_id" => $other->end_loan_credit_id,
+                "payslip_description" => $other->description,
             ]);
         }
     }

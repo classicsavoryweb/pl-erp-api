@@ -12,7 +12,34 @@ class EmployeeDeduction extends Model
     use HasFactory, LogsActivity;
 
     protected $table = "employee_deductions";
-    protected $fillable = ["employee_id", "deduction_id", "reference_doc", "months", "amount", "source_of_fund", "start_date", "end_date", "monthly_amortization", "balance", "remarks", "debit_id", "credit_id", "branch_id", "block_payment", "approved_by", "approved_date", "approved_status", "deduction_ref", "deduction_status", "created_by", "date_created", "end_loan_reason", "end_loan_status"];
+    protected $fillable = [
+        "employee_id",
+        "deduction_id",
+        "reference_doc",
+        "months",
+        "amount",
+        "source_of_fund",
+        "start_date",
+        "end_date",
+        "monthly_amortization",
+        "balance",
+        "remarks",
+        "debit_id",
+        "credit_id",
+        "branch_id",
+        "block_payment",
+        "approved_by",
+        "approved_date",
+        "approved_status",
+        "deduction_ref",
+        "deduction_status",
+        "created_by",
+        "date_created",
+        "end_loan_reason",
+        "end_loan_status",
+        "source",
+        "transaction_number"
+    ];
 
     protected static function booted()
     {
