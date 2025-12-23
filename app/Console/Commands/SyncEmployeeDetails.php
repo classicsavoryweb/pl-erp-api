@@ -46,23 +46,19 @@ class SyncEmployeeDetails extends Command
         $existingSet = array_fill_keys($existingIds, true);
         $batchSize = 200;
 
-        $positionNames = DB::connection('cs-erp')
-            ->table('positions')
+        $positionNames = DB::table('positions')
             ->pluck('description', 'id')
             ->toArray();
 
-        $branchNames = DB::connection('cs-erp')
-            ->table('branches')
+        $branchNames = DB::table('branches')
             ->pluck('name', 'id')
             ->toArray();
 
-        $employmentStatuses = DB::connection('cs-erp')
-            ->table('employee_status')
+        $employmentStatuses = DB::table('employee_status')
             ->pluck('description', 'id')
             ->toArray();
 
-        DB::connection('cs-erp')
-            ->table('employees')
+        DB::table('employees')
             ->where('created_at', '>=', $date)
             ->orWhere('updated_at', '>=', $date)
             ->orderBy('id')
