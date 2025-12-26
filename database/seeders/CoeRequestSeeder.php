@@ -20,11 +20,13 @@ class CoeRequestSeeder extends Seeder
 
         foreach ($requests["tbl_coe_request"] as $request) {
 
-            $employee = Employee::where("employee_number", $request["employee_id2"])->first();
+            $employee = Employee::with(['current_position'])->where("employee_number", $request["employee_id2"])->first();
             
             if ($employee) {
                 CoeRequest::create([
                     'employee_id' => $employee->id,
+                    'position' => $employee->current_position->description,
+                    'basic_salary' => $request["basic_salary"],
                     'date_requested' => $request["date_request"],
                     "include_salary" => $request["include_salary"],
                     "coe_format" => $request["coe_format"],

@@ -80,7 +80,9 @@ class ReportCoeRequestsController extends Controller
             $employee = Employee::where("employee_number", $request->employee_number)->first();
             CoeRequest::create([
                 ...$request->except(["employee_number"]),
+                "basic_salary" => $employee->monthlySalary(),
                 "employee_id" => $employee->id,
+                "position" => $employee->current_position->description,
                 "status" => "Pending",
                 "date_requested" => now()
             ]);
@@ -98,10 +100,12 @@ class ReportCoeRequestsController extends Controller
                 "coe_format" => "required",
                 "coe_reason" => "required",
             ]);
-
+            $employee = Employee::where("employee_number", $request->employee_number)->first();
             CoeRequest::where("id", $id)
             ->update([
-                ...$request->except(["employee", "employee_number"])
+                ...$request->except(["employee", "employee_number"]),
+                "position" => $employee->current_position->description,
+                "basic_salary" => $employee->monthlySalary(),
             ]);
 
             return $this->sendResponse(["message" => "COE Request updated successfully"]);
@@ -131,22 +135,6 @@ class ReportCoeRequestsController extends Controller
                 $dateOfStay = $dateStarted. " up to present";
             }
             
-
-            $salary_amount = 0.00;
-            $salary = $position->salary()->first();
-
-            if ($coeRequest->include_salary === "Yes") {
-                if (!$salary) {
-                    return $this->sendError(["message" => "Salary not existing"]);
-                }
-                if ( strtolower($salary->rate_category) !== "minimum") {
-                    $salary_amount = $salary->basic_salary ?? 0;
-                } else {
-                    $rate = Rate::where("code", $branch->rate_code)->first();
-                    $salary_amount = $rate->minimum * 26;
-                }
-            }
-
             $result = [];
 
             for ($i = 0; $i < count($positions); $i++) {
@@ -180,8 +168,8 @@ class ReportCoeRequestsController extends Controller
                 "gender" => $employee->gender,
                 "date_of_stay" => $dateOfStay,
                 "include_salary" => $coeRequest->include_salary,
-                "salary" => $this->convertToChequeWords($salary_amount),
-                "current_position" => $position->description,
+                "salary" => $this->convertToChequeWords($coeRequest->basic_salary),
+                "current_position" => $coeRequest->position,
                 "purpose" => $purpose,
                 "positions" => $result,
                 "employee_status" => $employee->status,
