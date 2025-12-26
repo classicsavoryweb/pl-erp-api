@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Compensation;
 
 use App\Exports\Compensation\EmployeeDeductionExport;
 use App\Http\Controllers\Controller;
+use App\Models\Accounting\ApsysEntry;
+use App\Models\Accounting\ApsysEntryMain;
+use App\Models\Accounting\Vendor;
 use App\Models\EmployeeDeduction;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Deduction;
+use App\Models\Entry;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use DB;
@@ -17,6 +21,23 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeDeductionsController extends Controller
 {
+
+    private function generateEntryId(&$counter)
+    {
+        if ($counter === null) {
+            $lastEntry = Entry::orderBy('entry_id', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->entry_id, 3);
+                $counter = $lastEntryIdNumber + 1;
+            } else {
+                $counter = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counter++, 8, '0', STR_PAD_LEFT);
+    }
+
     public function getAllEmployeeDeductions(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -122,13 +143,13 @@ class EmployeeDeductionsController extends Controller
 
             $branch = Branch::where("name", "Head Office")->first();
             $user = Auth::user();
-            $employee = $user->employee;
+            $user = $user->employee;
 
             $deduction_id = $request->deduction_id;
 
             $deduction = Deduction::where("id", $deduction_id)->first();
 
-            EmployeeDeduction::create([
+            $employeeDeduction = EmployeeDeduction::create([
                 "employee_id" => $request->employee_id,
                 "deduction_id" => $request->deduction_id,
                 "months" => $request->months,
@@ -148,12 +169,60 @@ class EmployeeDeductionsController extends Controller
                 "approved_status" => $request->approved_status,
                 "deduction_ref" => $deduction_reference,
                 "deduction_status" => $request->deduction_status,
-                "created_by" => $employee->properFullName,
+                "created_by" => $user->properFullName,
                 "date_created" => date('Y-m-d'),
                 "end_loan_reason" => $request->end_loan_reason,
                 "end_loan_status" => $request->end_loan_status,
                 "source" => "MANUAL"
             ]);
+
+            $branchHO = Branch::where('short_name', 'HO')
+                ->first();
+            $branchHOId = $branchHO->id;
+            $branchHOName = $branchHO->name;
+            $branchHONumber = $branchHO->branch_number;    
+
+            $deductionEntry = Deduction::where('id', $employeeDeduction->deduction_id)->first();
+            $debitId = $deductionEntry->debit_id;
+            $creditId = $deductionEntry->credit_id;
+
+            $entries = [];
+
+            if ($employeeDeduction->amount > 0) {
+                $entryId = $this->generateEntryId($counter);
+                $entries = array_merge($entries, [
+                    [
+                        'entry_id'            => $entryId,
+                        'document_no'         => $employee->employee_number . '|' . 'Head Office',
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
+                        'ven_no'              => $employee->employee_number,
+                        'ven_name'            => $employee->full_name,
+                        'amount'              => $employeeDeduction->amount,
+                        'acc_no'              => $debitId,
+                        'description_per_acc' => $employeeDeduction->deduction->description,
+                        'balance_type'        => 'Debit',
+                        'is_block_payment'    => 0,
+                    ],
+                    [
+                        'entry_id'            => $entryId,
+                        'document_no'         => $employee->employee_number . '|' . 'Head Office',
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
+                        'ven_no'              => $employee->employee_number,
+                        'ven_name'            => $employee->full_name,
+                        'amount'              => $employeeDeduction->amount,
+                        'acc_no'              => $creditId,
+                        'description_per_acc' => $employeeDeduction->deduction->description,
+                        'balance_type'        => 'Credit',
+                        'is_block_payment'    => 0,
+                    ]
+                ]);
+            }
+
+            $this->createEntries($entries, $user);
 
             return $this->sendResponse(["message" => "Deduction created successfully"]);
         } catch (Exception $e) {
@@ -210,9 +279,142 @@ class EmployeeDeductionsController extends Controller
                 "end_loan_status" => "Yes"
             ]);
 
+            $employeeDeduction = EmployeeDeduction::find($id);
+
+            $employee = Employee::where('id', $employeeDeduction->employee_id)->first();
+
+            $branchHO = Branch::where('short_name', 'HO')->first();
+            $branchHOId = $branchHO->id;
+            $branchHOName = $branchHO->name;
+            $branchHONumber = $branchHO->branch_number;
+
+            $deductionEntry = Deduction::where('id', $employeeDeduction->deduction_id)->first();
+            $endLoanDebitId = $deductionEntry->end_loan_debit_id;
+            $endLoanCreditId = $deductionEntry->end_loan_credit_id;
+            $endLoanVendorId = $deductionEntry->end_loan_vendor_id;
+
+            $vendor = Vendor::where("ven_no", $deductionEntry->end_loan_vendor_id)->first();
+            $vendorName = $vendor->ven_name;
+
+            $user = Auth::user();
+            $user = $user->employee;
+
+            $entries = [];
+
+            if ($employeeDeduction->amount > 0) {
+                $entryId = $this->generateEntryId($counter);
+                $entries = array_merge($entries, [
+                    [
+                        'entry_id'            => $entryId,
+                        'document_no'         => 'End Loan Transaction' . '|' . now(),
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
+                        'ven_no'              => $endLoanVendorId,
+                        'ven_name'            => $vendorName,
+                        'amount'              => $employeeDeduction->amount,
+                        'acc_no'              => $endLoanDebitId,
+                        'description_per_acc' => 'End Loan Transaction' . '|' . now(),
+                        'balance_type'        => 'Debit',
+                        'is_block_payment'    => 1,
+                    ],
+                    [
+                        'entry_id'            => $entryId,
+                        'document_no'         => 'End Loan Transaction' . '|' . now(),
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
+                        'ven_no'              => $endLoanVendorId,
+                        'ven_name'            => $vendorName,
+                        'amount'              => $employeeDeduction->amount,
+                        'acc_no'              => $endLoanCreditId,
+                        'description_per_acc' => 'End Loan Transaction' . '|' . now(),
+                        'balance_type'        => 'Credit',
+                        'is_block_payment'    => 1,
+                    ]
+                ]);
+            }
+
+            $this->createEntries($entries, $user);
+
             return $this->sendResponse(["message" => "End loan updated successfully"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    private function createEntries($entries, $user)
+    {
+        foreach ($entries as $entry) {
+
+            Entry::create([
+                'entry_id'                   => $entry['entry_id'],
+                'document_no'                => $entry['document_no'],
+                'branch_id'                  => $entry['branch_id'],
+                'branch_number'              => $entry['branch_number'],
+                'vendor_no'                  => $entry['ven_no'],
+                'amount'                     => $entry['amount'],
+                'account_no'                 => $entry['acc_no'],
+                'description'                => $entry['description_per_acc'],
+                'balance_type'               => $entry['balance_type'],
+                'is_block_payment'           => $entry['is_block_payment'],
+                'status'                     => 'Unapplied',
+                'generated_at'               => now(),
+                'generated_by'               => $user->id,
+            ]);
+
+            ApsysEntry::create([
+                'ent_tran_no'       => $entry['entry_id'],
+                'branch_id'         => $entry['branch_number'],
+                'ent_post_date'     => now(),
+                'ven_no'            => $entry['ven_no'],
+                'ent_doc_no'        => $entry['document_no'],
+                'ent_doc_date'      => now(),
+                'ent_due_date'      => now(),
+                'ent_header'        => '',
+                'ent_crf_no'        => '',
+                'ent_trans_amt'     => $entry['amount'],
+                'ent_amt_due'       => $entry['amount'],
+                'ent_module'        => 'Payroll',
+                'acc_no'            => $entry['acc_no'],
+                'ent_amt_per_cc'    => $entry['amount'],
+                'ent_desc_per_acc'  => $entry['description_per_acc'],
+                'ent_norm_bal'      => $entry['balance_type'],
+                'ent_total'         => $entry['amount'],
+                'ent_module_type'   => 'Single',
+                'ent_app_amt'       => $entry['amount'],
+                'ent_unapp_amt'     => $entry['amount'],
+                'ent_vat_amt'       => 0,
+                'ent_nonvat_amt'    => 0,
+                'ent_na_amt'        => $entry['amount'],
+                'ent_inp_tax_amt'   => 0,
+                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
+                'ent_status'        => 'Unapplied',
+                'ent_chk'           => 'No',
+                'date_added'        => now(),
+            ]);
+
+            ApsysEntryMain::create([
+                'ent_tran_no'       => $entry['entry_id'],
+                'ven_no'            => $entry['ven_no'],
+                'ven_name'          => $entry['ven_name'],
+                'ent_doc_date'      => now(),
+                'branch_id'         => $entry['branch_number'],
+                'branch_name'       => $entry['branch_name'],
+                'ent_header'        => '',
+                'ent_trans_amt'     => $entry['amount'],
+                'ent_post_date'     => now(),
+                'ent_module_type'   => 'Single',
+                'ent_status'        => 'Unapplied',
+                'check_no'          => null,
+                'ent_crf_no'        => '',
+                'ent_doc_no'        => $entry['document_no'],
+                'ent_module'        => 'Payroll',
+                'ent_app_amt'       => $entry['amount'],
+                'ent_unapp_amt'     => $entry['amount'],
+                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
+                'ent_due_date'      => now(),
+            ]);
         }
     }
 }
