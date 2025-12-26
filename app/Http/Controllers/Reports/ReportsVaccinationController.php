@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
+use App\Exports\AllRecords\EmployeeVaccinationExport;
 use App\Models\EmployeeVaccine;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportsVaccinationController extends Controller
 {
@@ -57,12 +59,25 @@ class ReportsVaccinationController extends Controller
                 "vaccine",
                 "employee"
             ])
-            ->orderBy("date","DESC")
-            ->paginate($perPage);
+            ->orderBy("date","DESC");
+
+            if ($request->has(["export"]) && $request->export) {
+                $vaccines = $vaccines->get();
+                return Excel::download(new EmployeeVaccinationExport($vaccines), "vaccination.xls");
+            }
+
+            $vaccines = $vaccines->paginate($perPage);
 
             return $this->sendResponse($vaccines);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllReportsVaccines(Request $request)
+    {
+        $request["export"] = true;
+
+        return $this->getAllReportsVaccines($request);
     }
 }

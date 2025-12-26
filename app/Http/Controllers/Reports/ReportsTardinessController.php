@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Reports;
 
-use App\Exports\Employees\EmployeeOffensesExport;
+use App\Exports\AllRecords\TardinessExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessTardinessImport;
 use App\Mail\NODMail;
@@ -88,7 +88,7 @@ class ReportsTardinessController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $tardiness = $tardiness->get();
-                return Excel::download(new EmployeeOffensesExport($tardiness), "offenses.xls");
+                return Excel::download(new TardinessExport($tardiness), "tardiness.xls");
             }
             
             $tardiness = $tardiness->paginate($perPage);
