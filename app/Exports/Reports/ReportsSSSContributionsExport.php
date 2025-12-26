@@ -60,7 +60,7 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
 
             $concatenate = '03-92068417'. ';' .$unique_payrollEmployee->employee->current_branch->short_name. ';' .$sssId. ';' .$unique_payrollEmployee->employee->employee_number
             . ';' .$unique_payrollEmployee->employee->last_name. ';' .$unique_payrollEmployee->employee->first_name. ';' .$middleInitial. ';' .
-            $this->formatNumber($unique_payrollEmployee->employee->monthly_salary). ';' .$unique_payrollEmployee->employee->employee_status->description. ';' .$unique_payrollEmployee->employee->date_hired
+            $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()). ';' .$unique_payrollEmployee->employee->employee_status->description. ';' .$unique_payrollEmployee->employee->date_hired
             . ';' .$unique_payrollEmployee->employee->current_position->description;
 
             return [
@@ -71,7 +71,7 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
                 $middleInitial,
-                $this->formatNumber($unique_payrollEmployee->employee->monthly_salary),
+                $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()),
                 $unique_payrollEmployee->employee->employee_status->description,
                 $unique_payrollEmployee->employee->date_hired,
                 $unique_payrollEmployee->employee->current_position->description,
@@ -207,7 +207,7 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
 
             $concatenate = '03-92068417'. ';' .$unique_payrollEmployee->employee->current_branch->short_name. ';' .$sssId. ';' .$unique_payrollEmployee->employee->employee_number
             . ';' .$unique_payrollEmployee->employee->last_name. ';' .$unique_payrollEmployee->employee->first_name. ';' .$middleInitial. ';' .
-            $this->formatNumber($unique_payrollEmployee->employee->monthly_salary). ';' .$unique_payrollEmployee->employee->employee_status->description. ';' .$unique_payrollEmployee->employee->date_hired
+            $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()). ';' .$unique_payrollEmployee->employee->employee_status->description. ';' .$unique_payrollEmployee->employee->date_hired
             . ';' .$unique_payrollEmployee->employee->current_position->description;
 
             $data = [
@@ -219,7 +219,7 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
                 $middleInitial,
-                $this->formatNumber($unique_payrollEmployee->employee->monthly_salary),
+                $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()),
                 $unique_payrollEmployee->employee->employee_status->description,
                 $unique_payrollEmployee->employee->date_hired,
                 $unique_payrollEmployee->employee->current_position->description,

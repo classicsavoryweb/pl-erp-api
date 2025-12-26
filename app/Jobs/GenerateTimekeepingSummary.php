@@ -6,6 +6,7 @@ use App\Http\Services\TimeKeepingService;
 use App\Models\Adjustment;
 use App\Models\AdjustmentTimeKeeping;
 use App\Models\BiotimeLog;
+use App\Models\Employee;
 use App\Models\Holiday;
 use App\Models\LateTimeKeepingSummary;
 use App\Models\ScheduleMasterlist;
@@ -23,15 +24,15 @@ use Log;
 class GenerateTimekeepingSummary implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $employees;
+    protected $branchId;
     protected $currentCutOff;
     protected $timeKeepingService;
     /**
      * Create a new job instance.
      */
-    public function __construct(Collection $employees, $currentCutOff)
+    public function __construct($branchId, $currentCutOff)
     {
-        $this->employees = $employees;
+        $this->branchId = $branchId;
         $this->currentCutOff = $currentCutOff;
         $this->timeKeepingService = new TimeKeepingService();
     }
@@ -39,7 +40,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
     public function handle(): void
     {
         $cutOff = $this->currentCutOff;
-        foreach ($this->employees as $employee) {
+        $branchId = $this->branchId;
+        $employees = Employee::whereHas("timekeeping", function ($query) use ($branchId) {
+            $query->where("branch_id", $branchId);
+        })
+        ->where("status", "active")
+        ->get();
+
+        foreach ($employees as $employee) {
             $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
             ->whereBetween("date", $cutOff)
             ->get();
@@ -64,8 +72,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 foreach ($timeKeepings as $timeKeep) {
                     $actualSchedule = ScheduleTime::find($timeKeep->schedule_time_id);
                     $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
-                    $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
+                    $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
+                    ->where("end_time", $actualSchedule->check_out)
                     ->first();
+
+                    if (!$schedule) {
+                        $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
+                        ->first();
+                    }
 
                     $holidayIsPaid = false;
                     

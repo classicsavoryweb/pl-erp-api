@@ -22,6 +22,7 @@ use DB;
 use Illuminate\Support\Facades\Auth;
 use Str;
 use Log;
+use Illuminate\Support\Facades\Bus;
 
 class TimeKeepingController extends Controller
 {
@@ -239,14 +240,10 @@ class TimeKeepingController extends Controller
                 return $this->sendError(["message" => "Timekeeping or Cutoff is already locked."]);
             }
 
-            $employees = Employee::whereHas("timekeeping", function ($query) use ($request) {
-                $query->where("branch_id", $request->branch_id);
-            })
-            ->where("status", "active")
-            ->get();
-
-            TransferLogsToTimeKeeping::dispatch($request->branch_id, $cutOff);
-            GenerateTimekeepingSummary::dispatch($employees, $cutOff);
+            Bus::chain([
+                new TransferLogsToTimeKeeping($request->branch_id, $cutOff),
+                new GenerateTimekeepingSummary($request->branch_id, $cutOff)
+            ])->dispatch();
 
             $branch = Branch::find($request->branch_id);
             $user = Auth::user();

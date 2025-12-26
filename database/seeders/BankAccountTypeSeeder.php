@@ -24,5 +24,11 @@ class BankAccountTypeSeeder extends Seeder
             "number_length" => "12",
             "status" => "active"
         ]);
+
+        BankAccountType::create([
+            "description" => "BDO Pay",
+            "number_length" => "12",
+            "status" => "active"
+        ]);
     }
 }

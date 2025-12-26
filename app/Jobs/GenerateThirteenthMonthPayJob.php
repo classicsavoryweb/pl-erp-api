@@ -256,7 +256,7 @@ class GenerateThirteenthMonthPayJob implements ShouldQueue
             }    
 
             $baseRegularDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
-            $thirteenthMonthForDecember = $baseRegularDays * $employee->daily_salary;
+            $thirteenthMonthForDecember = $baseRegularDays * $employee->dailySalary();
                 
             $december_1st_cutoff = $thirteenthMonthForDecember;
 

@@ -26,8 +26,6 @@ class PermissionSeeder extends Seeder
         // Permission::updateOrCreate(["name" => "perform_settings"]);
 
         //maintenance module
-
-        
         Permission::updateOrCreate(["name" => "view_maintenance_module"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_positions"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_positions"], ["module" => "maintenance"]);
@@ -217,5 +215,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_reports_pay_slip"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_pay_slip"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "generate_13th_month_pay"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_bir"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_bir"], ["module" => "reports"]);
     }
 }

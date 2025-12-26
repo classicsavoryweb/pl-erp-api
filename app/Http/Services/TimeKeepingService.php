@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Carbon\CarbonInterface;
+use Exception;
 use Illuminate\Support\Facades\Http;
 
 class TimeKeepingService
@@ -29,7 +30,7 @@ class TimeKeepingService
         $paymentType = "timekeeping"
     ){
         $timeKeeping = null;
-        $schedule = ScheduleMasterlist::where("selection", $actualSchedule)->first();
+
         $scheduleTime = ScheduleTime::where("timetable", $actualSchedule)
         ->where("employee_id", $employee->id)
         ->where("date", $log->date)
@@ -38,6 +39,15 @@ class TimeKeepingService
         if (!$scheduleTime) {
             $scheduleTime = ScheduleTime::where("employee_id", $employee->id)
             ->where("date", $log->date)
+            ->first();
+        }
+
+        $schedule = ScheduleMasterlist::where("start_time", $scheduleTime->check_in)
+        ->where("end_time", $scheduleTime->check_out)
+        ->first();
+
+        if (!$schedule) {
+            $schedule = ScheduleMasterlist::where("selection", $scheduleTime->timetable)
             ->first();
         }
 
@@ -516,18 +526,22 @@ class TimeKeepingService
                 $user = env('CS_HUB_ADMIN_EMAIL');
                 $password = env('CS_HUB_ADMIN_PASSWORD');
 
-                Http::withBasicAuth($user, $password)
-                ->withHeaders([
-                    "Accept" => "application/json",
-                    "Content-Type" => "application/json"
-                ])->timeout(60)
-                ->retry(50, 1000, function ($exception, $attempt) {
-                    return str_contains($exception->getMessage(), 'cURL error 60');
-                })
-                ->post($overtimeLink,[
-                    "status_payroll" => "paid",
-                    "status" => "approved",
-                ]);
+                try {
+                    Http::withBasicAuth($user, $password)
+                    ->withHeaders([
+                        "Accept" => "application/json",
+                        "Content-Type" => "application/json"
+                    ])->timeout(60)
+                    ->retry(50, 1000, function ($exception, $attempt) {
+                        return str_contains($exception->getMessage(), 'cURL error 60');
+                    })
+                    ->post($overtimeLink,[
+                        "status_payroll" => "paid",
+                        "status" => "approved",
+                    ]);
+                } catch (Exception $e) {
+                    Log::info("CSHub overtime api error encountered: ".$e->getMessage());
+                }
             }
 
             if ($schedule->selection === "REST DAY") {
@@ -653,13 +667,20 @@ class TimeKeepingService
             $employee = $timeKeeping->employee;
 
             $date = $timeKeeping->date;
-            $schedule = ScheduleMasterlist::where("selection", $actualSchedule)->first();
+            $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
+            ->where("end_time", $actualSchedule->check_out)
+            ->first();
+
+            if (!$schedule) {
+                $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
+                ->first();
+            }
 
             $scheduledBreak = Carbon::parse($date . ' ' . $schedule->time_break);
             $scheduledBreakInHours = $scheduledBreak->hour + ($scheduledBreak->minute / 60);             
             $totalDutyHours = $schedule->total_hours - $this->formatHours($scheduledBreakInHours);
-
-            $paymentPerDay = $employee->daily_salary;
+            
+            $paymentPerDay = $employee->dailySalary();
             $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
             $paymentPerMinute = $paymentPerHour / 60;
 
@@ -667,7 +688,7 @@ class TimeKeepingService
                 ($employee->schedule->schedule_type->name === "Normal Schedule" && $timeKeeping->final_worked_hours == 4) ||
                 ($employee->schedule->schedule_type->name === "Compressed Schedule" && $timeKeeping->final_worked_hours == 4.75)
             ) {
-                $paymentPerDay = $employee->daily_salary / 2;
+                $paymentPerDay = $employee->dailySalary() / 2;
             }
 
             $tardinessDeduction = 0;

@@ -35,7 +35,7 @@ class PayrollService {
             DB::beginTransaction();
 
             $employee = $timeKeepingSummary->employee;
-            $daily_rate = round($employee->daily_salary, 2);
+            $daily_rate = round($employee->dailySalary(), 2);
             $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule" 
                 ? round($daily_rate / 9.5, 2)
                 : round($daily_rate / 8, 2);
@@ -43,7 +43,7 @@ class PayrollService {
 
             $cutOff = Cutoff::where("cut_off", $timeKeepingSummary->cut_off)->first();
             $paymentType = $employee->current_position->timekeeping_type;
-            $cutOffBaseSalary = $employee->cut_off_base_salary;
+            $cutOffBaseSalary = $employee->cutOffBaseSalary();
             $baseRegularDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
             $salary = 0;
             $tardinessAmount = 0;
@@ -400,14 +400,14 @@ class PayrollService {
         try {
             DB::beginTransaction();
 
-            $daily_rate = round($employee->daily_salary, 2);
+            $daily_rate = round($employee->dailySalary(), 2);
             $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule" 
                 ? round($daily_rate / 9.5, 2)
                 : round($daily_rate / 8, 2);
             $minute_rate = $hourly_rate / 60;
 
             $paymentType = $employee->current_position->timekeeping_type;
-            $cutOffBaseSalary = $employee->cut_off_base_salary;
+            $cutOffBaseSalary = $employee->cutOffBaseSalary();
             $baseRegularDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
             $salary = 0;
             $tardinessAmount = 0;

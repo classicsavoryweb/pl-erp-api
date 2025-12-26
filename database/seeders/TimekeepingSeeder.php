@@ -78,7 +78,7 @@ class TimekeepingSeeder extends Seeder
                     "is_cancelled_off" => $unique_timekeeping["cancelled_off"] ? 1 : 0,
                 ]);
 
-                $paymentPerDay = $employee->daily_salary;
+                $paymentPerDay = $employee->dailySalary();
                 $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
                 $paymentPerMinute = $paymentPerHour / 60;
 
@@ -86,7 +86,7 @@ class TimekeepingSeeder extends Seeder
                     ($employee->schedule->schedule_type->name === "Normal Schedule" && $timekeeping->final_worked_hours == 4) ||
                     ($employee->schedule->schedule_type->name === "Compressed Schedule" && $timekeeping->final_worked_hours == 4.75)
                 ) {
-                    $paymentPerDay = $employee->daily_salary / 2;
+                    $paymentPerDay = $employee->dailySalary() / 2;
                 }
 
                 $tardinessDeduction = 0;

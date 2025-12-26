@@ -187,7 +187,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
             ->get();
 
             foreach($timeKeepings as $timeKeep) {
-                $actualSchedule = $timeKeep->schedule->timetable;
+                $actualSchedule = $timeKeep->schedule;
                 $this->timeKeepingService->computePayment($timeKeep, $actualSchedule);
             }
 

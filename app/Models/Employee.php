@@ -64,13 +64,12 @@ class Employee extends Model
 
     protected $appends = [
         'full_name',
-        "position",
         "proper_full_name",
         "formal_full_name",
         "age",
-        "monthly_salary",
-        "daily_salary",
-        "cut_off_base_salary",
+        // "monthly_salary",
+        // "daily_salary",
+        // "cut_off_base_salary",
     ];
 
     protected function fullName(): Attribute
@@ -80,11 +79,10 @@ class Employee extends Model
         );
     }
 
-    protected function monthlySalary(): Attribute
+    public function monthlySalary()
     {
         $monthlySalary = 0;
 
-        $scheduleType = $this->schedule->schedule_type->name ?? "N/A";
         $salaryPosition = $this->current_position->salary;
         $rateCode = $this->home_branch->rate_code;
 
@@ -97,17 +95,13 @@ class Employee extends Model
                 $monthlySalary = $salaryPosition->basic_salary;
             }
 
-            return Attribute::get(
-                fn () => $monthlySalary
-            );
+            return $monthlySalary;
         } catch (Exception $e) {
-            return Attribute::get(
-                fn () => $monthlySalary
-            );
+            return $monthlySalary;
         }
     }
 
-    protected function cutOffBaseSalary(): Attribute
+    public function cutOffBaseSalary()
     {
         $salary = 0;
         $salaryPosition = $this->current_position->salary;
@@ -122,17 +116,13 @@ class Employee extends Model
                 $salary = $salaryPosition->basic_salary / 2;
             }
 
-            return Attribute::get(
-                fn () => $salary
-            );
+            return $salary;
         } catch (Exception $e) {
-            return Attribute::get(
-                fn () => $salary
-            );
+            return $salary;
         }
     }
 
-    protected function dailySalary(): Attribute
+    public function dailySalary()
     {
         $dailySalary = 0;
 
@@ -160,13 +150,9 @@ class Employee extends Model
                 }
             }
 
-            return Attribute::get(
-                fn () => $dailySalary
-            );
+            return $dailySalary;
         } catch (Exception $e) {
-            return Attribute::get(
-                fn () => $dailySalary
-            );
+            return $dailySalary;
         }
     }
 
@@ -207,17 +193,6 @@ class Employee extends Model
         $properFullName = ucwords($fullName);
         return Attribute::get(
             fn () => $pronoun ." ". $properFullName
-        );
-    }
-
-    protected function position(): Attribute
-    {
-        $position = $this->current_position->description;
-        if ($this->oic_status === "OIC") {
-            $position = $this->current_position->description." - ".$this->oic_status;
-        }
-        return Attribute::get(
-            fn () => $position
         );
     }
 

@@ -31,7 +31,7 @@ class PayrollController extends Controller
                 ? $year . '-' . $request->cutoff["end_time"]
                 : $currentCutOff['end_time'];
 
-            $payroll = Payroll::with(["employee","employee.current_branch", "timekeeping_summary",])
+            $payroll = Payroll::with(["employee","employee.current_branch", "employee.current_position", "timekeeping_summary",])
             ->where("cut_off", $start_time."-".$end_time);
 
             if ($request->has(["branch_id"])) {
@@ -87,6 +87,7 @@ class PayrollController extends Controller
             $payroll = Payroll::with([
                 "employee",
                 "employee.current_branch",
+                "employee.current_position",
                 "employee.latest_bank_details",
                 "timekeeping_branch",
                 "timekeeping_summary",
