@@ -58,8 +58,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-positions", [PositionController::class, "getAllPositions"]);
     Route::get("/get-positions", [PositionController::class, "getPositions"]);
     Route::get("/export-all-positions", [PositionController::class, "exportAllPositions"]);
-    Route::middleware(["permission:perform_stations"])->post("/create-position", [PositionController::class,"createPosition"]);
-    Route::middleware(["permission:perform_stations"])->post("/edit-position/{id}", [PositionController::class,"editPosition"]);
+    Route::middleware(["permission:perform_positions"])->post("/create-position", [PositionController::class,"createPosition"]);
+    Route::middleware(["permission:perform_positions"])->post("/edit-position/{id}", [PositionController::class,"editPosition"]);
     //agency
     Route::get("/get-all-agencies", [AgencyController::class, "getAllAgencies"]);
     Route::get("/get-agencies", [AgencyController::class, "getAgencies"]);
