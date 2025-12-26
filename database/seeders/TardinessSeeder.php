@@ -23,7 +23,7 @@ class TardinessSeeder extends Seeder
             $branch = $employee->current_branch()->first();
 
             $status = $tardy["ao_status"];
-            if ($tardy["voided"] !== "No") {
+            if ($tardy["voided"] != "No") {
                 $status = "Voided";
             }
 
@@ -36,7 +36,7 @@ class TardinessSeeder extends Seeder
                 "offense_punishment" => $tardy["offense_punishment"],
                 "tardiness_sanction_id" => $tardy["offense_id2"],
                 "reason" => $tardy["reason"] ,
-                "status" => $status ?? "N/A",
+                "status" => $status ?? "Pending",
                 "da_status" =>  null,
                 "nte_status" => $tardy["mail_status"],
             ]);
