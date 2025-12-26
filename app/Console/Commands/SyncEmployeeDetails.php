@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 use Throwable;
 
@@ -31,19 +32,11 @@ class SyncEmployeeDetails extends Command
     public function handle()
     {
         $this->info('Starting employee append to savory_temp_db.employeedetails');
-        $date = Carbon::parse(now())->subDays(1)->startOfDay()->format('Y-m-d H:i:s');
+        $lastSynced = Cache::get('sync_employee_details.last_synced_at', now()->subDay()->startOfDay());
+        $date = Carbon::parse($lastSynced)->format('Y-m-d H:i:s');
         $targetColumns = Schema::connection('savory_temp_db')->getColumnListing('employeedetails');
         $targetColumnKeys = array_flip($targetColumns);
 
-        $existingIds = DB::connection('savory_temp_db')
-            ->table('employeedetails')
-            ->pluck('EmployeeID')
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
-        $existingSet = array_fill_keys($existingIds, true);
         $batchSize = 200;
 
         $positionNames = DB::table('positions')
@@ -61,18 +54,18 @@ class SyncEmployeeDetails extends Command
         DB::table('employees')
             ->orWhere('updated_at', '>=', $date)
             ->orderBy('id')
-            ->chunkById($batchSize, function ($employees) use ($targetColumnKeys, &$existingSet, $positionNames, $branchNames, $employmentStatuses) {
+            ->chunkById($batchSize, function ($employees) use ($targetColumnKeys, $positionNames, $branchNames, $employmentStatuses) {
                 $payload = [];
 
                 foreach ($employees as $employee) {
-                    $employeeId = $employee->employee_number;
-
-                    if (isset($existingSet[$employeeId])) {
-                        continue; 
+                    $employeeId = trim((string) $employee->employee_number);
+                    if ($employeeId === '') {
+                        continue;
                     }
 
                     $birth = $employee->birthday ? Carbon::parse($employee->birthday) : null;
                     $hire  = $employee->date_hired ? Carbon::parse($employee->date_hired) : null;
+                    $branchId = $employee->branch_id ?? $employee->home_branch_id;
 
                     $age = $birth ? $birth->age : null;
                     $tenure = null;
@@ -92,9 +85,9 @@ class SyncEmployeeDetails extends Command
                         'MiddleName' => $employee->middle_name,
                         'Gender' => $employee->gender,
                         'PositionID' => $employee->position_id,
-                        'Position' => $employee->current_position->description ?? null,
-                        'BranchID' => $employee->current_branch->branch_number,
-                        'CurrentBranch' => $employee->current_branch->branch_name ?? null,
+                        'Position' => $positionNames[$employee->position_id] ?? null,
+                        'BranchID' => $branchId,
+                        'CurrentBranch' => $branchNames[$branchId] ?? null,
                         'DateHired' => $employee->date_hired,
                         'Birthday' => $employee->birthday,
                         'ContactNo' => $employee->contact_number,
@@ -110,7 +103,6 @@ class SyncEmployeeDetails extends Command
                     ];
 
                     $payload[] = array_intersect_key($row, $targetColumnKeys);
-                    $existingSet[$employeeId] = true;
                 }
 
                 if (empty($payload)) {
@@ -118,9 +110,20 @@ class SyncEmployeeDetails extends Command
                 }
 
                 try {
-                    DB::connection('savory_temp_db')
-                        ->table('employeedetails')
-                        ->insert($payload);
+                    foreach ($payload as $record) {
+                        $table = DB::connection('savory_temp_db')->table('employeedetails');
+                        $employeeId = $record['EmployeeID'];
+                        $values = $record;
+                        unset($values['EmployeeID']);
+
+                        $exists = $table->where('EmployeeID', $employeeId)->exists();
+                        if ($exists) {
+                            $table->where('EmployeeID', $employeeId)->update($values);
+                        } else {
+                            $recordWithKey = ['EmployeeID' => $employeeId] + $values;
+                            $table->insert($recordWithKey);
+                        }
+                    }
                 } catch (Throwable $th) {
                     Log::error('Failed to append employees to savory_temp_db', [
                         'message' => $th->getMessage(),
@@ -128,6 +131,7 @@ class SyncEmployeeDetails extends Command
                 }
             });
 
+        Cache::put('sync_employee_details.last_synced_at', now());
         $this->info('Employee append completed.');
 
         return Command::SUCCESS;
