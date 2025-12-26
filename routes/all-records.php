@@ -15,6 +15,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:export_all_records_offenses"])->get("/export-all-reports-offenses", [ReportsOffensesController::class, "exportAllEmployeeOffenses"]);
     //vaccination
     Route::get("/get-all-reports-vaccination", [ReportsVaccinationController::class, "getAllReportsVaccines"]);
+    Route::get("/export-all-reports-vaccination", [ReportsVaccinationController::class, "exportAllReportsVaccines"]);
     //health and safety
     Route::get("/get-all-reports-health-and-safety", [ReportsHealthSafetyController::class, "getAllReportsHealthAndSafety"]);
     //coe requests
