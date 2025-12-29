@@ -25,6 +25,7 @@ class Cutoff extends Model
         "cutoff_locked_by",
         "cutoff_locked_date",
         "status",
-        "initializations"
+        "initializations",
+        "part"
     ];
 }

@@ -43,7 +43,8 @@ class CutOffInitializeSeeder extends Seeder
                     "status" => "inactive",
                     "initializations" => null,
                     "is_timekeeping_locked" => true,
-                    "is_cutoff_locked" => true
+                    "is_cutoff_locked" => true,
+                    "part" => $cutOff["1st_part"] === "1" ? 1 : 2
                 ]);
             }
         }

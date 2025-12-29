@@ -33,7 +33,8 @@ class CutOffController extends Controller
                 "cutoff" => "required",
                 "year" => "required",
                 "pay_date" => "required",
-                "initialize" => "required"
+                "initialize" => "required",
+                "part" => "required"
             ]);
 
             $startDate = $request->year."-".$request->cutoff["start_time"]; 
@@ -63,7 +64,8 @@ class CutOffController extends Controller
                 "is_cutoff_initialized" => $initialized,
                 "status" => "active",
                 "pay_date" => $request->pay_date,
-                "initializations" => json_encode($initializedJson)
+                "initializations" => json_encode($initializedJson),
+                "part" => $request->part
             ]);
 
             Cutoff::whereNot("id", $createdCutOff->id)
@@ -175,7 +177,8 @@ class CutOffController extends Controller
                 "cutoff" => "required",
                 "year" => "required",
                 "pay_date" => "required",
-                "initialize" => "required"
+                "initialize" => "required",
+                "part" => "required"
             ]);
 
             $startDate = $request->year."-".$request->cutoff["start_time"]; 
@@ -191,6 +194,7 @@ class CutOffController extends Controller
                     "end_date" => $endDate,
                     "status" => "active",
                     "pay_date" => $request->pay_date,
+                    "part" => $request->part,
                 ]);
 
                 DB::commit();
