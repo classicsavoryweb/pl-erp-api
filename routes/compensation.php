@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-employee-atds", [ATDController::class, "getAllEmployeeDeductions"]);
     Route::get("/get-cshub-atds", [ATDController::class, "getCSHubATD"]);
     Route::middleware(["permission:perform_compensation_atd"])->post("/create-cshub-atds", [ATDController::class, "createATD"]);
+    Route::middleware(["permission:export_compensation_atd"])->get("/export-all-atds", [ATDController::class, "exportAllEmployeeDeductions"]);
 
     //payroll
     Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);
