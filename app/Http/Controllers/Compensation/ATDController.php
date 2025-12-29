@@ -59,14 +59,14 @@ class ATDController extends Controller
                 }
             }
 
+            $deductions = $deductions->with(["employee", "branch", "deduction"]);
+
             if ($request->has(["export"]) && $request->export) {
                 $deductions = $deductions->get();
                 return Excel::download(new EmployeeDeductionExport($deductions), "deductions.xls");
             }
 
-            $deductions = $deductions
-            ->with(["employee", "branch", "deduction"])
-            ->orderBy("start_date", "desc")
+            $deductions = $deductions->orderBy("start_date", "desc")
             ->paginate($perPage);
 
             return $this->sendResponse($deductions);
@@ -74,6 +74,12 @@ class ATDController extends Controller
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllEmployeeDeductions(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllEmployeeDeductions($request);
     }
 
     public function getCSHubATD(Request $request) {
@@ -157,7 +163,8 @@ class ATDController extends Controller
                 $descriptions = ucwords(strtolower($transaction["type"]));
                 $deduction = Deduction::where("description", $descriptions)->first();
 
-                $deduction_reference = $base_reference . $deduction->id . "|" . ($deduction_count + 1);
+                $deductionId = str_pad($deductionId, 8, '0', STR_PAD_LEFT);
+                $deduction_reference = $base_reference . $deductionId . "|" . ($deduction_count + 1);
                 $user = Auth::user();
                 $user = $user->employee;
 

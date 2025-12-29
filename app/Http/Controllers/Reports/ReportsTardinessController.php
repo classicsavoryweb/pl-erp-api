@@ -219,7 +219,8 @@ class ReportsTardinessController extends Controller
     public function getTardinessDetails ($id) {
         try {
             $tardiness = Tardiness::find($id);
-            $tardiness_minutes = TardinessMinutes::where("employee_id", $tardiness->employee_id)
+            $tardiness_minutes = TardinessMinutes::with(["employee"])
+            ->where("employee_id", $tardiness->employee_id)
             ->where("month", $tardiness->month)
             ->where("year", $tardiness->year)
             ->get();
