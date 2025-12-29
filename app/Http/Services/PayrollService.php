@@ -432,6 +432,7 @@ class PayrollService {
             $netPayAmount = 0;
             $totalDeductions = 0;
             $manualDeductions = 0;
+            $taxableIncome = 0;
             $remarks = null;
 
             $contributionTotal = 0;
@@ -469,6 +470,24 @@ class PayrollService {
             $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
 
             $totalDeductions = 0;
+
+            if ($payrollRollListEmployee->isMancom()) {
+                $taxableIncome = round($basicSalary - $contributionTotal, 2);
+
+                $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
+                ->where("range_max", '>=',round($taxableIncome, 2))
+                ->first();
+
+                $salaryBase = $tax->salary_base ?? 0;
+                $exemption = $tax->exemption ?? 0;
+                $percentage = $tax->percentage ?? 0;
+
+                $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                    ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                    : 0;
+
+                $netPayAmount = round($taxableIncome - $taxAmount, 2);
+            }
 
             Payroll::updateOrCreate(
                 [
@@ -510,7 +529,7 @@ class PayrollService {
                 "manual_deductions" => $manualDeductions,
                 "cancelled_off" => $cancelledOffAmount,
                 "net_pay" => $netPayAmount,
-                "taxable_income" => 0,
+                "taxable_income" => $taxableIncome,
                 "contribution_total" => $contributionTotal,
                 "additional_working_hours_total" => $additionalWorkingHoursTotal,
                 "working_hours_deduction_total" => $workingHoursDeductionTotal,
