@@ -70,7 +70,7 @@ class EmployeeSeeder extends Seeder
                 "home_branch_id"  => $homeBranch?->id ?? null,
                 "type"=> "Direct",
                 "agency_id" => null,
-                "status" => $employee["employment_status"],
+                "status" => strtolower($employee["employment_status"]),
                 "oic_status" => $employee["oic_status"],
                 "emergency_contact_name" => $employee["notify_emergency"],
                 "emergency_contact_number" => $employee["notify_contactno"],

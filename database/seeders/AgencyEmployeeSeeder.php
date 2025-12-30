@@ -75,7 +75,7 @@ class AgencyEmployeeSeeder extends Seeder
                 "home_branch_id"  => $homeBranch?->id ?? null,
                 "type"=> "Agency",
                 "agency_id" => $employee["agency_id"],
-                "status" => $employee["employment_status"],
+                "status" => strtolower($employee["employment_status"]),
             ]);
 
             EducationHistory::create([
