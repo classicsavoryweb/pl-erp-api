@@ -28,7 +28,7 @@ class SalaryPositionSeeder extends Seeder
                     "position_id"=> $pos->id,
                     "basic_salary"=> $position['BasicSalary'],
                     "rate_category"=> $position['RateCategory'],
-                    "status"=> $position['status'],
+                    "status"=> strtolower($position['status']),
                 ]);
             }
         }

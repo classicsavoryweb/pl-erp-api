@@ -64,7 +64,7 @@ class CSHubTransactionTypeSeeder extends Seeder
                 "branch_debit" => $transaction["branch_debit"],
                 "branch_credit" => $transaction["branch_credit"],
                 "advances_debit" => $transaction["advances_debit"],
-                "status" => $transaction["status"],
+                "status" => strtolower($transaction["status"]),
             ]);
         }
     }

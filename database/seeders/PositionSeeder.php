@@ -44,7 +44,7 @@ class PositionSeeder extends Seeder
             Position::create([
                 "description" => $position["position_descr"],
                 "rank" => $position["rank"],
-                "status" => $position["status"],
+                "status" => strtolower($position["status"]),
                 "station_id" => $position["station_id"],
                 "schedule_type" => $schedule,
                 "timekeeping_type"=> $timekeeping,

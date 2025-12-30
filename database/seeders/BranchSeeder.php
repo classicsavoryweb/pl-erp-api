@@ -38,7 +38,7 @@ class BranchSeeder extends Seeder
             Branch::create([
                 "name" => $branch["branch_name"],
                 "branch_number" => $branch["branch_id2"],
-                "status" => $branch["status"],
+                "status" => strtolower($branch["status"]),
                 "short_name" => $branch["branch_shrt_name"],
                 "address" => $branch["branch_address"],
                 "location" => $branch["region"],

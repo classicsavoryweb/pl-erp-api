@@ -24,7 +24,7 @@ class TrainingTitleSeeder extends Seeder
                 "title" => $title["title"],
                 "venue" => $title["venue"],
                 "speaker" => $title["speaker"],
-                "status" => $title["status"],
+                "status" => strtolower($title["status"]),
             ]);
         }
     }

@@ -3908,7 +3908,7 @@ class OffensesSeeder extends Seeder
                 "category" => $offense["category"],
                 "subcategory" => $offense["subcategory"],
                 "description" => $offense["description"],
-                "status" => $offense["status"],
+                "status" => strtolower($offense["status"]),
             ]);
         }
 

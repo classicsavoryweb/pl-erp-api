@@ -55,7 +55,7 @@ class ActingCapacitySeeder extends Seeder
                 "period" => $acting["period"],
                 "bond_amount" => $acting["bond_amt"],
                 "effectivity_date" => $acting["effective_date"],
-                "status" => $acting["status"],
+                "status" => strtolower($acting["status"]),
                 "generated_by" => $acting["generate_by"] ? $actor->id : null,
                 "generated_date" => $acting["generate_date"],
                 "confirmed_date" => $acting["confirmed_date"],

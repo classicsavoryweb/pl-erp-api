@@ -155,7 +155,7 @@ class RateSeeder extends Seeder
                 "code" => $rate["rate_code"],
                 "minimum" => $rate["minimum"],
                 "area" => $rate["area"],
-                "status" => $rate["status"],
+                "status" => strtolower($rate["status"]),
             ]);
         }
           

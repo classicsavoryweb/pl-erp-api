@@ -75,7 +75,7 @@ class DeductionSeeder extends Seeder
                 "amortization_vendor_id" => $other->amortization_vendor_id,
                 "amortization_debit_id" => $other->amortization_debit_id,
                 "amortization_credit_id" => $other->amortization_credit_id,
-                "status" => $unique_deductions_detail["status"],
+                "status" => strtolower($unique_deductions_detail["status"]),
                 "end_loan_vendor_id" => $other->end_loan_debit_id,
                 "end_loan_debit_id" => $other->end_loan_debit_id,
                 "end_loan_credit_id" => $other->end_loan_credit_id,

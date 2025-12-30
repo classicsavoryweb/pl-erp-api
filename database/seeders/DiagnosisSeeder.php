@@ -208,7 +208,7 @@ class DiagnosisSeeder extends Seeder
         foreach($diagnosis as $sick) {
             Diagnosis::create([
                 "description"=> $sick["description"],
-                "status"=> $sick["status"],
+                "status"=> strtolower($sick["status"]),
             ]);
         }
     }
