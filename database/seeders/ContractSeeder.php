@@ -46,7 +46,7 @@ class ContractSeeder extends Seeder
                     "remarks" => $contract["remarks"],
                     "contract_start_date" => $contract["contract_start"],
                     "contract_end_date" => $contract["contract_end"],
-                    "status" => $status,
+                    "status" => strtolower($status),
                 ]);
             }
         }
