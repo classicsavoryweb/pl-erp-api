@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\Transactions\ActualLogsExport;
+use App\Jobs\FetchBranchLogs;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use DB;
@@ -235,6 +236,20 @@ class ActualTimeController extends Controller
             }
 
             return $this->sendResponse(["message" => "Excel file imported successfully"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function fetchBiotimeLogs(Request $request) {
+        try {
+            $request->validate([
+                "branch_id" => "required"
+            ]);
+
+            FetchBranchLogs::dispatch($request->branch_id);
+
+            return $this->sendResponse(["message" => "Biotime logs are now fetching"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
