@@ -18,7 +18,6 @@ class AuthController extends Controller
             "password" => $request->password
         ])) {
             $user = Auth::user();
-            $employee = $user->employee;
             if (!$user->isActive()) {
                 return $this->sendError(["message" => "Your account is inactive"]);
             }
@@ -26,8 +25,6 @@ class AuthController extends Controller
             $role = Role::find($user->role_id);
             if ($role) {
                 $user->syncRoles($role);
-                $employee->role_name = $role->name;
-                $employee->employment_status = $employee->employee_status->description;
                 $token = $user->createToken(
                      $user->email,
                 $role->permissions->pluck("name")->toArray(),
@@ -38,7 +35,7 @@ class AuthController extends Controller
     
                 return $this->sendResponse([
                     "message" => "Logged in successfully",
-                    "user" => $employee,
+                    "user" => $user,
                     "token" => $token->plainTextToken,
                     "permissions" => $role->permissions->pluck("name")->toArray()
                 ]);
