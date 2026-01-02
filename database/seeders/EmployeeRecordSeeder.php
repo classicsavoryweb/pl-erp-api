@@ -27,11 +27,12 @@ class EmployeeRecordSeeder extends Seeder
         $this->call(ActingCapacitySeeder::class);
         $this->call(AttachmentSeeder::class);
         $this->call(CoeRequestSeeder::class);
+
         $this->call(ScheduleSeeder::class);
         $this->call(UnduplicateEmployeeNumberSeeder::class);
         $this->call(DeductionHistorySeeder::class);
         $this->call(EmployeeDeductionSeeder::class);
-        // $this->call(PayrollListSeeder::class);
+        $this->call(PayrollListSeeder::class);
         $this->call(ScheduleTimeAndLogsSeeder::class);
         $this->call(TimekeepingSeeder::class);
         $this->call(TimekeepingSummarySeeder::class);
@@ -39,6 +40,7 @@ class EmployeeRecordSeeder extends Seeder
 
         //payroll
         $this->call(IncentivesManagementSeeder::class);
+        $this->call(IncentivesPerEmployeeSeeder::class);
         $this->call(ContributionAndTaxSeeder::class);
         $this->call(IncentivesBracketSeeder::class);
         $this->call(PayrollSeeder::class);

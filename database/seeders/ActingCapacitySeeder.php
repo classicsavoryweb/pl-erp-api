@@ -22,9 +22,9 @@ class ActingCapacitySeeder extends Seeder
         $actingCapacity = json_decode($jsonData, true);
 
         foreach($actingCapacity["tbl_actingposition"] as $acting) {
-            $employee = Employee::with(["current_position"])
-            ->where("employee_number", $acting["employeeID"])
-            ->first();
+            $employee = Employee::where("employee_number", $acting["employeeID"])->first();
+
+            $currentPosition =  Position::find(ltrim($acting["currentpositionID"], '0'));
             $position = Position::find(ltrim($acting["recommendedpositionID"], '0'));
             $branch = Branch::find($employee->branch_id);
             $actor = "";
@@ -46,8 +46,8 @@ class ActingCapacitySeeder extends Seeder
 
             $createdCapacity = ActingCapacity::create([
                 "employee_id" => $employee->id,
-                "branch_id" => $branch->id,
-                "current_position_id" => $employee->current_position->id,
+                "branch_id" => $employee->branch_id ?? 0,
+                "current_position_id" => $currentPosition->id,
                 "recommended_position_id" => $position->id,
                 "start_date" => $acting["start_date"],
                 "end_date" => $acting["end_date"],
