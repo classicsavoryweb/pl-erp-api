@@ -61,7 +61,7 @@ class EmployeeSeeder extends Seeder
                 "remarks"   => $employee["remarks"],
                 "date_hired"=> $employee["date_hired"],
                 "regularization_date"=> $employee["reg_date"] !== "1900-01-01" ? $employee["reg_date"] : null,
-                "separation_date"=> $employee['employment_status'] === 'active' ? null : $employee["date_separation"],
+                "separation_date"=> strtolower($employee['employment_status']) === 'active' ? null : $employee["date_separation"],
                 "separation_reason"=> $employee["separationReason"],
                 "employee_status_id"    => $employmentStatus?->id,
                 "position_id"     => $position?->id ?? null,
