@@ -225,13 +225,13 @@ class ActingCapacityController extends Controller
 
             if ( strtolower($station) === "back of the house") {
                 $type = "tagalog";
-                $approvedBy = Employee::where("employee_number", "0007413")->first();
+                $approvedBy = Employee::with(["current_position"])->where("employee_number", "0007413")->first();
             } else if (strtolower($station) === "head office") {
                 $withRecommendation = true;
-                $approvedBy = Employee::where("employee_number", $branch->group_head_employee_number)->first();
-                $recommendedBy = Employee::where("employee_number", $branch->branch_head_employee_number)->first();
+                $approvedBy = Employee::with(["current_position"])->where("employee_number", $branch->group_head_employee_number)->first();
+                $recommendedBy = Employee::with(["current_position"])->where("employee_number", $branch->branch_head_employee_number)->first();
             } else {
-                $approvedBy = Employee::where("employee_number", "639")->first();
+                $approvedBy = Employee::with(["current_position"])->where("employee_number", "639")->first();
             }
 
             return $this->sendResponse([

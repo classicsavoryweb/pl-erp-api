@@ -24,7 +24,7 @@ class FetchBiotimeAttendance extends Command
         $user = env('BIOMETRICS_USERNAME');
         $password = env('BIOMETRICS_PASSWORD');
         $employees = Employee::where("status", "active")
-        ->where("type", "Direct")
+        // ->where("type", "Direct")
         // ->where("branch_id", 107)
         ->get();
 

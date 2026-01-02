@@ -17,8 +17,8 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:fetch-biotime-attendance')->monthlyOn(11, "06:30");
-        $schedule->command('app:fetch-biotime-attendance')->monthlyOn(26, "06:30");
+        $schedule->command('app:fetch-biotime-attendance')->monthlyOn(11, "00:00");
+        $schedule->command('app:fetch-biotime-attendance')->monthlyOn(26, "00:00");
         $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(11, '21:00');
         $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '21:00');
         $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(10, '14:01');
