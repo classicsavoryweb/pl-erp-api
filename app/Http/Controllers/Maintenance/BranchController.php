@@ -52,8 +52,10 @@ class BranchController extends Controller
 
     public function getBranches(Request $request) {
         try {
+            $branches = Branch::where("status", "active")
+            ->orderBy("name", "ASC")
+            ->get();
 
-            $branches = Branch::where("status", "active")->get();
             return $this->sendResponse(["branches" => $branches]);
         } catch(Exception $e) {
 
