@@ -22,11 +22,13 @@ class IncentivesPerEmployeeSeeder extends Seeder
         foreach ($unique_incentives_per_employee_details as $unique_incentives_per_employee_detail) {
             $employee = Employee::where("employee_number", $unique_incentives_per_employee_detail["employee_id2"])->first();
 
-            IncentivesPerEmployee::create([
-                "employee_id" => $employee->id,
-                "amount" => floatval(str_replace(',', '', $unique_incentives_per_employee_detail["amount"])),
-                "max_amount" => floatval(str_replace(',', '', $unique_incentives_per_employee_detail["maxamount"]))
-            ]);
+            if ($employee) {
+                IncentivesPerEmployee::create([
+                    "employee_id" => $employee->id,
+                    "amount" => floatval(str_replace(',', '', $unique_incentives_per_employee_detail["amount"])),
+                    "max_amount" => floatval(str_replace(',', '', $unique_incentives_per_employee_detail["maxamount"]))
+                ]);
+            }
         }
     }
 }
