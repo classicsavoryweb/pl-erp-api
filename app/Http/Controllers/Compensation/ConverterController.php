@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessConverterDetailImport;
 use App\Jobs\SendTransactionToEmployeeJob;
 use App\Models\ConverterDetail;
 use App\Models\ConverterMain;
@@ -18,6 +19,7 @@ use DOMDocument;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Str;
 use ZipArchive;
 
@@ -518,6 +520,38 @@ class ConverterController extends Controller
             }
 
             return $this->sendError(["message" => "Batch not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function importTransactions (Request $request) {
+        try {
+            $request->validate([
+                "transactions_file" => "required"
+            ]);
+
+            $filePath = null;
+
+            if ($request->hasFile("transactions_file")) {
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/converter/imports";
+                $file = $request->file("transactions_file");
+
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+
+                ProcessConverterDetailImport::dispatch($filePath, Auth::user()->id);
+                $user = Auth::user();
+                activity()->causedBy($user)->useLog("Import Transactions")->log('User imported converter transactions');
+                return $this->sendResponse(["message" => "Excel file imported successfully"]);
+            }
+
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
