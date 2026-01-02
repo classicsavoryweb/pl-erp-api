@@ -22,12 +22,9 @@ class AttachmentSeeder extends Seeder
         foreach($attachments["tbl_attachments"] as $attach) {
             $acting = ActingCapacity::find($attach["acting_id"]);
 
-            $imgPath = preg_replace('/\\\\+/', '\\', $attach['img_path']);
-            $filepath = '\\\\' . ltrim($imgPath, '\\');
-
             ActingCapacityAttachments::create([
                 "acting_capacity_id" => $acting->id,
-                "file_path" => $filepath,
+                "file_path" => $attach['img_path'],
                 "file_name" => $attach["attachmenttype"],
             ]);
         }
