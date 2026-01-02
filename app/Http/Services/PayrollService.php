@@ -1,7 +1,9 @@
+
 <?php
 
 namespace App\Http\Services;
 
+use App\Jobs\ComputeEmployeeTardiness;
 use App\Models\Adjustment;
 use App\Models\AdjustmentTimeKeeping;
 use App\Models\Branch;
@@ -372,6 +374,10 @@ class PayrollService {
                 "status" => "initial",
                 "remarks" => $remarks
             ]);
+            
+            if ($cutOff->part == 2) {
+                ComputeEmployeeTardiness::dispatch($cutOff->end_date);
+            }
 
             $incentives = $this->computeIncentives(
                 $cutOff,
