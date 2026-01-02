@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\Administrator\AdminuserExports;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Hash;
 use Illuminate\Http\Request;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
@@ -14,12 +16,32 @@ class UserController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $users = User::with("role")->paginate($perPage);
+            $users = User::with("role");
 
+            if ($request->has(["column_type", "key_word"])) {
+               $users = $users->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+
+            if ($request->has(["status"])) {
+                $users = $users->where("status", $request->status);
+            }
+
+            if ($request->has(["export"]) && $request->export) {
+                $users = $users->get();
+                return Excel::download(new AdminuserExports($users), "users.xls");
+            }
+
+            $users = $users->paginate($perPage);
             return $this->sendResponse($users);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportUsers (Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllUsers($request);
     }
     
     public function editUser (Request $request, $id) {

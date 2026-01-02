@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('/get-all-users', [UserController::class, "getAllUsers"]);
     Route::middleware(["permission:perform_users"])->post('/create-user', [AuthController::class, 'createUser']);
     Route::middleware(["permission:perform_users"])->post("/edit-user/{id}", [UserController::class,"editUser"]);
+    Route::get("/export-admin-users", [UserController::class,"exportUsers"]);
     //database backup
     Route::get("/get-all-database-backups", [DatabaseBackupsController::class, "getAllDatabaseBackups"]);
     Route::middleware(["permission:perform_database_backups"])->post("/create-database-backup", [DatabaseBackupsController::class,"createDatabaseBackup"]);
