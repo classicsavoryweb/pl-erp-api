@@ -58,7 +58,9 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-converter-details", [ConverterController::class, "createConverterDetails"]);
     Route::middleware(["permission:perform_compensation_converter"])->post("/edit-converter-details/{detailId}", [ConverterController::class, "editConverterDetails"]);
     Route::middleware(["permission:perform_compensation_converter"])->get("/void-converter-details/{detailId}", [ConverterController::class, "voidConverterDetails"]);
-    
+    Route::middleware(["permission:perform_compensation_converter"])->post("/import-converter-transactions", [ConverterController::class, "importTransactions"]);
+
+
     //converter batch
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-converter-main", [ConverterController::class, "createConverterMain"]);
     Route::get("/get-transactions", [ConverterController::class, "getTransactions"]);
