@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Employee;
 use App\Models\Offense;
+use App\Models\Sanction;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -21,11 +22,17 @@ class EmployeeOffensesSeeder extends Seeder
         foreach ($offenses["tbl_eoffenses"] as $empOffense) {
             $employee = Employee::where('employee_number', $empOffense['employee_id'])->first();
             $offense = Offense::where("offense_number", $empOffense['offense_id'])->first();
+            
+            $sanction = Sanction::where("description", $empOffense["sanction"])->first();
+            if ($empOffense["sanction"] == "Written Memo") {
+                $sanction = Sanction::where("description", "Written Reprimand")->first();
+            }
+
             if ($offense && $employee) {
                 $employee->offenses()->create([
                     "offense_id" => $offense->id,
                     "transgression" => $empOffense["transgession"],
-                    'sanction_id' => $empOffense["sanction_id"],
+                    'sanction_id' => $sanction->id,
                     'repetition' => $empOffense["repetition"],
                     'summary' => $empOffense["summary"],
                     'date_committed' => $empOffense["date_committed"] ,
