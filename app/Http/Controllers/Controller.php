@@ -206,4 +206,24 @@ class Controller extends BaseController
         return strtoupper(dechex($hash));
     }
 
+    function normalizeCutOff($startDate, $endDate, $year) {
+
+        $startMonth = (int) explode('-', $startDate)[0];
+        $endMonth   = (int) explode('-', $endDate)[0];
+
+        $startYear = $year;
+        $endYear   = $year;
+
+        if ($startMonth === 12 && $endMonth === 1) {
+            $startYear = $year - 1;
+        }
+
+        $startDate = $startYear . '-' . $startDate;
+        $endDate   = $endYear . '-' . $endDate;
+
+        return [
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ];
+    }
 }

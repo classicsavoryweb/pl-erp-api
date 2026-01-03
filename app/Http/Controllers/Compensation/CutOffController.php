@@ -37,8 +37,12 @@ class CutOffController extends Controller
                 "part" => "required"
             ]);
 
-            $startDate = $request->year."-".$request->cutoff["start_time"]; 
-            $endDate = $request->year."-".$request->cutoff["end_time"];
+            // $startDate = $request->year."-".$request->cutoff["start_time"];
+            // $endDate = $request->year."-".$request->cutoff["end_time"];
+
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $startDate = $dates["start_date"];
+            $endDate = $dates["end_date"];
             $cutOff = $startDate."-".$endDate;
 
             $isExisting = Cutoff::where("cut_off", $cutOff)->first();
@@ -181,8 +185,9 @@ class CutOffController extends Controller
                 "part" => "required"
             ]);
 
-            $startDate = $request->year."-".$request->cutoff["start_time"]; 
-            $endDate = $request->year."-".$request->cutoff["end_time"];
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $startDate = $dates["start_date"];
+            $endDate = $dates["end_date"];
             $cutOff = $startDate."-".$endDate;
 
             $createdCutOff = Cutoff::find($id);

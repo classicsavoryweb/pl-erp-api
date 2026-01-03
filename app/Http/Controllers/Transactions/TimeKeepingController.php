@@ -41,13 +41,17 @@ class TimeKeepingController extends Controller
             $currentCutOff = $this->getCurrentCutoff();
             $year = $request->year ?? Carbon::now()->year;
 
-            $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
-                ? $year . '-' . $request->cutoff["start_time"]
-                : $currentCutOff['start_time'];
+            // $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
+            //     ? $year . '-' . $request->cutoff["start_time"]
+            //     : $currentCutOff['start_time'];
 
-            $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
-                ? $year . '-' . $request->cutoff["end_time"]
-                : $currentCutOff['end_time'];
+            // $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
+            //     ? $year . '-' . $request->cutoff["end_time"]
+            //     : $currentCutOff['end_time'];
+
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
+            $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
             TransferLogsToTimeKeeping::dispatch($request->branch_id, [$start_time, $end_time]);
             $branch = Branch::find($request->branch_id);
@@ -72,13 +76,16 @@ class TimeKeepingController extends Controller
             $currentCutOff = $this->getCurrentCutoff();
             $year = $request->year ?? Carbon::now()->year;
 
-            $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
-                ? $year . '-' . $request->cutoff["start_time"]
-                : $currentCutOff['start_time'];
+            // $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
+            //     ? $year . '-' . $request->cutoff["start_time"]
+            //     : $currentCutOff['start_time'];
 
-            $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
-                ? $year . '-' . $request->cutoff["end_time"]
-                : $currentCutOff['end_time'];
+            // $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
+            //     ? $year . '-' . $request->cutoff["end_time"]
+            //     : $currentCutOff['end_time'];
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
+            $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
             $timeKeepingQuery = TimeKeeping::with(["employee", "employee.current_position", "payment"])
             ->where("branch_id", $request->branch_id)
@@ -148,13 +155,17 @@ class TimeKeepingController extends Controller
             $currentCutOff = $this->getCurrentCutoff();
             $year = $request->year ?? Carbon::now()->year;
 
-            $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
-                ? $year . '-' . $request->cutoff["start_time"]
-                : $currentCutOff['start_time'];
+            // $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
+            //     ? $year . '-' . $request->cutoff["start_time"]
+            //     : $currentCutOff['start_time'];
 
-            $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
-                ? $year . '-' . $request->cutoff["end_time"]
-                : $currentCutOff['end_time'];
+            // $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
+            //     ? $year . '-' . $request->cutoff["end_time"]
+            //     : $currentCutOff['end_time'];
+
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
+            $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
             $timeKeepingSummaryQuery = TimeKeepingSummary::with(["employee", "lates", "branch" ,"employee.current_position", "employee.current_branch", "employee.timekeeping"])
                 ->where("timekeeping_summary.branch_id", $request->branch_id)
@@ -221,13 +232,17 @@ class TimeKeepingController extends Controller
             $currentCutOff = $this->getCurrentCutoff();
             $year = $request->year ?? Carbon::now()->year;
 
-            $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
-                ? $year . '-' . $request->cutoff["start_time"]
-                : $currentCutOff['start_time'];
+            // $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
+            //     ? $year . '-' . $request->cutoff["start_time"]
+            //     : $currentCutOff['start_time'];
 
-            $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
-                ? $year . '-' . $request->cutoff["end_time"]
-                : $currentCutOff['end_time'];
+            // $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
+            //     ? $year . '-' . $request->cutoff["end_time"]
+            //     : $currentCutOff['end_time'];
+
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
+            $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
             $cutOff = [
                 "start_time" => $start_time,

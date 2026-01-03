@@ -26,8 +26,9 @@ class PayrollProofListController extends Controller
                 "bank_account_type_id" => "required"
             ]);
 
-            $start_time = $request->year . '-' . $request->cutoff["start_time"];
-            $end_time = $request->year . '-' . $request->cutoff["end_time"];
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $start_time = $dates["start_date"];
+            $end_time = $dates["end_date"];
 
             $cutOff = Cutoff::where("start_date", $start_time)
             ->where("end_date", $end_time)
@@ -110,8 +111,9 @@ class PayrollProofListController extends Controller
                 "bank_account_type_id" => "required"
             ]);
 
-            $start_time = $request->year . '-' . $request->cutoff["start_time"];
-            $end_time = $request->year . '-' . $request->cutoff["end_time"];
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $start_time = $dates["start_date"];
+            $end_time = $dates["end_date"];
 
             $cutOff = Cutoff::where("start_date", $start_time)
             ->where("end_date", $end_time)

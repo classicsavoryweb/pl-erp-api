@@ -23,13 +23,17 @@ class PayrollController extends Controller
             $currentCutOff = $this->getCurrentCutoff();
             $year = $request->year ?? Carbon::now()->year;
 
-            $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
-                ? $year . '-' . $request->cutoff["start_time"]
-                : $currentCutOff['start_time'];
+            // $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
+            //     ? $year . '-' . $request->cutoff["start_time"]
+            //     : $currentCutOff['start_time'];
 
-            $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
-                ? $year . '-' . $request->cutoff["end_time"]
-                : $currentCutOff['end_time'];
+            // $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
+            //     ? $year . '-' . $request->cutoff["end_time"]
+            //     : $currentCutOff['end_time'];
+
+            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
+            $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
+            $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
             $payroll = Payroll::with(["employee","employee.current_branch", "employee.current_position", "timekeeping_summary",])
             ->where("cut_off", $start_time."-".$end_time);
