@@ -160,10 +160,13 @@ class ATDController extends Controller
                     ->where("deduction_ref", "!=", '')
                     ->count();
 
-                $descriptions = ucwords(strtolower($transaction["type"]));
-                $deduction = Deduction::where("description", $descriptions)->first();
+                $descriptions = strtolower($transaction["type"]);
+                $deduction = Deduction::whereRaw(
+                    'LOWER(description) = ?',
+                    [$descriptions]
+                )->first();
 
-                $deductionId = str_pad($deductionId, 8, '0', STR_PAD_LEFT);
+                $deductionId = str_pad($deduction->id, 8, '0', STR_PAD_LEFT);
                 $deduction_reference = $base_reference . $deductionId . "|" . ($deduction_count + 1);
                 $user = Auth::user();
                 $user = $user->employee;
