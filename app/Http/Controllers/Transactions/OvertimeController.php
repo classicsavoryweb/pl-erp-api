@@ -85,9 +85,9 @@ class OvertimeController extends Controller
 
             if ($request->has('cutoff') && $request->filled('cutoff.start_time') && $request->filled('cutoff.end_time')) {
                 $year = $request->year ?? Carbon::now()->year;
-
-                $start_time = $year . '-' . $request->cutoff['start_time'];
-                $end_time = $year . '-' . $request->cutoff['end_time'];
+                $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $year);
+                $start_time = $dates["start_date"];
+                $end_time = $dates["end_date"];
 
                 $overtime = $overtime->whereBetween("overtime_date", [$start_time, $end_time]);
             }
