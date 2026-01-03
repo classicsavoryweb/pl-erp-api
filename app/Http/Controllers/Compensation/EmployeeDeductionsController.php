@@ -145,7 +145,6 @@ class EmployeeDeductionsController extends Controller
 
             $branch = Branch::where("name", "Head Office")->first();
             $user = Auth::user();
-            $user = $user->employee;
 
             $deduction_id = $request->deduction_id;
 
@@ -171,7 +170,7 @@ class EmployeeDeductionsController extends Controller
                 "approved_status" => $request->approved_status,
                 "deduction_ref" => $deduction_reference,
                 "deduction_status" => $request->deduction_status,
-                "created_by" => $user->properFullName,
+                "created_by" => $user->proper_full_name,
                 "date_created" => date('Y-m-d'),
                 "end_loan_reason" => $request->end_loan_reason,
                 "end_loan_status" => $request->end_loan_status,

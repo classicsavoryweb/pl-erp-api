@@ -52,13 +52,26 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    protected $appends = ['full_name'];
+    protected $appends = ['full_name', 'proper_full_name'];
 
 
     protected function fullName(): Attribute
     {
         return Attribute::get(
             fn () => "{$this->last_name}, {$this->first_name} {$this->middle_name}"
+        );
+    }
+
+    protected function properFullName(): Attribute
+    {
+        $fullName = strtolower($this->first_name . ' ' . $this->last_name);
+        if ($this->middle_name) {
+            $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
+            $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
+        }
+        $properFullName = ucwords($fullName);
+        return Attribute::get(
+            fn () => $properFullName
         );
     }
 

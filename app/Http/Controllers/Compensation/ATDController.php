@@ -169,7 +169,6 @@ class ATDController extends Controller
                 $deductionId = str_pad($deduction->id, 8, '0', STR_PAD_LEFT);
                 $deduction_reference = $base_reference . $deductionId . "|" . ($deduction_count + 1);
                 $user = Auth::user();
-                $user = $user->employee;
 
                 $dateStart = now()->format("Y-m-d");
                 $dateEnd = Carbon::parse($dateStart)->addMonths($transaction["term"])->format("Y-m-d");
@@ -224,7 +223,7 @@ class ATDController extends Controller
                     "block_payment" => "Yes",
                     "approved_status" => "Yes",
                     "deduction_ref" => $deduction_reference,
-                    "created_by" => $user->properFullName,
+                    "created_by" => $user->proper_full_name,
                     "date_created" => date('Y-m-d'),
                     "end_loan_status" => "No",
                     "source" => "CSHUB"
@@ -234,7 +233,7 @@ class ATDController extends Controller
 
                 $groupedTransactions[$transactionNumber][] = $transaction["employee_number"];
             }
- 
+
             foreach ($groupedTransactions as $transactionNumber => $employeeNumbers) {
                 $transactionLink = env('CS_HUB_URL_LINK')."/generate-atd/".$transactionNumber;
                 $user = env('CS_HUB_ADMIN_EMAIL');
@@ -258,6 +257,8 @@ class ATDController extends Controller
                 }
             }
 
+            DB::rollBack();
+            return $this->sendError(["message" => "Something went wrong"]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
