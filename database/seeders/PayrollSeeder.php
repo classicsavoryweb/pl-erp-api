@@ -81,18 +81,13 @@ class PayrollSeeder extends Seeder
                 $deductions = [];
 
                 foreach ($employeeDeductions as $deduction) {
-                    $amountToDeduct = $deduction->monthly_amortization / 2;
-
-                    if ($amountToDeduct > $deduction->balance) {
-                        $amountToDeduct = $deduction->balance;
-                    }
 
                     $deductions[] = [
                         "deduction_id" => $deduction->id,
                         "type" => $deduction->deduction->description,
                         "monthly_amortization" => $deduction->monthly_amortization,
                         "balance" => $deduction->balance,
-                        "deducted_amount" => $amountToDeduct,
+                        "deducted_amount" => $deduction->amount,
                         "payslip_description" => $deduction->payslip_description
                     ];
                 }
