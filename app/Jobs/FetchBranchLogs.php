@@ -83,7 +83,7 @@ class FetchBranchLogs implements ShouldQueue
                             ->first();
 
                             if ($latest) {
-                                $latest->punches()->create([
+                                $latest->punches()->updateOrCreate([
                                     "punch_time" => $log["punch_time"],
                                     "date" => $date,
                                     "branch_id" => $branch?->id ?? null
@@ -99,20 +99,20 @@ class FetchBranchLogs implements ShouldQueue
                                     ->Where("date", $date)
                                     ->first();
                                     if (!$punch) {
-                                        $bio1->punches()->create([
+                                        $bio1->punches()->updateOrCreate([
                                             "punch_time" => $log["punch_time"],
                                             "date" => $date,
                                             "branch_id" => $branch?->id ?? null
                                         ]);
                                     }
                                 } else {
-                                    $bio = BiotimeLog::create([
+                                    $bio = BiotimeLog::updateOrCreate([
                                         "employee_id" => $employee->id,
                                         "biometric_number" => $employee->biometric_number,
                                         "date" => $date,
                                     ]);
 
-                                    $bio->punches()->create([
+                                    $bio->punches()->updateOrCreate([
                                         "punch_time" => $log["punch_time"],
                                         "date" => $date,
                                         "branch_id" => $branch?->id ?? null
@@ -132,19 +132,19 @@ class FetchBranchLogs implements ShouldQueue
                                 ->first();
     
                                 if (!$punch) {
-                                    $attendance->punches()->create([
+                                    $attendance->punches()->updateOrCreate([
                                         "punch_time" => $log["punch_time"],
                                         "date" => $date,
                                         "branch_id" => $branch?->id ?? null
                                     ]);
                                 }
                             } else {
-                                $bio = BiotimeLog::create([
+                                $bio = BiotimeLog::updateOrCreate([
                                     "employee_id" => $employee->id,
                                     "biometric_number" => $employee->biometric_number,
                                     "date" => $date,
                                 ]);
-                                $bio->punches()->create([
+                                $bio->punches()->updateOrCreate([
                                     "punch_time" => $log["punch_time"],
                                     "date" => $date,
                                     "branch_id" => $branch?->id ?? null
@@ -196,7 +196,7 @@ class FetchBranchLogs implements ShouldQueue
                             ->first();
 
                             if ($latest) {
-                                $latest->punches()->create([
+                                $latest->punches()->updateOrCreate([
                                     "punch_time" => $log["punch_time"],
                                     "date" => $date,
                                     "branch_id" => $branch ? $branch->id : null
@@ -213,20 +213,20 @@ class FetchBranchLogs implements ShouldQueue
                                     ->first();
 
                                     if (!$punch) {
-                                        $bio1->punches()->create([
+                                        $bio1->punches()->updateOrCreate([
                                             "punch_time" => $log["punch_time"],
                                             "date" => $date,
                                             "branch_id" => $branch ? $branch->id : null
                                         ]);
                                     }
                                 } else {
-                                    $bio = BiotimeLog::create([
+                                    $bio = BiotimeLog::updateOrCreate([
                                         "employee_id" => $employee->id,
                                         "biometric_number" => $employee->biometric_number,
                                         "date" => $date,
                                     ]);
 
-                                    $bio->punches()->create([
+                                    $bio->punches()->updateOrCreate([
                                         "punch_time" => $log["punch_time"],
                                         "date" => $date,
                                         "branch_id" => $branch ? $branch->id : null
@@ -246,19 +246,19 @@ class FetchBranchLogs implements ShouldQueue
                                 ->first();
     
                                 if (!$punch) {
-                                    $attendance->punches()->create([
+                                    $attendance->punches()->updateOrCreate([
                                         "punch_time" => $log["punch_time"],
                                         "date" => $date,
                                         "branch_id" => $branch ? $branch->id : null
                                     ]);
                                 }
                             } else {
-                                $bio = BiotimeLog::create([
+                                $bio = BiotimeLog::updateOrCreate([
                                     "employee_id" => $employee->id,
                                     "biometric_number" => $employee->biometric_number,
                                     "date" => $date,
                                 ]);
-                                $bio->punches()->create([
+                                $bio->punches()->updateOrCreate([
                                     "punch_time" => $log["punch_time"],
                                     "date" => $date,
                                     "branch_id" => $branch ? $branch->id : null
