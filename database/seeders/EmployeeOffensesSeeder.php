@@ -32,7 +32,7 @@ class EmployeeOffensesSeeder extends Seeder
                 $employee->offenses()->create([
                     "offense_id" => $offense->id,
                     "transgression" => $empOffense["transgession"],
-                    'sanction_id' => $sanction->id,
+                    'sanction_id' => $sanction->id ?? null,
                     'repetition' => $empOffense["repetition"],
                     'summary' => $empOffense["summary"],
                     'date_committed' => $empOffense["date_committed"] ,
