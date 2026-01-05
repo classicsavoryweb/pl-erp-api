@@ -25,6 +25,7 @@ class AuthController extends Controller
             $role = Role::find($user->role_id);
             if ($role) {
                 $user->syncRoles($role);
+                $user["role_name"] = $role->name;
                 $token = $user->createToken(
                      $user->email,
                 $role->permissions->pluck("name")->toArray(),

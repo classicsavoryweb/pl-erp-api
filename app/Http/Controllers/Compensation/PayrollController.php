@@ -127,6 +127,8 @@ class PayrollController extends Controller
 
                 $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
 
+                $year = Carbon::parse($payroll->pay_date)->year;
+
                 $tardiness = TimeKeeping::with(["payment"])
                 ->where("employee_id", $payroll->employee_id)
                 ->whereBetween("date", [$payroll->start_date, $payroll->end_date])
@@ -147,7 +149,7 @@ class PayrollController extends Controller
                 ->where("employee_id", $payroll->employee_id)
                 ->where("status", "Approved")
                 ->orderBy("month", "DESC")
-                ->where("year", now()->year)
+                ->where("year", $year)
                 ->get();
 
                 $payroll["tardiness_list"] = $tardiness;
