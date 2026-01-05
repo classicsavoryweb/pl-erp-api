@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Compensation;
 
+use App\Exports\Compensation\ATDListExport;
 use App\Http\Controllers\Controller;
 use App\Exports\Compensation\EmployeeDeductionExport;
 use App\Models\EmployeeDeduction;
@@ -29,6 +30,14 @@ class ATDController extends Controller
 
             if ($request->has("employee_id") && $request->employee_id) {
                 $deductions = $deductions->where('employee_id', $request->employee_id);
+            }
+
+            if ($request->has("branch_id") && $request->branch_id) {
+                $deductions = $deductions->where('branch_id', $request->branch_id);
+            }
+
+            if ($request->has("deduction_id") && $request->deduction_id) {
+                $deductions = $deductions->where('deduction_id', $request->deduction_id);
             }
 
             if ($request->has(["column_type", "key_word"])) {
@@ -63,7 +72,7 @@ class ATDController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $deductions = $deductions->get();
-                return Excel::download(new EmployeeDeductionExport($deductions), "deductions.xls");
+                return Excel::download(new ATDListExport($deductions), "deductions.xls");
             }
 
             $deductions = $deductions->orderBy("start_date", "desc")
