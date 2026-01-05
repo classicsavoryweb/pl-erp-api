@@ -233,32 +233,31 @@ class ATDController extends Controller
 
                 $groupedTransactions[$transactionNumber][] = $transaction["employee_number"];
             }
-            DB::commit();
-            return $this->sendResponse(["message" => "ATD successfully created"]);
-            // foreach ($groupedTransactions as $transactionNumber => $employeeNumbers) {
-            //     $transactionLink = env('CS_HUB_URL_LINK')."/generate-atd/".$transactionNumber;
-            //     $user = env('CS_HUB_ADMIN_EMAIL');
-            //     $password = env('CS_HUB_ADMIN_PASSWORD');
-            //     $company = env('COMPANY_NAME');
+
+            foreach ($groupedTransactions as $transactionNumber => $employeeNumbers) {
+                $transactionLink = env('CS_HUB_URL_LINK')."/generate-atd/".$transactionNumber;
+                $user = env('CS_HUB_ADMIN_EMAIL');
+                $password = env('CS_HUB_ADMIN_PASSWORD');
+                $company = env('COMPANY_NAME');
     
-            //     $response = Http::withBasicAuth($user, $password)
-            //     ->withHeaders([
-            //         "Accept" => "application/json",
-            //         "Content-Type" => "application/json"
-            //     ])->timeout(60)
-            //     ->post($transactionLink,[
-            //         "company" => $company,
-            //         "employee_numbers" => $employeeNumbers
-            //     ]);
+                $response = Http::withBasicAuth($user, $password)
+                ->withHeaders([
+                    "Accept" => "application/json",
+                    "Content-Type" => "application/json"
+                ])->timeout(60)
+                ->post($transactionLink,[
+                    "company" => $company,
+                    "employee_numbers" => $employeeNumbers
+                ]);
 
-            //     if ($response->successful()) {
+                if ($response->successful()) {
 
-            //         DB::commit();
-            //         return $this->sendResponse(["message" => "ATD successfully created"]);
-            //     }
-            // }
+                    DB::commit();
+                    return $this->sendResponse(["message" => "ATD successfully created"]);
+                }
+            }
 
-            // DB::rollBack();
+            DB::rollBack();
             return $this->sendError(["message" => "Something went wrong"]);
         } catch (Exception $e) {
             DB::rollBack();
