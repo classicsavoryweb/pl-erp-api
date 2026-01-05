@@ -22,20 +22,52 @@ use Maatwebsite\Excel\Facades\Excel;
 class EmployeeDeductionsController extends Controller
 {
 
-    private function generateEntryId(&$counter)
+    private function generateEntryId(&$counterEntry)
     {
-        if ($counter === null) {
+        if ($counterEntry === null) {
             $lastEntry = Entry::orderBy('entry_id', 'desc')->first();
 
             if ($lastEntry) {
                 $lastEntryIdNumber = (int) substr($lastEntry->entry_id, 3);
-                $counter = $lastEntryIdNumber + 1;
+                $counterEntry = $lastEntryIdNumber + 1;
             } else {
-                $counter = 1; 
+                $counterEntry = 1; 
             }
         }
 
-        return 'PSD' . str_pad($counter++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT);
+    }
+
+    private function generateApsysEntryId(&$counterApsysEntry)
+    {
+        if ($counterApsysEntry === null) {
+            $lastEntry = ApsysEntry::orderBy('ent_tran_no', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->ent_tran_no, 3);
+                $counterApsysEntry = $lastEntryIdNumber + 1;
+            } else {
+                $counterApsysEntry = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT);
+    }
+
+    private function generateApsysEntryMainId(&$counterApsysEntryMain)
+    {
+        if ($counterApsysEntryMain === null) {
+            $lastEntry = ApsysEntryMain::orderBy('ent_tran_no', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->ent_tran_no, 3);
+                $counterApsysEntryMain = $lastEntryIdNumber + 1;
+            } else {
+                $counterApsysEntryMain = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
     }
 
     public function getAllEmployeeDeductions(Request $request) {
@@ -190,10 +222,14 @@ class EmployeeDeductionsController extends Controller
             $entries = [];
 
             if ($employeeDeduction->amount > 0) {
-                $entryId = $this->generateEntryId($counter);
+                $entryId = $this->generateEntryId($counterEntry);
+                $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+                $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
                 $entries = array_merge($entries, [
                     [
                         'entry_id'            => $entryId,
+                        'apsys_entry_id'      => $apsysEntryId,
+                        'apsys_entry_main_id' => $apsysEntryMainId,
                         'document_no'         => $employee->employee_number . '|' . 'Head Office',
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
@@ -208,6 +244,8 @@ class EmployeeDeductionsController extends Controller
                     ],
                     [
                         'entry_id'            => $entryId,
+                        'apsys_entry_id'      => $apsysEntryId,
+                        'apsys_entry_main_id' => $apsysEntryMainId,
                         'document_no'         => $employee->employee_number . '|' . 'Head Office',
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
@@ -303,10 +341,14 @@ class EmployeeDeductionsController extends Controller
             $entries = [];
 
             if ($employeeDeduction->amount > 0) {
-                $entryId = $this->generateEntryId($counter);
+                $entryId = $this->generateEntryId($counterEntry);
+                $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+                $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
                 $entries = array_merge($entries, [
                     [
                         'entry_id'            => $entryId,
+                        'apsys_entry_id'      => $apsysEntryId,
+                        'apsys_entry_main_id' => $apsysEntryMainId,
                         'document_no'         => 'End Loan Transaction' . '|' . now(),
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
@@ -321,6 +363,8 @@ class EmployeeDeductionsController extends Controller
                     ],
                     [
                         'entry_id'            => $entryId,
+                        'apsys_entry_id'      => $apsysEntryId,
+                        'apsys_entry_main_id' => $apsysEntryMainId,
                         'document_no'         => 'End Loan Transaction' . '|' . now(),
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
@@ -365,7 +409,7 @@ class EmployeeDeductionsController extends Controller
             ]);
 
             ApsysEntry::create([
-                'ent_tran_no'       => $entry['entry_id'],
+                'ent_tran_no'       => $entry['apsys_entry_id'],
                 'branch_id'         => $entry['branch_number'],
                 'ent_post_date'     => now(),
                 'ven_no'            => $entry['ven_no'],
@@ -396,7 +440,7 @@ class EmployeeDeductionsController extends Controller
             ]);
 
             ApsysEntryMain::create([
-                'ent_tran_no'       => $entry['entry_id'],
+                'ent_tran_no'       => $entry['apsys_entry_main_id'],
                 'ven_no'            => $entry['ven_no'],
                 'ven_name'          => $entry['ven_name'],
                 'ent_doc_date'      => now(),

@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Compensation;
 use App\Exports\Compensation\ATDListExport;
 use App\Http\Controllers\Controller;
 use App\Exports\Compensation\EmployeeDeductionExport;
+use App\Models\Accounting\ApsysEntry;
+use App\Models\Accounting\ApsysEntryMain;
 use App\Models\EmployeeDeduction;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Deduction;
+use App\Models\Entry;
 use App\Models\Term;
 use Carbon\Carbon;
 use Http;
@@ -22,6 +25,54 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ATDController extends Controller
 {
+    private function generateEntryId(&$counterEntry)
+    {
+        if ($counterEntry === null) {
+            $lastEntry = Entry::orderBy('entry_id', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->entry_id, 3);
+                $counterEntry = $lastEntryIdNumber + 1;
+            } else {
+                $counterEntry = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT);
+    }
+
+    private function generateApsysEntryId(&$counterApsysEntry)
+    {
+        if ($counterApsysEntry === null) {
+            $lastEntry = ApsysEntry::orderBy('ent_tran_no', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->ent_tran_no, 3);
+                $counterApsysEntry = $lastEntryIdNumber + 1;
+            } else {
+                $counterApsysEntry = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT);
+    }
+
+    private function generateApsysEntryMainId(&$counterApsysEntryMain)
+    {
+        if ($counterApsysEntryMain === null) {
+            $lastEntry = ApsysEntryMain::orderBy('ent_tran_no', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->ent_tran_no, 3);
+                $counterApsysEntryMain = $lastEntryIdNumber + 1;
+            } else {
+                $counterApsysEntryMain = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
+    }
+
     public function getAllEmployeeDeductions(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -214,7 +265,7 @@ class ATDController extends Controller
 
                 $atdBranch = Branch::where("branch_number", $transaction["branch_number"])->first();
 
-                EmployeeDeduction::create([
+                $employeeDeduction = EmployeeDeduction::create([
                     "employee_id" => $employee->id,
                     "deduction_id" => $deduction->id,
                     "months" => $terms,
@@ -237,6 +288,60 @@ class ATDController extends Controller
                     "end_loan_status" => "No",
                     "source" => "CSHUB"
                 ]);
+
+                $branchHO = Branch::where('short_name', 'HO')
+                ->first();
+                $branchHOId = $branchHO->id;
+                $branchHOName = $branchHO->name;
+                $branchHONumber = $branchHO->branch_number;    
+
+                $deductionEntry = Deduction::where('id', $employeeDeduction->deduction_id)->first();
+                $debitId = $deductionEntry->debit_id;
+                $creditId = $deductionEntry->credit_id;
+
+                $entries = [];
+
+                if ($employeeDeduction->amount > 0) {
+                    $entryId = $this->generateEntryId($counterEntry);
+                    $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+                    $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
+                    $entries = array_merge($entries, [
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => $employee->employee_number . '|' . 'Head Office',
+                            'branch_id'           => $branchHOId,
+                            'branch_number'       => $branchHONumber,
+                            'branch_name'         => $branchHOName,
+                            'ven_no'              => $employee->employee_number,
+                            'ven_name'            => $employee->full_name,
+                            'amount'              => $employeeDeduction->amount,
+                            'acc_no'              => $debitId,
+                            'description_per_acc' => $employeeDeduction->deduction->description,
+                            'balance_type'        => 'Debit',
+                            'is_block_payment'    => 0,
+                        ],
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => $employee->employee_number . '|' . 'Head Office',
+                            'branch_id'           => $branchHOId,
+                            'branch_number'       => $branchHONumber,
+                            'branch_name'         => $branchHOName,
+                            'ven_no'              => $employee->employee_number,
+                            'ven_name'            => $employee->full_name,
+                            'amount'              => $employeeDeduction->amount,
+                            'acc_no'              => $creditId,
+                            'description_per_acc' => $employeeDeduction->deduction->description,
+                            'balance_type'        => 'Credit',
+                            'is_block_payment'    => 0,
+                        ]
+                    ]);
+                }
+
+                $this->createEntries($entries, $user);
 
                 $transactionNumber = $transaction["transaction_number"];
 
@@ -271,6 +376,80 @@ class ATDController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+    private function createEntries($entries, $user)
+    {
+        foreach ($entries as $entry) {
+
+            Entry::create([
+                'entry_id'                   => $entry['entry_id'],
+                'document_no'                => $entry['document_no'],
+                'branch_id'                  => $entry['branch_id'],
+                'branch_number'              => $entry['branch_number'],
+                'vendor_no'                  => $entry['ven_no'],
+                'amount'                     => $entry['amount'],
+                'account_no'                 => $entry['acc_no'],
+                'description'                => $entry['description_per_acc'],
+                'balance_type'               => $entry['balance_type'],
+                'is_block_payment'           => $entry['is_block_payment'],
+                'status'                     => 'Unapplied',
+                'generated_at'               => now(),
+                'generated_by'               => $user->id,
+            ]);
+
+            ApsysEntry::create([
+                'ent_tran_no'       => $entry['apsys_entry_id'],
+                'branch_id'         => $entry['branch_number'],
+                'ent_post_date'     => now(),
+                'ven_no'            => $entry['ven_no'],
+                'ent_doc_no'        => $entry['document_no'],
+                'ent_doc_date'      => now(),
+                'ent_due_date'      => now(),
+                'ent_header'        => '',
+                'ent_crf_no'        => '',
+                'ent_trans_amt'     => $entry['amount'],
+                'ent_amt_due'       => $entry['amount'],
+                'ent_module'        => 'Payroll',
+                'acc_no'            => $entry['acc_no'],
+                'ent_amt_per_cc'    => $entry['amount'],
+                'ent_desc_per_acc'  => $entry['description_per_acc'],
+                'ent_norm_bal'      => $entry['balance_type'],
+                'ent_total'         => $entry['amount'],
+                'ent_module_type'   => 'Single',
+                'ent_app_amt'       => $entry['amount'],
+                'ent_unapp_amt'     => $entry['amount'],
+                'ent_vat_amt'       => 0,
+                'ent_nonvat_amt'    => 0,
+                'ent_na_amt'        => $entry['amount'],
+                'ent_inp_tax_amt'   => 0,
+                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
+                'ent_status'        => 'Unapplied',
+                'ent_chk'           => 'No',
+                'date_added'        => now(),
+            ]);
+
+            ApsysEntryMain::create([
+                'ent_tran_no'       => $entry['apsys_entry_main_id'],
+                'ven_no'            => $entry['ven_no'],
+                'ven_name'          => $entry['ven_name'],
+                'ent_doc_date'      => now(),
+                'branch_id'         => $entry['branch_number'],
+                'branch_name'       => $entry['branch_name'],
+                'ent_header'        => '',
+                'ent_trans_amt'     => $entry['amount'],
+                'ent_post_date'     => now(),
+                'ent_module_type'   => 'Single',
+                'ent_status'        => 'Unapplied',
+                'check_no'          => null,
+                'ent_crf_no'        => '',
+                'ent_doc_no'        => $entry['document_no'],
+                'ent_module'        => 'Payroll',
+                'ent_app_amt'       => $entry['amount'],
+                'ent_unapp_amt'     => $entry['amount'],
+                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
+                'ent_due_date'      => now(),
+            ]);
         }
     }
 }
