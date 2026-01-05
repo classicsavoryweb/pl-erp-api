@@ -84,7 +84,11 @@ class ATDController extends Controller
             }
 
             if ($request->has("branch_id") && $request->branch_id) {
-                $deductions = $deductions->where('branch_id', $request->branch_id);
+                $deductions = $deductions->whereHas("employee", function ($query) use ($request) {
+                    $query->whereHas("current_branch", function ($q) use ($request) {
+                        $q->where('branch_id', $request->branch_id);
+                    });
+                });
             }
 
             if ($request->has("deduction_id") && $request->deduction_id) {
@@ -123,7 +127,7 @@ class ATDController extends Controller
                 }
             }
 
-            $deductions = $deductions->with(["employee", "branch", "deduction"]);
+            $deductions = $deductions->with(["employee", "employee.current_branch", "branch", "deduction"]);
 
             if ($request->has(["export"]) && $request->export) {
                 $deductions = $deductions->get();
