@@ -190,8 +190,17 @@ class ATDController extends Controller
                 $transactions = [];
 
                 foreach ($data['data']['data'] as $trans) {
-                    $isExisting = EmployeeDeduction::where("transaction_number", $trans["transaction_number"])
-                    ->orWhere('remarks', 'LIKE', '%'.$trans["transaction_number"].'%')
+                    $employee = Employee::where("employee_number", $trans["employee_number"])->first();
+
+                    if (!$employee) {
+                        continue;
+                    }
+
+                    $isExisting = EmployeeDeduction::where("employee_id", $employee->id)
+                    ->where(function ($query) use ($trans) {
+                        $query->where("transaction_number", $trans["transaction_number"])
+                        ->orWhere('remarks', 'LIKE', '%'.$trans["transaction_number"].'%');
+                    })
                     ->first();
 
                     if ($isExisting) {
