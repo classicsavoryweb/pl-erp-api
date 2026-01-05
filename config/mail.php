@@ -54,6 +54,16 @@ return [
             'timeout' => null,
             'local_domain' => env('PAYROLL_MAIL_EHLO_DOMAIN'),
         ],
+        'WEEKLY_PAYROLL_MAILER' => [
+            'transport' => 'smtp',
+            'host' => env('WEEKLY_PAYROLL_MAIL_HOST', 'smtp.mailgun.org'),
+            'port' => env('WEEKLY_PAYROLL_MAIL_PORT', 587),
+            'encryption' => env('WEEKLY_PAYROLL_MAIL_ENCRYPTION', 'tls'),
+            'username' => env('WEEKLY_PAYROLL_MAIL_USERNAME'),
+            'password' => env('WEEKLY_PAYROLL_MAIL_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('WEEKLY_PAYROLL_MAIL_EHLO_DOMAIN'),
+        ],
 
         'ses' => [
             'transport' => 'ses',

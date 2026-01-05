@@ -241,7 +241,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 }
             }
 
-            Mail::mailer("PAYROLL_MAILER")->to($employee->email)
+            Mail::mailer("WEEKLY_PAYROLL_MAILER")->to($employee->email)
             ->send(new SendTransactionToEmployeeMail($transaction));
 
             if ($transaction->transaction_type->isDeduction()) {
