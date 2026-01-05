@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Compensation;
 
+use App\Exports\Compensation\ATDListExport;
 use App\Http\Controllers\Controller;
 use App\Exports\Compensation\EmployeeDeductionExport;
 use App\Models\EmployeeDeduction;
@@ -29,6 +30,18 @@ class ATDController extends Controller
 
             if ($request->has("employee_id") && $request->employee_id) {
                 $deductions = $deductions->where('employee_id', $request->employee_id);
+            }
+
+            if ($request->has("branch_id") && $request->branch_id) {
+                $deductions = $deductions->where('branch_id', $request->branch_id);
+            }
+
+            if ($request->has("deduction_id") && $request->deduction_id) {
+                $deductions = $deductions->where('deduction_id', $request->deduction_id);
+            }
+
+            if ($request->has(["date_created_from", "date_created_to"])) {
+                $deductions = $deductions->whereBetween('date_created', [$request->date_created_from, $request->date_created_to]);
             }
 
             if ($request->has(["column_type", "key_word"])) {
@@ -63,7 +76,7 @@ class ATDController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $deductions = $deductions->get();
-                return Excel::download(new EmployeeDeductionExport($deductions), "deductions.xls");
+                return Excel::download(new ATDListExport($deductions), "deductions.xls");
             }
 
             $deductions = $deductions->orderBy("start_date", "desc")
@@ -122,7 +135,9 @@ class ATDController extends Controller
                 $transactions = [];
 
                 foreach ($data['data']['data'] as $trans) {
-                    $isExisting = EmployeeDeduction::where("transaction_number", $trans["transaction_number"])->first();
+                    $isExisting = EmployeeDeduction::where("transaction_number", $trans["transaction_number"])
+                    ->orWhere('remarks', 'LIKE', '%'.$trans["transaction_number"].'%')
+                    ->first();
 
                     if ($isExisting) {
                         continue;
@@ -224,7 +239,7 @@ class ATDController extends Controller
                     "approved_status" => "Yes",
                     "deduction_ref" => $deduction_reference,
                     "created_by" => $user->proper_full_name,
-                    "date_created" => date('Y-m-d'),
+                    "date_created" => $transaction["transaction_date"],
                     "end_loan_status" => "No",
                     "source" => "CSHUB"
                 ]);
