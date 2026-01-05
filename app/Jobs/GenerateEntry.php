@@ -29,31 +29,71 @@ class GenerateEntry implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected $payroll;
+    protected $pay_date;
+    protected $start_date;
+    protected $end_date;
     protected $user;
-    private $counter;
+    private $counterEntry;
+    private $counterApsysEntry;
+    private $counterApsysEntryMain;
     /**
      * Create a new job instance.
      */
-    public function __construct(Collection $payroll, $user)
+    public function __construct(Collection $payroll, $pay_date, $start_date, $end_date, $user)
     {
         $this->payroll = $payroll;
+        $this->pay_date = $pay_date;
+        $this->start_date = $start_date;
+        $this->end_date = $end_date;
         $this->user = $user;
     }
 
-    private function generateEntryId(&$counter)
+    private function generateEntryId(&$counterEntry)
     {
-        if ($counter === null) {
+        if ($counterEntry === null) {
             $lastEntry = Entry::orderBy('entry_id', 'desc')->first();
 
             if ($lastEntry) {
                 $lastEntryIdNumber = (int) substr($lastEntry->entry_id, 3);
-                $counter = $lastEntryIdNumber + 1;
+                $counterEntry = $lastEntryIdNumber + 1;
             } else {
-                $counter = 1; 
+                $counterEntry = 1; 
             }
         }
 
-        return 'PSD' . str_pad($counter++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT);
+    }
+
+    private function generateApsysEntryId(&$counterApsysEntry)
+    {
+        if ($counterApsysEntry === null) {
+            $lastEntry = ApsysEntry::orderBy('ent_tran_no', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->ent_tran_no, 3);
+                $counterApsysEntry = $lastEntryIdNumber + 1;
+            } else {
+                $counterApsysEntry = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT);
+    }
+
+    private function generateApsysEntryMainId(&$counterApsysEntryMain)
+    {
+        if ($counterApsysEntryMain === null) {
+            $lastEntry = ApsysEntryMain::orderBy('ent_tran_no', 'desc')->first();
+
+            if ($lastEntry) {
+                $lastEntryIdNumber = (int) substr($lastEntry->ent_tran_no, 3);
+                $counterApsysEntryMain = $lastEntryIdNumber + 1;
+            } else {
+                $counterApsysEntryMain = 1; 
+            }
+        }
+
+        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
     }
 
     public function handle(): void
@@ -180,12 +220,11 @@ class GenerateEntry implements ShouldQueue
         $branchHOShortName = $branchHO->short_name;
         $branchHONumber = $branchHO->branch_number;
 
-        $pay_date = $this->payroll->first()->pay_date;
-        $start_date = $this->payroll->first()->start_date;
-        $end_date = $this->payroll->first()->end_date;
+        $start_date = $this->start_date;
+        $end_date = $this->end_date;
 
         $payrollBranchIds = Payroll::distinct()
-            ->where('pay_date', $pay_date)
+            ->where('pay_date', $this->pay_date)
             ->pluck('timekeeping_branch_id');
 
         foreach ($payrollBranchIds as $payrollBranchId) {
@@ -284,11 +323,11 @@ class GenerateEntry implements ShouldQueue
 
             $bankEmployeeIds = $payrollEmployeeBankQuery->pluck('employee_id');
             $bankIncentiveSums = Incentives::whereIn('employee_id', $bankEmployeeIds)
-                ->where('pay_date', $pay_date) 
+                ->where('pay_date', $this->pay_date) 
                 ->sum('incentive_amount');
 
             $bankAdditionalIncomeSums = BranchAdditionalIncome::where('branch_id', $branchId)
-                ->where('pay_date', $pay_date) 
+                ->where('pay_date', $this->pay_date) 
                 ->sum('amount');
 
             $bankAdditionalAndIncentiveSums = $bankIncentiveSums + $bankAdditionalIncomeSums;
@@ -387,7 +426,7 @@ class GenerateEntry implements ShouldQueue
 
             $cashEmployeeIds = $payrollEmployeeCashQuery->pluck('employee_id');
             $cashIncentiveSums = Incentives::whereIn('employee_id', $cashEmployeeIds)
-                ->where('pay_date', $pay_date) 
+                ->where('pay_date', $this->pay_date) 
                 ->sum('incentive_amount');
 
             $entries = [];
@@ -395,11 +434,20 @@ class GenerateEntry implements ShouldQueue
             if ($payrollBranch->type === "Head Office") {
                 //head office - grosspay (cash and bank)
                 if ($payrollEmployeeBankSums['grosspay'] > 0 && $payrollBranch->branch_number != "SFI00001") {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -414,6 +462,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -428,6 +478,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -442,6 +494,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -459,11 +513,19 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - employee statutories (bank)
                 if ($payrollEmployeeBankSums['eeSSS'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -478,6 +540,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -493,6 +557,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -507,6 +573,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -523,11 +591,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeBankSums['eePh'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -542,6 +618,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -557,6 +635,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -571,6 +651,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -587,11 +669,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeBankSums['eePagibig'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -606,6 +696,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -621,6 +713,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -635,6 +729,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -652,11 +748,19 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - deductions (bank)
                 if ($bankTotalAmortization > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -671,6 +775,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -686,6 +792,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -700,6 +808,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -717,11 +827,19 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - with_holding_tax (bank)
                 if ($payrollEmployeeBankSums['withHoldingTax'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -737,6 +855,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -752,6 +872,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -767,6 +889,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -784,11 +908,19 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - employer statutories (bank)
                 if ($payrollEmployeeBankSums['erSSS'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -803,6 +935,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -818,6 +952,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -832,6 +968,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -848,11 +986,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeBankSums['erPh'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -868,6 +1014,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -883,6 +1031,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -898,6 +1048,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -914,11 +1066,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeBankSums['erPagibig'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -933,6 +1093,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -948,6 +1110,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -962,6 +1126,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -979,10 +1145,16 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - net taxable adjustment (bank)
                 if ($payrollEmployeeBankSums['netTaxableAdjustment'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -998,6 +1170,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1015,11 +1189,19 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - incentives amount (bank)
                 if ($bankIncentiveSums > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1035,6 +1217,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1050,6 +1234,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -1065,6 +1251,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -1082,14 +1270,22 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - grosspay (cash)
                 if ($payrollEmployeeCashSums['grosspay'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
 
                     $grosspayEntries = [];
 
                     if ($payrollBranch->branch_number != "SFI00001") {
                         $grosspayEntries = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1105,6 +1301,8 @@ class GenerateEntry implements ShouldQueue
 
                         $grosspayEntries = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1121,6 +1319,8 @@ class GenerateEntry implements ShouldQueue
                         
                     $grosspayEntries = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => $start_date . '-' . $end_date,
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -1135,6 +1335,8 @@ class GenerateEntry implements ShouldQueue
                     ];
                     $grosspayEntries = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => $start_date . '-' . $end_date,
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -1153,11 +1355,19 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - employee statutories (cash)
                 if ($payrollEmployeeCashSums['eeSSS'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1172,6 +1382,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1187,6 +1399,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1201,6 +1415,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1217,11 +1433,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeCashSums['eePh'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1236,6 +1460,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1251,6 +1477,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1265,6 +1493,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1281,11 +1511,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeCashSums['eePagibig'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1300,6 +1538,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1315,6 +1555,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1329,6 +1571,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1346,11 +1590,19 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - deduction (cash)
                 if ($cashTotalAmortization > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1365,6 +1617,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1380,6 +1634,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1394,6 +1650,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1411,11 +1669,19 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - with_holding_tax (cash)
                 if ($payrollEmployeeCashSums['withHoldingTax'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1430,6 +1696,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1445,6 +1713,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1459,6 +1729,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1477,11 +1749,19 @@ class GenerateEntry implements ShouldQueue
                 //head office - employer statutories (cash)
                 if ($payrollEmployeeCashSums['erSSS'] > 0) {
                     if ($payrollBranch->branch_number != "SFI00001") {
-                        $firstEntry = $this->generateEntryId($this->counter);
-                        $secondEntry = $this->generateEntryId($this->counter);
+                        $firstEntry = $this->generateEntryId($this->counterEntry);
+                        $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                         $entries = array_merge($entries, [
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                                 'branch_id'           => $branchHOId,
                                 'branch_name'         => $branchHOName,
@@ -1496,6 +1776,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                                 'branch_id'           => $branchHOId,
                                 'branch_name'         => $branchHOName,
@@ -1511,6 +1793,8 @@ class GenerateEntry implements ShouldQueue
 
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1525,6 +1809,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1539,11 +1825,19 @@ class GenerateEntry implements ShouldQueue
                             ],
                         ]);
                     } else {
-                        $firstEntry = $this->generateEntryId($this->counter);
-                        $secondEntry = $this->generateEntryId($this->counter);
+                        $firstEntry = $this->generateEntryId($this->counterEntry);
+                        $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                         $entries = array_merge($entries, [
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1558,6 +1852,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1573,6 +1869,8 @@ class GenerateEntry implements ShouldQueue
 
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1587,6 +1885,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1605,11 +1905,19 @@ class GenerateEntry implements ShouldQueue
 
                 if ($payrollEmployeeCashSums['erPh'] > 0) {
                     if ($payrollBranch->branch_number != "SFI00001") {
-                        $firstEntry = $this->generateEntryId($this->counter);
-                        $secondEntry = $this->generateEntryId($this->counter);
+                        $firstEntry = $this->generateEntryId($this->counterEntry);
+                        $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                         $entries = array_merge($entries, [
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                                 'branch_id'           => $branchHOId,
                                 'branch_name'         => $branchHOName,
@@ -1624,6 +1932,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                                 'branch_id'           => $branchHOId,
                                 'branch_name'         => $branchHOName,
@@ -1639,6 +1949,8 @@ class GenerateEntry implements ShouldQueue
 
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1653,6 +1965,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1667,11 +1981,19 @@ class GenerateEntry implements ShouldQueue
                             ],
                         ]);
                     } else {
-                        $firstEntry = $this->generateEntryId($this->counter);
-                        $secondEntry = $this->generateEntryId($this->counter);
+                        $firstEntry = $this->generateEntryId($this->counterEntry);
+                        $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                         $entries = array_merge($entries, [
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1686,6 +2008,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1701,6 +2025,8 @@ class GenerateEntry implements ShouldQueue
 
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1715,6 +2041,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1735,11 +2063,19 @@ class GenerateEntry implements ShouldQueue
                 //dito ako natapos
                 if ($payrollEmployeeCashSums['erPagibig'] > 0) {
                     if ($payrollBranch->branch_number != "SFI00001") {
-                        $firstEntry = $this->generateEntryId($this->counter);
-                        $secondEntry = $this->generateEntryId($this->counter);
+                        $firstEntry = $this->generateEntryId($this->counterEntry);
+                        $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                         $entries = array_merge($entries, [
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                                 'branch_id'           => $branchHOId,
                                 'branch_name'         => $branchHOName,
@@ -1754,6 +2090,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                                 'branch_id'           => $branchHOId,
                                 'branch_name'         => $branchHOName,
@@ -1769,6 +2107,8 @@ class GenerateEntry implements ShouldQueue
 
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1783,6 +2123,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1797,11 +2139,19 @@ class GenerateEntry implements ShouldQueue
                             ],
                         ]);
                     } else {
-                        $firstEntry = $this->generateEntryId($this->counter);
-                        $secondEntry = $this->generateEntryId($this->counter);
+                        $firstEntry = $this->generateEntryId($this->counterEntry);
+                        $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                         $entries = array_merge($entries, [
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1817,6 +2167,8 @@ class GenerateEntry implements ShouldQueue
 
                             [
                                 'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1832,6 +2184,8 @@ class GenerateEntry implements ShouldQueue
 
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1846,6 +2200,8 @@ class GenerateEntry implements ShouldQueue
                             ],
                             [
                                 'entry_id'            => $secondEntry,
+                                'apsys_entry_id'      => $secondApsysEntry,
+                                'apsys_entry_main_id' => $secondApsysEntryMain,
                                 'document_no'         => $start_date . '-' . $end_date,
                                 'branch_id'           => $branchId,
                                 'branch_name'         => $branchName,
@@ -1864,10 +2220,16 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - net taxable adjustment (cash)
                 if ($payrollEmployeeCashSums['netTaxableAdjustment'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1883,6 +2245,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1900,14 +2264,22 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - incentives (cash)
                 if ($cashIncentiveSums > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $incentiveEntries = [];
 
                     if ($payrollBranch->branch_number != "SFI00001") {
 
                         $incentiveEntries[] = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1923,6 +2295,8 @@ class GenerateEntry implements ShouldQueue
 
                         $incentiveEntries[] = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1939,6 +2313,8 @@ class GenerateEntry implements ShouldQueue
 
                     $incentiveEntries[] = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => 'Additional Income',
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -1954,6 +2330,8 @@ class GenerateEntry implements ShouldQueue
 
                     $incentiveEntries[] = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => 'Additional Income',
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -1973,11 +2351,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - grosspay (bank)
                 if ($payrollEmployeeBankSums['grosspay'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -1992,6 +2378,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2007,6 +2395,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2021,6 +2411,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2038,11 +2430,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - employee statutories (bank)
                 if ($payrollEmployeeBankSums['eeSSS'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2057,6 +2457,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2072,6 +2474,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2086,6 +2490,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2102,11 +2508,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeBankSums['eePh'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2121,6 +2535,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2136,6 +2552,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2150,6 +2568,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2166,11 +2586,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeBankSums['eePagibig'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2185,6 +2613,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2200,6 +2630,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2214,6 +2646,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2231,11 +2665,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - deductions (bank)
                 if ($bankTotalAmortization > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2250,6 +2692,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2265,6 +2709,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2279,6 +2725,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2296,11 +2744,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - with_holding_tax (bank)
                 if ($payrollEmployeeBankSums['withHoldingTax'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2316,6 +2772,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2331,6 +2789,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2346,6 +2806,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2363,11 +2825,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - employer statutories (bank)
                 if ($payrollEmployeeBankSums['erSSS'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2382,6 +2852,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2397,6 +2869,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2411,6 +2885,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2427,11 +2903,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeBankSums['erPh'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2446,6 +2930,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2461,6 +2947,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2475,6 +2963,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2491,11 +2981,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeBankSums['erPagibig'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2510,6 +3008,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2525,6 +3025,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2539,6 +3041,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2556,10 +3060,16 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - net taxable adjustment (bank)
                 if ($payrollEmployeeBankSums['netTaxableAdjustment'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2575,6 +3085,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2592,11 +3104,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - incentives amount (bank)
                 if ($bankIncentiveSums > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2611,6 +3131,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2626,6 +3148,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2640,6 +3164,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2657,11 +3183,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - grosspay (cash)
                 if ($payrollEmployeeCashSums['grosspay'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2676,6 +3210,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2691,6 +3227,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2705,6 +3243,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -2722,11 +3262,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - employee statutories (cash)
                 if ($payrollEmployeeCashSums['eeSSS'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2741,6 +3289,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2756,6 +3306,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2770,6 +3322,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2786,11 +3340,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeCashSums['eePh'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2805,6 +3367,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2820,6 +3384,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2834,6 +3400,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2850,11 +3418,19 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeCashSums['eePagibig'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2869,6 +3445,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2884,6 +3462,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2898,6 +3478,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2915,11 +3497,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - deduction (cash)
                 if ($cashTotalAmortization > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2934,6 +3524,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2949,6 +3541,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2963,6 +3557,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2980,11 +3576,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - with_holding_tax (cash)
                 if ($payrollEmployeeCashSums['withHoldingTax'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -2999,6 +3603,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3014,6 +3620,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3028,6 +3636,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3045,11 +3655,19 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - employer statutories (cash)
                 if ($payrollEmployeeCashSums['erSSS'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3064,6 +3682,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3079,6 +3699,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -3093,6 +3715,8 @@ class GenerateEntry implements ShouldQueue
                         ],
                         [
                             'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => $start_date . '-' . $end_date,
                             'branch_id'           => $branchId,
                             'branch_name'         => $branchName,
@@ -3109,13 +3733,21 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeCashSums['erPh'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $erPhEntries = [];
 
                     if ($payrollBranch->branch_number != "SFI00001") {
                         $erPhEntries [] = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3131,6 +3763,8 @@ class GenerateEntry implements ShouldQueue
 
                         $erPhEntries [] = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3147,6 +3781,8 @@ class GenerateEntry implements ShouldQueue
 
                     $erPhEntries [] = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => $start_date . '-' . $end_date,
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -3162,6 +3798,8 @@ class GenerateEntry implements ShouldQueue
 
                     $erPhEntries [] = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => $start_date . '-' . $end_date,
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -3179,14 +3817,22 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 if ($payrollEmployeeCashSums['erPagibig'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $erPagibigEntries = [];
 
                     if ($payrollBranch->branch_number != "SFI00001") {
         
                         $erPagibigEntries [] = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3202,6 +3848,8 @@ class GenerateEntry implements ShouldQueue
 
                         $erPagibigEntries [] = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3218,6 +3866,8 @@ class GenerateEntry implements ShouldQueue
 
                     $erPagibigEntries [] = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => $start_date . '-' . $end_date,
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -3233,6 +3883,8 @@ class GenerateEntry implements ShouldQueue
 
                     $erPagibigEntries [] = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => $start_date . '-' . $end_date,
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -3251,10 +3903,16 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - net taxable adjustment (cash)
                 if ($payrollEmployeeCashSums['netTaxableAdjustment'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3270,6 +3928,8 @@ class GenerateEntry implements ShouldQueue
 
                         [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3287,14 +3947,22 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - incentives amount (cash)
                 if ($cashIncentiveSums > 0) {
-                    $firstEntry = $this->generateEntryId($this->counter);
-                    $secondEntry = $this->generateEntryId($this->counter);
+                    $firstEntry = $this->generateEntryId($this->counterEntry);
+                    $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $incentiveEntries = [];
 
                     if ($payrollBranch->branch_number != "SFI00001") {
 
                         $incentiveEntries[] = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3310,6 +3978,8 @@ class GenerateEntry implements ShouldQueue
 
                         $incentiveEntries[] = [
                             'entry_id'            => $firstEntry,
+                            'apsys_entry_id'      => $firstApsysEntry,
+                            'apsys_entry_main_id' => $firstApsysEntryMain,
                             'document_no'         => 'Additional Income',
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
@@ -3326,6 +3996,8 @@ class GenerateEntry implements ShouldQueue
 
                     $incentiveEntries[] = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => 'Additional Income',
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -3341,6 +4013,8 @@ class GenerateEntry implements ShouldQueue
 
                     $incentiveEntries[] = [
                         'entry_id'            => $secondEntry,
+                        'apsys_entry_id'      => $secondApsysEntry,
+                        'apsys_entry_main_id' => $secondApsysEntryMain,
                         'document_no'         => 'Additional Income',
                         'branch_id'           => $branchId,
                         'branch_name'         => $branchName,
@@ -3365,7 +4039,7 @@ class GenerateEntry implements ShouldQueue
 
                     Entry::create([
                         'entry_id'                   => $entry['entry_id'],
-                        'pay_date'                   => $pay_date,
+                        'pay_date'                   => $this->pay_date,
                         'document_no'                => $entry['document_no'],
                         'branch_id'                  => $entry['branch_id'],
                         'branch_number'              => $entry['branch_number'],
@@ -3381,7 +4055,7 @@ class GenerateEntry implements ShouldQueue
                     ]);
 
                     ApsysEntry::create([
-                        'ent_tran_no'       => $entry['entry_id'],
+                        'ent_tran_no'       => $entry['apsys_entry_id'],
                         'ent_post_date'     => now(),
                         'ven_no'            => $entry['ven_no'],
                         'ent_doc_date'      => now(),
@@ -3412,7 +4086,7 @@ class GenerateEntry implements ShouldQueue
                     ]);
                     
                     ApsysEntryMain::create([
-                        'ent_tran_no'       => $entry['entry_id'],
+                        'ent_tran_no'       => $entry['apsys_entry_main_id'],
                         'ven_no'            => $entry['ven_no'],
                         'ven_name'          => $entry['ven_name'],
                         'ent_doc_date'      => now(),

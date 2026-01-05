@@ -43,6 +43,10 @@ class ProcessFinalizeCutOff implements ShouldQueue
         ->where("status", "initial")
         ->get();
 
+        $pay_date = $this->cutOff->pay_date;
+        $start_date = $this->cutOff->start_date;
+        $end_Date = $this->cutOff->end_date;
+
         foreach($payrolls as $payroll) {
             $payroll->update([
                 "status" => "final",
@@ -89,6 +93,6 @@ class ProcessFinalizeCutOff implements ShouldQueue
             ]);
         }
 
-        GenerateEntry::dispatch($payrolls, $this->user);
+        GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
     }
 }
