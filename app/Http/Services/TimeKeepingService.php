@@ -42,12 +42,18 @@ class TimeKeepingService
             ->first();
         }
 
-        $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)->first();
+        $schedule = null;
 
-        if (!$schedule) {
-            $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
-            ->where("end_time", $actualSchedule->check_out)
-            ->first();
+        if ($isAdjustment) {
+            $schedule = ScheduleMasterlist::where("selection", $actualSchedule)->first();
+        } else {
+            $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)->first();
+
+            if (!$schedule) {
+                $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
+                ->where("end_time", $actualSchedule->check_out)
+                ->first();
+            }
         }
 
         $travel_time = 0;
