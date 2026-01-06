@@ -72,12 +72,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 foreach ($timeKeepings as $timeKeep) {
                     $actualSchedule = ScheduleTime::find($timeKeep->schedule_time_id);
                     $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
-                    $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
-                    ->where("end_time", $actualSchedule->check_out)
-                    ->first();
+                    $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)->first();
 
                     if (!$schedule) {
-                        $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
+                        $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
+                        ->where("end_time", $actualSchedule->check_out)
                         ->first();
                     }
 

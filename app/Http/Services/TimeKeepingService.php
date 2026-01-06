@@ -42,12 +42,11 @@ class TimeKeepingService
             ->first();
         }
 
-        $schedule = ScheduleMasterlist::where("start_time", $scheduleTime->check_in)
-        ->where("end_time", $scheduleTime->check_out)
-        ->first();
+        $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)->first();
 
         if (!$schedule) {
-            $schedule = ScheduleMasterlist::where("selection", $scheduleTime->timetable)
+            $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
+            ->where("end_time", $actualSchedule->check_out)
             ->first();
         }
 
@@ -667,18 +666,24 @@ class TimeKeepingService
             $employee = $timeKeeping->employee;
 
             $date = $timeKeeping->date;
-            $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
-            ->where("end_time", $actualSchedule->check_out)
-            ->first();
 
-            if (!$schedule) {
-                $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)
-                ->first();
+            $schedule = null;
+
+            if ($isAdjustment) {
+                $schedule = ScheduleMasterlist::where("selection", $actualSchedule)->first();
+            } else {
+                $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)->first();
+
+                if (!$schedule) {
+                    $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
+                    ->where("end_time", $actualSchedule->check_out)
+                    ->first();
+                }
             }
 
-            $scheduledBreak = Carbon::parse($date . ' ' . $schedule->time_break);
-            $scheduledBreakInHours = $scheduledBreak->hour + ($scheduledBreak->minute / 60);             
-            $totalDutyHours = $schedule->total_hours - $this->formatHours($scheduledBreakInHours);
+            // $scheduledBreak = Carbon::parse($date . ' ' . $schedule->time_break ?? "00:00");
+            // $scheduledBreakInHours = $scheduledBreak->hour + ($scheduledBreak->minute / 60);             
+            // $totalDutyHours = $schedule->total_hours - $this->formatHours($scheduledBreakInHours);
             
             $paymentPerDay = $employee->dailySalary();
             $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
