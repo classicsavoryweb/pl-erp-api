@@ -570,7 +570,7 @@ class GenerateLastPayEntry implements ShouldQueue
                 'ent_amt_due'       => $entry['amount'],
                 'ent_module'        => 'Payroll',
                 'acc_no'            => $entry['acc_no'],
-                'ent_amt_per_cc'    => $entry['amount'],
+                'ent_amt_per_acc'    => $entry['amount'],
                 'ent_desc_per_acc'  => $entry['description_per_acc'],
                 'ent_norm_bal'      => $entry['balance_type'],
                 'ent_total'         => $entry['amount'],
