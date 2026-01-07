@@ -3,6 +3,7 @@
 use App\Http\Controllers\Maintenance\ActingCapacityMaintenanceController;
 use App\Http\Controllers\Maintenance\AdditionalIncomeController;
 use App\Http\Controllers\Maintenance\AdjustmentTypeController;
+use App\Http\Controllers\Maintenance\ATDAccessTypeController;
 use App\Http\Controllers\Maintenance\AgencyController;
 use App\Http\Controllers\Maintenance\BankAccountTypeController;
 use App\Http\Controllers\Maintenance\BranchController;
@@ -202,6 +203,11 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-cshub-transaction-types", [CSHubTransactionTypeController::class, "exportCsHubTransactionTypes"]);
     Route::middleware(["permission:perform_cshub_transaction_type"])->post("/create-cshub-transaction-type", [CSHubTransactionTypeController::class, "createCsHubTransactionType"]);
     Route::middleware(["permission:perform_cshub_transaction_type"])->post("/edit-cshub-transaction-type/{id}", [CSHubTransactionTypeController::class, "editCsHubTransactionType"]);
+    // atd access type
+    Route::get("/get-all-atd-access-types", [ATDAccessTypeController::class, "getAllATDAccessTypes"]);
+    Route::get("/export-all-atd-access-types", [ATDAccessTypeController::class, "exportAllATDAccessTypes"]);
+    Route::post("/create-atd-access-type", [ATDAccessTypeController::class, "createATDAccessType"]);
+    Route::post("/edit-atd-access-type/{id}", [ATDAccessTypeController::class, "editATDAccessType"]);
     //cs hub modules
     Route::get("/get-cshub-modules", [CSHubModulesController::class, "getCsHubModules"]);
     //cs hub source type
