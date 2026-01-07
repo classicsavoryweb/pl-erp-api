@@ -135,6 +135,13 @@ class PayrollProofListController extends Controller
             $tempCopyPath = storage_path('app/public/'.$request->type.'-'.now()->format("Y-m-d").'.xlsm');
             copy($templatePath, $tempCopyPath);
 
+            
+            $company = env('COMPANY_FULL_NAME');
+            $filePrefix =  env('COMPANY_NAME') == "SFI" ? "TPAYSAVORY" : "TPAYTONYTI";
+            $virtualAccount =  env('COMPANY_NAME') == "SFI" ? "9049948528" : "9081473203";
+            $companyCode = env('COMPANY_NAME') =="SFI" ? "X48Z" : "Y490";
+            $creditingDate = now()->format("Y-m-d");
+
             $zip = new ZipArchive;
             if ($zip->open($tempCopyPath) === TRUE) {
                 $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
@@ -142,6 +149,16 @@ class PayrollProofListController extends Controller
                 $dom = new DOMDocument('1.0', 'UTF-8');
                 $dom->loadXML($sheetXml);
                 $sheetData = $dom->getElementsByTagName('sheetData')->item(0);
+
+                $this->writeCell($dom, $sheetData, 'A1', (string)$company);
+                if ($request->bank_account_type_id == 1) {
+                    $this->writeCell($dom, $sheetData, 'B2', (string)$filePrefix);
+                    $this->writeCell($dom, $sheetData, 'B3', (string)$virtualAccount);
+                    $this->writeCell($dom, $sheetData, 'B4', (string)$creditingDate);
+                } else {
+                    $this->writeCell($dom, $sheetData, 'B2', (string)$creditingDate);
+                    $this->writeCell($dom, $sheetData, 'B3', (string)$companyCode);
+                }
 
                 $rowIndex = 7;
                 foreach ($proofLists as $transaction) {

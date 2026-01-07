@@ -317,6 +317,9 @@ class ConverterController extends Controller
                 $tempCopyPath = storage_path('app/public/'.$converterBatch->batch_number.'.xlsm');
 
                 $company = env('COMPANY_FULL_NAME');
+                $filePrefix =  env('COMPANY_NAME') == "SFI" ? "TPAYSAVORY" : "TPAYTONYTI";
+                $virtualAccount =  env('COMPANY_NAME') == "SFI" ? "9049948528" : "9081473203";
+                $companyCode = env('COMPANY_NAME') =="SFI" ? "X48Z" : "Y490";
                 $batch = $converterBatch->id;
                 $creditingDate = now()->format("Y-m-d");
 
@@ -332,11 +335,14 @@ class ConverterController extends Controller
 
                     $this->writeCell($dom, $sheetData, 'A1', (string)$company);
                     if ($converterBatch->bank_account_type_id == 1) {
-                        $this->writeCell($dom, $sheetData, 'B5', (string)$batch);
+                        $this->writeCell($dom, $sheetData, 'B2', (string)$filePrefix);
+                        $this->writeCell($dom, $sheetData, 'B3', (string)$virtualAccount);
                         $this->writeCell($dom, $sheetData, 'B4', (string)$creditingDate);
+                        $this->writeCell($dom, $sheetData, 'B5', (string)$batch);
                     } else {
                         $this->writeCell($dom, $sheetData, 'B5', (string)$batch);
                         $this->writeCell($dom, $sheetData, 'B2', (string)$creditingDate);
+                        $this->writeCell($dom, $sheetData, 'B3', (string)$companyCode);
                     }
 
                     $rowIndex = 7;
