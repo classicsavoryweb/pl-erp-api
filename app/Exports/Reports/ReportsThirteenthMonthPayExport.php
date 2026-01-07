@@ -27,7 +27,7 @@ class ReportsThirteenthMonthPayExport implements FromCollection, WithHeadings, W
 
             $bankType = null;
 
-            if($payrollListEmployee->is_bank === 1) {
+            if($payrollListEmployee &&$payrollListEmployee->is_bank === 1) {
                 $bankType = 'Bank';
             } else {
                 $bankType = 'Cash';
@@ -36,8 +36,8 @@ class ReportsThirteenthMonthPayExport implements FromCollection, WithHeadings, W
             return [
                 $employee->employee_number,
                 $employee->full_name,
-                $employee->current_branch->name,
-                $employee->current_position->description,
+                optional($employee->current_branch)->name ?? 'N/A',
+                optional($employee->current_position)->description ?? 'N/A',
                 $bankType,
 
                 $thirteenthMonth->december_2nd_cutoff,
