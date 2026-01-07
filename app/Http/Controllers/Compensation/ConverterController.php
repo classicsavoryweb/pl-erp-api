@@ -173,9 +173,18 @@ class ConverterController extends Controller
             $detail = ConverterDetail::find($detailId);
 
             if ($detail) {
-                $detail->update([
-                    "amount" => $request->amount,
-                ]);
+                if (strtoupper($detail->source) == "MANUAL") {
+                    $detail->update([
+                        "amount" => $request->amount,
+                        "transaction_type_id" => $request->transaction_type_id,
+                        "remarks" => $request->remarks ?? null
+                    ]);
+                } else {
+                    $detail->update([
+                        "amount" => $request->amount,
+                        "remarks" => $request->remarks ?? null
+                    ]);
+                }
                 DB::commit();
                 return $this->sendResponse(["message" => "Converter details updated successfully"]);
             }
@@ -439,6 +448,8 @@ class ConverterController extends Controller
                 $source = CSHubSourceType::where("description", $transaction["transaction_type"])->first();
                 $module = CSHubModule::where("description", $transaction["type"])->first();
                 $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
+                ->where("credit_status_positive", $transaction["for_crediting"])
+                ->where("deduction_status_positive", $transaction["for_liquidation"])
                 ->where("source_id", $module->id)
                 ->first();
 
