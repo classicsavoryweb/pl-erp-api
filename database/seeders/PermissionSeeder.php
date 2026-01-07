@@ -81,6 +81,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_period_definition"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_cshub_transaction_type"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_cshub_transaction_type"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_atd_access_type"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_adjustment_types"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_adjustment_types"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_incentives_management"], ["module" => "maintenance"]);
