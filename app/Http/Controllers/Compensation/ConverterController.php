@@ -306,7 +306,7 @@ class ConverterController extends Controller
                 ->with(["employee", "employee.latest_bank_details", "transaction_type"])
                 ->get();
 
-                if ($transactions->status != "Generated") {
+                if ($converterBatch->status != "Generated") {
                     $converterBatch->update([
                         "status" => "Generated",
                         "generated_by" => Auth::user()->id,
