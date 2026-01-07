@@ -453,6 +453,14 @@ class ConverterController extends Controller
                 ->where("source_id", $module->id)
                 ->first();
 
+                $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
+                ->where("source_id", $module->id)
+                ->first();
+
+                Log::info($source->id);
+                Log::info($transaction["for_crediting"]);
+                Log::info($transaction["for_liquidation"]);
+
                 ConverterDetail::create([
                     "employee_id" => $employee->id,
                     "branch_id" => $employee->current_branch->id,
