@@ -33,7 +33,7 @@ class ATDAccessTypeExport implements FromCollection, WithHeadings
                 ->map(fn($id) => $roleMap[$id] ?? $id)
                 ->join(', ');
             return [
-                $record->category,
+                $record->deduction?->description ?? "",
                 $roles,
                 $record->status,
             ];
@@ -43,7 +43,7 @@ class ATDAccessTypeExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            "Category",
+            "Deduction",
             "Role",
             "Status",
         ];

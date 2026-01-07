@@ -20,7 +20,17 @@ class ATDAccessTypeController extends Controller
             $query = ATDAccessType::query();
 
             if ($request->has(["column_type", "key_word"]) && $request->key_word !== null) {
-                $query = $query->where($request->column_type, "LIKE", "%".$request->key_word."%");
+                $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if (str_contains($column, '.')) {
+                    [$relation, $relatedColumn] = explode('.', $column, 2);
+                    $query = $query->whereHas($relation, function ($q) use ($relatedColumn, $keyword) {
+                        $q->where($relatedColumn, 'LIKE', "%".$keyword."%");
+                    });
+                } else {
+                    $query = $query->where($column, "LIKE", "%".$keyword."%");
+                }
             }
 
             if ($request->has("status") && $request->status !== null && $request->status !== "") {
@@ -28,11 +38,11 @@ class ATDAccessTypeController extends Controller
             }
 
             if ($request->has("export") && $request->export) {
-                $records = $query->get();
+                $records = $query->with("deduction")->get();
                 return Excel::download(new ATDAccessTypeExport($records), "atd-access-types.xls");
             }
 
-            $data = $query->paginate($perPage);
+            $data = $query->with("deduction")->paginate($perPage);
 
             // Map role ids to names for display
             $roleIds = collect($data->items())
@@ -72,14 +82,14 @@ class ATDAccessTypeController extends Controller
     {
         try {
             $request->validate([
-                "category" => "required",
+                "deduction_id" => "required|exists:deductions,id",
                 "roles" => "required|array|min:1",
                 "roles.*" => "exists:roles,id",
                 "status" => "required",
             ]);
 
             ATDAccessType::create([
-                "category" => $request->category,
+                "deduction_id" => $request->deduction_id,
                 "roles" => collect($request->roles)->map(fn($id) => (int)$id)->values()->all(),
                 "status" => $request->status,
             ]);
@@ -94,14 +104,14 @@ class ATDAccessTypeController extends Controller
     {
         try {
             $request->validate([
-                "category" => "required",
+                "deduction_id" => "required|exists:deductions,id",
                 "roles" => "required|array|min:1",
                 "roles.*" => "exists:roles,id",
                 "status" => "required",
             ]);
 
             ATDAccessType::where("id", $id)->update([
-                "category" => $request->category,
+                "deduction_id" => $request->deduction_id,
                 "roles" => collect($request->roles)->map(fn($id) => (int)$id)->values()->all(),
                 "status" => $request->status,
             ]);

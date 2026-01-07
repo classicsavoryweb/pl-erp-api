@@ -26,7 +26,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ATDController extends Controller
 {
-    private function getUserATDAllowedCategories(): array
+    private function getUserATDAllowedDeductionIds(): array
     {
         $user = Auth::user();
         $roleIds = $user?->roles?->pluck('id')->map(fn ($id) => (int) $id)->values()->all() ?? [];
@@ -42,20 +42,18 @@ class ATDController extends Controller
             }
         });
 
-        return $query->pluck("category")->filter()->unique()->values()->all();
+        return $query->pluck("deduction_id")->filter()->unique()->values()->all();
     }
 
     private function applyATDAccessFilter($deductionsQuery)
     {
-        $allowedCategories = $this->getUserATDAllowedCategories();
+        $allowedDeductionIds = $this->getUserATDAllowedDeductionIds();
 
-        if (empty($allowedCategories)) {
+        if (empty($allowedDeductionIds)) {
             return $deductionsQuery->whereRaw("1 = 0");
         }
 
-        return $deductionsQuery->whereHas("deduction", function ($query) use ($allowedCategories) {
-            $query->whereIn("category", $allowedCategories);
-        });
+        return $deductionsQuery->whereIn("deduction_id", $allowedDeductionIds);
     }
 
     private function generateEntryId(&$counterEntry)
@@ -187,12 +185,12 @@ class ATDController extends Controller
     public function getAllowedATDDeductions(Request $request)
     {
         try {
-            $allowedCategories = $this->getUserATDAllowedCategories();
-            if (empty($allowedCategories)) {
+            $allowedDeductionIds = $this->getUserATDAllowedDeductionIds();
+            if (empty($allowedDeductionIds)) {
                 return $this->sendResponse(["deductions" => []]);
             }
 
-            $deductions = Deduction::whereIn("category", $allowedCategories)
+            $deductions = Deduction::whereIn("id", $allowedDeductionIds)
                 ->where("status", "active")
                 ->orderBy("description")
                 ->get();
@@ -205,12 +203,12 @@ class ATDController extends Controller
 
     public function getCSHubATD(Request $request) {
         try {
-            $allowedCategories = $this->getUserATDAllowedCategories();
-            if (empty($allowedCategories)) {
+            $allowedDeductionIds = $this->getUserATDAllowedDeductionIds();
+            if (empty($allowedDeductionIds)) {
                 return $this->sendResponse(["transactions" => []]);
             }
 
-            $allowedDescriptions = Deduction::whereIn("category", $allowedCategories)
+            $allowedDescriptions = Deduction::whereIn("id", $allowedDeductionIds)
                 ->pluck("description")
                 ->map(fn ($desc) => strtolower(trim($desc)))
                 ->unique()
@@ -295,11 +293,11 @@ class ATDController extends Controller
             $request->validate([
                 "transactions" => "required|array"
             ]);
-            $allowedCategories = $this->getUserATDAllowedCategories();
-            if (empty($allowedCategories)) {
+            $allowedDeductionIds = $this->getUserATDAllowedDeductionIds();
+            if (empty($allowedDeductionIds)) {
                 return $this->sendError(["message" => "You are not allowed to import these deductions."]);
             }
-            $allowedDescriptions = Deduction::whereIn("category", $allowedCategories)
+            $allowedDescriptions = Deduction::whereIn("id", $allowedDeductionIds)
                 ->pluck("description")
                 ->map(fn ($desc) => strtolower(trim($desc)))
                 ->unique()

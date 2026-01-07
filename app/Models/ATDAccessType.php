@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
+use App\Models\Deduction;
 
 class ATDAccessType extends Model
 {
@@ -13,10 +14,10 @@ class ATDAccessType extends Model
     protected $table = 'atd_access_types';
 
     protected $fillable = [
-        "category",
         "role_id",
         "status",
         "roles",
+        "deduction_id",
     ];
 
     protected $casts = [
@@ -26,5 +27,10 @@ class ATDAccessType extends Model
     public function role()
     {
         return $this->belongsTo(Role::class, "role_id");
+    }
+
+    public function deduction()
+    {
+        return $this->belongsTo(Deduction::class, "deduction_id");
     }
 }
