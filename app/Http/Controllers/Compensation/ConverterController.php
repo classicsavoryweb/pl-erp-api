@@ -315,6 +315,11 @@ class ConverterController extends Controller
                 $converterToUse = $converterBatch->bank_account_type_id == 1 ? "CASH_CARD_CONVERTER" : "SAVINGS_CONVERTER";
                 $templatePath = public_path('converter/'.$converterToUse.'.xlsm');
                 $tempCopyPath = storage_path('app/public/'.$converterBatch->batch_number.'.xlsm');
+
+                $company = env('COMPANY_FULL_NAME');
+                $batch = $converterBatch->id;
+                $creditingDate = now()->format("Y-m-d");
+
                 copy($templatePath, $tempCopyPath);
 
                 $zip = new ZipArchive;
@@ -324,6 +329,15 @@ class ConverterController extends Controller
                     $dom = new DOMDocument();
                     $dom->loadXML($sheetXml);
                     $sheetData = $dom->getElementsByTagName('sheetData')->item(0);
+
+                    $this->writeCell($dom, $sheetData, 'A1', (string)$company);
+                    if ($converterBatch->bank_account_type_id == 1) {
+                        $this->writeCell($dom, $sheetData, 'B5', (string)$batch);
+                        $this->writeCell($dom, $sheetData, 'B4', (string)$creditingDate);
+                    } else {
+                        $this->writeCell($dom, $sheetData, 'B5', (string)$batch);
+                        $this->writeCell($dom, $sheetData, 'B2', (string)$creditingDate);
+                    }
 
                     $rowIndex = 7;
                     foreach ($transactions as $transaction) {
@@ -456,10 +470,6 @@ class ConverterController extends Controller
                 $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
                 ->where("source_id", $module->id)
                 ->first();
-
-                Log::info($source->id);
-                Log::info($transaction["for_crediting"]);
-                Log::info($transaction["for_liquidation"]);
 
                 ConverterDetail::create([
                     "employee_id" => $employee->id,
