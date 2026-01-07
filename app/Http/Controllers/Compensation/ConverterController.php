@@ -306,11 +306,13 @@ class ConverterController extends Controller
                 ->with(["employee", "employee.latest_bank_details", "transaction_type"])
                 ->get();
 
-                $converterBatch->update([
-                    "status" => "Generated",
-                    "generated_by" => Auth::user()->id,
-                    "generated_at" => now(),
-                ]);
+                if ($transactions->status != "Generated") {
+                    $converterBatch->update([
+                        "status" => "Generated",
+                        "generated_by" => Auth::user()->id,
+                        "generated_at" => now(),
+                    ]);
+                }
 
                 $converterToUse = $converterBatch->bank_account_type_id == 1 ? "CASH_CARD_CONVERTER" : "SAVINGS_CONVERTER";
                 $templatePath = public_path('converter/'.$converterToUse.'.xlsm');
