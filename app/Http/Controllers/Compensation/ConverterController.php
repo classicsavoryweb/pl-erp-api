@@ -303,7 +303,7 @@ class ConverterController extends Controller
 
             if ($converterBatch) {
                 $transactions = $converterBatch->converter_details()
-                ->with(["employee", "employee.latest_bank_details"])
+                ->with(["employee", "employee.latest_bank_details", "transaction_type"])
                 ->get();
 
                 $converterBatch->update([
@@ -349,10 +349,13 @@ class ConverterController extends Controller
                         $colA = "A".$rowIndex;
                         $colB = "B".$rowIndex;
                         $colC = "C".$rowIndex;
+                        $colE = "E".$rowIndex;
 
+                        $transactionDescription = $transaction->transaction_type->description ?? "";
                         $this->writeCell($dom, $sheetData, $colA, (string)$transaction->employee->latest_bank_details->bank_number);
                         $this->writeCell($dom, $sheetData, $colB, (string)$transaction->amount);
                         $this->writeCell($dom, $sheetData, $colC, (string)$transaction->employee->full_name);
+                        $this->writeCell($dom, $sheetData, $colE, (string)$transactionDescription);
 
                         $rowIndex++;
                     }
@@ -470,6 +473,14 @@ class ConverterController extends Controller
                 $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
                 ->where("source_id", $module->id)
                 ->first();
+
+                $isExisting = ConverterDetail::where("transaction_number", $transaction["transaction_number"])
+                ->where("employee_id", $employee->id)
+                ->first();
+
+                if ($isExisting) {
+                    continue;
+                }
 
                 ConverterDetail::create([
                     "employee_id" => $employee->id,
