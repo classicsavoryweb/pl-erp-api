@@ -12,14 +12,15 @@ class ThirteenthMonthFiles extends Model
     protected $table = "thirteenth_month_files";
     protected $fillable = [
         "year",
+        "month",
         "type",
         "file_name",
         "file_path",
         "generated_by",
     ];
 
-    public function employee() {
-        return $this->belongsTo(Employee::class, "generated_by", "id");
+    public function user() {
+        return $this->belongsTo(User::class, "generated_by", "id");
     }
 
     public function thirteenth_month() {

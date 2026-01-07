@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateThirteenthMonthMonthlyAllocationEntry;
 use App\Jobs\GenerateThirteenthMonthPayJob;
 use App\Jobs\GenerateThirteenthMonthMonthlyAllocationJob;
 use App\Models\BranchesMonthlyAllocation;
@@ -14,8 +15,7 @@ use App\Models\Payroll;
 use App\Models\ThirteenthMonthPay;
 use App\Models\ThirteenthMonthFiles;
 use App\Models\EmployeesMonthlyAllocation;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use DB;
 
 class ReportsThirteenthMonthController extends Controller
 {
@@ -24,7 +24,7 @@ class ReportsThirteenthMonthController extends Controller
             $perPage = $request->per_page ?? 10;
 
             $thirteenthMonth = ThirteenthMonthFiles::query()
-                ->with("employee")
+                ->with("user")
                 ->orderBy("year", "DESC")
                 ->orderBy("updated_at", "DESC");
 
@@ -116,11 +116,15 @@ class ReportsThirteenthMonthController extends Controller
         }
     }
 
-    public function generateThirteenthMonthPay()
+    public function generateThirteenthMonthPay(Request $request)
     {
         try {
+            $request->validate([
+                "year" => "required",
+            ]);
+
             $user = Auth::user();
-            $currentYear = Carbon::now()->year;
+            $currentYear = (int) $request->year;
             $previousYear = $currentYear - 1;
 
             $payrollIds = Payroll::where(function($query) use ($currentYear, $previousYear) {
@@ -131,7 +135,7 @@ class ReportsThirteenthMonthController extends Controller
                     });
             })->pluck('id')->toArray();
 
-            GenerateThirteenthMonthPayJob::dispatch($user->id, $payrollIds);
+            GenerateThirteenthMonthPayJob::dispatch($user->id, $currentYear, $payrollIds);
 
             return $this->sendResponse([
                 'message' => 'Thirteenth month pay generation started.',
@@ -226,7 +230,7 @@ class ReportsThirteenthMonthController extends Controller
                 ->pluck('id')
                 ->toArray();
 
-            GenerateThirteenthMonthMonthlyAllocationJob::dispatch($user->id, $payrollIds);
+            GenerateThirteenthMonthMonthlyAllocationJob::dispatch($user->id, $month, $selectedYear, $payrollIds);
 
             return $this->sendResponse([
                 'message' => 'Thirteenth month monthly allocation generation started.',
@@ -238,6 +242,43 @@ class ReportsThirteenthMonthController extends Controller
                 'message' => 'Thirteenth month monthly allocation generation failed',
                 'error' => $e->getMessage(),
             ]);
+        }
+    }
+
+    public function generateThirteenthMonthMonthlyAllocationEntries($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+
+            $months = [
+                1 => 'JANUARY',
+                2 => 'FEBRUARY',
+                3 => 'MARCH',
+                4 => 'APRIL',
+                5 => 'MAY',
+                6 => 'JUNE',
+                7 => 'JULY',
+                8 => 'AUGUST',
+                9 => 'SEPTEMBER',
+                10 => 'OCTOBER',
+                11 => 'NOVEMBER',
+                12 => 'DECEMBER'
+            ];
+            
+            $monthlyAllocation = ThirteenthMonthFiles::where('id', $id)->first();
+            $groupedBranches = BranchesMonthlyAllocation::where('thirteenth_month_file_id', $monthlyAllocation->id)->get();
+
+            $month = $months[$monthlyAllocation->month];
+            $year = $monthlyAllocation->year;
+
+            GenerateThirteenthMonthMonthlyAllocationEntry::dispatch($groupedBranches, $user, $month, $year);
+
+            DB::commit();
+            return $this->sendResponse(['message' => 'Generation started']);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
         }
     }
 
@@ -260,5 +301,4 @@ class ReportsThirteenthMonthController extends Controller
             return response()->json(["message" => $e->getMessage()], 500);
         }
     }
-
 }
