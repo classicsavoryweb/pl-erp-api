@@ -361,7 +361,7 @@ class ConverterController extends Controller
 
                         $transactionDescription = $transaction->transaction_type->description ?? "";
                         $this->writeCell($dom, $sheetData, $colA, (string)$transaction->employee->latest_bank_details->bank_number);
-                        $this->writeCell($dom, $sheetData, $colB, (string)$transaction->amount);
+                        $this->writeCell($dom, $sheetData, $colB,number_format($transaction->amount, 2));
                         $this->writeCell($dom, $sheetData, $colC, (string)$transaction->employee->full_name);
                         $this->writeCell($dom, $sheetData, $colE, (string)$transactionDescription);
 
