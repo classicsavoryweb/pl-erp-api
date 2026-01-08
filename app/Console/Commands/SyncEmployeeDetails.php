@@ -95,7 +95,7 @@ class SyncEmployeeDetails extends Command
                         'SeparationReason' => $employee->separation_reason,
                         'EmailAddress' => $employee->email,
                         'EmploymentStatus' => $employmentStatuses[$employee->employee_status_id] ?? null,
-                        'Status' => $employee->status,
+                        'Status' => ucfirst($employee->status),
                         'HomeBranchID' => $employee->home_branch_id,
                         'HomeBranchName' => $branchNames[$employee->home_branch_id] ?? null,
                         'age' => $age,
