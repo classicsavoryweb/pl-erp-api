@@ -356,6 +356,8 @@ class ReportsTardinessController extends Controller
                     explode(';', $branch->branch_email)
                 );
 
+                $ccEmails = [...$ccEmails, "sfiemployeerelations@classicsavory.com"];
+
                 Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($ccEmails)
                 ->send(new NTEMail($pathName));
@@ -446,8 +448,15 @@ class ReportsTardinessController extends Controller
                 $storage->put($filePath, file_get_contents($file));
                 $pathName = $storage->path($filePath);
 
+                $ccEmails = array_map(
+                    'trim',
+                    explode(';', $branch->branch_email)
+                );
+
+                $ccEmails = [...$ccEmails, "sfiemployeerelations@classicsavory.com"];
+
                 Mail::mailer("HR_MAILER")->to($employee->email)
-                ->cc($branch->branch_email)
+                ->cc($ccEmails)
                 ->send(new NODMail($pathName));
             }
 
