@@ -93,6 +93,7 @@ class AdjustmentController extends Controller
 
             $adjustments = $adjustments->with([
                 "employee",
+                "employee.current_position"
             ])
             ->paginate($perPage);
 

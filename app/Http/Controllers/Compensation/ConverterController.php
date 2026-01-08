@@ -173,9 +173,18 @@ class ConverterController extends Controller
             $detail = ConverterDetail::find($detailId);
 
             if ($detail) {
-                $detail->update([
-                    "amount" => $request->amount,
-                ]);
+                if (strtoupper($detail->source) == "MANUAL") {
+                    $detail->update([
+                        "amount" => $request->amount,
+                        "transaction_type_id" => $request->transaction_type_id,
+                        "remarks" => $request->remarks ?? null
+                    ]);
+                } else {
+                    $detail->update([
+                        "amount" => $request->amount,
+                        "remarks" => $request->remarks ?? null
+                    ]);
+                }
                 DB::commit();
                 return $this->sendResponse(["message" => "Converter details updated successfully"]);
             }
@@ -294,18 +303,28 @@ class ConverterController extends Controller
 
             if ($converterBatch) {
                 $transactions = $converterBatch->converter_details()
-                ->with(["employee", "employee.latest_bank_details"])
+                ->with(["employee", "employee.latest_bank_details", "transaction_type"])
                 ->get();
 
-                $converterBatch->update([
-                    "status" => "Generated",
-                    "generated_by" => Auth::user()->id,
-                    "generated_at" => now(),
-                ]);
+                if ($converterBatch->status != "Generated") {
+                    $converterBatch->update([
+                        "status" => "Generated",
+                        "generated_by" => Auth::user()->id,
+                        "generated_at" => now(),
+                    ]);
+                }
 
                 $converterToUse = $converterBatch->bank_account_type_id == 1 ? "CASH_CARD_CONVERTER" : "SAVINGS_CONVERTER";
                 $templatePath = public_path('converter/'.$converterToUse.'.xlsm');
                 $tempCopyPath = storage_path('app/public/'.$converterBatch->batch_number.'.xlsm');
+
+                $company = env('COMPANY_FULL_NAME');
+                $filePrefix =  env('COMPANY_NAME') == "SFI" ? "TPAYSAVORY" : "TPAYTONYTI";
+                $virtualAccount =  env('COMPANY_NAME') == "SFI" ? "9049948528" : "9081473203";
+                $companyCode = env('COMPANY_NAME') =="SFI" ? "X48Z" : "Y490";
+                $batch = $converterBatch->id;
+                $creditingDate = now()->format("Y-m-d");
+
                 copy($templatePath, $tempCopyPath);
 
                 $zip = new ZipArchive;
@@ -315,6 +334,18 @@ class ConverterController extends Controller
                     $dom = new DOMDocument();
                     $dom->loadXML($sheetXml);
                     $sheetData = $dom->getElementsByTagName('sheetData')->item(0);
+
+                    $this->writeCell($dom, $sheetData, 'A1', (string)$company);
+                    if ($converterBatch->bank_account_type_id == 1) {
+                        $this->writeCell($dom, $sheetData, 'B2', (string)$filePrefix);
+                        $this->writeCell($dom, $sheetData, 'B3', (string)$virtualAccount);
+                        $this->writeCell($dom, $sheetData, 'B4', (string)$creditingDate);
+                        $this->writeCell($dom, $sheetData, 'B5', (string)$batch);
+                    } else {
+                        $this->writeCell($dom, $sheetData, 'B5', (string)$batch);
+                        $this->writeCell($dom, $sheetData, 'B2', (string)$creditingDate);
+                        $this->writeCell($dom, $sheetData, 'B3', (string)$companyCode);
+                    }
 
                     $rowIndex = 7;
                     foreach ($transactions as $transaction) {
@@ -326,10 +357,13 @@ class ConverterController extends Controller
                         $colA = "A".$rowIndex;
                         $colB = "B".$rowIndex;
                         $colC = "C".$rowIndex;
+                        $colE = "E".$rowIndex;
 
+                        $transactionDescription = $transaction->transaction_type->description ?? "";
                         $this->writeCell($dom, $sheetData, $colA, (string)$transaction->employee->latest_bank_details->bank_number);
-                        $this->writeCell($dom, $sheetData, $colB, (string)$transaction->amount);
+                        $this->writeCell($dom, $sheetData, $colB,number_format($transaction->amount, 2));
                         $this->writeCell($dom, $sheetData, $colC, (string)$transaction->employee->full_name);
+                        $this->writeCell($dom, $sheetData, $colE, (string)$transactionDescription);
 
                         $rowIndex++;
                     }
@@ -439,8 +473,22 @@ class ConverterController extends Controller
                 $source = CSHubSourceType::where("description", $transaction["transaction_type"])->first();
                 $module = CSHubModule::where("description", $transaction["type"])->first();
                 $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
+                ->where("credit_status_positive", $transaction["for_crediting"])
+                ->where("deduction_status_positive", $transaction["for_liquidation"])
                 ->where("source_id", $module->id)
                 ->first();
+
+                $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
+                ->where("source_id", $module->id)
+                ->first();
+
+                $isExisting = ConverterDetail::where("transaction_number", $transaction["transaction_number"])
+                ->where("employee_id", $employee->id)
+                ->first();
+
+                if ($isExisting) {
+                    continue;
+                }
 
                 ConverterDetail::create([
                     "employee_id" => $employee->id,
