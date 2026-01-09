@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Compensation;
 
+use App\Exports\Compensation\ConverterDetailsExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessConverterDetailImport;
 use App\Jobs\SendTransactionToEmployeeJob;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use ZipArchive;
 
@@ -71,13 +73,25 @@ class ConverterController extends Controller
             }
 
             $converters = $converters->with(["employee", "transaction_type", "branch"])            
-            ->orderBy("created_at", "DESC")
-            ->paginate($perPage);
+            ->orderBy("created_at", "DESC");
+
+            if ($request->has(["export"]) && $request->export) {
+                $converters = $converters->get();
+                return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
+            }
+
+            $converters = $converters->paginate($perPage);
 
             return $this->sendResponse($converters);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
+    }
+
+    public function exportConverterDetails(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllConverterDetails($request);
     }
 
     public function getAllConverterMain(Request $request) {
