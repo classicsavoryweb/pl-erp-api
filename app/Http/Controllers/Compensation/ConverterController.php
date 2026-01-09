@@ -204,10 +204,10 @@ class ConverterController extends Controller
                 }
 
                 if ($detail->converter_main_id != null) {
-                    $converter = ConverterMain::find($detail->converter_main_id);
+                    $converter = ConverterMain::with(["converter_details"])->find($detail->converter_main_id);
 
                     if ($converter) {
-                        $transactions = $converter->converter_details->get();
+                        $transactions = $converter->converter_details;
 
                         $amount = 0;
                         $count = $transactions->count();
