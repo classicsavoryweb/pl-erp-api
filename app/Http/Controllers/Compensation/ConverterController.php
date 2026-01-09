@@ -198,7 +198,27 @@ class ConverterController extends Controller
                         "amount" => $request->amount,
                         "remarks" => $request->remarks ?? null
                     ]);
+
+                    if ($detail->converter_main_id != null) {
+                        $converter = ConverterMain::find($detail->converter_main_id);
+
+                        if ($converter) {
+                            $transactions = $converter->converter_details->get();
+
+                            $amount = 0;
+                            $count = $transactions->count();
+                            foreach ($transactions as $trans) {
+                                $amount += $trans->amount;
+                            }
+
+                            $converter->update([
+                                "amount" => $amount,
+                                "count" => $count,
+                            ]);
+                        }
+                    }
                 }
+
                 DB::commit();
                 return $this->sendResponse(["message" => "Converter details updated successfully"]);
             }
