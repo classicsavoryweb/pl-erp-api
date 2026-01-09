@@ -153,8 +153,10 @@ class ConverterController extends Controller
                 "terms_id" => "required"
             ]);
 
-            $employee = Employee::find($request->employee_id);
+            $employee = Employee::with(["latest_bank_details"])->find($request->employee_id);
             $terms = Term::find($request->terms_id);
+
+            $bankAccount = $employee->latest_bank_details;
 
             ConverterDetail::create([
                 "employee_id" => $employee->id,
@@ -165,7 +167,8 @@ class ConverterController extends Controller
                 "remarks" => $request->remarks ?? null,
                 "added_by" => Auth::user()->id,
                 "status" => "Pending",
-                "source" => "Manual"
+                "source" => "Manual",
+                "bank_account_number" => $bankAccount->bank_number
             ]);
 
             DB::commit();
@@ -394,7 +397,10 @@ class ConverterController extends Controller
                         $colE = "E".$rowIndex;
 
                         $transactionDescription = $transaction->transaction_type->description ?? "";
-                        $this->writeCell($dom, $sheetData, $colA, (string)$transaction->employee->latest_bank_details->bank_number);
+
+                        $bankNumber = $transaction->bank_account_number ?? $transaction->employee->latest_bank_details->bank_number;
+
+                        $this->writeCell($dom, $sheetData, $colA, (string)$bankNumber);
                         $this->writeCell($dom, $sheetData, $colB,number_format($transaction->amount, 2));
                         $this->writeCell($dom, $sheetData, $colC, (string)$transaction->employee->full_name);
                         $this->writeCell($dom, $sheetData, $colE, (string)$transactionDescription);

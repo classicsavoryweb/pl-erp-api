@@ -22,7 +22,8 @@ class ConverterDetail extends Model
         "remarks",
         "added_by",
         "transaction_number",
-        "entry_id"
+        "entry_id",
+        "bank_account_number"
     ];
 
     public function converter_main() {
