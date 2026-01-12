@@ -8,6 +8,7 @@ use App\Models\User;
 use Hash;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
@@ -19,7 +20,34 @@ class UserController extends Controller
             $users = User::with("role");
 
             if ($request->has(["column_type", "key_word"])) {
-               $users = $users->where($request->column_type,"LIKE","%".$request->key_word."%");
+                $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if ($column == "full_name") {
+                    $users = $users->where(function ($query) use ($keyword) {
+                        $query->whereAny(
+                            ["first_name", "last_name", "middle_name"],
+                            'LIKE',
+                            "%$keyword%"
+                        )->orWhere(function ($query) use ($keyword) {
+                                $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                            }
+                        )->orWhere(function ($query) use ($keyword) {
+                                $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                            }
+                        );
+                    });
+                } else {
+                    if (Str::contains($column, '.')) {
+                        [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                        $users = $users->whereHas($relation, function ($query) use ($relatedColumn, $keyword) {
+                            $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                        });
+                    } else {
+                        $users = $users->where($column, 'LIKE', "%$keyword%");
+                    }
+                }
             }
 
             if ($request->has(["status"])) {

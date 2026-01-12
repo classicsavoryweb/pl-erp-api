@@ -8,9 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\Reports\ReportsThirteenthMonthPayExport;
-use App\Models\Employee;
 use App\Models\Payroll;
-use App\Models\PayrollList;
 use App\Models\ThirteenthMonthPay;
 use App\Models\ThirteenthMonthFiles;
 use App\Models\User;
@@ -95,6 +93,7 @@ class GenerateThirteenthMonthPayJob implements ShouldQueue
                 $october_2nd_cutoff = 0;
                 $november_1st_cutoff = 0;
                 $november_2nd_cutoff = 0;
+                $december_1st_cutoff = 0;
 
                 $daily_rate = 0;
 

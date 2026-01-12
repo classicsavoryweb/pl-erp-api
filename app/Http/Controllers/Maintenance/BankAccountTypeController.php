@@ -76,7 +76,7 @@ class BankAccountTypeController extends Controller
     public function editBankAccountType(Request $request, $id) {
         try {
             $request->validate([
-                "description" => "required|unique:bank_account_type,name,".$id,
+                "description" => "required|unique:bank_account_type,description,".$id,
                 "number_length" => "required",
                 "status" => "required",
             ]);

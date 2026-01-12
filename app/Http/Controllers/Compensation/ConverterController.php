@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Compensation;
 
+use App\Exports\Compensation\ConverterDetailsExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessConverterDetailImport;
 use App\Jobs\SendTransactionToEmployeeJob;
@@ -12,6 +13,7 @@ use App\Models\CSHubSourceType;
 use App\Models\CSHubTransactionType;
 use App\Models\Employee;
 use App\Models\Term;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
@@ -20,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use ZipArchive;
 
@@ -59,7 +62,10 @@ class ConverterController extends Controller
             }
 
             if ($request->has(["date_from", "date_to"])) {
-                $converters = $converters->whereBetween("created_at", [$request->date_from, $request->date_to]);
+                $converters = $converters->whereBetween("created_at", [
+                    Carbon::parse($request->date_from)->startOfDay(),
+                    Carbon::parse($request->date_to)->endOfDay(),
+                ]);
             }
 
             if ($request->has(["status"])) {
@@ -70,14 +76,38 @@ class ConverterController extends Controller
                 $converters = $converters->where("branch_id", $request->branch_id);
             }
 
+            if ($request->has(["converter_main_id"])) {
+                $converters = $converters->with(["employee", "transaction_type", "branch"])
+                ->where("converter_main_id", $request->converter_main_id)
+                ->orderBy(
+                    Employee::select('last_name')->whereColumn('employees.id', 'converter_details.employee_id'),
+                    'ASC'
+                )
+                ->get();
+
+                return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
+            }
+
             $converters = $converters->with(["employee", "transaction_type", "branch"])            
-            ->orderBy("created_at", "DESC")
-            ->paginate($perPage);
+            ->orderBy("created_at", "DESC");
+
+            if ($request->has(["export"]) && $request->export) {
+                $converters = $converters->get();
+                return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
+            }
+
+            $converters = $converters->paginate($perPage);
 
             return $this->sendResponse($converters);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
+    }
+
+    public function exportConverterDetails(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllConverterDetails($request);
     }
 
     public function getAllConverterMain(Request $request) {
@@ -107,7 +137,10 @@ class ConverterController extends Controller
             }
 
             if ($request->has(["date_from", "date_to"])) {
-                $converters = $converters->whereBetween("created_at", [$request->date_from, $request->date_to]);
+                $converters = $converters->whereBetween("created_at", [
+                    Carbon::parse($request->date_from)->startOfDay(),
+                    Carbon::parse($request->date_to)->endOfDay(),
+                ]);
             }
 
             $converters = $converters->with([
@@ -115,7 +148,11 @@ class ConverterController extends Controller
                 "posted_by",
                 "generated_by",
                 "voided_by",
-                "converter_details",
+                "converter_details" => function ($q) {
+                    $q->join('employees', 'employees.id', '=', 'converter_details.employee_id')
+                    ->orderBy('employees.last_name', 'ASC')
+                    ->select('converter_details.*');
+                },
                 "converter_details.employee",
                 "converter_details.transaction_type"
             ])
@@ -139,8 +176,10 @@ class ConverterController extends Controller
                 "terms_id" => "required"
             ]);
 
-            $employee = Employee::find($request->employee_id);
+            $employee = Employee::with(["latest_bank_details"])->find($request->employee_id);
             $terms = Term::find($request->terms_id);
+
+            $bankAccount = $employee->latest_bank_details;
 
             ConverterDetail::create([
                 "employee_id" => $employee->id,
@@ -151,7 +190,8 @@ class ConverterController extends Controller
                 "remarks" => $request->remarks ?? null,
                 "added_by" => Auth::user()->id,
                 "status" => "Pending",
-                "source" => "Manual"
+                "source" => "Manual",
+                "bank_account_number" => $bankAccount->bank_number
             ]);
 
             DB::commit();
@@ -185,6 +225,26 @@ class ConverterController extends Controller
                         "remarks" => $request->remarks ?? null
                     ]);
                 }
+
+                if ($detail->converter_main_id != null) {
+                    $converter = ConverterMain::with(["converter_details"])->find($detail->converter_main_id);
+
+                    if ($converter) {
+                        $transactions = $converter->converter_details;
+
+                        $amount = 0;
+                        $count = $transactions->count();
+                        foreach ($transactions as $trans) {
+                            $amount += $trans->amount;
+                        }
+
+                        $converter->update([
+                            "amount" => $amount,
+                            "count" => $count,
+                        ]);
+                    }
+                }
+
                 DB::commit();
                 return $this->sendResponse(["message" => "Converter details updated successfully"]);
             }
@@ -250,7 +310,9 @@ class ConverterController extends Controller
             ->get();
 
             DB::commit();
-            return $this->sendResponse(["transactions" => $transactions]);
+            return $this->sendResponse([
+                "transactions" => $transactions,
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
@@ -360,7 +422,10 @@ class ConverterController extends Controller
                         $colE = "E".$rowIndex;
 
                         $transactionDescription = $transaction->transaction_type->description ?? "";
-                        $this->writeCell($dom, $sheetData, $colA, (string)$transaction->employee->latest_bank_details->bank_number);
+
+                        $bankNumber = $transaction->bank_account_number ?? $transaction->employee->latest_bank_details->bank_number;
+
+                        $this->writeCell($dom, $sheetData, $colA, (string)$bankNumber);
                         $this->writeCell($dom, $sheetData, $colB,number_format($transaction->amount, 2));
                         $this->writeCell($dom, $sheetData, $colC, (string)$transaction->employee->full_name);
                         $this->writeCell($dom, $sheetData, $colE, (string)$transactionDescription);

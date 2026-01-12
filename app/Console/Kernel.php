@@ -13,18 +13,20 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\FetchOvertimeInCSHub::class,
         \App\Console\Commands\FetchEmployeeAssignedSchedule::class,
         \App\Console\Commands\SyncEmployeeDetails::class,
+        \App\Console\Commands\TransferUniformDeductions::class,
     ];
 
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:fetch-biotime-attendance')->monthlyOn(11, "00:00");
-        $schedule->command('app:fetch-biotime-attendance')->monthlyOn(26, "00:00");
-        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(11, '21:00');
-        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '21:00');
-        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(10, '14:01');
-        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(25, '14:01');
-        $schedule->command('app:sync-employee-details')->dailyAt('12:00');
-        $schedule->command('app:sync-employee-details')->dailyAt('18:00');
+        $schedule->command('app:fetch-biotime-attendance')->dailyAt("23:59")->runInBackground();
+        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(11, '21:00')->runInBackground();
+        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '21:00')->runInBackground();
+        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(10, '14:01')->runInBackground();
+        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(25, '14:01')->runInBackground();
+        $schedule->command('app:sync-employee-details')->dailyAt('12:00')->runInBackground();
+        $schedule->command('app:sync-employee-details')->dailyAt('18:00')->runInBackground();
+        $schedule->command('app:transfer-uniform-deductions')->dailyAt('12:00')->runInBackground();
+        $schedule->command('app:transfer-uniform-deductions')->dailyAt('18:00')->runInBackground();
     }
 
     protected function commands(): void
