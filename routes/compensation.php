@@ -40,6 +40,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_deductions"])->post("/edit-employee-deduction/{id}", [EmployeeDeductionsController::class, "editEmployeeDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/end-loan-transaction/{id}", [EmployeeDeductionsController::class, "endLoanTransaction"]);
     Route::get("/get-all-employee-atds", [ATDController::class, "getAllEmployeeDeductions"]);
+    Route::get("/get-atd-allowed-deductions", [ATDController::class, "getAllowedATDDeductions"]);
     Route::get("/get-cshub-atds", [ATDController::class, "getCSHubATD"]);
     Route::middleware(["permission:perform_compensation_atd"])->post("/create-cshub-atds", [ATDController::class, "createATD"]);
     Route::middleware(["permission:export_compensation_atd"])->get("/export-all-atds", [ATDController::class, "exportAllEmployeeDeductions"]);

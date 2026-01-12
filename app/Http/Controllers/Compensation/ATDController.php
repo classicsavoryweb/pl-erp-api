@@ -11,6 +11,7 @@ use App\Models\EmployeeDeduction;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Deduction;
+use App\Models\ATDAccessType;
 use App\Models\Entry;
 use App\Models\Term;
 use Carbon\Carbon;
@@ -25,6 +26,36 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ATDController extends Controller
 {
+    private function getUserATDAllowedDeductionIds(): array
+    {
+        $user = Auth::user();
+        $roleIds = $user?->roles?->pluck('id')->map(fn ($id) => (int) $id)->values()->all() ?? [];
+
+        if (empty($roleIds)) {
+            return [];
+        }
+
+        $query = ATDAccessType::query()->where("status", "active");
+        $query->where(function ($q) use ($roleIds) {
+            foreach ($roleIds as $roleId) {
+                $q->orWhereJsonContains("roles", $roleId);
+            }
+        });
+
+        return $query->pluck("deduction_id")->filter()->unique()->values()->all();
+    }
+
+    private function applyATDAccessFilter($deductionsQuery)
+    {
+        $allowedDeductionIds = $this->getUserATDAllowedDeductionIds();
+
+        if (empty($allowedDeductionIds)) {
+            return $deductionsQuery->whereRaw("1 = 0");
+        }
+
+        return $deductionsQuery->whereIn("deduction_id", $allowedDeductionIds);
+    }
+
     private function generateEntryId(&$counterEntry)
     {
         if ($counterEntry === null) {
@@ -78,6 +109,7 @@ class ATDController extends Controller
             $perPage = $request->per_page ?? 10;
 
             $deductions = EmployeeDeduction::where("source", "CSHUB");
+            $deductions = $this->applyATDAccessFilter($deductions);
 
             if ($request->has("employee_id") && $request->employee_id) {
                 $deductions = $deductions->where('employee_id', $request->employee_id);
@@ -150,8 +182,40 @@ class ATDController extends Controller
         return $this->getAllEmployeeDeductions($request);
     }
 
+    public function getAllowedATDDeductions(Request $request)
+    {
+        try {
+            $allowedDeductionIds = $this->getUserATDAllowedDeductionIds();
+            if (empty($allowedDeductionIds)) {
+                return $this->sendResponse(["deductions" => []]);
+            }
+
+            $deductions = Deduction::whereIn("id", $allowedDeductionIds)
+                ->where("status", "active")
+                ->orderBy("description")
+                ->get();
+
+            return $this->sendResponse(["deductions" => $deductions]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function getCSHubATD(Request $request) {
         try {
+            $allowedDeductionIds = $this->getUserATDAllowedDeductionIds();
+            if (empty($allowedDeductionIds)) {
+                return $this->sendResponse(["transactions" => []]);
+            }
+
+            $allowedDescriptions = Deduction::whereIn("id", $allowedDeductionIds)
+                ->pluck("description")
+                ->map(fn ($desc) => strtolower(trim($desc)))
+                ->unique()
+                ->values()
+                ->all();
+            $allowedDescriptionsMap = array_flip($allowedDescriptions);
+
             $transactionLink = env('CS_HUB_URL_LINK')."/get-posted-atds";
             $user = env('CS_HUB_ADMIN_EMAIL');
             $password = env('CS_HUB_ADMIN_PASSWORD');
@@ -190,6 +254,11 @@ class ATDController extends Controller
                 $transactions = [];
 
                 foreach ($data['data']['data'] as $trans) {
+                    $transType = strtolower(trim($trans["type"] ?? ""));
+                    if ($transType === "" || !isset($allowedDescriptionsMap[$transType])) {
+                        continue;
+                    }
+
                     $employee = Employee::where("employee_number", $trans["employee_number"])->first();
 
                     if (!$employee) {
@@ -223,8 +292,25 @@ class ATDController extends Controller
             $request->validate([
                 "transactions" => "required|array"
             ]);
+            $allowedDeductionIds = $this->getUserATDAllowedDeductionIds();
+            if (empty($allowedDeductionIds)) {
+                return $this->sendError(["message" => "You are not allowed to import these deductions."]);
+            }
+            $allowedDescriptions = Deduction::whereIn("id", $allowedDeductionIds)
+                ->pluck("description")
+                ->map(fn ($desc) => strtolower(trim($desc)))
+                ->unique()
+                ->values()
+                ->all();
+            $allowedDescriptionsMap = array_flip($allowedDescriptions);
+
             $groupedTransactions = [];
             foreach ($request->transactions as $transaction) {
+                $transactionType = strtolower(trim($transaction["type"] ?? ""));
+                if ($transactionType === "" || !isset($allowedDescriptionsMap[$transactionType])) {
+                    return $this->sendError(["message" => "You are not allowed to import one or more ATD types."]);
+                }
+
                 $employee = Employee::where("employee_number", $transaction["employee_number"])->first();
                 $first_initial = strtoupper(substr($employee->first_name, 0, 1));
                 $middle_initial = strtoupper(substr($employee->middle_name ?? '', 0, 1));
@@ -243,6 +329,9 @@ class ATDController extends Controller
                     'LOWER(description) = ?',
                     [$descriptions]
                 )->first();
+                if (!$deduction) {
+                    return $this->sendError(["message" => "Deduction type not found for transaction."]);
+                }
 
                 $deductionId = str_pad($deduction->id, 8, '0', STR_PAD_LEFT);
                 $deduction_reference = $base_reference . $deductionId . "|" . ($deduction_count + 1);
