@@ -13,6 +13,7 @@ use App\Models\CSHubSourceType;
 use App\Models\CSHubTransactionType;
 use App\Models\Employee;
 use App\Models\Term;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
@@ -61,7 +62,10 @@ class ConverterController extends Controller
             }
 
             if ($request->has(["date_from", "date_to"])) {
-                $converters = $converters->whereBetween("created_at", [$request->date_from, $request->date_to]);
+                $converters = $converters->whereBetween("created_at", [
+                    Carbon::parse($request->date_from)->startOfDay(),
+                    Carbon::parse($request->date_to)->endOfDay(),
+                ]);
             }
 
             if ($request->has(["status"])) {
@@ -70,6 +74,18 @@ class ConverterController extends Controller
 
             if ($request->has(["branch_id"])) {
                 $converters = $converters->where("branch_id", $request->branch_id);
+            }
+
+            if ($request->has(["converter_main_id"])) {
+                $converters = $converters->with(["employee", "transaction_type", "branch"])
+                ->where("converter_main_id", $request->converter_main_id)
+                ->orderBy(
+                    Employee::select('last_name')->whereColumn('employees.id', 'converter_details.employee_id'),
+                    'ASC'
+                )
+                ->get();
+
+                return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
             }
 
             $converters = $converters->with(["employee", "transaction_type", "branch"])            
@@ -121,7 +137,10 @@ class ConverterController extends Controller
             }
 
             if ($request->has(["date_from", "date_to"])) {
-                $converters = $converters->whereBetween("created_at", [$request->date_from, $request->date_to]);
+                $converters = $converters->whereBetween("created_at", [
+                    Carbon::parse($request->date_from)->startOfDay(),
+                    Carbon::parse($request->date_to)->endOfDay(),
+                ]);
             }
 
             $converters = $converters->with([
@@ -129,7 +148,11 @@ class ConverterController extends Controller
                 "posted_by",
                 "generated_by",
                 "voided_by",
-                "converter_details",
+                "converter_details" => function ($q) {
+                    $q->join('employees', 'employees.id', '=', 'converter_details.employee_id')
+                    ->orderBy('employees.last_name', 'ASC')
+                    ->select('converter_details.*');
+                },
                 "converter_details.employee",
                 "converter_details.transaction_type"
             ])
@@ -287,7 +310,9 @@ class ConverterController extends Controller
             ->get();
 
             DB::commit();
-            return $this->sendResponse(["transactions" => $transactions]);
+            return $this->sendResponse([
+                "transactions" => $transactions,
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);

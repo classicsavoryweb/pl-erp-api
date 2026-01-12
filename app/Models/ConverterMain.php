@@ -37,19 +37,19 @@ class ConverterMain extends Model
     }
 
     public function added_by() {
-        return $this->hasOne(Employee::class, "id", "added_by");
+        return $this->hasOne(User::class, "id", "added_by");
     }
 
     public function posted_by() {
-        return $this->hasOne(Employee::class, "id", "posted_by");
+        return $this->hasOne(User::class, "id", "posted_by");
     }
 
     public function generated_by() {
-        return $this->hasOne(Employee::class, "id", "generated_by");
+        return $this->hasOne(User::class, "id", "generated_by");
     }
 
     public function voided_by() {
-        return $this->hasOne(Employee::class, "id", "voided_by");
+        return $this->hasOne(User::class, "id", "voided_by");
     }
 
     public function converter_details() {

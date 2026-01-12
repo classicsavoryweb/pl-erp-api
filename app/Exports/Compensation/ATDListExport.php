@@ -33,6 +33,7 @@ class ATDListExport implements FromCollection, WithHeadings
                 $unique_deductions->balance,
                 $unique_deductions->remarks,
                 $unique_deductions->created_by,
+                $unique_deductions->created_at,
             ];
         });
     }
@@ -54,6 +55,7 @@ class ATDListExport implements FromCollection, WithHeadings
             'Balance',
             'Remarks',
             'Created By',
+            'Date Imported',
         ];
     }
 }
