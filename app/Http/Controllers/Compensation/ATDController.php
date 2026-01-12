@@ -389,10 +389,12 @@ class ATDController extends Controller
                 }
             }
 
+            Log::info($response);
             DB::rollBack();
             return $this->sendError(["message" => "Something went wrong"]);
         } catch (Exception $e) {
             DB::rollBack();
+            Log::info($e);
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
