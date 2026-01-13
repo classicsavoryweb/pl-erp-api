@@ -65,7 +65,6 @@ class SyncEmployeeDetails extends Command
 
                     $birth = $employee->birthday ? Carbon::parse($employee->birthday) : null;
                     $hire  = $employee->date_hired ? Carbon::parse($employee->date_hired) : null;
-                    $branchId = $employee->branch_id ?? $employee->home_branch_id;
 
                     $age = $birth ? $birth->age : null;
                     $tenure = null;
@@ -85,9 +84,9 @@ class SyncEmployeeDetails extends Command
                         'MiddleName' => $employee->middle_name,
                         'Gender' => $employee->gender,
                         'PositionID' => $employee->position_id,
-                        'Position' => $positionNames[$employee->position_id] ?? null,
-                        'BranchID' => $branchId,
-                        'CurrentBranch' => $branchNames[$branchId] ?? null,
+                        'Position' => $employee->current_position->description ?? null,
+                        'BranchID' => $employee->current_branch->branch_number,
+                        'CurrentBranch' => $employee->current_branch->name ?? null,
                         'DateHired' => $employee->date_hired,
                         'Birthday' => $employee->birthday,
                         'ContactNo' => $employee->contact_number,
@@ -96,8 +95,8 @@ class SyncEmployeeDetails extends Command
                         'EmailAddress' => $employee->email,
                         'EmploymentStatus' => $employmentStatuses[$employee->employee_status_id] ?? null,
                         'Status' => ucfirst($employee->status),
-                        'HomeBranchID' => $employee->home_branch_id,
-                        'HomeBranchName' => $branchNames[$employee->home_branch_id] ?? null,
+                        'HomeBranchID' => $employee->home_branch->branch_number,
+                        'HomeBranchName' => $employee->home_branch->name ?? null,
                         'age' => $age,
                         'tenure' => $tenure,
                     ];
