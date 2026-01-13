@@ -79,7 +79,7 @@ class SyncEmployeeDetails extends Command
                         'EmployeeID' => $employeeId,
                         'BiometricID' => $employee->biometric_number,
                         'Company' => env('COMPANY_NAME', 'SFI'),
-                        'employeeType' => $employee->type,
+                        'employeeType' => ucfirst($employee->type),
                         'LastName' => $employee->last_name,
                         'FirstName' => $employee->first_name,
                         'MiddleName' => $employee->middle_name,
