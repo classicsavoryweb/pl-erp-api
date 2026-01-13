@@ -39,7 +39,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
     public function handle()
     {
         $user = User::find($this->user);
-        $employee_id = $user->employee->id ?? null;
+        $userId = $user->id;
 
         $payrolls = Payroll::whereIn('id', $this->payroll)->get();
 
@@ -81,7 +81,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                 'type' => 'thirteenth_month_monthly_allocation',
                 'file_name' => $fileName,
                 'file_path' => "{$directory}/{$fileName}",
-                'generated_by' => $employee_id,
+                'generated_by' => $userId,
             ]);
 
             $employeesMonthlyAllocationData = new Collection();
@@ -89,51 +89,101 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
             foreach ($payrolls->groupBy('employee_id') as $employeePayrolls) {
 
                 $employee = $employeePayrolls->first()->employee;
-                $sorted   = $employeePayrolls->sortBy('start_date')->values();
 
-                $first = $sorted->first();
-                $last  = $sorted->last();
-
-                $first_cutoff  = "{$first->start_date}-{$first->end_date}";
-                $second_cutoff = "{$last->start_date}-{$last->end_date}";
+                $sorted = $employeePayrolls->sortBy('start_date')->values();
 
                 $basic_pay_1st_cutoff = 0;
                 $basic_pay_2nd_cutoff = 0;
 
-                foreach ($employeePayrolls as $payroll) {
+                $payrollList = PayrollList::where('employee_id', $employee->id)->first();
+
+                $holdedCutoffs = [];
+
+                if ($payrollList && $payrollList->holded_cutoffs) {
+                    $holdedCutoffs = is_array($payrollList->holded_cutoffs)
+                        ? $payrollList->holded_cutoffs
+                        : json_decode($payrollList->holded_cutoffs, true);
+                }
+
+                $keepPay = str_starts_with($employee->employee_number, 'M') 
+                || in_array($employee->employee_number, ['948', '0007413']);
+
+                if ($sorted->count() === 1) {
+
+                    $payroll = $sorted->first();
+
                     $salary    = (float) str_replace(',', '', $payroll->salary);
                     $tardiness = (float) str_replace(',', '', $payroll->tardiness_amount);
                     $undertime = (float) str_replace(',', '', $payroll->undertime_amount);
 
-                    $computedPay = $salary - $tardiness - $undertime;
-                    $cutoffKey  = "{$payroll->start_date}-{$payroll->end_date}";
+                    $cutoffKey = "{$payroll->start_date}-{$payroll->end_date}";
 
-                    if ($cutoffKey === $first_cutoff) {
-                        $basic_pay_1st_cutoff += $computedPay;
-                    } elseif ($cutoffKey === $second_cutoff) {
-                        $basic_pay_2nd_cutoff += $computedPay;
+                    if (!in_array($cutoffKey, $holdedCutoffs, true)) {
+                        $basic_pay_2nd_cutoff = $salary - $tardiness - $undertime;
+                    } else {
+                        $basic_pay_2nd_cutoff = $keepPay ? ($salary - $tardiness - $undertime) : 0;
                     }
+
+                    $branchShortName = optional(
+                        Branch::find($payroll->timekeeping_branch_id)
+                    )->short_name;
+
+                } else {
+
+                    $first = $sorted->first();
+                    $last  = $sorted->last();
+
+                    $first_cutoff  = "{$first->start_date}-{$first->end_date}";
+                    $second_cutoff = "{$last->start_date}-{$last->end_date}";
+
+                    foreach ($employeePayrolls as $payroll) {
+
+                        $salary    = (float) str_replace(',', '', $payroll->salary);
+                        $tardiness = (float) str_replace(',', '', $payroll->tardiness_amount);
+                        $undertime = (float) str_replace(',', '', $payroll->undertime_amount);
+
+                        $computedPay = $salary - $tardiness - $undertime;
+                        $cutoffKey   = "{$payroll->start_date}-{$payroll->end_date}";
+
+                        if ($cutoffKey === $first_cutoff) {
+                            if (!in_array($cutoffKey, $holdedCutoffs, true)) {
+                                $basic_pay_1st_cutoff += $computedPay;
+                            } else {
+                                $basic_pay_1st_cutoff += $keepPay ? $computedPay : 0;
+                            }
+                        } elseif ($cutoffKey === $second_cutoff) {
+                            if (!in_array($cutoffKey, $holdedCutoffs, true)) {
+                                $basic_pay_2nd_cutoff += $computedPay;
+                            } else {
+                                $basic_pay_2nd_cutoff += $keepPay ? $computedPay : 0;
+                            }
+                        }
+                    }
+
+                    $branchShortName = optional(
+                        Branch::find($last->timekeeping_branch_id)
+                    )->short_name;
                 }
 
                 $total = $basic_pay_1st_cutoff + $basic_pay_2nd_cutoff;
 
                 $branchShortName = $last
-                ? optional(Branch::find($last->timekeeping_branch_id))->short_name
-                : optional(Branch::find($first->timekeeping_branch_id))->short_name;
+                    ? optional(Branch::find($last->timekeeping_branch_id))->short_name
+                    : optional(Branch::find($sorted->first()->timekeeping_branch_id))->short_name;
 
-                $employeesMonthlyAllocationData->push(
-                    EmployeesMonthlyAllocation::create([
-                        'thirteenth_month_file_id' => $thirteenthMonthFile->id,
-                        'employee_id' => $employee->id,
-                        'branch_short_name' => $branchShortName,
-                        'basic_pay_1st_cutoff' => $basic_pay_1st_cutoff,
-                        'basic_pay_2nd_cutoff' => $basic_pay_2nd_cutoff,
-                        'total' => $total,
-                        'net_claim_13th_month' => round($total / 12, 2),
-                        'net_claim_pay_leave' => round($total * 0.06, 2),
-                        'net_claim_additional' => round($total * 0.035, 2),
-                    ])
-                );
+                $record = EmployeesMonthlyAllocation::create([
+                    'thirteenth_month_file_id' => $thirteenthMonthFile->id,
+                    'employee_id' => $employee->id,
+                    'branch_short_name' => $branchShortName,
+                    'basic_pay_1st_cutoff' => $basic_pay_1st_cutoff,
+                    'basic_pay_2nd_cutoff' => $basic_pay_2nd_cutoff,
+                    'total' => $total,
+                    'net_claim_13th_month' => round($total / 12, 2),
+                    'net_claim_pay_leave' => round($total * 0.06, 2),
+                    'net_claim_additional' => round($total * 0.035, 2),
+                ]);
+                
+                $employeesMonthlyAllocationData->push($record);
             }
 
             $branchesMonthlyAllocationData = new Collection();

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessFinalizeCutOff;
 use App\Jobs\ProcessInitializeCutOff;
 use App\Models\Cutoff;
+use App\Models\PayrollList;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
@@ -156,6 +157,27 @@ class CutOffController extends Controller
                     "is_timekeeping_locked" => true,
                     "initializations" => json_encode($newJson)
                 ]);
+
+                $cutoffValue = $createdCutOff->cut_off;
+
+                $payrollLists = PayrollList::where('is_hold', 1)->get();
+
+                foreach ($payrollLists as $payrollList) {
+
+                    $holdedCutoffs = [];
+
+                    if (!empty($payrollList->holded_cutoffs)) {
+                        $holdedCutoffs = json_decode($payrollList->holded_cutoffs, true) ?? [];
+                    }
+
+                    if (!in_array($cutoffValue, $holdedCutoffs)) {
+                        $holdedCutoffs[] = $cutoffValue;
+                    }
+
+                    $payrollList->update([
+                        'holded_cutoffs' => json_encode($holdedCutoffs),
+                    ]);
+                }
 
                 //trigger a cut off initialization job
                 ProcessFinalizeCutOff::dispatch($createdCutOff, Auth::user()->id);
