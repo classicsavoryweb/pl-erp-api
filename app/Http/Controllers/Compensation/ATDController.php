@@ -36,11 +36,7 @@ class ATDController extends Controller
         }
 
         $query = ATDAccessType::query()->where("status", "active");
-        $query->where(function ($q) use ($roleIds) {
-            foreach ($roleIds as $roleId) {
-                $q->orWhereJsonContains("roles", $roleId);
-            }
-        });
+        $query->whereIn("role_id", $roleIds);
 
         return $query->pluck("deduction_id")->filter()->unique()->values()->all();
     }
