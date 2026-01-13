@@ -108,7 +108,7 @@ class EmployeeDeductionsController extends Controller
                 }
             }
 
-            $deductions = $deductions->with(["employee", "branch", "deduction"]);
+            $deductions = $deductions->with(["employee", "employee.current_branch", "branch", "deduction"]);
 
             if ($request->has(["export"]) && $request->export) {
                 $deductions = $deductions->get();
