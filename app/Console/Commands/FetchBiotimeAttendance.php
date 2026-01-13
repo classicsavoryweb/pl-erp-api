@@ -28,8 +28,8 @@ class FetchBiotimeAttendance extends Command
         // ->where("branch_id", 107)
         ->get();
 
-        $startTime = Carbon::now()->subDays(1)->startOfDay()->toDateTimeString();
-        $endTime = Carbon::now()->endOfDay()->toDateTimeString();
+        $startTime = Carbon::now()->subDays(1)->startOfDay();
+        $endTime = Carbon::now()->endOfDay();
 
         $failedEmployees = [];
 
@@ -43,18 +43,17 @@ class FetchBiotimeAttendance extends Command
                 ->timeout(60)
                 ->retry(3)
                 ->get($url,[
-                    "start_time" => $startTime,
-                    "end_time" => $endTime,
+                    "start_time" => $startTime->format("Y-m-d H:i:s"),
+                    "end_time" => $endTime->format("Y-m-d H:i:s"),
                     // "start_time" => "2025-08-25 00:00:00",
                     // "end_time" => "2025-09-10 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
-                Log::info("CURRENT: ".$employee->full_name);
+
                 if ($response->successful()) {
                     $data = $response->json();
                     $attendanceLogs = $data['data'];
-                    Log::info("LOGGING: ".$employee->full_name);
                     foreach ($attendanceLogs as $log) {
                         $parsedDate = Carbon::parse($log["punch_time"]);
                         $date = $parsedDate->toDateString();
@@ -141,7 +140,6 @@ class FetchBiotimeAttendance extends Command
                 }
             } catch (Exception $e) {
                 $failedEmployees[] = $employee;
-                Log::info($e->getMessage());
             }
         }
 
@@ -156,18 +154,17 @@ class FetchBiotimeAttendance extends Command
                 ->timeout(60)
                 ->retry(3)
                 ->get($url,[
-                    "start_time" => $startTime,
-                    "end_time" => $endTime,
+                    "start_time" => $startTime->format("Y-m-d H:i:s"),
+                    "end_time" => $endTime->format("Y-m-d H:i:s"),
                     // "start_time" => "2025-08-25 00:00:00",
                     // "end_time" => "2025-09-10 23:59:59",
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
-                Log::info("RETRY CURRENT: ".$employee->full_name);
+
                 if ($response->successful()) {
                     $data = $response->json();
                     $attendanceLogs = $data['data'];
-                    Log::info("RETRY LOGGING: ".$employee->full_name);
                     foreach ($attendanceLogs as $log) {
                         $parsedDate = Carbon::parse($log["punch_time"]);
                         $date = $parsedDate->toDateString();
