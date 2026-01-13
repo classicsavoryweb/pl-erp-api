@@ -8,7 +8,6 @@ use App\Models\ATDAccessType;
 use Illuminate\Http\Request;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
-use Spatie\Permission\Models\Role;
 
 class ATDAccessTypeController extends Controller
 {
@@ -38,33 +37,11 @@ class ATDAccessTypeController extends Controller
             }
 
             if ($request->has("export") && $request->export) {
-                $records = $query->with("deduction")->get();
+                $records = $query->with(["deduction", "role"])->get();
                 return Excel::download(new ATDAccessTypeExport($records), "atd-access-types.xls");
             }
 
-            $data = $query->with("deduction")->paginate($perPage);
-
-            // Map role ids to names for display
-            $roleIds = collect($data->items())
-                ->pluck('roles')
-                ->flatten()
-                ->filter()
-                ->unique()
-                ->values();
-
-            $roleMap = $roleIds->isNotEmpty()
-                ? Role::whereIn('id', $roleIds)->pluck('name', 'id')
-                : collect();
-
-            $data->getCollection()->transform(function ($item) use ($roleMap) {
-                $roleIds = collect((array) $item->roles)->map(fn($id) => (int) $id)->values()->all();
-                $item->roles = $roleIds;
-                $item->roles_display = collect($roleIds)
-                    ->map(fn($id) => $roleMap[$id] ?? $id)
-                    ->values()
-                    ->all();
-                return $item;
-            });
+            $data = $query->with(["deduction", "role"])->paginate($perPage);
 
             return $this->sendResponse($data);
         } catch (Exception $e) {
@@ -81,18 +58,40 @@ class ATDAccessTypeController extends Controller
     public function createATDAccessType(Request $request)
     {
         try {
-            $request->validate([
-                "deduction_id" => "required|exists:deductions,id",
+            $rules = [
                 "roles" => "required|array|min:1",
                 "roles.*" => "exists:roles,id",
                 "status" => "required",
-            ]);
+            ];
 
-            ATDAccessType::create([
-                "deduction_id" => $request->deduction_id,
-                "roles" => collect($request->roles)->map(fn($id) => (int)$id)->values()->all(),
-                "status" => $request->status,
-            ]);
+            if ($request->has("deduction_ids")) {
+                $rules["deduction_ids"] = "required|array|min:1";
+                $rules["deduction_ids.*"] = "exists:deductions,id";
+            } else {
+                $rules["deduction_id"] = "required|exists:deductions,id";
+            }
+
+            $request->validate($rules);
+
+            $deductionIds = $request->has("deduction_ids")
+                ? collect($request->deduction_ids)->map(fn ($id) => (int) $id)->unique()->values()->all()
+                : [(int) $request->deduction_id];
+
+            $roleIds = collect($request->roles)
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+
+            foreach ($roleIds as $roleId) {
+                foreach ($deductionIds as $deductionId) {
+                    ATDAccessType::create([
+                        "deduction_id" => $deductionId,
+                        "role_id" => $roleId,
+                        "status" => $request->status,
+                    ]);
+                }
+            }
 
             return $this->sendResponse(["message" => "ATD Access Type created successfully"]);
         } catch (Exception $e) {
@@ -103,18 +102,41 @@ class ATDAccessTypeController extends Controller
     public function editATDAccessType(Request $request, $id)
     {
         try {
-            $request->validate([
-                "deduction_id" => "required|exists:deductions,id",
+            $rules = [
                 "roles" => "required|array|min:1",
                 "roles.*" => "exists:roles,id",
                 "status" => "required",
-            ]);
+            ];
 
-            ATDAccessType::where("id", $id)->update([
-                "deduction_id" => $request->deduction_id,
-                "roles" => collect($request->roles)->map(fn($id) => (int)$id)->values()->all(),
-                "status" => $request->status,
-            ]);
+            if ($request->has("deduction_ids")) {
+                $rules["deduction_ids"] = "required|array|min:1";
+                $rules["deduction_ids.*"] = "exists:deductions,id";
+            } else {
+                $rules["deduction_id"] = "required|exists:deductions,id";
+            }
+
+            $request->validate($rules);
+
+            $deductionIds = $request->has("deduction_ids")
+                ? collect($request->deduction_ids)->map(fn ($id) => (int) $id)->unique()->values()->all()
+                : [(int) $request->deduction_id];
+
+            $roleIds = collect($request->roles)
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+
+            foreach ($roleIds as $roleId) {
+                ATDAccessType::where("role_id", $roleId)->delete();
+                foreach ($deductionIds as $deductionId) {
+                    ATDAccessType::create([
+                        "deduction_id" => $deductionId,
+                        "role_id" => $roleId,
+                        "status" => $request->status,
+                    ]);
+                }
+            }
 
             return $this->sendResponse(["message" => "ATD Access Type updated successfully"]);
         } catch (Exception $e) {

@@ -16,12 +16,7 @@ class ATDAccessType extends Model
     protected $fillable = [
         "role_id",
         "status",
-        "roles",
         "deduction_id",
-    ];
-
-    protected $casts = [
-        "roles" => "array",
     ];
 
     public function role()
