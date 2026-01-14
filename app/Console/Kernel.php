@@ -18,15 +18,15 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:fetch-biotime-attendance')->dailyAt("23:59")->runInBackground();
-        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(11, '21:00')->runInBackground();
-        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '21:00')->runInBackground();
-        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(10, '14:01')->runInBackground();
-        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(25, '14:01')->runInBackground();
-        $schedule->command('app:sync-employee-details')->dailyAt('12:00')->runInBackground();
-        $schedule->command('app:sync-employee-details')->dailyAt('18:00')->runInBackground();
-        $schedule->command('app:transfer-uniform-deductions')->dailyAt('12:00')->runInBackground();
-        $schedule->command('app:transfer-uniform-deductions')->dailyAt('18:00')->runInBackground();
+        $schedule->command('app:fetch-biotime-attendance')->dailyAt("23:59");
+        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(11, '21:00');
+        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '21:00');
+        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(10, '14:01');
+        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(25, '14:01');
+        $schedule->command('app:sync-employee-details')->dailyAt('12:00');
+        $schedule->command('app:sync-employee-details')->dailyAt('18:00');
+        $schedule->command('app:transfer-uniform-deductions')->dailyAt('12:00');
+        $schedule->command('app:transfer-uniform-deductions')->dailyAt('18:00');
     }
 
     protected function commands(): void
