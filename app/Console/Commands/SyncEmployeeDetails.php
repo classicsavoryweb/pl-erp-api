@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Employee;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -51,7 +52,7 @@ class SyncEmployeeDetails extends Command
             ->pluck('description', 'id')
             ->toArray();
 
-        DB::table('employees')
+        Employee::with(["current_branch", "home_branch"])
             ->orWhere('updated_at', '>=', $date)
             ->orderBy('id')
             ->chunkById($batchSize, function ($employees) use ($targetColumnKeys, $positionNames, $branchNames, $employmentStatuses) {
@@ -85,7 +86,7 @@ class SyncEmployeeDetails extends Command
                         'Gender' => $employee->gender,
                         'PositionID' => $employee->position_id,
                         'Position' => $employee->current_position->description ?? null,
-                        'BranchID' => $employee->current_branch->branch_number,
+                        'BranchID' => $employee->current_branch->branch_number ?? null,
                         'CurrentBranch' => $employee->current_branch->name ?? null,
                         'DateHired' => $employee->date_hired,
                         'Birthday' => $employee->birthday,
@@ -95,7 +96,7 @@ class SyncEmployeeDetails extends Command
                         'EmailAddress' => $employee->email,
                         'EmploymentStatus' => $employmentStatuses[$employee->employee_status_id] ?? null,
                         'Status' => ucfirst($employee->status),
-                        'HomeBranchID' => $employee->home_branch->branch_number,
+                        'HomeBranchID' => $employee->home_branch->branch_number ?? null,
                         'HomeBranchName' => $employee->home_branch->name ?? null,
                         'age' => $age,
                         'tenure' => $tenure,
