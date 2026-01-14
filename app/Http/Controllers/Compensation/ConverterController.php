@@ -77,7 +77,7 @@ class ConverterController extends Controller
             }
 
             if ($request->has(["converter_main_id"])) {
-                $converters = $converters->with(["employee", "transaction_type", "branch"])
+                $converters = $converters->with(["employee", "transaction_type", "branch", "admin_added", "converter_main"])
                 ->where("converter_main_id", $request->converter_main_id)
                 ->orderBy(
                     Employee::select('last_name')->whereColumn('employees.id', 'converter_details.employee_id'),
@@ -88,7 +88,7 @@ class ConverterController extends Controller
                 return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
             }
 
-            $converters = $converters->with(["employee", "transaction_type", "branch"])            
+            $converters = $converters->with(["employee", "transaction_type", "branch", "admin_added", "converter_main"])            
             ->orderBy("created_at", "DESC");
 
             if ($request->has(["export"]) && $request->export) {

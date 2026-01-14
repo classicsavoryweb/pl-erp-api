@@ -41,4 +41,8 @@ class ConverterDetail extends Model
     public function branch() {
         return $this->hasOne(Branch::class, "id", "branch_id");
     }
+
+    public function admin_added() {
+        return $this->hasOne(User::class, "id", "added_by");
+    }
 }
