@@ -56,7 +56,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         $this->branchId,
                         $log,
                         $bioTimePunches,
-                        $actualSchedule->timetable,
+                        $actualSchedule,
                         $employee,
                         new TimeKeeping(),
                         false,
@@ -193,7 +193,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
 
             DB::commit();
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            Log::error($e);
             DB::rollBack();
         }
     }
