@@ -81,6 +81,7 @@ class TimeKeepingService
         $diffInSeconds = $parsedLastPunch->diffInSeconds($parsedFirstPunch);
 
         $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
+        $totalDurationHOurs = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 10.5 : 9;
         $decimalHours = $diffInSeconds / 3600;
 
         $workHours += $decimalHours;
@@ -406,7 +407,9 @@ class TimeKeepingService
             $undertime = 0;
             if ($schedule->selection == "NO SCHEDULE") {
                 $workHours = 0;
-                $overtime = $biotimePunches->count() > 3 ? $decimalHours - 1 : $decimalHours;   
+                $overtime = $biotimePunches->count() > 3 ? $decimalHours - 1 : $decimalHours;
+            } else {
+                $overtime = ($decimalHours - $totalDurationHOurs >= 1) ? $decimalHours - $totalDurationHOurs : 0;
             }
         }
 
