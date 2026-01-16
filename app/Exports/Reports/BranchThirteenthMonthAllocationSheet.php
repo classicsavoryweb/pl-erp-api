@@ -47,7 +47,7 @@ class BranchThirteenthMonthAllocationSheet implements FromCollection, WithHeadin
                 'Branches',
                 '13th Month',
                 'Payleave',
-                'Additional 3.5%',
+                'Additional 6%',
                 'Total'
             ],
         ];

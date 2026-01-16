@@ -189,7 +189,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                     'total' => $total,
                     'net_claim_13th_month' => round($total / 12, 2),
                     'net_claim_pay_leave' => round($total * 0.06, 2),
-                    'net_claim_additional' => round($total * 0.035, 2),
+                    'net_claim_additional' => round($total * 0.06, 2),
                 ]);
                 
                 $employeesMonthlyAllocationData->push($record);
