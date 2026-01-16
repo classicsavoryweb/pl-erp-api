@@ -90,8 +90,11 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
 
                 $employee = $employeePayrolls->first()->employee;
 
-                $sorted = $employeePayrolls->sortBy('start_date')->values();
+                // Log::info("==============================");
+                // Log::info($employee->full_name);
 
+                $sorted = $employeePayrolls->sortBy('start_date')->values();
+                $branchShortName = null;
                 $basic_pay_1st_cutoff = 0;
                 $basic_pay_2nd_cutoff = 0;
 
@@ -128,6 +131,8 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                         Branch::find($payroll->timekeeping_branch_id)
                     )->short_name;
 
+                    // Log::info("1st branch". $branchShortName);
+
                 } else {
 
                     $first = $sorted->first();
@@ -163,18 +168,22 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                     $branchShortName = optional(
                         Branch::find($last->timekeeping_branch_id)
                     )->short_name;
+
+                    // Log::info("2nd branch". $branchShortName);
                 }
 
                 $total = $basic_pay_1st_cutoff + $basic_pay_2nd_cutoff;
 
-                $branchShortName = $last
-                    ? optional(Branch::find($last->timekeeping_branch_id))->short_name
-                    : optional(Branch::find($sorted->first()->timekeeping_branch_id))->short_name;
+                // $branchShortName = $last
+                //     ? optional(Branch::find($last->timekeeping_branch_id))->short_name
+                //     : optional(Branch::find($sorted->first()->timekeeping_branch_id))->short_name;
+
+                    // Log::info("3rd branch". $branchShortName);
 
                 $record = EmployeesMonthlyAllocation::create([
                     'thirteenth_month_file_id' => $thirteenthMonthFile->id,
                     'employee_id' => $employee->id,
-                    'branch_short_name' => $branchShortName,
+                    'branch_short_name' => $branchShortName ?? null,
                     'basic_pay_1st_cutoff' => $basic_pay_1st_cutoff,
                     'basic_pay_2nd_cutoff' => $basic_pay_2nd_cutoff,
                     'total' => $total,
