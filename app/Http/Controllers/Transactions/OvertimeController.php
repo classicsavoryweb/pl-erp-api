@@ -134,7 +134,11 @@ class OvertimeController extends Controller
 
     public function fetchOvertime(Request $request) {
         try {
-            FetchOvertimeJob::dispatch();
+            $request->validate([
+                "branch_id" => "required"
+            ]);
+
+            FetchOvertimeJob::dispatch($request->branch_id);
 
             return $this->sendResponse(["message" => "Overtime is fetching"]);
         } catch(Exception $e) {
