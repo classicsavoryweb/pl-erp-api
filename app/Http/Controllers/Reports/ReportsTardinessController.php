@@ -16,6 +16,9 @@ use App\Models\TardinessSanction;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -208,7 +211,7 @@ class ReportsTardinessController extends Controller
                 $filePath = $directory . '/' . $fileName;
                 $storage->put($filePath, file_get_contents($file));
                 
-                ProcessTardinessImport::dispatch($filePath);
+                ProcessTardinessImport::dispatch($filePath, Auth::user()->id);
             }
             return $this->sendResponse(["message" => "Excel file imported successfullyy"]);
         } catch (Exception $e) {
@@ -361,6 +364,12 @@ class ReportsTardinessController extends Controller
                 Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($ccEmails)
                 ->send(new NTEMail($pathName));
+
+                $this->sendTardinessMemoToSavoryHris(
+                    $employee->employee_number,
+                    "Notice to Explain",
+                    $pathName
+                );
             }
 
             $tardiness->update([
@@ -458,6 +467,12 @@ class ReportsTardinessController extends Controller
                 Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($ccEmails)
                 ->send(new NODMail($pathName));
+
+                $this->sendTardinessMemoToSavoryHris(
+                    $employee->employee_number,
+                    "Notice of Disciplinary Action",
+                    $pathName
+                );
             }
 
             $tardiness->update([
@@ -470,6 +485,58 @@ class ReportsTardinessController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    private function sendTardinessMemoToSavoryHris(string $employeeNumber, string $memoType, string $filePath): void
+    {
+        $baseUrl = env("CS_HUB_URL_LINK");
+        $user = env("CS_HUB_ADMIN_EMAIL");
+        $password = env("CS_HUB_ADMIN_PASSWORD");
+
+        if (!$baseUrl || !$user || !$password) {
+            return;
+        }
+
+        if (!is_file($filePath)) {
+            Log::warning("Savory HRIS memo file missing.", [
+                "employee_number" => $employeeNumber,
+                "file_path" => $filePath,
+            ]);
+            return;
+        }
+
+        $subject = $memoType === "Notice to Explain"
+            ? "Tardiness - Notice to Explain"
+            : "Tardiness - Notice of Disciplinary Action";
+
+        $baseUrl = rtrim($baseUrl, "/");
+        $endpoint = $baseUrl . (Str::endsWith($baseUrl, "/api") ? "" : "/api") . "/tardiness-memo";
+
+        try {
+            $response = Http::withBasicAuth($user, $password)
+                ->timeout(60)
+                ->attach("memo_file", file_get_contents($filePath), basename($filePath))
+                ->post($endpoint, [
+                    "employee_number" => $employeeNumber,
+                    "type" => $memoType,
+                    "subject" => $subject,
+                    "message" => "Memo for tardiness.",
+                    "sender_name" => "Auditing Department",
+                ]);
+
+            if (!$response->successful()) {
+                Log::warning("Savory HRIS memo API failed.", [
+                    "employee_number" => $employeeNumber,
+                    "status" => $response->status(),
+                    "response" => $response->body(),
+                ]);
+            }
+        } catch (Exception $e) {
+            Log::warning("Savory HRIS memo API error.", [
+                "employee_number" => $employeeNumber,
+                "error" => $e->getMessage(),
+            ]);
         }
     }
 
