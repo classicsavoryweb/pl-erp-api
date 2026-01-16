@@ -45,6 +45,6 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-thirteenth-month-monthly-allocation/{id}", [ReportsThirteenthMonthController::class, "getThirteenthMonthMonthlyAllocation"]);
     Route::post("/generate-thirteenth-month-pay", [ReportsThirteenthMonthController::class, "generateThirteenthMonthPay"]);
     Route::post("/generate-thirteenth-month-monthly-allocation", [ReportsThirteenthMonthController::class, "generateThirteenthMonthMonthlyAllocation"]);
-    Route::get("/generate-thirteenth-month-monthly-allocation-entries/{id}", [ReportsThirteenthMonthController::class, "generateThirteenthMonthMonthlyAllocationEntries"]);
+    Route::middleware(["permission:perform_reports_13th_month_pay_entries"])->get("/generate-thirteenth-month-monthly-allocation-entries/{id}", [ReportsThirteenthMonthController::class, "generateThirteenthMonthMonthlyAllocationEntries"]);
     Route::middleware(["permission:generate_13th_month_pay"])->get('/download-excel-file/{filename}', [ReportsThirteenthMonthController::class, 'downloadExcelFile']);
 });
