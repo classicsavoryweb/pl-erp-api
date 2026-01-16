@@ -522,7 +522,7 @@ class ReportsTardinessController extends Controller
                     "type" => $memoType,
                     "subject" => $subject,
                     "message" => "Memo for tardiness.",
-                    "sender_name" => "Auditing Department",
+                    "sender_name" => "Human Resources Department",
                 ]);
 
             if (!$response->successful()) {

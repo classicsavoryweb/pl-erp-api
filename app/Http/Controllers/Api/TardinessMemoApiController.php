@@ -43,7 +43,7 @@ class TardinessMemoApiController extends ApiBaseController
             return $this->sendError(["message" => "Invalid memo file."]);
         }
 
-        $senderName = $request->input("sender_name", "Auditing Department");
+        $senderName = $request->input("sender_name", "Human Resources Department");
         $message = $request->input("message");
 
         try {
