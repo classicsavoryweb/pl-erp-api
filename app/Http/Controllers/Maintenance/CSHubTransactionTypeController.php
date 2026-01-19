@@ -66,8 +66,8 @@ class CSHubTransactionTypeController extends Controller
                 "transaction_type" => "required",
                 "deduction_id" => "required",
                 "ho_credit" => "required",
-                "branch_debit" => "required",
-                "branch_credit" => "required",
+                "branch_debit" => "nullable",
+                "branch_credit" => "nullable",
                 "status" => "required",
             ]);
 
@@ -106,8 +106,8 @@ class CSHubTransactionTypeController extends Controller
                 "transaction_type" => "required",
                 "deduction_id" => "required",
                 "ho_credit" => "required",
-                "branch_debit" => "required",
-                "branch_credit" => "required",
+                "branch_debit" => "nullable",
+                "branch_credit" => "nullable",
                 "status" => "required",
             ]);
 
