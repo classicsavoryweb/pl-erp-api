@@ -74,83 +74,22 @@ class FetchBranchLogs implements ShouldQueue
                         $date = $parsedDate->toDateString();
                         $time = $parsedDate->toTimeString();
                         $branch = Branch::where("device_name", $log["terminal_sn"])->first();
-
+                        $dateToUse = $parsedDate;
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
-                            $latest = BiotimeLog::where("employee_id", $employee->id)
-                            ->orderBy("date", "DESC")
-                            ->where("date", '<=', $date)
-                            ->where("date", '>=', $startTime->subDay()->format("Y-m-d"))
-                            ->first();
-
-                            if ($latest) {
-                                $latest->punches()->updateOrCreate([
-                                    "punch_time" => $log["punch_time"],
-                                    "date" => $date,
-                                    "branch_id" => $branch?->id ?? null
-                                ]);
-                            } else {
-                                $bio1 = BiotimeLog::where("employee_id", $employee->id)
-                                ->where("date", $date)
-                                ->first();
-
-                                if ($bio1) {
-                                    $punch = $bio1->punches()
-                                    ->whereTime("punch_time", $time)
-                                    ->Where("date", $date)
-                                    ->first();
-                                    if (!$punch) {
-                                        $bio1->punches()->updateOrCreate([
-                                            "punch_time" => $log["punch_time"],
-                                            "date" => $date,
-                                            "branch_id" => $branch?->id ?? null
-                                        ]);
-                                    }
-                                } else {
-                                    $bio = BiotimeLog::updateOrCreate([
-                                        "employee_id" => $employee->id,
-                                        "biometric_number" => $employee->biometric_number,
-                                        "date" => $date,
-                                    ]);
-
-                                    $bio->punches()->updateOrCreate([
-                                        "punch_time" => $log["punch_time"],
-                                        "date" => $date,
-                                        "branch_id" => $branch?->id ?? null
-                                    ]);
-                                }
-                            }
-
-                        } else {
-                            $attendance = BiotimeLog::where("employee_id", $employee->id)
-                            ->where("date", $date)
-                            ->first();
-
-                            if ($attendance) {
-                                $punch = $attendance->punches()
-                                ->whereTime("punch_time", $time)
-                                ->Where("date", $date)
-                                ->first();
-    
-                                if (!$punch) {
-                                    $attendance->punches()->updateOrCreate([
-                                        "punch_time" => $log["punch_time"],
-                                        "date" => $date,
-                                        "branch_id" => $branch?->id ?? null
-                                    ]);
-                                }
-                            } else {
-                                $bio = BiotimeLog::updateOrCreate([
-                                    "employee_id" => $employee->id,
-                                    "biometric_number" => $employee->biometric_number,
-                                    "date" => $date,
-                                ]);
-                                $bio->punches()->updateOrCreate([
-                                    "punch_time" => $log["punch_time"],
-                                    "date" => $date,
-                                    "branch_id" => $branch?->id ?? null
-                                ]);
-                            }
+                            $dateToUse = $parsedDate->subDay();
                         }
+
+                        $bio = BiotimeLog::updateOrCreate([
+                            "employee_id" => $employee->id,
+                            "biometric_number" => $employee->biometric_number,
+                            "date" => $dateToUse->format("Y-m-d"),
+                        ]);
+
+                        $bio->punches()->updateOrCreate([
+                            "punch_time" => $log["punch_time"],
+                            "date" => $dateToUse->format("Y-m-d"),
+                            "branch_id" => $branch?->id ?? null
+                        ]);
                     }
                 }
             } catch (Exception $e) {
@@ -177,94 +116,33 @@ class FetchBranchLogs implements ShouldQueue
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
-                Log::info("RETRY CURRENT: ".$employee->full_name);
+
                 if ($response->successful()) {
                     $data = $response->json();
                     $attendanceLogs = $data['data'];
-                    Log::info("RETRY LOGGING: ".$employee->full_name);
+
                     foreach ($attendanceLogs as $log) {
                         $parsedDate = Carbon::parse($log["punch_time"]);
                         $date = $parsedDate->toDateString();
                         $time = $parsedDate->toTimeString();
                         $branch = Branch::where("device_name", $log["terminal_sn"])->first();
 
+                        $dateToUse = $parsedDate;
                         if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
-                            $latest = BiotimeLog::where("employee_id", $employee->id)
-                            ->orderBy("date", "DESC")
-                            ->where("date", '<=', $date)
-                            ->where("date", '>=', $startTime->subDay()->format("Y-m-d"))
-                            ->first();
-
-                            if ($latest) {
-                                $latest->punches()->updateOrCreate([
-                                    "punch_time" => $log["punch_time"],
-                                    "date" => $date,
-                                    "branch_id" => $branch ? $branch->id : null
-                                ]);
-                            } else {
-                                $bio1 = BiotimeLog::where("employee_id", $employee->id)
-                                ->where("date", $date)
-                                ->first();
-
-                                if ($bio1) {
-                                    $punch = $bio1->punches()
-                                    ->whereTime("punch_time", $time)
-                                    ->Where("date", $date)
-                                    ->first();
-
-                                    if (!$punch) {
-                                        $bio1->punches()->updateOrCreate([
-                                            "punch_time" => $log["punch_time"],
-                                            "date" => $date,
-                                            "branch_id" => $branch ? $branch->id : null
-                                        ]);
-                                    }
-                                } else {
-                                    $bio = BiotimeLog::updateOrCreate([
-                                        "employee_id" => $employee->id,
-                                        "biometric_number" => $employee->biometric_number,
-                                        "date" => $date,
-                                    ]);
-
-                                    $bio->punches()->updateOrCreate([
-                                        "punch_time" => $log["punch_time"],
-                                        "date" => $date,
-                                        "branch_id" => $branch ? $branch->id : null
-                                    ]);
-                                }
-                            }
-
-                        } else {
-                            $attendance = BiotimeLog::where("employee_id", $employee->id)
-                            ->where("date", $date)
-                            ->first();
-
-                            if ($attendance) {
-                                $punch = $attendance->punches()
-                                ->whereTime("punch_time", $time)
-                                ->Where("date", $date)
-                                ->first();
-    
-                                if (!$punch) {
-                                    $attendance->punches()->updateOrCreate([
-                                        "punch_time" => $log["punch_time"],
-                                        "date" => $date,
-                                        "branch_id" => $branch ? $branch->id : null
-                                    ]);
-                                }
-                            } else {
-                                $bio = BiotimeLog::updateOrCreate([
-                                    "employee_id" => $employee->id,
-                                    "biometric_number" => $employee->biometric_number,
-                                    "date" => $date,
-                                ]);
-                                $bio->punches()->updateOrCreate([
-                                    "punch_time" => $log["punch_time"],
-                                    "date" => $date,
-                                    "branch_id" => $branch ? $branch->id : null
-                                ]);
-                            }
+                            $dateToUse = $parsedDate->subDay();
                         }
+
+                        $bio = BiotimeLog::updateOrCreate([
+                            "employee_id" => $employee->id,
+                            "biometric_number" => $employee->biometric_number,
+                            "date" => $dateToUse->format("Y-m-d"),
+                        ]);
+
+                        $bio->punches()->updateOrCreate([
+                            "punch_time" => $log["punch_time"],
+                            "date" => $dateToUse->format("Y-m-d"),
+                            "branch_id" => $branch?->id ?? null
+                        ]);
                     }
                 }
             } catch (Exception $e) {
