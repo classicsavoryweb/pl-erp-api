@@ -214,7 +214,11 @@ class TimeKeepingController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $timeKeepingSummaryQuery = $timeKeepingSummaryQuery->get();
-                return Excel::download(new TimeKeepingSummaryExport($timeKeepingSummaryQuery), "time_keeping_summary.xls");
+                return Excel::download(new TimeKeepingSummaryExport(
+                    $timeKeepingSummaryQuery,
+                    $start_time,
+                    $end_time
+                ), "time_keeping_summary.xls");
             }
 
             $timeKeepingSummary = $timeKeepingSummaryQuery->paginate($perPage);
