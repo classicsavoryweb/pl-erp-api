@@ -45,6 +45,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $query->where("branch_id", $branchId);
         })
         ->where("status", "active")
+        ->where("type", "Direct")
         ->get();
 
         foreach ($employees as $employee) {

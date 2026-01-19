@@ -788,6 +788,14 @@ class TimeKeepingService
                 if ($payment) {
                     $payment->delete();
                 }
+                
+                $biotimeLog = BiotimeLog::where("employee_id", $employee->id)
+                ->where("date", $date)
+                ->first();
+
+                if (!$biotimeLog || $biotimeLog->punches()->count() == 0) {
+                    $totalAmount = 0;
+                }
 
                 $timekeepingPayment = TimeKeepingPayment::create([
                     "timekeeping_id" => $timeKeeping->id,

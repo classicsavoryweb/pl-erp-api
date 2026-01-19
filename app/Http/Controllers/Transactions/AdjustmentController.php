@@ -154,9 +154,13 @@ class AdjustmentController extends Controller
                 ]);
 
                 foreach($request->punches as $punch) {
-                    $biotimePunch = $log->punches()
-                    ->where("punch_time", $punch["punch_time"])
-                    ->first();
+                    $biotimePunch = null;
+
+                    if ($log instanceof BiotimeLog) {
+                        $biotimePunch = $log->punches()
+                        ->where("punch_time", $punch["punch_time"])
+                        ->first();
+                    }
 
                     AdjustmentPunch::create([
                         "adjustment_id" => $adjustment->id,
@@ -221,7 +225,7 @@ class AdjustmentController extends Controller
                 $adjustment->update([
                     "days" => $days,
                     "cancelled_rd" => $cancelled_off,
-                    "taxable_amount" => round($taxable_amount, 2) ,
+                    "taxable_amount" => round($taxable_amount, 2),
                     "amount_paid" => round($amount_paid, 2),
                     "correct_amount_paid" => round($adjustmentPayment->total_amount, 2),
                     "actual_schedule" => $schedule->selection,

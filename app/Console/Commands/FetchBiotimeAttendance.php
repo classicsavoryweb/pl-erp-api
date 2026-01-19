@@ -24,16 +24,21 @@ class FetchBiotimeAttendance extends Command
         $user = env('BIOMETRICS_USERNAME');
         $password = env('BIOMETRICS_PASSWORD');
         $employees = Employee::where("status", "active")
-        // ->where("type", "Direct")
+        ->where("type", "Direct")
         // ->where("branch_id", 107)
         ->get();
+        
 
-        $startTime = Carbon::now()->subDays(1)->startOfDay();
-        $endTime = Carbon::now()->endOfDay();
+        // $startTime = Carbon::now()->subDays(1)->startOfDay();
+        // $endTime = Carbon::now()->endOfDay();
+
+        $startTime = Carbon::parse("2026-01-12")->subDays(1)->startOfDay();
+        $endTime = Carbon::parse("2026-01-16")->endOfDay();
 
         $failedEmployees = [];
 
         foreach($employees as $employee) {
+            Log::info($employee->full_name);
             try {
                 $response = Http::withBasicAuth($user, $password)
                 ->withHeaders([
@@ -139,6 +144,7 @@ class FetchBiotimeAttendance extends Command
                     }
                 }
             } catch (Exception $e) {
+                Log::info($e);
                 $failedEmployees[] = $employee;
             }
         }
