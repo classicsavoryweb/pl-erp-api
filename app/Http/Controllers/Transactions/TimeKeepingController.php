@@ -125,6 +125,10 @@ class TimeKeepingController extends Controller
                 }
             }
 
+            $timeKeepingQuery = $timeKeepingQuery
+            ->orderBy("employee_id", "ASC")
+            ->orderBy("date", "ASC");
+
             if ($request->has(["export"]) && $request->export) {
                 $timeKeepingQuery = $timeKeepingQuery->get();
                 return Excel::download(new TimeKeepingExport($timeKeepingQuery), "time_keeping.xls");
