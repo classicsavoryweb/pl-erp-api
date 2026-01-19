@@ -82,7 +82,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     $holidayIsPaid = false;
-                    
+                    $holidayConvertedToDays = false;
+
                     $holiday = Holiday::where("date", $actualSchedule->date)
                     ->whereHas("branches", function ($query) use($actualSchedule) {
                         return $query->where("branch_id", $actualSchedule->branch_id);
@@ -110,6 +111,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
                         $regular_days += 1;
+                        $holidayConvertedToDays = true;
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {
@@ -128,12 +130,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         ];
                     }
 
-                    if ($timeKeep->special_holiday_hours > 0) {
+                    if ($timeKeep->special_holiday_hours > 0 && !$holidayConvertedToDays) {
                         $special_holiday += $holidayIsPaid ? $timeKeep->special_holiday_hours : 0;
                     }
 
-                    if ($timeKeep->legal_holiday_hours > 0) {
-                        $legal_holiday+= $holidayIsPaid ? $timeKeep->legal_holiday_hours : 0;
+                    if ($timeKeep->legal_holiday_hours > 0 && !$holidayConvertedToDays) {
+                        $legal_holiday += $holidayIsPaid ? $timeKeep->legal_holiday_hours : 0;
                     }
 
                     $totalOT = $timeKeep->approved_overtime;
