@@ -37,7 +37,7 @@ class FetchBranchLogs implements ShouldQueue
         $branchId = $this->branchId;
 
         $employees = Employee::where("status", "active")
-        // ->where("type", "Direct")
+        ->where("type", "Direct")
         ->where("branch_id", $branchId)
         ->get();
 
