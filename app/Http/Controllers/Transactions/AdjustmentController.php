@@ -122,9 +122,9 @@ class AdjustmentController extends Controller
                 ->where("date", $request->date)
                 ->first();
 
-                if (!$oldTimeKeeping) {
-                    return $this->sendError(["message" => "Timekeeping not found"]);
-                }
+                // if (!$oldTimeKeeping) {
+                //     return $this->sendError(["message" => "Timekeeping not found"]);
+                // }
 
                 $log = BiotimeLog::where("employee_id", $employee->id)
                     ->where("date", $request->date)
@@ -198,12 +198,10 @@ class AdjustmentController extends Controller
                 $this->timeKeepingService->computePayment($adjustmentTimeKeeping, $schedule->selection, true);
                 $adjustmentPayment = TimeKeepingPayment::where("adjustment_timekeeping_id", $adjustmentTimeKeeping->id)->first();
                 $originalPayment = null;
-
-                if ($oldTimeKeeping) {
-                    $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
-                }
-
-                $cancelled_off = $adjustmentTimeKeeping->cancelled_off_hours - ($oldTimeKeeping->cancelled_off_hours ?? 0);
+                
+                $cancelled_off = 0;
+                $taxable_amount = 0;
+                $amount_paid = 0;
                 $days = 0;
 
                 if ($adjustmentPayment && !$originalPayment) {
@@ -220,8 +218,15 @@ class AdjustmentController extends Controller
                     }
                 }
 
+                if ($oldTimeKeeping) {
+                    $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
+
+                    $cancelled_off = $adjustmentTimeKeeping->cancelled_off_hours - ($oldTimeKeeping->cancelled_off_hours ?? 0);
+                }
+
                 $taxable_amount = $adjustmentPayment->total_amount - ($originalPayment->total_amount ?? 0);
                 $amount_paid = $originalPayment->total_amount ?? 0;
+
                 $adjustment->update([
                     "days" => $days,
                     "cancelled_rd" => $cancelled_off,
