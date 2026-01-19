@@ -29,11 +29,11 @@ class FetchBiotimeAttendance extends Command
         ->get();
         
 
-        // $startTime = Carbon::now()->subDays(1)->startOfDay();
-        // $endTime = Carbon::now()->endOfDay();
+        $startTime = Carbon::now()->subDays(1)->startOfDay();
+        $endTime = Carbon::now()->endOfDay();
 
-        $startTime = Carbon::parse("2026-01-12")->subDays(1)->startOfDay();
-        $endTime = Carbon::parse("2026-01-16")->endOfDay();
+        // $startTime = Carbon::parse("2026-01-12")->subDays(1)->startOfDay();
+        // $endTime = Carbon::parse("2026-01-16")->endOfDay();
 
         $failedEmployees = [];
 
