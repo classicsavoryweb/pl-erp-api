@@ -610,7 +610,7 @@ class TimeKeepingService
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
                 "biotime_log_id" => $log->id,
-                "schedule_time_id" => $scheduleTime->id,
+                "schedule_time_id" => $scheduleTime->id ?? 0,
                 "date" => $log->date,
                 "worked_hours" => $workHours,
                 "legal_holiday" => $legalHoliday,

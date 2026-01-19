@@ -204,20 +204,6 @@ class AdjustmentController extends Controller
                 $amount_paid = 0;
                 $days = 0;
 
-                if ($adjustmentPayment && !$originalPayment) {
-                    $submittedScheduleTime = ScheduleTime::where("date", $request->date)
-                    ->where("employee_id", $employee->id)
-                    ->first();
-
-                    if ($submittedScheduleTime->timetable && !in_array($submittedScheduleTime->timetable, ["REST DAY", "NO SCHEDULE"])) {
-                        $days += 1;
-                    } else {
-                        if (!$submittedScheduleTime) {
-                            $days += 1;
-                        }
-                    }
-                }
-
                 if ($oldTimeKeeping) {
                     $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
 
