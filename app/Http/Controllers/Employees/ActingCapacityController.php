@@ -368,6 +368,7 @@ class ActingCapacityController extends Controller
             DB::beginTransaction();
 
             $request->validate([
+                "effectivity_date" => "required",
                 "attachments" => "required"
             ]);
 
@@ -376,10 +377,16 @@ class ActingCapacityController extends Controller
             $actingEmployee = Employee::find($actingCapacity->employee_id);
 
             if ($actingCapacity->status === "For Signature") {
+                $startDate = Carbon::parse($actingCapacity->start_date);
+                $endDate = Carbon::parse($request->effectivity_date);
+                $months = $startDate->diffInMonths($endDate);
 
                 $actingCapacity->update([
                     "confirmed_by" => $employee->id,
                     "confirmed_date" => now(),
+                    "effectivity_date" => $request->effectivity_date,
+                    "end_date" => $request->effectivity_date,
+                    "period" => $months > 1 ? $months . " Months" : $months . " Month",
                     "status" => "Confirmed"
                 ]);
 
