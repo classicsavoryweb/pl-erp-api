@@ -27,26 +27,36 @@ class GenerateTimekeepingSummary implements ShouldQueue
     protected $branchId;
     protected $currentCutOff;
     protected $timeKeepingService;
+    protected $employeeId;
     /**
      * Create a new job instance.
      */
-    public function __construct($branchId, $currentCutOff)
+    public function __construct($branchId, $currentCutOff, $employeeId = 0)
     {
         $this->branchId = $branchId;
         $this->currentCutOff = $currentCutOff;
         $this->timeKeepingService = new TimeKeepingService();
+        $this->employeeId = $employeeId;
     }
 
     public function handle(): void
     {
         $cutOff = $this->currentCutOff;
         $branchId = $this->branchId;
+        $employeeId = $this->employeeId;
+
         $employees = Employee::whereHas("timekeeping", function ($query) use ($branchId) {
             $query->where("branch_id", $branchId);
         })
         ->where("status", "active")
-        ->where("type", "Direct")
-        ->get();
+        ->where("type", "Direct");
+
+
+        if ($employeeId !== 0) {
+            $employees = $employees->where("id", $employeeId);
+        }
+
+        $employees = $employees->get();
 
         foreach ($employees as $employee) {
             $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
@@ -69,6 +79,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $tardiness = 0;
             $lateDate = [];
 
+
+            Log::info("=====================================");
+            Log::info($employee->full_name);
             if ($timeKeepings->count() > 0) {
                 foreach ($timeKeepings as $timeKeep) {
                     $actualSchedule = ScheduleTime::find($timeKeep->schedule_time_id);
@@ -181,6 +194,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 }
 
+                Log::info($regular_days);
+
                 $isExisting = TimeKeepingSummary::where("cut_off", $cutOff['start_time']."-".$cutOff['end_time'])
                 ->where("employee_id", $employee->id)
                 ->first();
@@ -206,8 +221,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
 
                         if ($employee->schedule->schedule_type->name === "Normal Schedule") {
-                            if ($workDays > $regular_days) {
+                            if ($workDays > $regular_days && $workDays < 13 ) {
                                 $regular_days = 13 - ($workDays - $regular_days);
+                            } else if ($workDays > $regular_days && $workDays > 13) {
+                                $regular_days = 13;
                             } else {
                                 $regular_days = 13;
                             }
@@ -230,13 +247,18 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
+                    $workDays = ScheduleTIme::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+                    ->where("employee_id",$employee->id)
+                    ->whereNotIn("timetable", ['LEAVE', 'SUSPENSION', 'REST DAY', 'NO SCHEDULE'])
+                    ->get()
+                    ->count();
 
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                        $regular_days = 11 - $absent;
+                        $regular_days = $workDays - $absent;
                     }
 
                     if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                        $regular_days = 13 - $absent;
+                        $regular_days = $workDays - $absent;
                     }
 
                     // $shouldBeRegularDays = 0;
