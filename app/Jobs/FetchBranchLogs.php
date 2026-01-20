@@ -42,8 +42,8 @@ class FetchBranchLogs implements ShouldQueue
         ->get();
 
         $activeCutOff = Cutoff::where('status', 'active')->first();
-        $startTime = Carbon::parse($activeCutOff->start_date);
-        $endTime = Carbon::parse($activeCutOff->end_date);
+        $startTime = Carbon::parse($activeCutOff->start_date)->startOfDay();
+        $endTime = Carbon::parse($activeCutOff->end_date)->endOfDay();
 
         $failedEmployees = [];
 
