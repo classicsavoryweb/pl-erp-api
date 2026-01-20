@@ -66,7 +66,7 @@ class EmployeeController extends Controller
                 } else {
                     $biometricsNumber = "12".$employeeNumber;
                 }
-
+                $employeeNumber = "A".$employeeNumber;
                 $employeeNumber2 = $company."-".$agency->name."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             }
 
