@@ -54,11 +54,9 @@ class FetchBiotimeAttendance extends Command
                     "emp_code" => $employee->biometric_number,
                     "page_size" => 10000000000
                 ]);
-                Log::info("CURRENT: ".$employee->full_name);
                 if ($response->successful()) {
                     $data = $response->json();
                     $attendanceLogs = $data['data'];
-                    Log::info("LOGGING: ".$employee->full_name);
                     foreach ($attendanceLogs as $log) {
                         $parsedDate = Carbon::parse($log["punch_time"]);
                         $date = $parsedDate->toDateString();

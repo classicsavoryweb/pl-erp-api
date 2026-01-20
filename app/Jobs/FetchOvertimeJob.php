@@ -74,7 +74,7 @@ class FetchOvertimeJob implements ShouldQueue
             "end_date" => $end_date,
             "branch_number" => $branch->branch_number
         ]);
-        Log::info($response);
+
         if ($response->successful()) {
             $data = $response->json();
             $overtimes = $data['data']['overtime'];

@@ -79,9 +79,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $tardiness = 0;
             $lateDate = [];
 
-
-            Log::info("=====================================");
-            Log::info($employee->full_name);
             if ($timeKeepings->count() > 0) {
                 foreach ($timeKeepings as $timeKeep) {
                     $actualSchedule = ScheduleTime::find($timeKeep->schedule_time_id);
@@ -232,6 +229,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 } else {
                     $absent = 0;
+                    $workingDays = ScheduleTIme::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+                    ->where("employee_id",$employee->id)
+                    ->whereNotIn("timetable", ['REST DAY', 'NO SCHEDULE'])
+                    ->get()
+                    ->count();
+
                     $schedules = ScheduleTime::where("employee_id", $employee->id)
                     ->whereBetween("date", [$cutOff['start_time'],$cutOff['end_time']])
                     ->get();
@@ -247,18 +250,29 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-                    $workDays = ScheduleTIme::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
-                    ->where("employee_id",$employee->id)
-                    ->whereNotIn("timetable", ['LEAVE', 'SUSPENSION', 'REST DAY', 'NO SCHEDULE'])
-                    ->get()
-                    ->count();
 
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                        $regular_days = $workDays - $absent;
+                        $days = 11;
+
+                        if ($regular_days > $days && $workingDays > $days) {
+                            $days = 11;
+                        } else if ($workingDays > $days && $regular_days < $days) {
+                            $days = $regular_days;
+                        }
+
+                        $regular_days = $days - $absent;
                     }
 
                     if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                        $regular_days = $workDays - $absent;
+                        $days = 13;
+
+                        if ($regular_days > $days && $workingDays > $days) {
+                            $days = 13;
+                        } else if ($workingDays > $days && $regular_days < $days) {
+                            $days = $regular_days;
+                        }
+
+                        $regular_days = $days - $absent;
                     }
 
                     // $shouldBeRegularDays = 0;
