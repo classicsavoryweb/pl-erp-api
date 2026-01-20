@@ -102,6 +102,16 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($holiday) {
                         $holidayIsPaid = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff, $holiday);
+                        $month = Carbon::parse($actualSchedule->date)->month;
+
+                        if (
+                            $month == 12 &&
+                            $timeKeep->final_worked_hours > 0 &&
+                            $timeKeep->branch->type == "Head Office"
+                        ) {
+                            $holidayIsPaid = false;
+                        }
+
                         if ($holidayIsPaid) {
                             $timeKeep->update([
                                 "paid_holiday" => "Yes"
