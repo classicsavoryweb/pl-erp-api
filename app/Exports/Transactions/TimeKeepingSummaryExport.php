@@ -126,6 +126,10 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
 
     public function headings(): array
     {
+
+        $startDate = $this->start_date;
+        $endDate = $this->end_date;
+
         $headings = [
             'No',
             'Biometric Number',
@@ -147,9 +151,16 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
             'Total Late Minutes'
         ];
 
-        $maxUndertimeCount = $this->timekeeping_summary->max(function ($unique_timekeeping) {
+        $maxUndertimeCount = $this->timekeeping_summary->max(function ($unique_timekeeping) use($startDate, $endDate) {
             return collect($unique_timekeeping->employee->timekeeping ?? [])
-                ->filter(fn($ut) => $ut->undertime > 0)
+                ->filter(function ($tk) use ($startDate, $endDate) {
+                    return
+                        Carbon::parse($tk->date)->between(
+                            Carbon::parse($startDate),
+                            Carbon::parse($endDate)
+                        ) &&
+                        $tk->undertime > 0;
+                })
                 ->count();
         });
 
