@@ -246,19 +246,38 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ->get()
                     ->count();
 
+                    $normalWorkingDays = ScheduleTIme::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+                    ->where("employee_id",$employee->id)
+                    ->whereNotIn("timetable", ['REST DAY'])
+                    ->get()
+                    ->count();
+
                     $schedules = ScheduleTime::where("employee_id", $employee->id)
                     ->whereBetween("date", [$cutOff['start_time'],$cutOff['end_time']])
                     ->get();
 
                     foreach ($schedules as $sched) {
+                        $absentToBeAdded = 0;
+
                         if (!in_array($sched->timetable,["REST DAY", "NO SCHEDULE"])) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
                             ->first();
                             if (!$timeKeeping) {
-                                $absent += 1;
+                                $absentToBeAdded = 1;
                             }
                         }
+
+                        if (!in_array($sched->timetable,["REST DAY",])) {
+                            $timeKeeping = TimeKeeping::where("date", $sched->date)
+                            ->where("employee_id", $employee->id)
+                            ->first();
+                            if (!$timeKeeping) {
+                                $absentToBeAdded = 1;
+                            }
+                        }
+
+                        $absent += $absentToBeAdded;
                     }
 
                     // Log::info("ABSENT: ".$absent);
@@ -280,12 +299,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
                         $days = 13;
 
-                        if ($regular_days > $days && $workingDays > $days) {
+                        if ($regular_days > $days && $normalWorkingDays > $days) {
                             $days = 13;
-                        } else if ($workingDays > $days && $regular_days < $days) {
+                        } else if ($normalWorkingDays > $days && $regular_days < $days) {
                             $days = $regular_days;
-                        } else if ($workingDays < 13) {
-                            $days = $workingDays;
+                        } else if ($normalWorkingDays < 13) {
+                            $days = $normalWorkingDays;
                         }
 
                         $regular_days = $days - $absent;
