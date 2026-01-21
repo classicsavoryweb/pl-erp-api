@@ -52,7 +52,9 @@ class EmployeeController extends Controller
             $biometricsNumber = "";
 
             if ($request->type === "Direct") {
-                $biometricsNumber = "10".$employeeNumber;
+                $prefix = env('COMPANY_NAME') == "SFI" ? "10" : "30";
+
+                $biometricsNumber = $prefix . $employeeNumber;
             }
             if ($request->type === "Agency") {
                 $agency = Agency::find($request->agency_id);
