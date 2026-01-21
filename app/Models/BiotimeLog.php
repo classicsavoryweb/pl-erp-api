@@ -15,13 +15,18 @@ class BiotimeLog extends Model
         "biometric_number",
         "date",
         "remarks",
-        "is_transferred"
+        "is_transferred",
+        "is_modified"
     ];
 
     protected $table = "biotime_logs";
 
     protected $appends = [
         "status"
+    ];
+
+    protected $casts = [
+        "is_modified" => "boolean"
     ];
 
     public function status(): Attribute {

@@ -159,12 +159,25 @@ class ActualTimeController extends Controller
             DB::beginTransaction();
             $request->validate([
                 "punches" => "required",
+                "deleted_punch_ids" => "array",
+                "deleted_punch_ids.*" => "integer",
             ]);
 
             $user = Auth::user();
             $biotime = BiotimeLog::find($bioTimeID);
 
             if ($biotime) {
+                $deletedIds = $request->input("deleted_punch_ids", []);
+                $punchCount = $biotime->punches()->count();
+                $canDelete =
+                    $biotime->status === "MULTIPLE LOGS" ||
+                    ($biotime->status === "INCOMPLETE" && $punchCount === 3);
+                $didModify = false;
+                if ($canDelete && is_array($deletedIds) && count($deletedIds) > 0) {
+                    $biotime->punches()->whereIn("id", $deletedIds)->delete();
+                    $didModify = true;
+                }
+
                 foreach ($request->punches as $punch) {
                     if (isset($punch["id"])) {
                         $origPunch = BiotimePunch::find($punch["id"]);
@@ -177,13 +190,18 @@ class ActualTimeController extends Controller
                                 "branch_id" => $punch["branch_id"] ?? null,
                                 "remarks" => "Edited by ". $user->full_name." Original log ".$origPunch->punch_time
                             ]);
+                            $didModify = true;
                         } else {
+                            $branchId = $punch["branch_id"] ?? null;
                             $biotime->punches()
                             ->where("id", $punch["id"])
                             ->update([
                                 "punch_time" => $punch["punch_time"],
-                                "branch_id" => $punch["branch_id"] ?? null,
+                                "branch_id" => $branchId,
                             ]);
+                            if ($origPunch->branch_id !== $branchId) {
+                                $didModify = true;
+                            }
                         }
                     } else {
                         $biotime->punches()->create([
@@ -192,7 +210,13 @@ class ActualTimeController extends Controller
                             "branch_id" => $punch["branch_id"] ?? null,
                             "remarks" => "Added by ".$user->full_name
                         ]);
+                        $didModify = true;
                     }
+                }
+
+                if ($didModify) {
+                    $biotime->is_modified = true;
+                    $biotime->save();
                 }
             }
 
