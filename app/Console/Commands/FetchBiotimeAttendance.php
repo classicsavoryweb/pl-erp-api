@@ -72,6 +72,9 @@ class FetchBiotimeAttendance extends Command
                             "biometric_number" => $employee->biometric_number,
                             "date" => $dateToUse->format("Y-m-d"),
                         ]);
+                        if ($bio->is_modified) {
+                            continue;
+                        }
 
                         $bio->punches()->updateOrCreate([
                             "punch_time" => $log["punch_time"],
@@ -125,6 +128,9 @@ class FetchBiotimeAttendance extends Command
                             "biometric_number" => $employee->biometric_number,
                             "date" => $dateToUse->format("Y-m-d"),
                         ]);
+                        if ($bio->is_modified) {
+                            continue;
+                        }
 
                         $bio->punches()->updateOrCreate([
                             "punch_time" => $log["punch_time"],
