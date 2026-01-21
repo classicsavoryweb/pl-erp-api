@@ -259,20 +259,30 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     foreach ($schedules as $sched) {
                         $absentToBeAdded = 0;
 
-                        if (!in_array($sched->timetable,["REST DAY", "NO SCHEDULE"])) {
+                        $biotimeLog = BiotimeLog::where("date", $sched->date)
+                        ->where("employee_id", $employee->id)
+                        ->first();
+
+                        if (
+                            !in_array($sched->timetable,["REST DAY", "NO SCHEDULE"]) &&
+                            $employee->schedule->schedule_type->name === "Compressed Schedule"
+                        ) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
                             ->first();
-                            if (!$timeKeeping) {
+                            if (!$timeKeeping || !$biotimeLog) {
                                 $absentToBeAdded = 1;
                             }
                         }
 
-                        if (!in_array($sched->timetable,["REST DAY",])) {
+                        if (
+                            $employee->schedule->schedule_type->name === "Normal Schedule" &&
+                            !in_array($sched->timetable,["REST DAY"])
+                        ) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
                             ->first();
-                            if (!$timeKeeping) {
+                            if (!$timeKeeping || !$biotimeLog) {
                                 $absentToBeAdded = 1;
                             }
                         }
@@ -299,7 +309,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
                         $days = 13;
 
-                        if ($regular_days > $days && $normalWorkingDays > $days) {
+                        if ($regular_days > $days || $normalWorkingDays > $days) {
                             $days = 13;
                         } else if ($normalWorkingDays > $days && $regular_days < $days) {
                             $days = $regular_days;
