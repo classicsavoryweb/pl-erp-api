@@ -17,13 +17,15 @@ class ProcessInitializeCutOff implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected Cutoff $cutOff;
     protected PayrollService $payrollService;
+    protected $userId;
     /**
      * Create a new job instance.
      */
-    public function __construct(Cutoff $cutoff)
+    public function __construct(Cutoff $cutoff, ?int $userId = null)
     {
         $this->cutOff = $cutoff;
         $this->payrollService = new PayrollService();
+        $this->userId = $userId;
     }
 
     /**

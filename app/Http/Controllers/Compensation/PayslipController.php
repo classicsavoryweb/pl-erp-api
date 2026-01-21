@@ -9,6 +9,7 @@ use App\Models\Payroll;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 class PayslipController extends Controller
 {
@@ -47,7 +48,7 @@ class PayslipController extends Controller
             $payroll = $payroll->get();
 
             if ($request->send_email) {
-                SendPayslipsToEmployeeJob::dispatch($payroll);
+                SendPayslipsToEmployeeJob::dispatch($payroll, Auth::id());
             }
 
             DB::commit();

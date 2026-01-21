@@ -26,12 +26,14 @@ class TransferLogsToTimeKeeping implements ShouldQueue
     protected $branchId;
     protected $cutOff;
     protected $timeKeepingService;
+    protected $userId;
 
-    public function __construct(string $branchId, $cutoff)
+    public function __construct(string $branchId, $cutoff, ?int $userId = null)
     {
         $this->branchId = $branchId;
         $this->cutOff = $cutoff;
         $this->timeKeepingService = new TimeKeepingService();
+        $this->userId = $userId;
     }
 
     public function handle(): void

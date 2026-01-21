@@ -77,7 +77,7 @@ class CutOffController extends Controller
             ->update(["status" => "inactive"]);
 
             if ($initialized) {
-                ProcessInitializeCutOff::dispatch($createdCutOff);
+                ProcessInitializeCutOff::dispatch($createdCutOff, Auth::id());
             }
 
             DB::commit();
@@ -114,7 +114,7 @@ class CutOffController extends Controller
                 ]);
 
                 //trigger a cut off initialization job
-                ProcessInitializeCutOff::dispatch($createdCutOff);
+                ProcessInitializeCutOff::dispatch($createdCutOff, Auth::id());
 
                 DB::commit();
                 return $this->sendResponse([

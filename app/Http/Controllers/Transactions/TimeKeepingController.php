@@ -53,7 +53,7 @@ class TimeKeepingController extends Controller
             $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
             $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
-            TransferLogsToTimeKeeping::dispatch($request->branch_id, [$start_time, $end_time]);
+            TransferLogsToTimeKeeping::dispatch($request->branch_id, [$start_time, $end_time], Auth::id());
             $branch = Branch::find($request->branch_id);
             $user = Auth::user();
             activity()->causedBy($user)->useLog("Timekeeping Generation")
@@ -256,8 +256,8 @@ class TimeKeepingController extends Controller
             }
 
             Bus::chain([
-                new TransferLogsToTimeKeeping($request->branch_id, $cutOff),
-                new GenerateTimekeepingSummary($request->branch_id, $cutOff)
+                new TransferLogsToTimeKeeping($request->branch_id, $cutOff, Auth::id()),
+                new GenerateTimekeepingSummary($request->branch_id, $cutOff, Auth::id())
             ])->dispatch();
 
             $branch = Branch::find($request->branch_id);

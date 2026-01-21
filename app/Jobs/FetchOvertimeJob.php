@@ -13,6 +13,15 @@ class FetchOvertimeJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected $userId;
+    protected $notificationContext;
+
+    public function __construct(?int $userId = null, ?string $notificationContext = null)
+    {
+        $this->userId = $userId;
+        $this->notificationContext = $notificationContext;
+    }
+
     public function handle(): void
     {
         Artisan::call("app:fetch-overtime-in-cs-hub");

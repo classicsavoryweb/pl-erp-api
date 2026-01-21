@@ -230,7 +230,7 @@ class ActualTimeController extends Controller
             }
 
             if ($filePath) {
-                ProcessActualTimeImport::dispatch($filePath);
+                ProcessActualTimeImport::dispatch($filePath, Auth::id());
                 $user = Auth::user();
                 activity()->causedBy($user)->useLog("Import Actual Logs")->log('User imported actual logs');
             }
@@ -247,7 +247,7 @@ class ActualTimeController extends Controller
                 "branch_id" => "required"
             ]);
 
-            FetchBranchLogs::dispatch($request->branch_id);
+            FetchBranchLogs::dispatch($request->branch_id, Auth::id());
 
             return $this->sendResponse(["message" => "Biotime logs are now fetching"]);
         } catch (Exception $e) {

@@ -501,7 +501,7 @@ class ScheduleTimeController extends Controller
             }
 
             if ($filePath) {
-                ProcessScheduleTimeImport::dispatch($filePath, $excludedEmployeeIds);
+                ProcessScheduleTimeImport::dispatch($filePath, $excludedEmployeeIds, Auth::id());
                 $user = Auth::user();
                 activity()->causedBy($user)->useLog("Import Schedule")->log('User imported schedule');
             }
@@ -524,7 +524,7 @@ class ScheduleTimeController extends Controller
                 $branch = Branch::find($request->branch_id);
                 
                 if ($branch) {
-                    FetchScheduleTimeToCSHub::dispatch($branch, $activeCutOff);
+                    FetchScheduleTimeToCSHub::dispatch($branch, $activeCutOff, Auth::id());
 
                     return $this->sendResponse(["message" => "Schedules are being fetched"]);
                 }

@@ -22,13 +22,15 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
 
     protected Branch $timeKeepingBranch;
     protected Cutoff $activeCutOff;
+    protected $userId;
     /**
      * Create a new job instance.
      */
-    public function __construct(Branch $timeKeepingBranch, Cutoff $activeCutOff)
+    public function __construct(Branch $timeKeepingBranch, Cutoff $activeCutOff, ?int $userId = null)
     {
         $this->timeKeepingBranch = $timeKeepingBranch;
         $this->activeCutOff = $activeCutOff;
+        $this->userId = $userId;
     }
 
     /**

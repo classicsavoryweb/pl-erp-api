@@ -24,6 +24,7 @@ use Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Models\Branch;
 
 class OvertimeController extends Controller
 {
@@ -134,7 +135,18 @@ class OvertimeController extends Controller
 
     public function fetchOvertime(Request $request) {
         try {
-            FetchOvertimeJob::dispatch();
+            $context = null;
+            if ($request->filled('branch_id')) {
+                $branch = Branch::find($request->branch_id);
+                if ($branch?->name) {
+                    $context = $branch->name;
+                    if (stripos($context, 'department') === false) {
+                        $context = $context . ' Department';
+                    }
+                }
+            }
+
+            FetchOvertimeJob::dispatch(Auth::id(), $context);
 
             return $this->sendResponse(["message" => "Overtime is fetching"]);
         } catch(Exception $e) {
@@ -367,7 +379,7 @@ class OvertimeController extends Controller
                 $filePath = $directory . '/' . $fileName;
                 $storage->put($filePath, file_get_contents($file));
                 
-                ProcessOvertimeImport::dispatch($filePath);
+                ProcessOvertimeImport::dispatch($filePath, Auth::id());
                 $user = Auth::user();
                 activity()->causedBy($user)->useLog("Import Overtime")->log('User imported overtime from cshub.');
                 return $this->sendResponse(["message" => "Excel file imported successfully"]);

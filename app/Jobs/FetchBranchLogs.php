@@ -21,9 +21,11 @@ class FetchBranchLogs implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $branchId;
-    public function __construct($branchId)
+    protected $userId;
+    public function __construct($branchId, ?int $userId = null)
     {
         $this->branchId = $branchId;
+        $this->userId = $userId;
     }
 
     /**
