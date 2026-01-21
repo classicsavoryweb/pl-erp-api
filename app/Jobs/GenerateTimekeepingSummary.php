@@ -291,46 +291,52 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     // Log::info("ABSENT: ".$absent);
-                    if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                        $days = 11;
-
-                        if ($regular_days > $days && $workingDays > $days) {
-                            $days = 11;
-                        } else if ($workingDays > $days && $regular_days < $days) {
-                            $days = $regular_days;
-                        } else if ($workingDays < 11) {
-                            $days = $workingDays;
-                        }
-
-                        // Log::info("DAYS: ".$days);
-                        $regular_days = $days - $absent;
-                    }
-
-                    if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                        $days = 13;
-
-                        if ($regular_days > $days || $normalWorkingDays > $days) {
-                            $days = 13;
-                        } else if ($normalWorkingDays > $days && $regular_days < $days) {
-                            $days = $regular_days;
-                        } else if ($normalWorkingDays < 13) {
-                            $days = $normalWorkingDays;
-                        }
-
-                        $regular_days = $days - $absent;
-                    }
-
-                    // Log::info("WORKING DAYS: ".$workingDays);
-                    // Log::info("REGULAR DAYS: ".$regular_days);
-
-                    // $shouldBeRegularDays = 0;
+                    $hasHalfDay = fmod($regular_days, 1);
                     // if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                    //     $shouldBeRegularDays = 11 - $absent;
+                    //     $days = 11;
+
+                    //     if ($regular_days > $days && $workingDays > $days) {
+                    //         $days = 11;
+                    //     } else if ($workingDays > $days && $regular_days < $days) {
+                    //         $days = $regular_days;
+                    //     } else if ($workingDays < 11) {
+                    //         $days = $workingDays;
+                    //     }
+
+                    //     $regular_days = $days - $absent;
                     // }
 
                     // if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                    //     $shouldBeRegularDays = 13 - $absent;
+                    //     $days = 13;
+
+                    //     // if ($regular_days > $days || $normalWorkingDays > $days) {
+                    //     //     $days = 13;
+                    //     // } else if ($normalWorkingDays > $days && $regular_days < $days) {
+                    //     //     $days = $regular_days;
+                    //     // } else if ($normalWorkingDays < 13) {
+                    //     //     $days = $normalWorkingDays;
+                    //     // }
+
+                    //     if ($normalWorkingDays > 13 || $regular_days > $days) {
+                    //         $days = 13;
+                    //     } else {
+                    //         $days = $normalWorkingDays;
+                    //     }
+
+                    //     $regular_days = $days - $absent;
                     // }
+
+                    // Log::info("WORKING DAYS: ".$workingDays);
+                    // Log::info("HAS HALF DAY: ".$hasHalfDay);
+                    // Log::info("UNPROCESSED REGULAR DAYS: ".$regular_days);
+                    // $shouldBeRegularDays = 0;
+                    if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
+                        $regular_days = 11 - $absent - $hasHalfDay;
+                    }
+
+                    if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
+                        $regular_days = 13 - $absent - $hasHalfDay;
+                    }
 
                     // if ($shouldBeRegularDays > $regular_days) {
                     //     $regular_days = $shouldBeRegularDays;
