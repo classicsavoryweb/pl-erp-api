@@ -59,6 +59,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $employees = $employees->get();
 
         foreach ($employees as $employee) {
+            // Log::info("===================");
+            // Log::info($employee->full_name);
             $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
             ->whereBetween("date", $cutOff)
             ->get();
@@ -107,7 +109,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         if (
                             $month == 12 &&
                             $timeKeep->final_worked_hours > 0 &&
-                            $timeKeep->branch->type == "Head Office"
+                            $timeKeep->branch->type == "Head Office" &&
+                            $employee->schedule->schedule_type->name === "Compressed Schedule"
                         ) {
                             $holidayIsPaid = false;
                         }
@@ -201,8 +204,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 }
 
-                Log::info($regular_days);
-
                 $isExisting = TimeKeepingSummary::where("cut_off", $cutOff['start_time']."-".$cutOff['end_time'])
                 ->where("employee_id", $employee->id)
                 ->first();
@@ -260,7 +261,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-
+                    // Log::info("ABSENT: ".$absent);
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
                         $days = 11;
 
@@ -268,8 +269,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             $days = 11;
                         } else if ($workingDays > $days && $regular_days < $days) {
                             $days = $regular_days;
+                        } else if ($workingDays < 11) {
+                            $days = $workingDays;
                         }
 
+                        // Log::info("DAYS: ".$days);
                         $regular_days = $days - $absent;
                     }
 
@@ -280,10 +284,15 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             $days = 13;
                         } else if ($workingDays > $days && $regular_days < $days) {
                             $days = $regular_days;
+                        } else if ($workingDays < 13) {
+                            $days = $workingDays;
                         }
 
                         $regular_days = $days - $absent;
                     }
+
+                    // Log::info("WORKING DAYS: ".$workingDays);
+                    // Log::info("REGULAR DAYS: ".$regular_days);
 
                     // $shouldBeRegularDays = 0;
                     // if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
