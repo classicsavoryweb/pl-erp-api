@@ -67,11 +67,21 @@ class FetchBiotimeAttendance extends Command
                             $dateToUse = $parsedDate->subDay();
                         }
 
-                        $bio = BiotimeLog::updateOrCreate([
+                        $bio = BiotimeLog::where([
                             "employee_id" => $employee->id,
                             "biometric_number" => $employee->biometric_number,
                             "date" => $dateToUse->format("Y-m-d"),
-                        ]);
+                        ])->first();
+                        if ($bio && $bio->is_modified) {
+                            continue;
+                        }
+                        if (!$bio) {
+                            $bio = BiotimeLog::create([
+                                "employee_id" => $employee->id,
+                                "biometric_number" => $employee->biometric_number,
+                                "date" => $dateToUse->format("Y-m-d"),
+                            ]);
+                        }
 
                         $bio->punches()->updateOrCreate([
                             "punch_time" => $log["punch_time"],
@@ -120,11 +130,21 @@ class FetchBiotimeAttendance extends Command
                             $dateToUse = $parsedDate->subDay();
                         }
 
-                        $bio = BiotimeLog::updateOrCreate([
+                        $bio = BiotimeLog::where([
                             "employee_id" => $employee->id,
                             "biometric_number" => $employee->biometric_number,
                             "date" => $dateToUse->format("Y-m-d"),
-                        ]);
+                        ])->first();
+                        if ($bio && $bio->is_modified) {
+                            continue;
+                        }
+                        if (!$bio) {
+                            $bio = BiotimeLog::create([
+                                "employee_id" => $employee->id,
+                                "biometric_number" => $employee->biometric_number,
+                                "date" => $dateToUse->format("Y-m-d"),
+                            ]);
+                        }
 
                         $bio->punches()->updateOrCreate([
                             "punch_time" => $log["punch_time"],
