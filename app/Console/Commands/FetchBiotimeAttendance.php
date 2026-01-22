@@ -63,7 +63,7 @@ class FetchBiotimeAttendance extends Command
                         $time = $parsedDate->toTimeString();
                         $branch = Branch::where("device_name", $log["terminal_sn"])->first();
                         $dateToUse = $parsedDate;
-                        if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
+                        if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:30:00'))) {
                             $dateToUse = $parsedDate->subDay();
                         }
 
@@ -72,7 +72,7 @@ class FetchBiotimeAttendance extends Command
                             "biometric_number" => $employee->biometric_number,
                             "date" => $dateToUse->format("Y-m-d"),
                         ]);
-                        if ($bio->is_modified) {
+                        if ($bio->is_modified) {s
                             continue;
                         }
 

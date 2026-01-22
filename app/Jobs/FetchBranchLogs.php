@@ -80,7 +80,7 @@ class FetchBranchLogs implements ShouldQueue
                             $time = $parsedDate->toTimeString();
                             $branch = Branch::where("device_name", $log["terminal_sn"])->first();
                             $dateToUse = $parsedDate;
-                            if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:00:00'))) {
+                            if (Carbon::createFromTimeString($time)->lt(Carbon::createFromTimeString('04:30:00'))) {
                                 $dateToUse = $parsedDate->subDay();
                             }
 
