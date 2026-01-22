@@ -104,6 +104,7 @@ class LastPayController extends Controller
             $employees = $employees->whereHas("payroll_list", function ($query) {
                 $query->where("is_hold", 1);
             })
+            ->where("type", "Direct")
             ->get()
             ->take(100);
 
@@ -166,6 +167,8 @@ class LastPayController extends Controller
                 $yearSourceDate = $employee->separation_date ?: $employee->payroll_list->holded_at;
                 $yearHolded = Carbon::parse($yearSourceDate)->year;
                 $dateHolded = Carbon::parse($employee->payroll_list->holded_at)->format("Y-m-d");
+                $payrolEndDate = Carbon::parse($employee->payroll_list->holded_at)->endOfMonth()->format("Y-m-d");
+                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
                 ->where("pay_date", ">=" ,$dateHolded)
@@ -183,7 +186,7 @@ class LastPayController extends Controller
                     $incentives += $incentive->incentive_amount;
                 }
 
-                $allPayrolls = Payroll::whereYear("pay_date", $yearHolded)
+                $allPayrolls = Payroll::whereBetween("pay_date", [$thirteenthMonthStartDate, $payrolEndDate])
                 ->where("employee_id", $employee->id)
                 ->where("status", "final")
                 ->get();
