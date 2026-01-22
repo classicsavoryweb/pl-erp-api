@@ -271,7 +271,10 @@ class ActualTimeController extends Controller
                 "branch_id" => "required"
             ]);
 
-            FetchBranchLogs::dispatch($request->branch_id, Auth::id());
+            $branch = \App\Models\Branch::find($request->branch_id);
+            $context = $branch?->name ?? "Unknown Branch";
+
+            FetchBranchLogs::dispatch($request->branch_id, Auth::id(), $context);
 
             return $this->sendResponse(["message" => "Biotime logs are now fetching"]);
         } catch (Exception $e) {

@@ -22,10 +22,12 @@ class FetchBranchLogs implements ShouldQueue
 
     protected $branchId;
     protected $userId;
-    public function __construct($branchId, ?int $userId = null)
+    protected $notificationContext;
+    public function __construct($branchId, ?int $userId = null, ?string $notificationContext = null)
     {
         $this->branchId = $branchId;
         $this->userId = $userId;
+        $this->notificationContext = $notificationContext;
     }
 
     /**
@@ -155,5 +157,11 @@ class FetchBranchLogs implements ShouldQueue
                 Log::info($e->getMessage());
             }
         }
+    }
+
+    public function getNotificationLabel(): string
+    {
+        $label = "Fetch Actual Schedule";
+        return $this->notificationContext ? $label." ".$this->notificationContext : $label;
     }
 }

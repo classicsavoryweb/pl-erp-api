@@ -135,6 +135,10 @@ class OvertimeController extends Controller
 
     public function fetchOvertime(Request $request) {
         try {
+            $request->validate([
+                "branch_id" => "required"
+            ]);
+
             $context = null;
             if ($request->filled('branch_id')) {
                 $branch = Branch::find($request->branch_id);
@@ -146,7 +150,7 @@ class OvertimeController extends Controller
                 }
             }
 
-            FetchOvertimeJob::dispatch(Auth::id(), $context);
+            FetchOvertimeJob::dispatch($request->branch_id, Auth::id(), $context);
 
             return $this->sendResponse(["message" => "Overtime is fetching"]);
         } catch(Exception $e) {

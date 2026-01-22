@@ -524,7 +524,7 @@ class ScheduleTimeController extends Controller
                 $branch = Branch::find($request->branch_id);
                 
                 if ($branch) {
-                    FetchScheduleTimeToCSHub::dispatch($branch, $activeCutOff, Auth::id());
+                    FetchScheduleTimeToCSHub::dispatch($branch, $activeCutOff, Auth::id(), $branch->name);
 
                     return $this->sendResponse(["message" => "Schedules are being fetched"]);
                 }

@@ -23,14 +23,21 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
     protected Branch $timeKeepingBranch;
     protected Cutoff $activeCutOff;
     protected $userId;
+    protected $notificationContext;
     /**
      * Create a new job instance.
      */
-    public function __construct(Branch $timeKeepingBranch, Cutoff $activeCutOff, ?int $userId = null)
+    public function __construct(
+        Branch $timeKeepingBranch,
+        Cutoff $activeCutOff,
+        ?int $userId = null,
+        ?string $notificationContext = null
+    )
     {
         $this->timeKeepingBranch = $timeKeepingBranch;
         $this->activeCutOff = $activeCutOff;
         $this->userId = $userId;
+        $this->notificationContext = $notificationContext;
     }
 
     /**
@@ -94,5 +101,11 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
                 DB::rollBack();
             }
         }
+    }
+
+    public function getNotificationLabel(): string
+    {
+        $label = "Fetch Schedule Time";
+        return $this->notificationContext ? $label." ".$this->notificationContext : $label;
     }
 }

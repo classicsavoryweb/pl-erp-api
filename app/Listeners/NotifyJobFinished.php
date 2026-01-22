@@ -16,6 +16,9 @@ class NotifyJobFinished
         if (!$job) {
             return;
         }
+        if ($this->isNotificationSuppressed($job)) {
+            return;
+        }
 
         $userId = $this->resolveUserId($job);
         if (!$userId) {
@@ -128,5 +131,11 @@ class NotifyJobFinished
         }
 
         return null;
+    }
+
+    private function isNotificationSuppressed(object $job): bool
+    {
+        $suppressed = $this->getPropertyValue($job, 'suppressNotification');
+        return $suppressed === true;
     }
 }

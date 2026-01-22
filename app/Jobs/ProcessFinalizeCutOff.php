@@ -21,13 +21,16 @@ class ProcessFinalizeCutOff implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected Cutoff $cutOff;
     protected $user;
+    protected $notificationLabel = "Finalize Cutoff";
+    protected $notificationContext;
     /**
      * Create a new job instance.
      */
-    public function __construct(Cutoff $cutoff, $user)
+    public function __construct(Cutoff $cutoff, $user, ?string $notificationContext = null)
     {
         $this->cutOff = $cutoff;
         $this->user = $user;
+        $this->notificationContext = $notificationContext;
     }
 
     /**

@@ -18,14 +18,17 @@ class ProcessInitializeCutOff implements ShouldQueue
     protected Cutoff $cutOff;
     protected PayrollService $payrollService;
     protected $userId;
+    protected $notificationLabel = "Initialize Cutoff";
+    protected $notificationContext;
     /**
      * Create a new job instance.
      */
-    public function __construct(Cutoff $cutoff, ?int $userId = null)
+    public function __construct(Cutoff $cutoff, ?int $userId = null, ?string $notificationContext = null)
     {
         $this->cutOff = $cutoff;
         $this->payrollService = new PayrollService();
         $this->userId = $userId;
+        $this->notificationContext = $notificationContext;
     }
 
     /**

@@ -527,32 +527,37 @@ class TimeKeepingService
                     $cutOffPaid = Carbon::parse($currentCutOff["start_time"])->format("m/d/Y")." TO ". Carbon::parse($currentCutOff['end_time'])->format("m/d/Y");
                 }
 
+                $remainingHours = $overtimeApplied->total_hours - $totalHoursPaid;
+                $payrollStatus = $remainingHours >= 1 ? "unpaid" : "paid";
+
                 $overtimeApplied->update([
                     "hours_paid" => $totalHoursPaid,
                     "cutoff_paid" => $cutOffPaid,
                     "payment_type" => $paymentType,
-                    "status" => ($overtimeApplied->total_hours - $totalHoursPaid >= 1) ? "Partialy Paid" : "Paid"
+                    "status" => $remainingHours >= 1 ? "Partialy Paid" : "Paid"
                 ]);
 
-                $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtimeApplied ->cshub_overtime_id;
-                $user = env('CS_HUB_ADMIN_EMAIL');
-                $password = env('CS_HUB_ADMIN_PASSWORD');
+                if (!empty($overtimeApplied->cshub_overtime_id)) {
+                    $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtimeApplied->cshub_overtime_id;
+                    $user = env('CS_HUB_ADMIN_EMAIL');
+                    $password = env('CS_HUB_ADMIN_PASSWORD');
 
-                try {
-                    Http::withBasicAuth($user, $password)
-                    ->withHeaders([
-                        "Accept" => "application/json",
-                        "Content-Type" => "application/json"
-                    ])->timeout(60)
-                    ->retry(50, 1000, function ($exception, $attempt) {
-                        return str_contains($exception->getMessage(), 'cURL error 60');
-                    })
-                    ->post($overtimeLink,[
-                        "status_payroll" => "paid",
-                        "status" => "approved",
-                    ]);
-                } catch (Exception $e) {
-                    Log::info("CSHub overtime api error encountered: ".$e->getMessage());
+                    try {
+                        Http::withBasicAuth($user, $password)
+                        ->withHeaders([
+                            "Accept" => "application/json",
+                            "Content-Type" => "application/json"
+                        ])->timeout(60)
+                        ->retry(50, 1000, function ($exception, $attempt) {
+                            return str_contains($exception->getMessage(), 'cURL error 60');
+                        })
+                        ->post($overtimeLink,[
+                            "status_payroll" => $payrollStatus,
+                            "status" => "approved",
+                        ]);
+                    } catch (Exception $e) {
+                        Log::info("CSHub overtime api error encountered: ".$e->getMessage());
+                    }
                 }
             }
 

@@ -28,15 +28,25 @@ class GenerateTimekeepingSummary implements ShouldQueue
     protected $currentCutOff;
     protected $timeKeepingService;
     protected $userId;
+    protected $employeeId = 0;
+    protected $notificationContext;
     /**
      * Create a new job instance.
      */
-    public function __construct($branchId, $currentCutOff, ?int $userId = null)
+    public function __construct(
+        $branchId,
+        $currentCutOff,
+        ?int $userId = null,
+        int $employeeId = 0,
+        ?string $notificationContext = null
+    )
     {
         $this->branchId = $branchId;
         $this->currentCutOff = $currentCutOff;
         $this->timeKeepingService = new TimeKeepingService();
         $this->userId = $userId;
+        $this->employeeId = $employeeId;
+        $this->notificationContext = $notificationContext;
     }
 
     public function handle(): void
