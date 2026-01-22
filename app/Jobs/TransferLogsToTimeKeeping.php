@@ -50,12 +50,21 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     continue;
                 }
 
-                $log = BiotimeLog::where("date", $actualSchedule->date)
+                $log = BiotimeLog::with([
+                    "punches" => function ($q) {
+                        $q->orderBy('punch_time', 'ASC');
+                    },
+                ])->where("date", $actualSchedule->date)
                 ->where("employee_id", $employee->id)
                 ->first();
 
+                // if ($actualSchedule->timetable === "REST DAY" && isset($log)) {
+                //     continue;
+                // }
+
                 if (isset($log)) {
-                    $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
+                    // $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
+                    $bioTimePunches = $log->punches;
                     $this->timeKeepingService->computeTimeKeeping(
                         $this->branchId,
                         $log,

@@ -580,6 +580,10 @@ class TimeKeepingService
                 }
             }
 
+            if (!$isAdjustment && $actualSchedule?->timetable === "REST DAY") {
+                return;
+            }
+
             // Log::info("UNPROCESSED: ".$finalWorkHours);
             // Log::info("WORKED HOURS: ".$workHours);
             // Log::info("SHOULD BE HALFDAY: ".$shouldBeHalfDay);

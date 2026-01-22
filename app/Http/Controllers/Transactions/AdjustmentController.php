@@ -206,9 +206,29 @@ class AdjustmentController extends Controller
 
                 if ($oldTimeKeeping) {
                     $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
-
-                    $cancelled_off = $adjustmentTimeKeeping->cancelled_off_hours - ($oldTimeKeeping->cancelled_off_hours ?? 0);
                 }
+
+                if (!in_array($schedule->selection,["REST DAY", "NO SCHEDULE"])) {
+                    $days = 1;
+                    $originalDays = 0;
+                    $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
+
+                    if ($adjustmentTimeKeeping->final_worked_hours == $hours / 2) {
+                        $days = 0.5;
+                    }
+
+                    if ($oldTimeKeeping) {
+                        if ($oldTimeKeeping->final_worked_hours == $hours / 2) {
+                            $originalDays = 0.5;
+                        } else {
+                            $originalDays = 1;
+                        }
+                    }
+
+                    $days = $days - $originalDays;
+                }
+
+                $cancelled_off = $adjustmentTimeKeeping->cancelled_off_hours - ($oldTimeKeeping->cancelled_off_hours ?? 0);
 
                 $taxable_amount = $adjustmentPayment->total_amount - ($originalPayment->total_amount ?? 0);
                 $amount_paid = $originalPayment->total_amount ?? 0;
