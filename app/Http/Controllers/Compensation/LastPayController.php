@@ -163,7 +163,8 @@ class LastPayController extends Controller
 
                 $companyDeductions = $companyDeductions->merge($sssLoans);
 
-                $yearHolded = Carbon::parse($employee->payroll_list->holded_at)->year;
+                $yearSourceDate = $employee->separation_date ?: $employee->payroll_list->holded_at;
+                $yearHolded = Carbon::parse($yearSourceDate)->year;
                 $dateHolded = Carbon::parse($employee->payroll_list->holded_at)->format("Y-m-d");
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
@@ -291,7 +292,8 @@ class LastPayController extends Controller
                 $taxRefund = $request->tax_refund ?? 0;
                 $salesIncentives = $request->sales ?? 0;
 
-                $yearHolded = Carbon::parse($employee->payroll_list->holded_at)->year;
+                $yearSourceDate = $employee->separation_date ?: $employee->payroll_list->holded_at;
+                $yearHolded = Carbon::parse($yearSourceDate)->year;
                 $dateHolded = Carbon::parse($employee->payroll_list->holded_at)->format("Y-m-d");
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
