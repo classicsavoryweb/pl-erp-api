@@ -353,15 +353,19 @@ class AdjustmentController extends Controller
 
                 $currentCutOff = $this->getCurrentCutOff();
                 $cutOffPaid = Carbon::parse($currentCutOff["start_time"])->format("m/d/Y")." TO ". Carbon::parse($currentCutOff['end_time'])->format("m/d/Y");
+                $remainingHours = $overtime->total_hours - $overtimeHours;
+                $payrollStatus = $remainingHours >= 1 ? "unpaid" : "paid";
+
                 $overtime->update([
                     "hours_paid" => $overtimeHours,
                     "cutoff_paid" => $cutOffPaid,
                     "payment_type" => "force adjustment",
                     "adjustment_timekeeping_id" => $adjustedTimeKeeping->id,
-                    "status" => ($overtime->total_hours - $overtimeHours >= 1) ? "Partialy Paid" : "Paid"
+                    "status" => $remainingHours >= 1 ? "Partialy Paid" : "Paid"
                 ]);
 
-                $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtime ->cshub_overtime_id;
+                if (!empty($overtime->cshub_overtime_id)) {
+                $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtime->cshub_overtime_id;
                 $user = env('CS_HUB_ADMIN_EMAIL');
                 $password = env('CS_HUB_ADMIN_PASSWORD');
 
@@ -374,9 +378,10 @@ class AdjustmentController extends Controller
                     return str_contains($exception->getMessage(), 'cURL error 60');
                 })
                 ->post($overtimeLink,[
-                    "status_payroll" => "paid",
+                    "status_payroll" => $payrollStatus,
                     "status" => "approved",
                 ]);
+                }
 
                 DB::commit();
                 return $this->sendResponse(["message" => "Overtime successfully adjusted"]);

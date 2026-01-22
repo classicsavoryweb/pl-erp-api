@@ -20,11 +20,16 @@ use Illuminate\Support\Facades\Log;
 class FetchOvertimeJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $branchId;
 
-    public function __construct($branchId)
+    protected $branchId;
+    protected $userId;
+    protected $notificationContext;
+
+    public function __construct(?int $branchId = null, ?int $userId = null, ?string $notificationContext = null)
     {
         $this->branchId = $branchId;
+        $this->userId = $userId;
+        $this->notificationContext = $notificationContext;
     }
     public function handle(): void
     {
@@ -32,8 +37,16 @@ class FetchOvertimeJob implements ShouldQueue
         $user = env('CS_HUB_ADMIN_EMAIL');
         $password = env('CS_HUB_ADMIN_PASSWORD');
         $branchId = $this->branchId;
+        if (!$branchId) {
+            Log::warning("FetchOvertimeJob skipped: missing branch id.");
+            return;
+        }
 
         $branch = Branch::find($branchId);
+        if (!$branch) {
+            Log::warning("FetchOvertimeJob skipped: branch not found for id ".$branchId);
+            return;
+        }
         $activeCutOff = Cutoff::where("status", "active")->first();
         
         $now = Carbon::now();

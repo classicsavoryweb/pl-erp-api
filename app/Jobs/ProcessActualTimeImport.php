@@ -16,10 +16,12 @@ class ProcessActualTimeImport implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $filePath;
+    protected $userId;
 
-    public function __construct(string $filePath)
+    public function __construct(string $filePath, ?int $userId = null)
     {
         $this->filePath = $filePath;
+        $this->userId = $userId;
     }
 
     /**

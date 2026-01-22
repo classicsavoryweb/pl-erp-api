@@ -53,7 +53,7 @@ class TimeKeepingController extends Controller
             $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
             $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
-            TransferLogsToTimeKeeping::dispatch($request->branch_id, [$start_time, $end_time]);
+            TransferLogsToTimeKeeping::dispatch($request->branch_id, [$start_time, $end_time], Auth::id());
             $branch = Branch::find($request->branch_id);
             $user = Auth::user();
             activity()->causedBy($user)->useLog("Timekeeping Generation")
@@ -263,12 +263,13 @@ class TimeKeepingController extends Controller
                 return $this->sendError(["message" => "Timekeeping or Cutoff is already locked."]);
             }
 
-            Bus::chain([
-                new TransferLogsToTimeKeeping($request->branch_id, $cutOff),
-                new GenerateTimekeepingSummary($request->branch_id, $cutOff)
-            ])->dispatch();
-
             $branch = Branch::find($request->branch_id);
+            $branchName = $branch?->name ?? "Unknown Branch";
+
+            Bus::chain([
+                new TransferLogsToTimeKeeping($request->branch_id, $cutOff, Auth::id(), true),
+                new GenerateTimekeepingSummary($request->branch_id, $cutOff, Auth::id(), 0, $branchName)
+            ])->dispatch();
             $user = Auth::user();
             activity()->causedBy($user)->useLog("Timekeeping Generation")
             ->log('User generated timekeeping of '.$branch->name ?? "undefined"." branch." );

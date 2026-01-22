@@ -16,10 +16,12 @@ class ProcessOvertimeImport implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $overtimeFilePath;
+    protected $userId;
 
-    public function __construct(string $overtimeFilePath)
+    public function __construct(string $overtimeFilePath, ?int $userId = null)
     {
         $this->overtimeFilePath = $overtimeFilePath;
+        $this->userId = $userId;
     }
 
     public function handle(Excel $excel): void

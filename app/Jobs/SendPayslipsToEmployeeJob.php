@@ -18,9 +18,11 @@ class SendPayslipsToEmployeeJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $payrolls;
-    public function __construct(Collection $payrolls)
+    protected $userId;
+    public function __construct(Collection $payrolls, ?int $userId = null)
     {
         $this->payrolls = $payrolls ?? [];
+        $this->userId = $userId;
     }
 
     /**

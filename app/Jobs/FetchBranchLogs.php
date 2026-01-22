@@ -21,9 +21,13 @@ class FetchBranchLogs implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $branchId;
-    public function __construct($branchId)
+    protected $userId;
+    protected $notificationContext;
+    public function __construct($branchId, ?int $userId = null, ?string $notificationContext = null)
     {
         $this->branchId = $branchId;
+        $this->userId = $userId;
+        $this->notificationContext = $notificationContext;
     }
 
     /**
@@ -153,5 +157,11 @@ class FetchBranchLogs implements ShouldQueue
                 Log::info($e->getMessage());
             }
         }
+    }
+
+    public function getNotificationLabel(): string
+    {
+        $label = "Fetch Actual Schedule";
+        return $this->notificationContext ? $label." ".$this->notificationContext : $label;
     }
 }
