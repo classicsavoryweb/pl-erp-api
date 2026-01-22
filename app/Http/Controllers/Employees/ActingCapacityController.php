@@ -10,6 +10,7 @@ use App\Models\ActingCapacityExtension;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
+use App\Models\OtherCompany\OtherEmployee;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -226,12 +227,29 @@ class ActingCapacityController extends Controller
             if ( strtolower($station) === "back of the house") {
                 $type = "tagalog";
                 $approvedBy = Employee::with(["current_position"])->where("employee_number", "0007413")->first();
+
+
+                if (!$approvedBy) {
+                    $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", "0007413")->first();
+                }
             } else if (strtolower($station) === "head office") {
                 $withRecommendation = true;
                 $approvedBy = Employee::with(["current_position"])->where("employee_number", $branch->group_head_employee_number)->first();
                 $recommendedBy = Employee::with(["current_position"])->where("employee_number", $branch->branch_head_employee_number)->first();
+
+                if (!$approvedBy) {
+                    $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", $branch->group_head_employee_number)->first();
+                }
+
+                if (!$recommendedBy) {
+                    $recommendedBy = OtherEmployee::with(["current_position"])->where("employee_number", $branch->branch_head_employee_number)->first();
+                }
             } else {
                 $approvedBy = Employee::with(["current_position"])->where("employee_number", "639")->first();
+
+                if (!$approvedBy) {
+                    $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", "639")->first();
+                }
             }
 
             return $this->sendResponse([

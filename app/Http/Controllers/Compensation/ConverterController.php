@@ -565,18 +565,33 @@ class ConverterController extends Controller
 
                 $source = CSHubSourceType::where("description", $transaction["transaction_type"])->first();
                 $module = CSHubModule::where("description", $transaction["type"])->first();
-                $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
-                ->where("credit_status_positive", $transaction["for_crediting"])
-                ->where("deduction_status_positive", $transaction["for_liquidation"])
-                ->where("source_id", $module->id)
-                ->first();
 
                 $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
-                ->where("source_id", $module->id)
-                ->first();
+                // ->where("credit_status_positive", $transaction["for_crediting"])
+                // ->where("deduction_status_positive", $transaction["for_liquidation"])
+                ->where("source_id", $module->id);
+
+                if ($transaction["type"] === "HEALTHCARE" && isset($transaction["exam_type"])) {
+                    $examType = CSHubSourceType::where("description", $transaction["exam_type"])
+                    ->where("source_type", "Exam")
+                    ->first();
+
+                    if (!$examType) {
+                        $examType = CSHubSourceType::where("description", "LIKE", "%".$transaction["exam_type"]."%")
+                        ->where("source_type", "Exam")
+                        ->first();
+                    }
+
+                    if ($examType) {
+                        $transactionType = $transactionType->where("exam_type", $examType->id);
+                    }
+                }
+                
+                $transactionType = $transactionType->first();
 
                 $isExisting = ConverterDetail::where("transaction_number", $transaction["transaction_number"])
                 ->where("employee_id", $employee->id)
+                ->whereNot("status", "Voided")
                 ->first();
 
                 if ($isExisting) {

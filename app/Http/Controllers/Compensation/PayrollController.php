@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\Tardiness;
+use App\Models\Tax;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
 use Carbon\Carbon;
@@ -388,24 +389,64 @@ class PayrollController extends Controller
                 $remarks = $request->remarks ?? null;
                 $manual_deductions = $request->manual_deductions ?? 0;
                 $non_taxable_adjustments = $request->non_taxable_adjustment ?? 0;
+                $taxable_adjustment = $request->taxable_adjustment ?? 0;
 
                 $newNetPay = $payroll->net_pay;
 
                 if ($non_taxable_adjustments != $payroll->non_taxable_adjustments) {
                     $newNetPay += $non_taxable_adjustments - $payroll->non_taxable_adjustments;
                 }
-                
+
                 $amountToDeduct = 0;
+                $taxableIncome = $payroll->taxable_income;
+                $withHoldingTax = $payroll->withholding_tax;
+                $totalDeductions = $payroll->total_deductions;
+                $additionalWorkingHoursTotal = $payroll->additional_working_hours_total;
 
                 if ($manual_deductions != $payroll->manual_deductions) {
                     $amountToDeduct = $manual_deductions - $payroll->manual_deductions;
                     $newNetPay -= $amountToDeduct;
                 }
 
+                if ($taxable_adjustment != $payroll->taxable_adjustment) {
+                    $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
+                    ->where("range_max", '>=',round($taxableIncome, 2))
+                    ->first();
+
+                    $salaryBase = $tax->salary_base ?? 0;
+                    $exemption = $tax->exemption ?? 0;
+                    $percentage = $tax->percentage ?? 0;
+
+                    $taxable = $taxableIncome + $taxable_adjustment;
+                    $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                        ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                        : 0;
+
+                    $withHoldingTax = $taxAmount;
+
+                    $newNetPay = $taxableIncome + $taxable_adjustment - $taxAmount - $totalDeductions;
+
+                    $additionalWorkingHoursTotal = 
+                        $payroll->overtime_amount +
+                        $payroll->legal_holiday_amount +
+                        $payroll->legal_holiday_overtime_amount +
+                        $payroll->special_holiday_amount +
+                        $payroll->special_holiday_overtime_amount +
+                        $payroll->night_differential_amount +
+                        $payroll->night_differential_overtime_amount +
+                        $payroll->cancelled_off +
+                        $taxable_adjustment;
+
+                    $remarks = 'TAXABLE ADJUSTMENT MANUALLY ENCODED : '.$taxable_adjustment;
+                }
+
                 $payroll->update([
                     "non_taxable_adjustment" => $non_taxable_adjustments,
                     "manual_deductions" => $manual_deductions,
-                    "net_pay" => $newNetPay,
+                    "taxable_adjustment" => $taxable_adjustment,
+                    "withholding_tax" => $withHoldingTax,
+                    "net_pay" => round($newNetPay,2),
+                    "additional_working_hours_total" => $additionalWorkingHoursTotal,
                     "remarks" => $remarks
                 ]);
 
