@@ -17,10 +17,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Support\NotifiesJobStatus;
 
 class GenerateLastPayEntry implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
     protected $lastPay;
     protected $user;
     private $counter;
@@ -83,6 +85,7 @@ class GenerateLastPayEntry implements ShouldQueue
 
     public function handle(): void
     {
+        try {
         $lastPay = $this->lastPay;
 
         $userId = $this->user;
@@ -608,6 +611,12 @@ class GenerateLastPayEntry implements ShouldQueue
                 'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
                 'ent_due_date'      => now(),
             ]);
+        }
+
+        $this->notifyJobFinished();
+        } catch (\Throwable $e) {
+            $this->notifyJobFailed();
+            throw $e;
         }
     }
 }

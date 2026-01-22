@@ -15,10 +15,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Support\NotifiesJobStatus;
 
 class ProcessFinalizeCutOff implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
     protected Cutoff $cutOff;
     protected $user;
     protected $notificationLabel = "Finalize Cutoff";
@@ -38,6 +40,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
      */
     public function handle(): void
     {
+        try {
         $payrolls = Payroll::where("cut_off", $this->cutOff->cut_off)
         ->where("status", "initial")
         ->get();
@@ -97,5 +100,10 @@ class ProcessFinalizeCutOff implements ShouldQueue
         }
 
         GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
+        $this->notifyJobFinished();
+        } catch (\Throwable $e) {
+            $this->notifyJobFailed();
+            throw $e;
+        }
     }
 }

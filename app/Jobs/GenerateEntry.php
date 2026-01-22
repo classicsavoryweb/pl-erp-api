@@ -22,12 +22,14 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
+use App\Support\NotifiesJobStatus;
 use Log;
 use DB;
 
 class GenerateEntry implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
     protected $payroll;
     protected $pay_date;
     protected $start_date;
@@ -4107,10 +4109,12 @@ class GenerateEntry implements ShouldQueue
                         'ent_due_date'      => now(),
                     ]);
                 }
+                $this->notifyJobFinished();
                 DB::commit();
             } catch (\Exception $e) {
                 DB::rollBack();
 
+                $this->notifyJobFailed();
                 Log::error('Failed to create entry', [
                     'entry' => $entry,
                     'error' => $e->getMessage(),

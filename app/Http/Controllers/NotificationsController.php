@@ -23,7 +23,15 @@ class NotificationsController extends Controller
             $query->limit((int) $request->limit);
         }
 
-        return $this->sendResponse($query->get());
+        $notifications = $query->get();
+        $unreadCount = Notification::where('user_id', $userId)
+            ->where('is_read', 0)
+            ->count();
+
+        return $this->sendResponse([
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount,
+        ]);
     }
 
     public function unreadCount()

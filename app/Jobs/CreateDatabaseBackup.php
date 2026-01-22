@@ -14,10 +14,12 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Str; 
+use App\Support\NotifiesJobStatus;
 
 class CreateDatabaseBackup implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected $user;
 
@@ -79,7 +81,9 @@ class CreateDatabaseBackup implements ShouldQueue
                 'backed_up_by' => $employee_name,
             ]);
 
+            $this->notifyJobFinished();
         } catch (Exception $e) {
+            $this->notifyJobFailed();
             throw $e; 
         } finally {
             if (file_exists($tempFilePath)) {

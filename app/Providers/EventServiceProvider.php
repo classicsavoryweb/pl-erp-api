@@ -6,10 +6,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Queue\Events\JobFailed;
-use Illuminate\Queue\Events\JobProcessed;
-use App\Listeners\NotifyJobFailed;
-use App\Listeners\NotifyJobFinished;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -21,12 +17,6 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
-        ],
-        JobProcessed::class => [
-            NotifyJobFinished::class,
-        ],
-        JobFailed::class => [
-            NotifyJobFailed::class,
         ],
     ];
 

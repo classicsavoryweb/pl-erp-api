@@ -22,10 +22,12 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Support\NotifiesJobStatus;
 
 class SendTransactionToEmployeeJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected $converterBatch;
     protected $userId;
@@ -96,6 +98,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
      */
     public function handle(): void
     {
+        try {
         $batch = $this->converterBatch;
 
         $transactionsIds = $this->details;
@@ -279,6 +282,12 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                     ]);
                 }
             }            
+        }
+
+        $this->notifyJobFinished();
+        } catch (\Throwable $e) {
+            $this->notifyJobFailed();
+            throw $e;
         }
     }
 
