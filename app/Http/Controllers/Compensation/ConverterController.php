@@ -581,7 +581,10 @@ class ConverterController extends Controller
                         ->where("source_type", "Exam")
                         ->first();
                     }
-                    $transactionType = $transactionType->where("exam_type", $examType->id);
+
+                    if ($examType) {
+                        $transactionType = $transactionType->where("exam_type", $examType->id);
+                    }
                 }
                 
                 $transactionType = $transactionType->first();
