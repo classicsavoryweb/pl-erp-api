@@ -571,10 +571,6 @@ class ConverterController extends Controller
                 ->where("source_id", $module->id)
                 ->first();
 
-                $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
-                ->where("source_id", $module->id)
-                ->first();
-
                 $isExisting = ConverterDetail::where("transaction_number", $transaction["transaction_number"])
                 ->where("employee_id", $employee->id)
                 ->first();
