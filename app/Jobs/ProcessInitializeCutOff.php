@@ -11,10 +11,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Support\NotifiesJobStatus;
 
 class ProcessInitializeCutOff implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
     protected Cutoff $cutOff;
     protected PayrollService $payrollService;
     protected $userId;
@@ -36,6 +38,7 @@ class ProcessInitializeCutOff implements ShouldQueue
      */
     public function handle(): void
     {
+        try {
         $includedEmployees = PayrollList::with(["employee"])
         ->where("is_included", 1)
         ->get();
@@ -52,6 +55,11 @@ class ProcessInitializeCutOff implements ShouldQueue
             } else if ($timeKeepingSummary && !$includedEmployee->isOnMaternityLeave() && !$includedEmployee->isMancom()) {
                 $this->payrollService->computePayroll($timeKeepingSummary);
             }
+        }
+        $this->notifyJobFinished();
+        } catch (\Throwable $e) {
+            $this->notifyJobFailed();
+            throw $e;
         }
     }
 }

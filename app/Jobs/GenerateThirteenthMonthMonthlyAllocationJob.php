@@ -17,11 +17,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Collection;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Support\NotifiesJobStatus;
 use DB;
 
 class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
 {
     use Dispatchable, Queueable;
+    use NotifiesJobStatus;
 
     protected $user;
     protected $month;
@@ -228,12 +230,14 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                 throw new \Exception('Excel file was not generated');
             }
 
+            $this->notifyJobFinished();
             DB::commit();
 
         } catch (\Exception $e) {
 
             DB::rollBack();
 
+            $this->notifyJobFailed();
             Log::error('Generate 13th month monthly allocation failed', [
                 'error' => $e->getMessage()
             ]);

@@ -15,11 +15,13 @@ use App\Models\ThirteenthMonthFiles;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Collection;
+use App\Support\NotifiesJobStatus;
 use DB;
 
 class GenerateThirteenthMonthPayJob implements ShouldQueue
 {
     use Dispatchable, Queueable;
+    use NotifiesJobStatus;
 
     protected $user;
     protected $year;
@@ -439,12 +441,14 @@ class GenerateThirteenthMonthPayJob implements ShouldQueue
                 throw new \Exception('Excel file was not generated');
             }
 
+            $this->notifyJobFinished();
             DB::commit();
 
         } catch (\Exception $e) {
 
             DB::rollBack();
 
+            $this->notifyJobFailed();
             Log::error('Generate 13th month pay failed', [
                 'error' => $e->getMessage(),
                 'year' => $this->year,

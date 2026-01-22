@@ -15,6 +15,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Support\NotifiesJobStatus;
 use Carbon\Carbon;
 use Log;
 use Exception;
@@ -22,6 +23,7 @@ use DB;
 class TransferLogsToTimeKeeping implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected $branchId;
     protected $cutOff;
@@ -235,10 +237,12 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 $this->timeKeepingService->computePayment($timeKeep, $actualSchedule);
             }
 
+            $this->notifyJobFinished();
             DB::commit();
         } catch (Exception $e) {
             Log::error($e);
             DB::rollBack();
+            $this->notifyJobFailed();
         }
     }
 

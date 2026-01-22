@@ -13,10 +13,12 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use App\Support\NotifiesJobStatus;
 
 class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
     protected $groupedBranches;
     protected $user;
     protected $month;
@@ -83,93 +85,100 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
 
     public function handle(): void
     {
-        $groupedBranches = $this->groupedBranches;
-        $user = $this->user;
-        $month = $this->month;
-        $year = $this->year;
+        try {
+            $groupedBranches = $this->groupedBranches;
+            $user = $this->user;
+            $month = $this->month;
+            $year = $this->year;
 
-        $vendor = Vendor::where("ven_name", "HO")->first();
-        $vendorHONo = $vendor->ven_no;
-        $vendorHOName = $vendor->ven_name;
+            $vendor = Vendor::where("ven_name", "HO")->first();
+            $vendorHONo = $vendor->ven_no;
+            $vendorHOName = $vendor->ven_name;
 
-        foreach ($groupedBranches as $branches) {
-            $branch = Branch::where('id', $branches->branch_id)->first();
+            foreach ($groupedBranches as $branches) {
+                $branch = Branch::where('id', $branches->branch_id)->first();
 
-            $thirteenthMonth = $branches->branch_net_claim_13th_month;
-            $payLeaveAndAdditional = ($branches->branch_net_claim_pay_leave) + ($branches->branch_net_claim_additional);
-            $total = $branches->branch_total;
+                $thirteenthMonth = $branches->branch_net_claim_13th_month;
+                $payLeaveAndAdditional = ($branches->branch_net_claim_pay_leave) + ($branches->branch_net_claim_additional);
+                $total = $branches->branch_total;
 
-            $branchId = $branch->id;
-            $branchName = $branch->name;
-            $branchNumber = $branch->branch_number;
+                $branchId = $branch->id;
+                $branchName = $branch->name;
+                $branchNumber = $branch->branch_number;
 
-            $firstDebitAccNo = $branch->branch_ho_13th_debit;
-            $secondDebitAccNo = $branch->branch_ho_13th_debit_1;
-            $creditAccNo = $branch->branch_ho_13th_credit;
+                $firstDebitAccNo = $branch->branch_ho_13th_debit;
+                $secondDebitAccNo = $branch->branch_ho_13th_debit_1;
+                $creditAccNo = $branch->branch_ho_13th_credit;
 
-            $entries = [];
+                $entries = [];
 
-            if ($total > 0) {
+                if ($total > 0) {
 
-                $entryId = $this->generateEntryId($counterEntry);
-                $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
-                $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
+                    $entryId = $this->generateEntryId($counterEntry);
+                    $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+                    $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
 
-                $entries = [
-                    [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
-                        'document_no'         => "{$month} {$year} 13th Month Allocation",
-                        'branch_id'           => $branchId,
-                        'branch_number'       => $branchNumber,
-                        'branch_name'         => $branchName,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'total_amount'        => $total,
-                        'amount'              => $thirteenthMonth,
-                        'acc_no'              => $firstDebitAccNo,
-                        'description_per_acc' => "13th Month Allocation | {$month} {$year}",
-                        'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
-                    ],
-                    [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
-                        'document_no'         => "{$month} {$year} 13th Month Allocation",
-                        'branch_id'           => $branchId,
-                        'branch_number'       => $branchNumber,
-                        'branch_name'         => $branchName,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'total_amount'        => $total,
-                        'amount'              => $payLeaveAndAdditional,
-                        'acc_no'              => $secondDebitAccNo,
-                        'description_per_acc' => "13th Month Allocation | {$month} {$year}",
-                        'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
-                    ],
-                    [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
-                        'document_no'         => "{$month} {$year} 13th Month Allocation",
-                        'branch_id'           => $branchId,
-                        'branch_number'       => $branchNumber,
-                        'branch_name'         => $branchName,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'total_amount'        => $total,
-                        'amount'              => $total,
-                        'acc_no'              => $creditAccNo,
-                        'description_per_acc' => "13th Month Allocation | {$month} {$year}",
-                        'balance_type'        => 'Credit',
-                        'is_block_payment'    => 0,
-                    ]
-                ];
+                    $entries = [
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => "{$month} {$year} 13th Month Allocation",
+                            'branch_id'           => $branchId,
+                            'branch_number'       => $branchNumber,
+                            'branch_name'         => $branchName,
+                            'ven_no'              => $vendorHONo,
+                            'ven_name'            => $vendorHOName,
+                            'total_amount'        => $total,
+                            'amount'              => $thirteenthMonth,
+                            'acc_no'              => $firstDebitAccNo,
+                            'description_per_acc' => "13th Month Allocation | {$month} {$year}",
+                            'balance_type'        => 'Debit',
+                            'is_block_payment'    => 0,
+                        ],
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => "{$month} {$year} 13th Month Allocation",
+                            'branch_id'           => $branchId,
+                            'branch_number'       => $branchNumber,
+                            'branch_name'         => $branchName,
+                            'ven_no'              => $vendorHONo,
+                            'ven_name'            => $vendorHOName,
+                            'total_amount'        => $total,
+                            'amount'              => $payLeaveAndAdditional,
+                            'acc_no'              => $secondDebitAccNo,
+                            'description_per_acc' => "13th Month Allocation | {$month} {$year}",
+                            'balance_type'        => 'Debit',
+                            'is_block_payment'    => 0,
+                        ],
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => "{$month} {$year} 13th Month Allocation",
+                            'branch_id'           => $branchId,
+                            'branch_number'       => $branchNumber,
+                            'branch_name'         => $branchName,
+                            'ven_no'              => $vendorHONo,
+                            'ven_name'            => $vendorHOName,
+                            'total_amount'        => $total,
+                            'amount'              => $total,
+                            'acc_no'              => $creditAccNo,
+                            'description_per_acc' => "13th Month Allocation | {$month} {$year}",
+                            'balance_type'        => 'Credit',
+                            'is_block_payment'    => 0,
+                        ]
+                    ];
+                }
+                $this->createEntries($entries, $user);
             }
-            $this->createEntries($entries, $user);
+
+            $this->notifyJobFinished();
+        } catch (\Throwable $e) {
+            $this->notifyJobFailed();
+            throw $e;
         }
     }
 

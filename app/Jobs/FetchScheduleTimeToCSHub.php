@@ -15,10 +15,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Support\NotifiesJobStatus;
 
 class FetchScheduleTimeToCSHub implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected Branch $timeKeepingBranch;
     protected Cutoff $activeCutOff;
@@ -96,9 +98,11 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
                         );
                     }
                 }
+                $this->notifyJobFinished();
                 DB::commit(); 
             } catch (Exception $e) {
                 DB::rollBack();
+                $this->notifyJobFailed();
             }
         }
     }

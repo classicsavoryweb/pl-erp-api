@@ -20,10 +20,12 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
+use App\Support\NotifiesJobStatus;
 use Log;
 class GenerateTimekeepingSummary implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
     protected $branchId;
     protected $currentCutOff;
     protected $timeKeepingService;
@@ -51,24 +53,25 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
     public function handle(): void
     {
-        $cutOff = $this->currentCutOff;
-        $branchId = $this->branchId;
-        $employeeId = $this->employeeId;
+        try {
+            $cutOff = $this->currentCutOff;
+            $branchId = $this->branchId;
+            $employeeId = $this->employeeId;
 
-        $employees = Employee::whereHas("timekeeping", function ($query) use ($branchId) {
-            $query->where("branch_id", $branchId);
-        })
-        ->where("status", "active")
-        ->where("type", "Direct");
+            $employees = Employee::whereHas("timekeeping", function ($query) use ($branchId) {
+                $query->where("branch_id", $branchId);
+            })
+            ->where("status", "active")
+            ->where("type", "Direct");
 
 
-        if ($employeeId !== 0) {
-            $employees = $employees->where("id", $employeeId);
-        }
+            if ($employeeId !== 0) {
+                $employees = $employees->where("id", $employeeId);
+            }
 
-        $employees = $employees->get();
+            $employees = $employees->get();
 
-        foreach ($employees as $employee) {
+            foreach ($employees as $employee) {
             // Log::info("===================");
             // Log::info($employee->full_name);
             $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
@@ -514,6 +517,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 }
             }
+        }
+
+            $this->notifyJobFinished();
+        } catch (\Throwable $e) {
+            $this->notifyJobFailed();
+            throw $e;
         }
     }
 

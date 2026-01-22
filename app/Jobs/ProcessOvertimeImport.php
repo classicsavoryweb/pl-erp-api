@@ -10,10 +10,12 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Excel;
+use App\Support\NotifiesJobStatus;
 
 class ProcessOvertimeImport implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected $overtimeFilePath;
     protected $userId;
@@ -26,12 +28,18 @@ class ProcessOvertimeImport implements ShouldQueue
 
     public function handle(Excel $excel): void
     {
+        try {
         $storage = Storage::disk("hr_system_folder");
 
         if ($storage->exists($this->overtimeFilePath)) {
             $filePath = $storage->path($this->overtimeFilePath);
 
             $excel->import(new OvertimeImport, $filePath);
+        }
+        $this->notifyJobFinished();
+        } catch (\Throwable $e) {
+            $this->notifyJobFailed();
+            throw $e;
         }
     }
 }

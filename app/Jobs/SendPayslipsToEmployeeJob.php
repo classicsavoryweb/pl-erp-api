@@ -12,10 +12,12 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
+use App\Support\NotifiesJobStatus;
 
 class SendPayslipsToEmployeeJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected $payrolls;
     protected $userId;
@@ -30,6 +32,7 @@ class SendPayslipsToEmployeeJob implements ShouldQueue
      */
     public function handle(): void
     {
+        try {
         $payslips = $this->payrolls;
 
         foreach ($payslips as $payslip) {
@@ -37,6 +40,11 @@ class SendPayslipsToEmployeeJob implements ShouldQueue
             $cutOff = Cutoff::where("pay_date", $payslip->pay_date)->first();
             Mail::mailer("PAYROLL_MAILER")->to($employee->email)
                 ->send(new SendPayslipEmail($payslip, $cutOff));
+        }
+        $this->notifyJobFinished();
+        } catch (\Throwable $e) {
+            $this->notifyJobFailed();
+            throw $e;
         }
     }
 }
