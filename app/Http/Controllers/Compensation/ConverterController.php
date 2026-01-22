@@ -573,6 +573,7 @@ class ConverterController extends Controller
 
                 $isExisting = ConverterDetail::where("transaction_number", $transaction["transaction_number"])
                 ->where("employee_id", $employee->id)
+                ->whereNot("status", "Voided")
                 ->first();
 
                 if ($isExisting) {
