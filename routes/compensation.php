@@ -72,7 +72,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-cshub-applied-transactions", [ConverterController::class, "createCSHubTransactions"]);
     Route::middleware(["permission:perform_compensation_converter"])->get("/send-transaction-email/{batchId}", [ConverterController::class, "sendTransactionEmail"]);
     Route::middleware(["permission:perform_compensation_converter"])->post("/resend-transaction-email/{batchId}", [ConverterController::class, "resendTransactionEmail"]);
-    
+    Route::get("/export-converter-batch-transactions", [ConverterController::class, "exportConverterMainTransactions"]);
+
     //prooflist
     Route::get("/get-all-payroll-prooflist", [PayrollProofListController::class, "getProofList"]);
     Route::middleware(["permission:perform_compensation_payroll_prooflist"])->get("/generate-payroll-prooflist-converter", [PayrollProofListController::class, "generateConverterForProoflist"]);

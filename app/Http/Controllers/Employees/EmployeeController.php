@@ -52,7 +52,9 @@ class EmployeeController extends Controller
             $biometricsNumber = "";
 
             if ($request->type === "Direct") {
-                $biometricsNumber = "10".$employeeNumber;
+                $prefix = env('COMPANY_NAME') == "SFI" ? "10" : "30";
+
+                $biometricsNumber = $prefix . $employeeNumber;
             }
             if ($request->type === "Agency") {
                 $agency = Agency::find($request->agency_id);
@@ -66,7 +68,7 @@ class EmployeeController extends Controller
                 } else {
                     $biometricsNumber = "12".$employeeNumber;
                 }
-
+                $employeeNumber = "A".$employeeNumber;
                 $employeeNumber2 = $company."-".$agency->name."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             }
 
@@ -226,7 +228,16 @@ class EmployeeController extends Controller
                 $employees = $employees->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END");
             }
 
-            $employees = $employees->with(["current_position", "agency", "current_branch", "station", "employee_status", "schedule", "schedule.schedule_type"])
+            $employees = $employees->with([
+                "current_position",
+                "agency",
+                "current_branch",
+                "home_branch",
+                "station",
+                "employee_status",
+                "schedule",
+                "schedule.schedule_type"
+            ])
             ->orderBy("date_hired", "desc");
 
             if ($request->has(["export"]) && $request->export) {

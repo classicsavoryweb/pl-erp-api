@@ -56,6 +56,10 @@ class TimeKeepingService
             }
         }
 
+        // Log::info("==================");
+        // Log::info($employee->full_name);
+        // Log::info($log->date);
+
         $travel_time = 0;
 
         $isCancelledOff = false;
@@ -81,6 +85,7 @@ class TimeKeepingService
         $diffInSeconds = $parsedLastPunch->diffInSeconds($parsedFirstPunch);
 
         $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
+        $totalDurationHOurs = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 10.5 : 9;
         $decimalHours = $diffInSeconds / 3600;
 
         $workHours += $decimalHours;
@@ -406,7 +411,9 @@ class TimeKeepingService
             $undertime = 0;
             if ($schedule->selection == "NO SCHEDULE") {
                 $workHours = 0;
-                $overtime = $biotimePunches->count() > 3 ? $decimalHours - 1 : $decimalHours;   
+                $overtime = $biotimePunches->count() > 3 ? $decimalHours - 1 : $decimalHours;
+            } else {
+                $overtime = ($decimalHours - $totalDurationHOurs >= 1) ? $decimalHours - $totalDurationHOurs : 0;
             }
         }
 
@@ -573,12 +580,16 @@ class TimeKeepingService
                 }
             }
 
+            // Log::info("UNPROCESSED: ".$finalWorkHours);
+            // Log::info("WORKED HOURS: ".$workHours);
+            // Log::info("SHOULD BE HALFDAY: ".$shouldBeHalfDay);
             if (
                 ($workHours >= $schedule->total_hours - 3.5 && $undertime < 240 ) &&
                 !$isCancelledOff &&
                 !$shouldBeHalfDay
             ) {
                 $finalWorkHours = $hours;
+                // Log::info("CONDITION 1");
             } else if (
                 $workHours >= 4 &&
                 $undertime >= 240 &&
@@ -586,14 +597,26 @@ class TimeKeepingService
                 $workHours > 0
             ) {
                 $finalWorkHours = $hours;
-            }
-            else if (
+                // Log::info("CONDITION 2");
+            } else if (
+                $workHours >= $schedule->total_hours / 2 &&
+                $undertime <= 240 &&
+                !$shouldBeHalfDay
+            ) {
+                $finalWorkHours = $hours;
+                // Log::info("CONDITION 3");
+            } else if (
                 (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
                 !$isCancelledOff &&
-                $workHours > 0
+                $workHours > 0 &&
+                $undertime < 120
             ) {
                 $finalWorkHours = $hours / 2;
+                // Log::info("CONDITION 4");
             }
+
+
+            // Log::info("PROCESSED: ".$finalWorkHours);
 
             if ($holiday) {
                 if ($legalHoliday === "Yes") {
@@ -607,7 +630,7 @@ class TimeKeepingService
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
                 "biotime_log_id" => $log->id,
-                "schedule_time_id" => $scheduleTime->id,
+                "schedule_time_id" => $scheduleTime->id ?? 0,
                 "date" => $log->date,
                 "worked_hours" => $workHours,
                 "legal_holiday" => $legalHoliday,
@@ -784,6 +807,14 @@ class TimeKeepingService
                 $payment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
                 if ($payment) {
                     $payment->delete();
+                }
+                
+                $biotimeLog = BiotimeLog::where("employee_id", $employee->id)
+                ->where("date", $date)
+                ->first();
+
+                if (!$biotimeLog || $biotimeLog->punches()->count() == 0) {
+                    $totalAmount = 0;
                 }
 
                 $timekeepingPayment = TimeKeepingPayment::create([
@@ -1016,8 +1047,16 @@ class TimeKeepingService
                 return $schedule;
             }
         });
+
+        $hasNoSchedule = $schedules->contains(function ($schedule) {
+            return in_array($schedule->timetable, ['NO SCHEDULE']);
+        });
         
         if ($hasLeaveOrSuspension) {
+            $isComplete = false;
+        }
+
+        if ($employee->schedule->schedule_type->name === "Normal Schedule" && $hasNoSchedule) {
             $isComplete = false;
         }
 
@@ -1025,8 +1064,11 @@ class TimeKeepingService
             $timeKeeping = TimeKeeping::where("date", $schedule->date)
             ->where("employee_id", $employee->id)
             ->first();
+            $biotimeLog = BiotimeLog::where("date", $schedule->date)
+            ->where("employee_id", $employee->id)
+            ->first();
 
-            if (!$timeKeeping) {
+            if (!$timeKeeping || !$biotimeLog) {
                 $isComplete = false;
             }
         }

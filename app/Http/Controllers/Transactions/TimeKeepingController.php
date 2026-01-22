@@ -125,6 +125,10 @@ class TimeKeepingController extends Controller
                 }
             }
 
+            $timeKeepingQuery = $timeKeepingQuery
+            ->orderBy("employee_id", "ASC")
+            ->orderBy("date", "ASC");
+
             if ($request->has(["export"]) && $request->export) {
                 $timeKeepingQuery = $timeKeepingQuery->get();
                 return Excel::download(new TimeKeepingExport($timeKeepingQuery), "time_keeping.xls");
@@ -210,7 +214,11 @@ class TimeKeepingController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $timeKeepingSummaryQuery = $timeKeepingSummaryQuery->get();
-                return Excel::download(new TimeKeepingSummaryExport($timeKeepingSummaryQuery), "time_keeping_summary.xls");
+                return Excel::download(new TimeKeepingSummaryExport(
+                    $timeKeepingSummaryQuery,
+                    $start_time,
+                    $end_time
+                ), "time_keeping_summary.xls");
             }
 
             $timeKeepingSummary = $timeKeepingSummaryQuery->paginate($perPage);

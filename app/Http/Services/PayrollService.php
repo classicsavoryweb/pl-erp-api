@@ -96,10 +96,10 @@ class PayrollService {
                 $tardinessAmount += (float)$payment->tardiness_deduction;
                 $undertimeAmount += (float)$payment->undertime_deduction;
                 $overtimeAmount += (float)$payment->regular_overtime;
-                $legalHolidayAmount += (float)$payment->legal_holiday;
-                $legalHolidayOvertimeAmount += (float)$payment->legal_holiday_overtime;
-                $specialHolidayAmount += (float)$payment->special_holiday;
-                $specialHolidayOvertimeAmount += (float)$payment->special_holiday_overtime;
+                $legalHolidayAmount += $timeKeepingSummary->legal_holiday > 0 ? (float)$payment->legal_holiday : 0;
+                $legalHolidayOvertimeAmount += $timeKeepingSummary->legal_holiday_overtime > 0 ? (float)$payment->legal_holiday_overtime : 0;
+                $specialHolidayAmount += $timeKeepingSummary->special_holiday > 0 ? (float)$payment->special_holiday : 0;
+                $specialHolidayOvertimeAmount += $timeKeepingSummary->special_holiday_overtime > 0 ? (float)$payment->special_holiday_overtime : 0;
                 $nightDifferentialAmount += (float)$payment->night_differential;
                 $nightDifferentialOvertimeAmount += (float)$payment->night_differential_overtime;
                 $cancelledOffAmount += (float)$payment->cancelled_off;
@@ -139,7 +139,7 @@ class PayrollService {
                     ->where('max_amount', '>=', $grossPayAmount)
                     ->first();
     
-                if (Carbon::parse($cutOff->start_date)->day === 11) {
+                if (Carbon::parse($cutOff->start_date)->day === 26) {
                     $sssEmployeeAmount = round($sss->employee_ss, 2);
                     $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
     
@@ -165,6 +165,10 @@ class PayrollService {
                         ->first();
     
                         $pagibigShares = $totalSalary * (0.01 * $pagibig->percentage);
+
+                        if ($pagibigShares > $pagibig->max_deduction) {
+                            $pagibigShares = $pagibig->max_deduction;
+                        }
     
                         $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
                         $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);

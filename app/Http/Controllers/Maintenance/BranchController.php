@@ -63,6 +63,18 @@ class BranchController extends Controller
         }
     }
 
+    public function getFilterBranches(Request $request) {
+        try {
+            $branches = Branch::orderBy("name", "ASC")
+            ->get();
+
+            return $this->sendResponse(["branches" => $branches]);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
     public function createBranch(Request $request) {
         try {
             $request->validate([

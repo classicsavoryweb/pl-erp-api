@@ -78,7 +78,6 @@ class FetchOvertimeInCSHub extends Command
                 $employee = Employee::where("biometric_number", $overtime["user"]["employee_biometric"])->first();
 
                 if ($employee) {
-                    Log::info($employee->full_name." - ".$overtime["total_hrs"]);
                     $isExisting = Overtime::where("employee_id", $employee->id)
                     ->where("overtime_date",$overtime["overtime_date"])
                     ->first();

@@ -77,7 +77,7 @@ class ConverterController extends Controller
             }
 
             if ($request->has(["converter_main_id"])) {
-                $converters = $converters->with(["employee", "transaction_type", "branch"])
+                $converters = $converters->with(["employee", "transaction_type", "branch", "admin_added", "converter_main"])
                 ->where("converter_main_id", $request->converter_main_id)
                 ->orderBy(
                     Employee::select('last_name')->whereColumn('employees.id', 'converter_details.employee_id'),
@@ -88,7 +88,19 @@ class ConverterController extends Controller
                 return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
             }
 
-            $converters = $converters->with(["employee", "transaction_type", "branch"])            
+            if ($request->has(["converter_main_ids"])) {
+                $converters = $converters->with(["employee", "transaction_type", "branch", "admin_added", "converter_main"])
+                ->whereIn("converter_main_id", $request->converter_main_ids)
+                ->orderBy(
+                    Employee::select('last_name')->whereColumn('employees.id', 'converter_details.employee_id'),
+                    'ASC'
+                )
+                ->get();
+
+                return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
+            }
+
+            $converters = $converters->with(["employee", "transaction_type", "branch", "admin_added", "converter_main"])            
             ->orderBy("created_at", "DESC");
 
             if ($request->has(["export"]) && $request->export) {
@@ -143,6 +155,16 @@ class ConverterController extends Controller
                 ]);
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $converters = $converters->select("id")
+                ->get()
+                ->toArray();
+
+                $request["converter_main_ids"] = $converters;
+
+                return $this->getAllConverterDetails($request);
+            }
+
             $converters = $converters->with([
                 "added_by",
                 "posted_by",
@@ -163,6 +185,12 @@ class ConverterController extends Controller
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
+    }
+
+    public function exportConverterMainTransactions(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllConverterMain($request);
     }
 
     public function createConverterDetails(Request $request) {

@@ -36,6 +36,10 @@ class ReportsThirteenthMonthController extends Controller
                 $thirteenthMonth = $thirteenthMonth->where("year", $request->year);
             }
 
+            if ($request->has(["month"])) {
+                $thirteenthMonth = $thirteenthMonth->where("month", $request->month);
+            }
+
             $thirteenthMonth = $thirteenthMonth->paginate($perPage);
 
             return $this->sendResponse($thirteenthMonth);

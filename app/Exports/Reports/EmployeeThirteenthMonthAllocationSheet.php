@@ -85,7 +85,7 @@ class EmployeeThirteenthMonthAllocationSheet implements FromCollection, WithHead
                 'Total',
                 'Net Claim (13th Month)',
                 'Net Claim (Payleave)',
-                'Net Claim (Additional 3.5%)',
+                'Net Claim (Additional 6%)',
             ],
         ];
     }

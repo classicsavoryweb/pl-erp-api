@@ -43,13 +43,24 @@ class GenerateTimekeepingSummary implements ShouldQueue
     {
         $cutOff = $this->currentCutOff;
         $branchId = $this->branchId;
+        $employeeId = $this->employeeId;
+
         $employees = Employee::whereHas("timekeeping", function ($query) use ($branchId) {
             $query->where("branch_id", $branchId);
         })
         ->where("status", "active")
-        ->get();
+        ->where("type", "Direct");
+
+
+        if ($employeeId !== 0) {
+            $employees = $employees->where("id", $employeeId);
+        }
+
+        $employees = $employees->get();
 
         foreach ($employees as $employee) {
+            // Log::info("===================");
+            // Log::info($employee->full_name);
             $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
             ->whereBetween("date", $cutOff)
             ->get();
@@ -83,7 +94,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     $holidayIsPaid = false;
-                    
+                    $holidayConvertedToDays = false;
+
                     $holiday = Holiday::where("date", $actualSchedule->date)
                     ->whereHas("branches", function ($query) use($actualSchedule) {
                         return $query->where("branch_id", $actualSchedule->branch_id);
@@ -92,6 +104,17 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($holiday) {
                         $holidayIsPaid = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff, $holiday);
+                        $month = Carbon::parse($actualSchedule->date)->month;
+
+                        if (
+                            $month == 12 &&
+                            $timeKeep->final_worked_hours > 0 &&
+                            $timeKeep->branch->type == "Head Office" &&
+                            $employee->schedule->schedule_type->name === "Compressed Schedule"
+                        ) {
+                            $holidayIsPaid = false;
+                        }
+
                         if ($holidayIsPaid) {
                             $timeKeep->update([
                                 "paid_holiday" => "Yes"
@@ -111,6 +134,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
                         $regular_days += 1;
+                        $holidayConvertedToDays = true;
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {
@@ -129,12 +153,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         ];
                     }
 
-                    if ($timeKeep->special_holiday_hours > 0) {
+                    if ($timeKeep->special_holiday_hours > 0 && !$holidayConvertedToDays) {
                         $special_holiday += $holidayIsPaid ? $timeKeep->special_holiday_hours : 0;
                     }
 
-                    if ($timeKeep->legal_holiday_hours > 0) {
-                        $legal_holiday+= $holidayIsPaid ? $timeKeep->legal_holiday_hours : 0;
+                    if ($timeKeep->legal_holiday_hours > 0 && !$holidayConvertedToDays) {
+                        $legal_holiday += $holidayIsPaid ? $timeKeep->legal_holiday_hours : 0;
                     }
 
                     $totalOT = $timeKeep->approved_overtime;
@@ -205,8 +229,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
 
                         if ($employee->schedule->schedule_type->name === "Normal Schedule") {
-                            if ($workDays > $regular_days) {
+                            if ($workDays > $regular_days && $workDays < 13 ) {
                                 $regular_days = 13 - ($workDays - $regular_days);
+                            } else if ($workDays > $regular_days && $workDays > 13) {
+                                $regular_days = 13;
                             } else {
                                 $regular_days = 13;
                             }
@@ -214,38 +240,103 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 } else {
                     $absent = 0;
+                    $workingDays = ScheduleTIme::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+                    ->where("employee_id",$employee->id)
+                    ->whereNotIn("timetable", ['REST DAY', 'NO SCHEDULE'])
+                    ->get()
+                    ->count();
+
+                    $normalWorkingDays = ScheduleTIme::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+                    ->where("employee_id",$employee->id)
+                    ->whereNotIn("timetable", ['REST DAY'])
+                    ->get()
+                    ->count();
+
                     $schedules = ScheduleTime::where("employee_id", $employee->id)
                     ->whereBetween("date", [$cutOff['start_time'],$cutOff['end_time']])
                     ->get();
 
                     foreach ($schedules as $sched) {
-                        if (!in_array($sched->timetable,["REST DAY", "NO SCHEDULE"])) {
+                        $absentToBeAdded = 0;
+
+                        $biotimeLog = BiotimeLog::where("date", $sched->date)
+                        ->where("employee_id", $employee->id)
+                        ->first();
+
+                        if (
+                            !in_array($sched->timetable,["REST DAY", "NO SCHEDULE"]) &&
+                            $employee->schedule->schedule_type->name === "Compressed Schedule"
+                        ) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
                             ->first();
-                            if (!$timeKeeping) {
-                                $absent += 1;
+                            if (!$timeKeeping || !$biotimeLog) {
+                                $absentToBeAdded = 1;
                             }
                         }
+
+                        if (
+                            $employee->schedule->schedule_type->name === "Normal Schedule" &&
+                            !in_array($sched->timetable,["REST DAY"])
+                        ) {
+                            $timeKeeping = TimeKeeping::where("date", $sched->date)
+                            ->where("employee_id", $employee->id)
+                            ->first();
+                            if (!$timeKeeping || !$biotimeLog) {
+                                $absentToBeAdded = 1;
+                            }
+                        }
+
+                        $absent += $absentToBeAdded;
                     }
 
-
-                    if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                        $regular_days = 11 - $absent;
-                    }
-
-                    if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                        $regular_days = 13 - $absent;
-                    }
-
-                    // $shouldBeRegularDays = 0;
+                    // Log::info("ABSENT: ".$absent);
+                    $hasHalfDay = fmod($regular_days, 1);
                     // if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                    //     $shouldBeRegularDays = 11 - $absent;
+                    //     $days = 11;
+
+                    //     if ($regular_days > $days && $workingDays > $days) {
+                    //         $days = 11;
+                    //     } else if ($workingDays > $days && $regular_days < $days) {
+                    //         $days = $regular_days;
+                    //     } else if ($workingDays < 11) {
+                    //         $days = $workingDays;
+                    //     }
+
+                    //     $regular_days = $days - $absent;
                     // }
 
                     // if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                    //     $shouldBeRegularDays = 13 - $absent;
+                    //     $days = 13;
+
+                    //     // if ($regular_days > $days || $normalWorkingDays > $days) {
+                    //     //     $days = 13;
+                    //     // } else if ($normalWorkingDays > $days && $regular_days < $days) {
+                    //     //     $days = $regular_days;
+                    //     // } else if ($normalWorkingDays < 13) {
+                    //     //     $days = $normalWorkingDays;
+                    //     // }
+
+                    //     if ($normalWorkingDays > 13 || $regular_days > $days) {
+                    //         $days = 13;
+                    //     } else {
+                    //         $days = $normalWorkingDays;
+                    //     }
+
+                    //     $regular_days = $days - $absent;
                     // }
+
+                    // Log::info("WORKING DAYS: ".$workingDays);
+                    // Log::info("HAS HALF DAY: ".$hasHalfDay);
+                    // Log::info("UNPROCESSED REGULAR DAYS: ".$regular_days);
+                    // $shouldBeRegularDays = 0;
+                    if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
+                        $regular_days = 11 - $absent - $hasHalfDay;
+                    }
+
+                    if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
+                        $regular_days = 13 - $absent - $hasHalfDay;
+                    }
 
                     // if ($shouldBeRegularDays > $regular_days) {
                     //     $regular_days = $shouldBeRegularDays;

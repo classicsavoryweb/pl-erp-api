@@ -122,9 +122,9 @@ class AdjustmentController extends Controller
                 ->where("date", $request->date)
                 ->first();
 
-                if (!$oldTimeKeeping) {
-                    return $this->sendError(["message" => "Timekeeping not found"]);
-                }
+                // if (!$oldTimeKeeping) {
+                //     return $this->sendError(["message" => "Timekeeping not found"]);
+                // }
 
                 $log = BiotimeLog::where("employee_id", $employee->id)
                     ->where("date", $request->date)
@@ -154,9 +154,13 @@ class AdjustmentController extends Controller
                 ]);
 
                 foreach($request->punches as $punch) {
-                    $biotimePunch = $log->punches()
-                    ->where("punch_time", $punch["punch_time"])
-                    ->first();
+                    $biotimePunch = null;
+
+                    if ($log instanceof BiotimeLog) {
+                        $biotimePunch = $log->punches()
+                        ->where("punch_time", $punch["punch_time"])
+                        ->first();
+                    }
 
                     AdjustmentPunch::create([
                         "adjustment_id" => $adjustment->id,
@@ -194,34 +198,25 @@ class AdjustmentController extends Controller
                 $this->timeKeepingService->computePayment($adjustmentTimeKeeping, $schedule->selection, true);
                 $adjustmentPayment = TimeKeepingPayment::where("adjustment_timekeeping_id", $adjustmentTimeKeeping->id)->first();
                 $originalPayment = null;
+                
+                $cancelled_off = 0;
+                $taxable_amount = 0;
+                $amount_paid = 0;
+                $days = 0;
 
                 if ($oldTimeKeeping) {
                     $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
-                }
 
-                $cancelled_off = $adjustmentTimeKeeping->cancelled_off_hours - ($oldTimeKeeping->cancelled_off_hours ?? 0);
-                $days = 0;
-
-                if ($adjustmentPayment && !$originalPayment) {
-                    $submittedScheduleTime = ScheduleTime::where("date", $request->date)
-                    ->where("employee_id", $employee->id)
-                    ->first();
-
-                    if ($submittedScheduleTime->timetable && !in_array($submittedScheduleTime->timetable, ["REST DAY", "NO SCHEDULE"])) {
-                        $days += 1;
-                    } else {
-                        if (!$submittedScheduleTime) {
-                            $days += 1;
-                        }
-                    }
+                    $cancelled_off = $adjustmentTimeKeeping->cancelled_off_hours - ($oldTimeKeeping->cancelled_off_hours ?? 0);
                 }
 
                 $taxable_amount = $adjustmentPayment->total_amount - ($originalPayment->total_amount ?? 0);
                 $amount_paid = $originalPayment->total_amount ?? 0;
+
                 $adjustment->update([
                     "days" => $days,
                     "cancelled_rd" => $cancelled_off,
-                    "taxable_amount" => round($taxable_amount, 2) ,
+                    "taxable_amount" => round($taxable_amount, 2),
                     "amount_paid" => round($amount_paid, 2),
                     "correct_amount_paid" => round($adjustmentPayment->total_amount, 2),
                     "actual_schedule" => $schedule->selection,

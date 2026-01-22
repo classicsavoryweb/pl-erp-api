@@ -170,25 +170,29 @@ class Employee extends Model
 
     protected function properFullName(): Attribute
     {
-        $fullName = strtolower($this->first_name . ' ' . $this->last_name);
-        if ($this->middle_name) {
-            $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
-            $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
-        }
-        $properFullName = ucwords($fullName);
-        return Attribute::get(
-            fn () => $properFullName
-        );
+        return Attribute::get(function () {
+            $first = mb_convert_case($this->first_name, MB_CASE_TITLE, 'UTF-8');
+            $last  = mb_convert_case($this->last_name, MB_CASE_TITLE, 'UTF-8');
+
+            if ($this->middle_name) {
+                $middleInitial = mb_strtoupper(mb_substr($this->middle_name, 0, 1, 'UTF-8'), 'UTF-8');
+                return "{$first} {$middleInitial}. {$last}";
+            }
+
+            return "{$first} {$last}";
+        });
     }
 
     protected function formalFullName(): Attribute
     {
         $pronoun = $this->gender === "Male" ? "Mr." : "Ms.";
-        $fullName = strtolower($this->first_name . '. ' . $this->last_name);
+        $first = mb_convert_case($this->first_name, MB_CASE_TITLE, 'UTF-8');
+        $last  = mb_convert_case($this->last_name, MB_CASE_TITLE, 'UTF-8');
+        $fullName = strtolower($first. '. ' . $last);
 
         if ($this->middle_name) {
             $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
-            $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
+            $fullName = strtolower($first. ' ' . $middleInitial . '. ' . $last);
         }
         $properFullName = ucwords($fullName);
         return Attribute::get(
