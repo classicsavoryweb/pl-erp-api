@@ -72,7 +72,7 @@ class FetchBiotimeAttendance extends Command
                             "biometric_number" => $employee->biometric_number,
                             "date" => $dateToUse->format("Y-m-d"),
                         ]);
-                        if ($bio->is_modified) {s
+                        if ($bio->is_modified) {
                             continue;
                         }
 
