@@ -567,8 +567,8 @@ class ConverterController extends Controller
                 $module = CSHubModule::where("description", $transaction["type"])->first();
 
                 $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
-                ->where("credit_status_positive", $transaction["for_crediting"])
-                ->where("deduction_status_positive", $transaction["for_liquidation"])
+                // ->where("credit_status_positive", $transaction["for_crediting"])
+                // ->where("deduction_status_positive", $transaction["for_liquidation"])
                 ->where("source_id", $module->id);
 
                 if ($transaction["type"] === "HEALTHCARE" && isset($transaction["exam_type"])) {
