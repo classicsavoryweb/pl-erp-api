@@ -167,6 +167,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $travel_time= 0;
             $tardiness = 0;
             $lateDate = [];
+            $daily_rate = round($employee->dailySalary(), 2);
+            $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule"
+                ? round($daily_rate / 9.5, 2)
+                : round($daily_rate / 8, 2);
+            $minute_rate = $hourly_rate / 60;
 
             if ($timeKeepings->count() > 0) {
                 foreach ($timeKeepings as $timeKeep) {
@@ -435,7 +440,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
 
                 //checking adjustments
-                $adjustments_tardiness = 0;
+                $adjustments_tardiness_amount = 0;
                 $adjustments_undertime = 0;
                 $adjustments_days = 0;
                 $adjustments_cancelled_off = 0;
@@ -518,7 +523,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
 
                         if ($adjustmentTimeKeeping->tardiness > 0) {
-                            $adjustments_tardiness += $adjustmentTimeKeeping->tardiness;
+                            $adjustments_tardiness_amount += $adjustmentTimeKeeping->tardiness * $minute_rate;
                         }
                     }
 
@@ -553,7 +558,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
 
                         if ($adjustmentTimeKeeping->tardiness > 0) {
-                            $adjustments_tardiness += $adjustmentTimeKeeping->tardiness;
+                            $adjustments_tardiness_amount += $adjustmentTimeKeeping->tardiness * $minute_rate;
                         }
                     }
 
@@ -565,7 +570,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $withAdjustments = true;
                 }
 
-                $tardiness += $adjustments_tardiness;
+                $adjustment_amount += round($adjustments_tardiness_amount * -1, 2);
                 $undertime += $adjustments_undertime;
                 $regular_days += $adjustments_days;
                 $cancelled_off += round($adjustments_cancelled_off, 2);
