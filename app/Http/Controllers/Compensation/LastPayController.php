@@ -171,11 +171,11 @@ class LastPayController extends Controller
                 $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$dateHolded)
+                ->where("pay_date", ">" ,$dateHolded)
                 ->get();
 
                 $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$dateHolded)
+                ->where("pay_date", ">" ,$dateHolded)
                 ->get();
 
                 foreach ($payrolls as $payroll) {
@@ -240,7 +240,9 @@ class LastPayController extends Controller
                     "year" => $yearHolded,
                     "tax_refund" => $taxRefund,
                     "total_deductions" => $totalDeductions,
-                    "last_pay" => round($lastPayAmount, 2)
+                    "last_pay" => round($lastPayAmount, 2),
+                    "payrolls" => $payrolls,
+                    "date_holdeed" => $dateHolded
                 ]);
             }
 
