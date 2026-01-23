@@ -92,14 +92,17 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ->where("employee_id", $employee->id)
                 ->where("date", $overtime->overtime_date)
                 ->first();
+                
+                if ($isExisting) {
+                    $isExisting->delete();
+                }
 
-                if ($timeKeeping && !$isExisting) {
+                if ($timeKeeping) {
                     $schedule = $timeKeeping->schedule;
                     $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
                     $log = BiotimeLog::where("employee_id", $employee->id)
                     ->where("date", $timeKeeping->date)
                     ->first();
-
 
                     $adjustedTimeKeeping = $this->timeKeepingService->computeTimeKeeping(
                         $timeKeeping->branch_id,
