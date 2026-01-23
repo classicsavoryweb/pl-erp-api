@@ -533,7 +533,8 @@ class ConverterController extends Controller
                 $transactions = [];
 
                 foreach ($data['data']['transactions'] as $trans) {
-                    $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])->first();
+                    $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])
+                    ->latest()->first();
 
                     if ($isExisting && in_array($isExisting->status, ['Pending', 'Generated'])) {
                         continue;
@@ -584,6 +585,9 @@ class ConverterController extends Controller
 
                     if ($examType) {
                         $transactionType = $transactionType->where("exam_type", $examType->id);
+                    } else {
+                        $transactionType = $transactionType->where("credit_status_positive", $transaction["for_crediting"])
+                        ->where("deduction_status_positive", $transaction["for_liquidation"]);
                     }
                 } else if ($transaction["type"] === "HEALTHCARE" && !isset($transaction["exam_type"])) {
                     $transactionType = $transactionType->where("credit_status_positive", $transaction["for_crediting"])
