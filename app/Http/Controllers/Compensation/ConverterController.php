@@ -585,6 +585,9 @@ class ConverterController extends Controller
                     if ($examType) {
                         $transactionType = $transactionType->where("exam_type", $examType->id);
                     }
+                } else if ($transaction["type"] === "HEALTHCARE" && !isset($transaction["exam_type"])) {
+                    $transactionType = $transactionType->where("credit_status_positive", $transaction["for_crediting"])
+                    ->where("deduction_status_positive", $transaction["for_liquidation"]);
                 }
                 
                 $transactionType = $transactionType->first();
