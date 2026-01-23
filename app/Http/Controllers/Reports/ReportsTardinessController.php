@@ -511,17 +511,17 @@ class ReportsTardinessController extends Controller
             : "Tardiness - Notice of Decision";
 
         $message = $memoType === "Notice to Explain"
-            ? "Good day Ma'am/Sir,\n"
-                . "Attached in this email is your Notice to Explain (Tardiness). Kindly read the contents carefully and acknowledge your Notice to Explain (NTE) memo.\n"
-                . "You are hereby directed to submit a written explanation within five (5) calendar days from receipt of this notice, stating why no disciplinary action should be imposed against you. Failure to submit a written explanation within the prescribed period shall be deemed a waiver of your right to rebut the charges.\n"
-                . "Should you have any questions or require clarification, please do not hesitate to contact us.\n"
-                . "Please reply to this email to confirm receipt.\n"
+            ? "Good day Ma'am/Sir,<br><br>"
+                . "Attached in this memo is your Notice to Explain (Tardiness). Kindly read the contents carefully and acknowledge your <strong>Notice to Explain (NTE)</strong> memo.<br><br>"
+                . "You are hereby directed to submit a written explanation within <strong><span style=\"color: #0000ff;\">five (5) calendar days</span></strong> from receipt of this notice, stating why no disciplinary action should be imposed against you. Failure to submit a written explanation within the prescribed period shall be deemed a waiver of your right to rebut the charges.<br><br>"
+                . "Should you have any questions or require clarification, please do not hesitate to contact us.<br><br>"
+                . "Please reply to this memo to confirm receipt.<br><br>"
                 . "Thank you, and stay safe."
-            : "Good day Ma'am/Sir,\n"
-                . "Attached in this email is your Notice of Decision (Tardiness). Kindly read the contents carefully and acknowledge your Notice of Decision (NOD) memo.\n"
-                . "You are hereby directed to submit a written explanation within five (5) calendar days from receipt of this notice, stating why no disciplinary action should be imposed against you. Failure to submit a written explanation within the prescribed period shall be deemed a waiver of your right to rebut the charges.\n"
-                . "Should you have any questions or require clarification, please do not hesitate to contact us.\n"
-                . "Please reply to this email to confirm receipt.\n"
+            : "Good day Ma'am/Sir,<br><br>"
+                . "Attached in this memo is your Notice of Decision (Tardiness). Kindly read the contents carefully and acknowledge your <strong>Notice of Decision (NOD)</strong> memo.<br><br>"
+                . "You are hereby directed to submit a written explanation within <strong><span style=\"color: #0000ff;\">five (5) calendar days</span></strong> from receipt of this notice, stating why no disciplinary action should be imposed against you. Failure to submit a written explanation within the prescribed period shall be deemed a waiver of your right to rebut the charges.<br><br>"
+                . "Should you have any questions or require clarification, please do not hesitate to contact us.<br><br>"
+                . "Please reply to this memo to confirm receipt.<br><br>"
                 . "Thank you, and stay safe.";
 
         $baseUrl = rtrim($baseUrl, "/");
