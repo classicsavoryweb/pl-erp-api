@@ -4,15 +4,19 @@ namespace App\Jobs;
 
 use App\Http\Services\TimeKeepingService;
 use App\Models\Adjustment;
+use App\Models\AdjustmentPunch;
 use App\Models\AdjustmentTimeKeeping;
 use App\Models\BiotimeLog;
 use App\Models\Employee;
 use App\Models\Holiday;
 use App\Models\LateTimeKeepingSummary;
+use App\Models\Overtime;
 use App\Models\ScheduleMasterlist;
 use App\Models\ScheduleTime;
 use App\Models\TimeKeeping;
+use App\Models\TimeKeepingPayment;
 use App\Models\TimeKeepingSummary;
+use Auth;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -72,6 +76,76 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $employees = $employees->get();
 
             foreach ($employees as $employee) {
+
+            $dateStart = Carbon::parse($cutOff["start_time"])->addDay()->format("Y-m-d");
+            $adjustmentOvertimes = Overtime::where("employee_id", $employee->id)
+            ->whereBetween("date_filed",[$dateStart, $cutOff['end_time']])
+            ->whereNotBetween("overtime_date", $cutOff)
+            ->get();
+
+            foreach ($adjustmentOvertimes as $overtime) {
+                $timeKeeping = TimeKeeping::where("employee_id", $employee->id)
+                ->where("date", $overtime->overtime_date)
+                ->first();
+
+                $isExisting = Adjustment::where("type","Overtime Force Adjustments")
+                ->where("employee_id", $employee->id)
+                ->where("date", $overtime->overtime_date)
+                ->first();
+
+                if ($timeKeeping && !$isExisting) {
+                    $schedule = $timeKeeping->schedule;
+                    $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
+                    $log = BiotimeLog::where("employee_id", $employee->id)
+                    ->where("date", $timeKeeping->date)
+                    ->first();
+
+
+                    $adjustedTimeKeeping = $this->timeKeepingService->computeTimeKeeping(
+                        $timeKeeping->branch_id,
+                        $log,
+                        $log->punches,
+                        $schedule->timetable,
+                        $employee,
+                        new AdjustmentTimeKeeping(),
+                        true,
+                        "force adjustment"
+                    );
+
+                    $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
+                        $adjustedTimeKeeping,
+                        $schedule->timetable,
+                        true
+                    );
+
+                    $taxable_amount = $adjustedTimeKeepingPayment->total_amount - ($oldtimeKeepingPayment->total_amount ?? 0);
+                    $amount_paid = $oldtimeKeepingPayment->total_amount ?? 0;
+                    $adjustment = Adjustment::create([
+                        "employee_id" => $employee->id,
+                        "biometric_number" => $employee->biometric_number,
+                        "date" => $timeKeeping->date,
+                        "days" => 0,
+                        "cancelled_rd" => 0,
+                        "taxable_amount" => round($taxable_amount, 2) ,
+                        "amount_paid" => round($amount_paid, 2),
+                        "correct_amount_paid" => round($adjustedTimeKeepingPayment->total_amount, 2),
+                        "actual_schedule" => $schedule->timetable,
+                        "type" => "Overtime Force Adjustments",
+                        "status" => "Approved",
+                        "added_by" => $this->userId,
+                        "added_at" => now(),
+                    ]);
+
+                    foreach($log->punches as $punch) {
+                        AdjustmentPunch::create([
+                            "adjustment_id" => $adjustment->id,
+                            "punch_time" => $punch->punch_time,
+                            "date" => $timeKeeping->date,
+                            "branch_id" => $punch->branch_id ?? null
+                        ]);
+                    }
+                }
+            }
             // Log::info("===================");
             // Log::info($employee->full_name);
             $timeKeepings = TimeKeeping::where("employee_id", $employee->id)

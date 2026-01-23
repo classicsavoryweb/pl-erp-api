@@ -4,6 +4,7 @@ namespace App\Http\Services;
 
 use App\Models\BiotimeLog;
 use App\Models\BiotimePunch;
+use App\Models\Cutoff;
 use App\Models\Holiday;
 use App\Models\Overtime;
 use App\Models\ScheduleMasterlist;
@@ -525,6 +526,11 @@ class TimeKeepingService
                 
                 if ($isAdjustment) {
                     $cutOffPaid = Carbon::parse($currentCutOff["start_time"])->format("m/d/Y")." TO ". Carbon::parse($currentCutOff['end_time'])->format("m/d/Y");
+                    $activeCutOff = Cutoff::where("status", "active")->first();
+
+                    if ($activeCutOff) {
+                        $cutOffPaid = Carbon::parse($activeCutOff->start_date)->format("m/d/Y") ." TO ". Carbon::parse($activeCutOff->end_date)->format("m/d/Y");
+                    }
                 }
 
                 $remainingHours = $overtimeApplied->total_hours - $totalHoursPaid;
