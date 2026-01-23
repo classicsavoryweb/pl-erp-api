@@ -30,7 +30,10 @@ use DB;
 use Illuminate\Validation\Rules\Exists;
 
 class PayrollService {
-    public function computePayroll (TimeKeepingSummary $timeKeepingSummary) {
+    public function computePayroll (
+        TimeKeepingSummary $timeKeepingSummary,
+        $edit = false
+    ) {
         $payroll = null;
         try {
             DB::beginTransaction();
@@ -204,7 +207,7 @@ class PayrollService {
 
 
             $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
-            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount + $taxableAdustmentAmount;
+            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount;
             $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
             $netPayAmount = $taxable - $taxAmount;
 
@@ -247,7 +250,9 @@ class PayrollService {
                 $manualDeductions = $existingPayroll->manual_deductions;
                 $nonTaxableAmount = $existingPayroll->non_taxable_adjustment;
                 $remarks = $existingPayroll->remarks;
-                $taxableAdustmentAmount = $existingPayroll->taxable_adjustment;
+                if (!$edit) {
+                    $taxableAdustmentAmount = $existingPayroll->taxable_adjustment;
+                }
 
                 $taxable = $taxableIncome + $taxableAdustmentAmount;
                 $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
@@ -258,14 +263,14 @@ class PayrollService {
                 $exemption = $tax->exemption ?? 0;
                 $percentage = $tax->percentage ?? 0;
 
-                $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                    ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                    : 0;
+                // $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                //     ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                //     : 0;
 
-                $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
-                $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount + $taxableAdustmentAmount;
-                $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
-                $netPayAmount = $taxable - $taxAmount;
+                // $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
+                // $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount + $taxableAdustmentAmount;
+                // $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
+                // $netPayAmount = $taxable - $taxAmount;
             }
 
             $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
@@ -350,7 +355,7 @@ class PayrollService {
                 }
             }
 
-            Payroll::updateOrCreate(
+            $payroll = Payroll::updateOrCreate(
                 [
                 "employee_id" => $employee->id,
                 "cut_off" => $cutOff->cut_off,
@@ -402,11 +407,13 @@ class PayrollService {
                 ComputeEmployeeTardiness::dispatch($cutOff->end_date);
             }
 
-            $incentives = $this->computeIncentives(
-                $cutOff,
-                $employee,
-                $timeKeepingSummary->branch
-            );
+            if ($cutOff->part == 1) {
+                $incentives = $this->computeIncentives(
+                    $cutOff,
+                    $employee,
+                    $timeKeepingSummary->branch
+                );
+            }
 
             DB::commit();
             return [
@@ -584,7 +591,6 @@ class PayrollService {
     }
 
     public function computeIncentives(Cutoff $cutOff, Employee $employee, Branch $branch) {
-
         $incentivesAmount = 0;
 
         $position = $employee->current_position;
@@ -596,15 +602,15 @@ class PayrollService {
             $position = Position::where("id", $formerIncentives->position_id)->first();
         }
 
-        if ($position->rank === 1) {
+        if ($position->rank == 1) {
             $months = Carbon::now()->diffInMonths($employee->date_hired);
             $bracket = IncentivesBracket::where("month", "<=", $months)
                 ->whereHas('positions', function ($query) use ($employee) {
-                    $query->where('id', $employee->position_id);
+                    $query->where('positions.id', $employee->position_id);
                 })
                 ->orderBy("month", "DESC")
                 ->first();
-            
+
             if ($bracket) {
                 $incentivesAmount = $bracket->amount;
             }

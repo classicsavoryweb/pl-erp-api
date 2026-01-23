@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\PayrollService;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\Tardiness;
@@ -378,7 +379,8 @@ class PayrollController extends Controller
         try {
             DB::beginTransaction();
 
-            $payroll = Payroll::with(["employee",
+            $payroll = Payroll::with([
+                "employee",
                 "employee.current_branch",
                 "employee.latest_bank_details",
                 "timekeeping_branch",
@@ -386,16 +388,13 @@ class PayrollController extends Controller
             ])->find($payrollId);
 
             if ($payroll) {
+                $payrollService = new PayrollService();
                 $remarks = $request->remarks ?? null;
                 $manual_deductions = $request->manual_deductions ?? 0;
                 $non_taxable_adjustments = $request->non_taxable_adjustment ?? 0;
                 $taxable_adjustment = $request->taxable_adjustment ?? 0;
 
                 $newNetPay = $payroll->net_pay;
-
-                if ($non_taxable_adjustments != $payroll->non_taxable_adjustments) {
-                    $newNetPay += $non_taxable_adjustments - $payroll->non_taxable_adjustments;
-                }
 
                 $amountToDeduct = 0;
                 $taxableIncome = $payroll->taxable_income;
@@ -408,47 +407,42 @@ class PayrollController extends Controller
                     $newNetPay -= $amountToDeduct;
                 }
 
-                if ($taxable_adjustment != $payroll->taxable_adjustment) {
-                    $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
-                    ->where("range_max", '>=',round($taxableIncome, 2))
-                    ->first();
-
-                    $salaryBase = $tax->salary_base ?? 0;
-                    $exemption = $tax->exemption ?? 0;
-                    $percentage = $tax->percentage ?? 0;
-
-                    $taxable = $taxableIncome + $taxable_adjustment;
-                    $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                        ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                        : 0;
-
-                    $withHoldingTax = $taxAmount;
-
-                    $newNetPay = $taxableIncome + $taxable_adjustment - $taxAmount - $totalDeductions;
-
-                    $additionalWorkingHoursTotal = 
-                        $payroll->overtime_amount +
-                        $payroll->legal_holiday_amount +
-                        $payroll->legal_holiday_overtime_amount +
-                        $payroll->special_holiday_amount +
-                        $payroll->special_holiday_overtime_amount +
-                        $payroll->night_differential_amount +
-                        $payroll->night_differential_overtime_amount +
-                        $payroll->cancelled_off +
-                        $taxable_adjustment;
-
-                    $remarks = 'TAXABLE ADJUSTMENT MANUALLY ENCODED : '.$taxable_adjustment;
+                if ($non_taxable_adjustments != $payroll->non_taxable_adjustment) {
+                    $newNetPay += $non_taxable_adjustments - $payroll->non_taxable_adjustment;
+                    $remarks = "NON TAXABLE ADJUSTMENT MANUALLY ENCODED: ". $non_taxable_adjustments . " | ";
+                    $payroll->update([
+                        "non_taxable_adjustment" => $non_taxable_adjustments,
+                        "manual_deductions" => $manual_deductions,
+                        "taxable_adjustment" => $taxable_adjustment,
+                        "withholding_tax" => $withHoldingTax,
+                        "net_pay" => round($newNetPay,2),
+                        "additional_working_hours_total" => $additionalWorkingHoursTotal,
+                        "remarks" => $remarks
+                    ]);
                 }
 
-                $payroll->update([
-                    "non_taxable_adjustment" => $non_taxable_adjustments,
-                    "manual_deductions" => $manual_deductions,
-                    "taxable_adjustment" => $taxable_adjustment,
-                    "withholding_tax" => $withHoldingTax,
-                    "net_pay" => round($newNetPay,2),
-                    "additional_working_hours_total" => $additionalWorkingHoursTotal,
-                    "remarks" => $remarks
-                ]);
+                if ($taxable_adjustment != $payroll->taxable_adjustment) {
+                    $timeKeeping = TimeKeepingSummary::where("employee_id", $payroll->employee_id)
+                    ->where("cut_off", $payroll->cut_off)
+                    ->first();
+
+                    $timeKeeping->adjustment_amount = $taxable_adjustment;
+
+                    $remarks = 'TAXABLE ADJUSTMENT MANUALLY ENCODED : '.$taxable_adjustment . " | ";
+                    $payroll->update([
+                        "remarks" => $remarks
+                    ]);
+
+                    $newComputation = $payrollService->computePayroll($timeKeeping, true);
+
+                    $payroll = $newComputation['payroll']->load([
+                        "employee",
+                        "employee.current_branch",
+                        "employee.latest_bank_details",
+                        "timekeeping_branch",
+                        "timekeeping_summary",
+                    ]);
+                }
 
                 DB::commit();
                 return $this->sendResponse([
