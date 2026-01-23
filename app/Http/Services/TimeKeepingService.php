@@ -919,7 +919,8 @@ class TimeKeepingService
         ->where("employee_id", $employee->id)
         ->first();
         $weekDateRange = $this->getCustomWeekRange($date, $cutOff, $employee);
-        $schedules = ScheduleTime::where("employee_id", $employee->id)
+        $schedules = ScheduleTime::with(["timekeeping", "timekeeping.biotime_log"])
+        ->where("employee_id", $employee->id)
         ->whereBetween("date", [$weekDateRange["start"], $weekDateRange["end"] ])
         ->get();
 
@@ -940,9 +941,7 @@ class TimeKeepingService
             });
 
             foreach ($otherSchedules as $schedule) {
-                $log = BiotimeLog::where("date", $schedule->date)
-                ->where("employee_id", $employee->id)
-                ->first();
+                $log = $schedule->timekeeping->biotime_log ?? null;
                 if (!$log && $schedule->timetable !== "NO SCHEDULE") {
                     $shouldPay = false;
                 }
@@ -1045,12 +1044,8 @@ class TimeKeepingService
         ];
     }
 
-    public function isCompleteAttendanceThisCutOff($employee, $cutOff) {
+    public function isCompleteAttendanceThisCutOff($employee, $schedules) {
         $isComplete = true;
-
-        $schedules = ScheduleTIme::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
-        ->where("employee_id",$employee->id)
-        ->get();
 
         //has leave or suspension
         $hasLeaveOrSuspension = $schedules->contains(function ($schedule) {
@@ -1076,12 +1071,8 @@ class TimeKeepingService
         }
 
         foreach($otherSchedules as $schedule) {
-            $timeKeeping = TimeKeeping::where("date", $schedule->date)
-            ->where("employee_id", $employee->id)
-            ->first();
-            $biotimeLog = BiotimeLog::where("date", $schedule->date)
-            ->where("employee_id", $employee->id)
-            ->first();
+            $timeKeeping = $schedule->timekeeeping;
+            $biotimeLog = $timeKeeping->biotime_log ?? null;
 
             if (!$timeKeeping || !$biotimeLog) {
                 $isComplete = false;

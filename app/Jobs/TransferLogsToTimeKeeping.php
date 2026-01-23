@@ -45,7 +45,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
         try {
             DB::beginTransaction();
 
-            $schedules = ScheduleTime::where("branch_id", $this->branchId)
+            $schedules = ScheduleTime::with(["employee"])
+            ->where("branch_id", $this->branchId)
             ->whereBetween("date", $this->cutOff)
             ->get();
 
@@ -64,12 +65,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 ->where("employee_id", $employee->id)
                 ->first();
 
-                // if ($actualSchedule->timetable === "REST DAY" && isset($log)) {
-                //     continue;
-                // }
-
                 if (isset($log)) {
-                    // $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
                     $bioTimePunches = $log->punches;
                     $this->timeKeepingService->computeTimeKeeping(
                         $this->branchId,

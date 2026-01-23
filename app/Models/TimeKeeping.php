@@ -49,7 +49,7 @@ class TimeKeeping extends Model
     }
 
     public function biotime_log() {
-        return $this->belongsTo(BiotimeLog::class, "biotime_log_id", "id");
+        return $this->hasOne(BiotimeLog::class, "id", "biotime_log_id");
     }
 
     public function schedule() {

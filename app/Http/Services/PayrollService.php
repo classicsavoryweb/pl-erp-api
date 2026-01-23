@@ -191,28 +191,11 @@ class PayrollService {
                 }
             }     
 
-            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-            $taxable = $taxableIncome + $taxableAdustmentAmount;
-            $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
-            ->where("range_max", '>=',round($taxableIncome, 2))
-            ->first();
-
-            $salaryBase = $tax->salary_base ?? 0;
-            $exemption = $tax->exemption ?? 0;
-            $percentage = $tax->percentage ?? 0;
-
-            $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                : 0;
-
-
-            $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
-            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount;
-            $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
-            $netPayAmount = $taxable - $taxAmount;
-
             $deductions = [];
             $totalDeductions = 0;
+
+            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
+            $taxable = $taxableIncome + $taxableAdustmentAmount;
 
             $existingPayroll = Payroll::where("employee_id", $employee->id)
             ->where("cut_off", $cutOff->cut_off)
@@ -252,16 +235,29 @@ class PayrollService {
                 $remarks = $existingPayroll->remarks;
                 if (!$edit) {
                     $taxableAdustmentAmount = $existingPayroll->taxable_adjustment;
+
+                    $grossPayAmount = ( $salary +
+                        $overtimeAmount +
+                        $legalHolidayAmount +
+                        $legalHolidayOvertimeAmount + 
+                        $specialHolidayAmount +
+                        $specialHolidayOvertimeAmount +
+                        $nightDifferentialAmount +
+                        $nightDifferentialOvertimeAmount +
+                        $cancelledOffAmount +
+                        $taxableAdustmentAmount +
+                        $nonTaxableAmount ) -
+                        $undertimeAmount -
+                        $tardinessAmount;
+
+                    $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
+                    $taxable = $taxableIncome + $taxableAdustmentAmount;
                 }
 
-                $taxable = $taxableIncome + $taxableAdustmentAmount;
-                $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
-                ->where("range_max", '>=',round($taxableIncome, 2))
-                ->first();
 
-                $salaryBase = $tax->salary_base ?? 0;
-                $exemption = $tax->exemption ?? 0;
-                $percentage = $tax->percentage ?? 0;
+                // $salaryBase = $tax->salary_base ?? 0;
+                // $exemption = $tax->exemption ?? 0;
+                // $percentage = $tax->percentage ?? 0;
 
                 // $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
                 //     ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
@@ -272,6 +268,23 @@ class PayrollService {
                 // $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
                 // $netPayAmount = $taxable - $taxAmount;
             }
+
+            $tax = Tax::where("range_min", '<=' ,round($taxable, 2))
+            ->where("range_max", '>=',round($taxable, 2))
+            ->first();
+
+            $salaryBase = $tax->salary_base ?? 0;
+            $exemption = $tax->exemption ?? 0;
+            $percentage = $tax->percentage ?? 0;
+
+            $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                : 0;
+
+            $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
+            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount;
+            $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
+            $netPayAmount = $taxable - $taxAmount;
 
             $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
 
