@@ -170,6 +170,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $travel_time= 0;
             $tardiness = 0;
             $lateDate = [];
+            $halfDayCount = 0;
             $daily_rate = round($employee->dailySalary(), 2);
             $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule"
                 ? round($daily_rate / 9.5, 2)
@@ -225,6 +226,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $regular_days += $schedule->days;
                     } else if ( $hours / 2 >= $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
+                        $halfDayCount += 1;
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
@@ -313,31 +315,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ->get();
 
                 if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules)) {
-                    $workDays = 0;
-
-                    $schedules->filter(function ($schedule) use ($workDays) {
-                        if (!in_array($schedule->timetable, ['LEAVE', 'SUSPENSION', 'REST DAY', 'NO SCHEDULE'])) {
-                            $workDays += 1;
-                        }
-                    });
-
                     if ($employee->current_position->timekeeping_type === "Monthly") {
-                        if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                            if ($workDays > $regular_days) {
-                                $regular_days = 11 - ($workDays - $regular_days);
-                            } else {
-                                $regular_days = 11;
-                            }
-                        }
-
-                        if ($employee->schedule->schedule_type->name === "Normal Schedule") {
-                            if ($workDays > $regular_days && $workDays < 13 ) {
-                                $regular_days = 13 - ($workDays - $regular_days);
-                            } else if ($workDays > $regular_days && $workDays > 13) {
-                                $regular_days = 13;
-                            } else {
-                                $regular_days = 13;
-                            }
+                        $maxDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
+                        $regular_days = $maxDays - ($halfDayCount * 0.5);
+                        if ($regular_days < 0) {
+                            $regular_days = 0;
                         }
                     }
                 } else {
@@ -375,14 +357,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     // Log::info("ABSENT: ".$absent);
-                    $hasHalfDay = fmod($regular_days, 1);
- 
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                        $regular_days = 11 - $absent - $hasHalfDay;
+                        $regular_days = 11 - $absent - ($halfDayCount * 0.5);
                     }
 
                     if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                        $regular_days = 13 - $absent - $hasHalfDay;
+                        $regular_days = 13 - $absent - ($halfDayCount * 0.5);
                     }
                 }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Transactions;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\TimeKeepingService;
 use App\Jobs\GenerateTimekeepingSummary;
 use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\BiotimeLog;
@@ -26,6 +27,12 @@ use Illuminate\Support\Facades\Bus;
 
 class TimeKeepingController extends Controller
 {
+    protected $timeKeepingService;
+
+    public function __construct() {
+        $this->timeKeepingService = new TimeKeepingService();
+    }
+
     public function triggerFetchBiotimeLogs(Request $request) {
         Artisan::call('app:fetch-biotime-attendance');
 
@@ -87,7 +94,13 @@ class TimeKeepingController extends Controller
             $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
             $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
-            $timeKeepingQuery = TimeKeeping::with(["employee", "employee.current_position", "payment"])
+            $timeKeepingQuery = TimeKeeping::with([
+                "employee",
+                "employee.current_position",
+                "employee.schedule.schedule_type",
+                "payment",
+                "schedule"
+            ])
             ->where("branch_id", $request->branch_id)
             ->whereBetween("date", [$start_time, $end_time]);
 
@@ -286,6 +299,62 @@ class TimeKeepingController extends Controller
         $request["export"] = true;
 
         return $this->getAllTimeKeepingSummary($request);
+    }
+
+    public function updateTimeKeepingUndertime(Request $request) {
+        try {
+            $request->validate([
+                "timekeeping_id" => "required",
+                "tag" => "required|in:halfday,undertime",
+                "hours" => "nullable|numeric|min:0",
+                "minutes" => "nullable|numeric|min:0|max:59",
+            ]);
+
+            $timeKeeping = TimeKeeping::with([
+                "employee",
+                "employee.schedule.schedule_type",
+                "schedule"
+            ])->find($request->timekeeping_id);
+
+            if (!$timeKeeping) {
+                return $this->sendError(["message" => "Timekeeping not found"]);
+            }
+
+            $schedule = $timeKeeping->schedule;
+            if (!$schedule) {
+                return $this->sendError(["message" => "Schedule not found for timekeeping"]);
+            }
+
+            $hours = (int) ($request->hours ?? 0);
+            $minutes = (int) ($request->minutes ?? 0);
+            $totalMinutes = ($hours * 60) + $minutes;
+
+            $scheduleType = $timeKeeping->employee?->schedule?->schedule_type?->name ?? "Normal Schedule";
+            $hoursPerDay = $scheduleType === "Compressed Schedule" ? 9.5 : 8;
+
+            $finalWorkedHours = $timeKeeping->final_worked_hours;
+            if ($request->tag === "halfday") {
+                $finalWorkedHours = $hoursPerDay / 2;
+            } else if ($request->tag === "undertime") {
+                $finalWorkedHours = $hoursPerDay;
+            }
+
+            $timeKeeping->update([
+                "undertime" => $totalMinutes,
+                "final_worked_hours" => $finalWorkedHours,
+                "is_manual_override" => true,
+                "manual_tag" => $request->tag,
+                "manual_undertime_minutes" => $totalMinutes,
+            ]);
+
+            $timeKeeping->refresh();
+
+            $this->timeKeepingService->computePayment($timeKeeping, $schedule, false);
+
+            return $this->sendResponse(["message" => "Timekeeping updated successfully"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
     }
 
     public function getTimeKeeping(Request $request) {
