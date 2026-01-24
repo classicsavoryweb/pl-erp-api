@@ -77,6 +77,14 @@ class FetchOvertimeJob implements ShouldQueue
                 $start_date = $activeCutOff->start_date;
                 $end_date = $activeCutOff->end_date;
             }
+            
+            if ($activeCutOff->part == 1) {
+                $date = Carbon::parse($activeCutOff->start_date)->day(11)->format("Y-m-d");
+                $start_date = $date;
+            } else {
+                $date = Carbon::parse($activeCutOff->start_date)->subMonth()->day(26)->format("Y-m-d");
+                $start_date = $date;
+            }
 
             $response = Http::withBasicAuth($user, $password)
             ->withHeaders([
