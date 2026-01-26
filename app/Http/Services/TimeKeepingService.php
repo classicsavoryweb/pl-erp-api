@@ -577,11 +577,22 @@ class TimeKeepingService
             }
 
             $isExisting = $model->where("employee_id", $employee->id)
-            ->where("biotime_log_id", $log->id)
-            ->where("date" , $log->date)
-            ->get();
+                ->where("biotime_log_id", $log->id)
+                ->where("date" , $log->date)
+                ->get();
 
-            if ($isExisting) {
+            $manualOverride = null;
+            if ($isExisting && $isExisting->count() > 0) {
+                $overrideRow = $isExisting->first(function ($row) {
+                    return (bool) $row->is_manual_override;
+                });
+                if ($overrideRow) {
+                    $manualOverride = [
+                        "tag" => $overrideRow->manual_tag,
+                        "minutes" => (int) ($overrideRow->manual_undertime_minutes ?? 0),
+                    ];
+                }
+
                 foreach ($isExisting as $t) {
                     $payment = TimeKeepingPayment::where("timekeeping_id", $t->id)->first();
                     if ($payment) {
@@ -667,6 +678,19 @@ class TimeKeepingService
                 "final_worked_hours" => $finalWorkHours,
                 "cancelled_off_hours" => $cancelled_off_hours,
             ]);
+
+            if ($manualOverride) {
+                $hoursPerDay = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
+                $finalOverrideHours = $manualOverride["tag"] === "halfday" ? $hoursPerDay / 2 : $hoursPerDay;
+
+                $timeKeeping->update([
+                    "undertime" => $manualOverride["minutes"],
+                    "final_worked_hours" => $finalOverrideHours,
+                    "is_manual_override" => true,
+                    "manual_tag" => $manualOverride["tag"],
+                    "manual_undertime_minutes" => $manualOverride["minutes"],
+                ]);
+            }
 
             if ($overtimeApplied && $approvedOvertime >= 1) {
                 $overtimeApplied->update([

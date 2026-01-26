@@ -37,7 +37,10 @@ class TimeKeeping extends Model
         "approved_overtime",
         "final_worked_hours",
         "cancelled_off_hours",
-        "paid_holiday"
+        "paid_holiday",
+        "is_manual_override",
+        "manual_tag",
+        "manual_undertime_minutes"
     ];
 
     public function employee() {

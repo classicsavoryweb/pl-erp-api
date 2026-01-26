@@ -180,6 +180,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $travel_time= 0;
             $tardiness = 0;
             $lateDate = [];
+            $halfDayCount = 0;
             $daily_rate = round($employee->dailySalary(), 2);
             $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule"
                 ? round($daily_rate / 9.5, 2)
@@ -235,6 +236,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $regular_days += $schedule->days;
                     } else if ( $hours / 2 >= $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
+                        $halfDayCount += 1;
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
@@ -323,14 +325,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ->get();
 
                 if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules)) {
-                    $workDays = 0;
-
-                    $schedules->filter(function ($schedule) use ($workDays) {
-                        if (!in_array($schedule->timetable, ['LEAVE', 'SUSPENSION', 'REST DAY', 'NO SCHEDULE'])) {
-                            $workDays += 1;
-                        }
-                    });
-
                     if ($employee->current_position->timekeeping_type === "Monthly") {
                         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
                             if ($workDays > $regular_days) {
@@ -399,7 +393,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 $halfDayCount = 0;
 
                 foreach ($timeKeepings as $timeKeeping) {
-                    if ( $hours / 2 >= $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0  && !$timeKeep->is_cancelled_off) {
+                    if ( $hours / 2 >= $timeKeeping->final_worked_hours && $timeKeeping->final_worked_hours > 0  && !$timeKeeping->is_cancelled_off) {
                         $halfDayCount += 1;
                     }
                 }
