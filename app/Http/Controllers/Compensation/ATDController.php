@@ -368,18 +368,19 @@ class ATDController extends Controller
 
                 $atdBranch = Branch::where("branch_number", $transaction["branch_number"])->first();
 
-                $employeeDeduction = EmployeeDeduction::create([
+                $employeeDeduction = EmployeeDeduction::updateOrCreate([
                     "employee_id" => $employee->id,
                     "deduction_id" => $deduction->id,
+                    "balance" => $transaction["amount"],
+                    "transaction_number" => $transaction["transaction_number"],
+                ],[
                     "months" => $terms,
                     "amount" => $transaction["amount"],
                     "source_of_fund" => "HO",
                     "start_date" => $dateStart,
                     "end_date" => $dateEnd,
                     "monthly_amortization" => $monthlyAmortization,
-                    "balance" => $transaction["amount"],
                     "remarks" => $remarks,
-                    "transaction_number" => $transaction["transaction_number"],
                     "debit_id" => $deduction->debit_id,
                     "credit_id" => $deduction->credit_id,
                     "branch_id" => $atdBranch->id,
