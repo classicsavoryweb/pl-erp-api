@@ -325,6 +325,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ->get();
 
                 if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules)) {
+                    $workDays = 0;
+
+                    $schedules->filter(function ($schedule) use ($workDays) {
+                        if (!in_array($schedule->timetable, ['LEAVE', 'SUSPENSION', 'REST DAY', 'NO SCHEDULE'])) {
+                            $workDays += 1;
+                        }
+                    });
+
                     if ($employee->current_position->timekeeping_type === "Monthly") {
                         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
                             if ($workDays > $regular_days) {
@@ -389,17 +397,16 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 }
 
-                $hasHalfDay = fmod($regular_days, 1);
+                $hasHalfDay = 0;
                 $halfDayCount = 0;
-
                 foreach ($timeKeepings as $timeKeeping) {
                     if ( $hours / 2 >= $timeKeeping->final_worked_hours && $timeKeeping->final_worked_hours > 0  && !$timeKeeping->is_cancelled_off) {
                         $halfDayCount += 1;
                     }
                 }
 
-                if ($halfDayCount % 2 == 0) {
-                    $hasHalfDay += $halfDayCount / 2;
+                if ($halfDayCount > 0) {
+                    $hasHalfDay = $halfDayCount * 0.5;
                 }
 
                 $regular_days = $regular_days - $hasHalfDay;
