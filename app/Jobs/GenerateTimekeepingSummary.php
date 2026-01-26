@@ -393,7 +393,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 $halfDayCount = 0;
 
                 foreach ($timeKeepings as $timeKeeping) {
-                    if ( $hours / 2 >= $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0  && !$timeKeep->is_cancelled_off) {
+                    if ( $hours / 2 >= $timeKeeping->final_worked_hours && $timeKeeping->final_worked_hours > 0  && !$timeKeeping->is_cancelled_off) {
                         $halfDayCount += 1;
                     }
                 }
