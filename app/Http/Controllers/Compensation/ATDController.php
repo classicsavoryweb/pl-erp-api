@@ -405,7 +405,7 @@ class ATDController extends Controller
 
                 $entries = [];
 
-                if ($employeeDeduction->amount > 0) {
+                if ($employeeDeduction->wasRecentlyCreated && $employeeDeduction->amount > 0) {
                     $entryId = $this->generateEntryId($counterEntry);
                     $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
                     $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
