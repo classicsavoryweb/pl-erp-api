@@ -7,6 +7,7 @@ use App\Models\Adjustment;
 use App\Models\AdjustmentPunch;
 use App\Models\AdjustmentTimeKeeping;
 use App\Models\BiotimeLog;
+use App\Models\Cutoff;
 use App\Models\Employee;
 use App\Models\Holiday;
 use App\Models\LateTimeKeepingSummary;
@@ -75,15 +76,24 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             $employees = $employees->get();
 
-            foreach ($employees as $employee) {
+            $activeCutOff = Cutoff::where("status", "active")->first();
 
-            $dateStart = Carbon::parse($cutOff["start_time"])->addDay()->format("Y-m-d");
+            $start_date = Carbon::parse($activeCutOff->start_date)->subMonth()->day(26)->format("Y-m-d");
+            $end_date = Carbon::parse($start_date)->addMonth()->day(10)->format("Y-m-d");
+
+            if ($activeCutOff->part == 1) {
+                $start_date = Carbon::parse($activeCutOff->start_date)->day(11)->format("Y-m-d");
+                $end_date = Carbon::parse($activeCutOff->start_date)->day(25)->format("Y-m-d");
+            }
+
+            foreach ($employees as $employee) {
             $adjustmentOvertimes = Overtime::where("employee_id", $employee->id)
-            ->whereBetween("date_filed",[$dateStart, $cutOff['end_time']])
             ->whereNotBetween("overtime_date", $cutOff)
+            ->whereBetween("date_filed", [$start_date, $end_date])
             ->get();
 
             foreach ($adjustmentOvertimes as $overtime) {
+
                 $timeKeeping = TimeKeeping::with(["schedule"])
                 ->where("employee_id", $employee->id)
                 ->where("date", $overtime->overtime_date)
@@ -316,12 +326,25 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules)) {
                     if ($employee->current_position->timekeeping_type === "Monthly") {
-                        $maxDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
-                        $regular_days = $maxDays - ($halfDayCount * 0.5);
-                        if ($regular_days < 0) {
-                            $regular_days = 0;
+                        if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+                            if ($workDays > $regular_days) {
+                                $regular_days = 11 - ($workDays - $regular_days);
+                            } else {
+                                $regular_days = 11;
+                            }
+                        }
+
+                        if ($employee->schedule->schedule_type->name === "Normal Schedule") {
+                            if ($workDays > $regular_days && $workDays < 13 ) {
+                                $regular_days = 13 - ($workDays - $regular_days);
+                            } else if ($workDays > $regular_days && $workDays > 13) {
+                                $regular_days = 13;
+                            } else {
+                                $regular_days = 13;
+                            }
                         }
                     }
+                    
                 } else {
                     $absent = 0;
 
@@ -358,13 +381,28 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     // Log::info("ABSENT: ".$absent);
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
-                        $regular_days = 11 - $absent - ($halfDayCount * 0.5);
+                        $regular_days = 11 - $absent;
                     }
 
                     if ($employee->current_position->timekeeping_type === "Monthly" && $employee->schedule->schedule_type->name === "Normal Schedule") {
-                        $regular_days = 13 - $absent - ($halfDayCount * 0.5);
+                        $regular_days = 13 - $absent;
                     }
                 }
+
+                $hasHalfDay = fmod($regular_days, 1);
+                $halfDayCount = 0;
+
+                foreach ($timeKeepings as $timeKeeping) {
+                    if ( $hours / 2 >= $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0  && !$timeKeep->is_cancelled_off) {
+                        $halfDayCount += 1;
+                    }
+                }
+
+                if ($halfDayCount % 2 == 0) {
+                    $hasHalfDay += $halfDayCount / 2;
+                }
+
+                $regular_days = $regular_days - $hasHalfDay;
 
                 if ($isExisting) {
                     $isExisting->delete();

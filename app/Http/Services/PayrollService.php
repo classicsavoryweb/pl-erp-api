@@ -211,8 +211,12 @@ class PayrollService {
                 ->get();
     
                 foreach($employeeDeductions as $deduction) {
-                    $amountToDeduct = $deduction->monthly_amortization / 2;
-    
+                    $amountToDeduct = $deduction->monthly_amortization;
+
+                    if ($deduction->months > 0) {
+                        $amountToDeduct = $deduction->monthly_amortization / 2;
+                    }
+
                     if ($amountToDeduct > $deduction->balance) {
                         $amountToDeduct = $deduction->balance;
                     }
@@ -335,7 +339,11 @@ class PayrollService {
                 if ($netPayAmount < 1000) {
                     $amountToDeduct = 0;
                     foreach ($governmentLoans as $deduction) {
-                        $amountToDeduct = $deduction->monthly_amortization / 2;
+                        $amountToDeduct = $deduction->monthly_amortization;
+                        if ($deduction->months > 0) {
+                            $amountToDeduct = $deduction->monthly_amortization / 2;
+                        }
+
                         if ($amountToDeduct > $deduction->balance) {
                             $amountToDeduct = $deduction->balance;
                         }
