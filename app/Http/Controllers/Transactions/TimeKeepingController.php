@@ -339,9 +339,18 @@ class TimeKeepingController extends Controller
                 $finalWorkedHours = $hoursPerDay;
             }
 
+            $specialHolidayHours = $timeKeeping->special_holiday_hours;
+            $specialHolidayOvertime = $timeKeeping->special_holiday_overtime;
+            if ($request->tag === "halfday") {
+                $specialHolidayHours = $specialHolidayHours ? $specialHolidayHours / 2 : $specialHolidayHours;
+                $specialHolidayOvertime = $specialHolidayOvertime ? $specialHolidayOvertime / 2 : $specialHolidayOvertime;
+            }
+
             $timeKeeping->update([
                 "undertime" => $totalMinutes,
                 "final_worked_hours" => $finalWorkedHours,
+                "special_holiday_hours" => $specialHolidayHours,
+                "special_holiday_overtime" => $specialHolidayOvertime,
                 "is_manual_override" => true,
                 "manual_tag" => $request->tag,
                 "manual_undertime_minutes" => $totalMinutes,
