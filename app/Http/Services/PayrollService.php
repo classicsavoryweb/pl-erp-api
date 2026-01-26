@@ -324,7 +324,7 @@ class PayrollService {
 
                         $removedDeductions[] = $deduction->deduction->id;
 
-                        $deduction->delete();
+                        // $deduction->delete();
                         break;
                     } else {
                         $totalDeductions -= $amountToDeduct;
@@ -332,7 +332,7 @@ class PayrollService {
     
                         $removedDeductions[] = $deduction->deduction->id;
     
-                        $deduction->delete();
+                        // $deduction->delete();
                     }
                 }
 
@@ -356,7 +356,7 @@ class PayrollService {
 
                             $removedDeductions[] = $deduction->deduction->id;
 
-                            $deduction->delete();
+                            // $deduction->delete();
                             break;
                         } else {
                             $totalDeductions -= $amountToDeduct;
@@ -364,7 +364,7 @@ class PayrollService {
         
                             $removedDeductions[] = $deduction->deduction->id;
         
-                            $deduction->delete();
+                            // $deduction->delete();
                         }
                     }
                 }
