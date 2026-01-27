@@ -42,6 +42,20 @@ class EmployeeController extends Controller
                 "contract_duration" => "required",
             ]);
 
+            
+            $duplicate = Employee::where('first_name', $request->first_name)
+                ->where('last_name', $request->last_name)
+                ->where('gender', $request->gender)
+                ->where('position_id', $request->position_id)
+                ->first();
+
+                
+            if ($duplicate) {
+                return $this->sendError([
+                    "message" => "Employee already exists with the same firstname, lastname, gender and position!"
+                ]);
+            }
+
             $employeeCount = Employee::latest()->first();
             $company = env('COMPANY_NAME');
             $employeeNumber = str_pad($employeeCount->id + 1, 7, '0', STR_PAD_LEFT);
