@@ -172,7 +172,7 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
                         ]
                     ];
                 }
-                $this->createEntries($entries, $user);
+                // $this->createEntries($entries, $user);
             }
 
             $this->notifyJobFinished();
