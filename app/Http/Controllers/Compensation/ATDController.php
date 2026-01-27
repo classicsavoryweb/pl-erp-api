@@ -204,13 +204,34 @@ class ATDController extends Controller
                 return $this->sendResponse(["transactions" => []]);
             }
 
-            $allowedDescriptions = Deduction::whereIn("id", $allowedDeductionIds)
+            $allowedDeductions = Deduction::whereIn("id", $allowedDeductionIds)
+                ->where("status", "active")
+                ->get(["id", "description"]);
+            $allowedDescriptions = $allowedDeductions
                 ->pluck("description")
                 ->map(fn ($desc) => strtolower(trim($desc)))
                 ->unique()
                 ->values()
                 ->all();
             $allowedDescriptionsMap = array_flip($allowedDescriptions);
+
+            if ($request->filled("deduction_id")) {
+                $deductionId = (int) $request->deduction_id;
+                $selectedDeduction = $allowedDeductions->firstWhere("id", $deductionId);
+                if (!$selectedDeduction) {
+                    return $this->sendError(["message" => "You are not allowed to access this deduction type."]);
+                }
+                $selectedDescription = strtolower(trim($selectedDeduction->description));
+                $allowedDescriptionsMap = [$selectedDescription => true];
+            }
+
+            if ($request->filled("deduction_type")) {
+                $deductionType = strtolower(trim($request->deduction_type));
+                if ($deductionType === "" || !isset($allowedDescriptionsMap[$deductionType])) {
+                    return $this->sendError(["message" => "You are not allowed to access this deduction type."]);
+                }
+                $allowedDescriptionsMap = [$deductionType => true];
+            }
 
             $transactionLink = env('CS_HUB_URL_LINK')."/get-posted-atds";
             $user = env('CS_HUB_ADMIN_EMAIL');
