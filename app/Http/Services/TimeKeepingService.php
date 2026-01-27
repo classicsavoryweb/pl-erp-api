@@ -1082,6 +1082,12 @@ class TimeKeepingService
             }
         });
 
+        $restDays = $schedules->filter(function ($schedule) use ($employee) {
+            if (in_array($schedule->timetable, ["REST DAY"])) {
+                return $schedule;
+            }
+        });
+
         $hasNoSchedule = $schedules->contains(function ($schedule) {
             return in_array($schedule->timetable, ['NO SCHEDULE']);
         });
@@ -1090,7 +1096,17 @@ class TimeKeepingService
             $isComplete = false;
         }
 
-        if ($employee->schedule->schedule_type->name === "Normal Schedule" && $hasNoSchedule) {
+        if (
+            $employee->schedule->schedule_type->name === "Normal Schedule" &&
+            $hasNoSchedule
+        ) {
+            $isComplete = false;
+        }
+
+        if (
+            $employee->schedule->schedule_type->name === "Normal Schedule" &&
+            $restDays->count() > 2
+        ) {
             $isComplete = false;
         }
 

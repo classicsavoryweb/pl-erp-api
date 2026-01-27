@@ -261,7 +261,7 @@ class EmployeeDeductionsController extends Controller
                 ]);
             }
 
-            $this->createEntries($entries, $user);
+            // $this->createEntries($entries, $user);
 
             return $this->sendResponse(["message" => "Deduction created successfully"]);
         } catch (Exception $e) {
@@ -380,7 +380,7 @@ class EmployeeDeductionsController extends Controller
                 ]);
             }
 
-            $this->createEntries($entries, $user);
+            // $this->createEntries($entries, $user);
 
             return $this->sendResponse(["message" => "End loan updated successfully"]);
         } catch (Exception $e) {

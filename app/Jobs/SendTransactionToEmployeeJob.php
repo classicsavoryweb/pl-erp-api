@@ -198,7 +198,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ];
 
                 if (!$this->isResend) {
-                    $this->createEntries($hoEntries, $userId);
+                    // $this->createEntries($hoEntries, $userId);
                 }
             }
 
@@ -240,7 +240,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ];
 
                 if (!$this->isResend) {
-                    $this->createEntries($branchEntries, $userId);
+                    // $this->createEntries($branchEntries, $userId);
                 }
             }
 

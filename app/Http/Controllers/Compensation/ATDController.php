@@ -466,7 +466,7 @@ class ATDController extends Controller
                     ]);
                 }
 
-                $this->createEntries($entries, $user);
+                // $this->createEntries($entries, $user);
 
                 $transactionNumber = $transaction["transaction_number"];
 
