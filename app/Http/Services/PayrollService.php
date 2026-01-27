@@ -144,7 +144,7 @@ class PayrollService {
     
                 if (Carbon::parse($cutOff->start_date)->day === 26) {
                     $sssEmployeeAmount = round($sss->employee_ss, 2);
-                    $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+                    $sssEmployerAmount = round($sss->employer_ss + ($sss->employer_cc / 2), 2);   
     
                     $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
                     $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
@@ -177,7 +177,7 @@ class PayrollService {
                         $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
     
                         $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                        $sssEmployerAmount = round(($sss->employer_ss + $sss->employer_cc) - $latestPayroll->employer_sss, 2);   
+                        $sssEmployerAmount = round(($sss->employer_ss + ($sss->employer_cc / 2)) - $latestPayroll->employer_sss, 2);   
                     } else {
                         $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
                         $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
@@ -185,7 +185,7 @@ class PayrollService {
                         $pagibigEmployer = round($pagibigAmount / 2, 2);
     
                         $sssEmployeeAmount = round($sss->employee_ss, 2);
-                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+                        $sssEmployerAmount = round($sss->employer_ss + ($sss->employer_cc / 2), 2);   
                     }
 
                 }
