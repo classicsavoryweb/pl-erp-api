@@ -66,7 +66,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $branchId = $this->branchId;
             $employeeId = $this->employeeId;
 
-            $employees = Employee::whereHas("timekeeping", function ($query) use ($branchId) {
+            $employees = Employee::with(["schedule", "schedule.schedule_type"])
+            ->whereHas("timekeeping", function ($query) use ($branchId) {
                 $query->where("branch_id", $branchId);
             })
             ->where("status", "active")
@@ -359,6 +360,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 } else {
                     $absent = 0;
 
+                    $restDays = $schedules->filter(function ($schedule) use ($employee) {
+                        if (in_array($schedule->timetable, ["REST DAY"])) {
+                            return $schedule;
+                        }
+                    });
+
                     foreach ($schedules as $sched) {
                         $absentToBeAdded = 0;
 
@@ -390,7 +397,16 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $absent += $absentToBeAdded;
                     }
 
-                    // Log::info("ABSENT: ".$absent);
+                    if (
+                        $employee->schedule->schedule_type->name === "Normal Schedule" &&
+                        $restDays->count() > 2 &&
+                        $employee->current_position->timekeeping_type === "Monthly"
+                    ) {
+                        $absentToBeAdded = $restDays->count() - 2;
+
+                        $absent += $absentToBeAdded;
+                    }
+
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
                         $regular_days = 11 - $absent;
                     }
