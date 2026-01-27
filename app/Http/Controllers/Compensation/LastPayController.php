@@ -186,7 +186,7 @@ class LastPayController extends Controller
                     $incentives += $incentive->incentive_amount;
                 }
 
-                $allPayrolls = Payroll::whereBetween("pay_date", [$thirteenthMonthStartDate, $payrolEndDate])
+                $allPayrolls = Payroll::where("pay_date", ">", $thirteenthMonthStartDate)
                 ->where("employee_id", $employee->id)
                 ->where("status", "final")
                 ->get();
