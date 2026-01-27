@@ -360,6 +360,16 @@ class TimeKeepingController extends Controller
 
             $this->timeKeepingService->computePayment($timeKeeping, $schedule, false);
 
+            $cutOff = $this->getCutOffForDate($timeKeeping->date);
+            GenerateTimekeepingSummary::dispatchSync(
+                $timeKeeping->branch_id,
+                $cutOff,
+                Auth::id(),
+                $timeKeeping->employee_id,
+                "Timekeeping manual undertime update",
+                true
+            );
+
             return $this->sendResponse(["message" => "Timekeeping updated successfully"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);

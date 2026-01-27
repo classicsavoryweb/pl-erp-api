@@ -37,6 +37,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
     protected $userId;
     protected $employeeId = 0;
     protected $notificationContext;
+    protected $suppressNotification = false;
     /**
      * Create a new job instance.
      */
@@ -45,7 +46,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $currentCutOff,
         ?int $userId = null,
         int $employeeId = 0,
-        ?string $notificationContext = null
+        ?string $notificationContext = null,
+        bool $suppressNotification = false
     )
     {
         $this->branchId = $branchId;
@@ -54,6 +56,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $this->userId = $userId;
         $this->employeeId = $employeeId;
         $this->notificationContext = $notificationContext;
+        $this->suppressNotification = $suppressNotification;
     }
 
     public function handle(): void
