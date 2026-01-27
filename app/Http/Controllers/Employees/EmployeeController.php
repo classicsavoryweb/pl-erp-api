@@ -41,6 +41,19 @@ class EmployeeController extends Controller
                 "contact_number" => "required",
                 "contract_duration" => "required",
             ]);
+            
+            $duplicate = Employee::where('first_name', $request->first_name)
+                ->where('last_name', $request->last_name)
+                ->where('gender', $request->gender)
+                ->where('position_id', $request->position_id)
+                ->where('status', 'active') 
+                ->first();
+
+            if ($duplicate) {
+                return $this->sendError([
+                    "message" => "Employee already exists"
+                ]);
+            }
 
             $employeeCount = Employee::latest()->first();
             $company = env('COMPANY_NAME');
