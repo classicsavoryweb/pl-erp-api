@@ -80,8 +80,8 @@ class BranchController extends Controller
             $request->validate([
                 "name" => "required|unique:branches,name",
                 "status" => "required",
-                "travel_time" => "required",
-                // "device_name" => "required",
+                //"travel_time" => "required",
+                //"device_name" => "required",
                 "short_name" => "required|unique:branches,short_name",
                 "type" => "required",
                 "address" => "required",
@@ -167,8 +167,8 @@ class BranchController extends Controller
             $request->validate([
                 "name" => "required|unique:branches,name,".$id,
                 "status" => "required",
-                "travel_time" => "required",
-                // "device_name" => "required",
+                //"travel_time" => "required",
+                //"device_name" => "required",
                 "branch_number" => "required|unique:branches,branch_number,".$id,
                 "short_name" => "required|unique:branches,short_name,".$id,
                 "type" => "required",
