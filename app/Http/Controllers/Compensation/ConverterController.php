@@ -170,6 +170,7 @@ class ConverterController extends Controller
                 "posted_by",
                 "generated_by",
                 "voided_by",
+                "bank_account_type",
                 "converter_details" => function ($q) {
                     $q->join('employees', 'employees.id', '=', 'converter_details.employee_id')
                     ->orderBy('employees.last_name', 'ASC')
@@ -356,30 +357,63 @@ class ConverterController extends Controller
                 "bank_account_type_id" => "required"
             ]);
 
-            $transactions = ConverterDetail::whereIn("id", $request->selected_transactions)->get();
+            $transactions = ConverterDetail::with([
+                "employee",
+                "employee.payroll_list",
+                "transaction_type"
+            ])
+            ->whereIn("id", $request->selected_transactions)->get();
             $total_amount = 0;
+            $excludedTransactions = [];
+            $includedTransactions = [];
+            $hasExcludedTransaction = false;
 
             foreach ($transactions as $trans) {
-                $total_amount += $trans->amount;
+                $employee = $trans->employee;
+                $payrollList = $employee->payroll_list;
+
+                if (
+                    $payrollList->is_hold == 0 &&
+                    $payrollList->is_bank == 1 &&
+                    $employee->status == "active"
+                ) {
+                    $total_amount += $trans->amount;
+                    $includedTransactions[] = $trans;
+                } else {
+                    $excludedTransactions[] = $trans;
+                    $hasExcludedTransaction = true;
+                }
             }
 
-            $batch = ConverterMain::create([
-                "count" => $transactions->count(),
-                "total_amount" => $total_amount,
-                "added_by" => Auth::user()->id,
-                "status" => "Pending",
-                "bank_account_type_id" => $request->bank_account_type_id,
-                "transaction_type_id" => $request->transaction_type_id ?? null
-            ]);
-
-            foreach ($transactions as $trans) {
-                $trans->update([
-                    "converter_main_id" => $batch->id
+            if (count($includedTransactions) > 0) {
+                $batch = ConverterMain::create([
+                    "count" => count($includedTransactions),
+                    "total_amount" => $total_amount,
+                    "added_by" => Auth::user()->id,
+                    "status" => "Pending",
+                    "bank_account_type_id" => $request->bank_account_type_id,
+                    "transaction_type_id" => $request->transaction_type_id ?? null
+                ]);
+    
+                foreach ($includedTransactions as $trans) {
+                    $trans->update([
+                        "converter_main_id" => $batch->id
+                    ]);
+                }
+    
+                DB::commit();
+                return $this->sendResponse([
+                    "has_excluded_transactions" => $hasExcludedTransaction,
+                    "transactions" => $excludedTransactions,
+                    "message" => "Batch successfully created"
                 ]);
             }
 
-            DB::commit();
-            return $this->sendResponse(["message" => "Batch successfully created"]);
+            return $this->sendError([
+                "has_excluded_transactions" => $hasExcludedTransaction,
+                "transactions" => $excludedTransactions,
+                "message" => "Batch creation failed"
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
