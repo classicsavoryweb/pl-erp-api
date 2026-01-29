@@ -45,7 +45,11 @@ class TransferLogsToTimeKeeping implements ShouldQueue
         try {
             DB::beginTransaction();
 
-            $schedules = ScheduleTime::with(["employee"])
+            $schedules = ScheduleTime::with([
+                "employee",
+                "employee.schedule",
+                "employee.schedule.schedule_type"
+            ])
             ->where("branch_id", $this->branchId)
             ->whereBetween("date", $this->cutOff)
             ->get();
@@ -224,7 +228,13 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 }
             }
             
-            $timeKeepings = TimeKeeping::where("branch_id", $this->branchId)
+            $timeKeepings = TimeKeeping::with([
+                "employee",
+                "employee.schedule",
+                "employee.schedule.schedule_type",
+                "schedule"
+            ])
+            ->where("branch_id", $this->branchId)
             ->whereBetween("date", $this->cutOff)
             ->get();
 
