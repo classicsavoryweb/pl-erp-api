@@ -31,7 +31,7 @@ class EmployeeBankAccountController extends Controller
             DB::beginTransaction();
             $request->validate([
                 "bank_account_type_id" => "required",
-                "bank_number" => "required",
+                "bank_number" => "required|unique:bank_details,bank_number",
                 "remarks" => "required"
             ]);
 
@@ -54,7 +54,7 @@ class EmployeeBankAccountController extends Controller
             $request->validate([
                 "id" => "required",
                 "bank_account_type_id" => "required",
-                "bank_number" => "required",
+                "bank_number" => "required|unique:bank_details,bank_number,".$request->id,
                 "remarks" => "required"
             ]);
 
