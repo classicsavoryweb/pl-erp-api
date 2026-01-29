@@ -39,7 +39,7 @@ class CreateDatabaseBackup implements ShouldQueue
             mkdir(storage_path('app/temp_backups'), 0755, true);
         }
 
-        $mysqldumpPath = 'mysqldump'; 
+        $mysqldumpPath = env("SQL_DUMP_PATH"); 
         
         $command = "$mysqldumpPath --user=" . env('DB_USERNAME') . " --password=" . env('DB_PASSWORD') . " --host=" . env('DB_HOST') . " " . env('DB_DATABASE') . " > " . $tempFilePath;
         
