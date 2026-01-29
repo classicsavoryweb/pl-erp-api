@@ -154,12 +154,49 @@ class LastPayController extends Controller
                 ->get();
 
                 $sssLoans = collect();
+                $sssLoansSelected = "No";
 
                 if ($lastPayDetails && $lastPayDetails->deductions) {
                     $sssLoans = $lastPayDetails->deductions->filter(function ($item) {
                         return $item->deduction &&
                             $item->deduction->description === 'SSS Loans';
                     });
+                    $sssLoansSelected = $sssLoans->isNotEmpty() ? "Yes" : "No";
+                }
+
+                if ($sssLoans->isNotEmpty()) {
+                    $sssLoans = $sssLoans->map(function ($loan) use ($employee) {
+                        $employeeDeduction = EmployeeDeduction::where("employee_id", $employee->id)
+                            ->where("reference_doc", $loan->reference_doc)
+                            ->first();
+
+                        $loan->original_amount = $employeeDeduction?->amount;
+                        $loan->balance = $loan->amount;
+                        if (!is_null($loan->original_amount)) {
+                            $loan->amount = $loan->original_amount;
+                        }
+
+                        return $loan;
+                    });
+                }
+
+                if ($sssLoans->isNotEmpty()) {
+                    $existingSssRefs = $governmentDeductions
+                        ->filter(function ($deduction) {
+                            return $deduction->deduction && $deduction->deduction->description === 'SSS Loans';
+                        })
+                        ->pluck('reference_doc')
+                        ->filter()
+                        ->values()
+                        ->all();
+
+                    $sssForGovernment = $sssLoans->filter(function ($loan) use ($existingSssRefs) {
+                        return !in_array($loan->reference_doc, $existingSssRefs);
+                    });
+
+                    if ($sssForGovernment->isNotEmpty()) {
+                        $governmentDeductions = $governmentDeductions->concat($sssForGovernment);
+                    }
                 }
 
                 $companyDeductions = $companyDeductions->merge($sssLoans);
@@ -241,6 +278,7 @@ class LastPayController extends Controller
                     "tax_refund" => $taxRefund,
                     "total_deductions" => $totalDeductions,
                     "last_pay" => round($lastPayAmount, 2),
+                    "sss_loans" => $sssLoansSelected,
                     "payrolls" => $payrolls,
                     "date_holdeed" => $dateHolded
                 ]);
@@ -264,7 +302,6 @@ class LastPayController extends Controller
                 "sales" => "required",
                 "meal_allowance" => "required"
             ]);
-
             $employee = Employee::with(["payroll_list"])
             ->where("employee_number", $employeeNumber)
             ->first();
@@ -443,21 +480,28 @@ class LastPayController extends Controller
 
                 $totalDeductions = $lastPay->total_deductions;
                 $totalDeductions -= $deductionFromLastPay->amount;
+                $lastPayAmount = ($lastPay->payroll_hold + $lastPay->thirteenth_month + $lastPay->incentives + $lastPay->sl_vl + $lastPay->meal + $lastPay->tax_refund + $lastPay->sales) - $totalDeductions;
 
                 $lastPay->update([
-                    "total_deductions" => $totalDeductions
+                    "total_deductions" => $totalDeductions,
+                    "last_pay" => $lastPayAmount
                 ]);
 
                 if ($deductionFromLastPay) {
+                    $deductionType = $deductionFromLastPay->deduction->description ?? null;
+                    if ($deductionType === "SSS Loans") {
+                        $employeeDeduction = EmployeeDeduction::where("employee_id", $employee->id)
+                            ->where("reference_doc", $deductionFromLastPay->reference_doc)
+                            ->first();
+
+                        if ($employeeDeduction) {
+                            $employeeDeduction->update([
+                                "balance" => $employeeDeduction->balance + $deductionFromLastPay->amount
+                            ]);
+                        }
+                    }
+
                     $deductionFromLastPay->delete();
-                }
-
-                $deductionFromEmployeeDeduction = EmployeeDeduction::where('reference_doc', $request->reference_doc)
-                ->where('employee_id', $employee->id)
-                ->first();
-
-                if ($deductionFromEmployeeDeduction) {
-                    $deductionFromEmployeeDeduction->delete();
                 }
 
                 DB::commit();
@@ -494,8 +538,10 @@ class LastPayController extends Controller
                     ->sum('amount');
 
                 $lastPay = LastPay::where('id', $lastPayDeduction->last_pay_id)->first();
+                $lastPayAmount = ($lastPay->payroll_hold + $lastPay->thirteenth_month + $lastPay->incentives + $lastPay->sl_vl + $lastPay->meal + $lastPay->tax_refund + $lastPay->sales) - $allLastPayDeduction;
                 $lastPay->update([
-                    "total_deductions" => $allLastPayDeduction
+                    "total_deductions" => $allLastPayDeduction,
+                    "last_pay" => $lastPayAmount
                 ]);
 
                 DB::commit();
@@ -545,7 +591,7 @@ class LastPayController extends Controller
                 "meal_allowance" => "required"
             ]);
 
-            $lastPay = LastPay::find($lastPayId);
+            $lastPay = LastPay::with(["deductions", "deductions.deduction"])->find($lastPayId);
 
             if ($lastPay) {
                 $totalPayroll = $lastPay->payroll_hold;
@@ -557,7 +603,55 @@ class LastPayController extends Controller
                 $taxRefund = $request->tax_refund ?? 0;
                 $salesIncentives = $request->sales ?? 0;
 
-                $totalDeductions = $lastPay->total_deductions;
+                $includeSssLoans = $request->sss_loans === "Yes";
+                $currentDeductions = $lastPay->deductions ?? collect();
+                $sssDeductions = $currentDeductions->filter(function ($item) {
+                    return $item->deduction && $item->deduction->description === 'SSS Loans';
+                });
+
+                if ($includeSssLoans) {
+                    if ($sssDeductions->isEmpty()) {
+                        $employeeDeductions = EmployeeDeduction::with("deduction")
+                        ->where("employee_id", $lastPay->employee_id)
+                        ->where("balance", ">=", 1)
+                        ->where("end_loan_status", "!=", "Yes")
+                        ->whereHas("deduction", function ($query) {
+                            $query->where("description", "SSS Loans");
+                        })
+                        ->get();
+
+                        foreach ($employeeDeductions as $deduction) {
+                            $lastPay->deductions()->create([
+                                "employee_id" => $lastPay->employee_id,
+                                "reference_doc" => $deduction->reference_doc,
+                                "deduction_id" => $deduction->deduction_id,
+                                "amount" => $deduction->balance,
+                            ]);
+
+                            $deduction->update([
+                                "balance" => 0
+                            ]);
+                        }
+                    }
+                } else {
+                    if ($sssDeductions->isNotEmpty()) {
+                        foreach ($sssDeductions as $deduction) {
+                            $employeeDeduction = EmployeeDeduction::where("employee_id", $lastPay->employee_id)
+                                ->where("reference_doc", $deduction->reference_doc)
+                                ->first();
+
+                            if ($employeeDeduction) {
+                                $employeeDeduction->update([
+                                    "balance" => $employeeDeduction->balance + $deduction->amount
+                                ]);
+                            }
+
+                            $deduction->delete();
+                        }
+                    }
+                }
+
+                $totalDeductions = LastPayDeduction::where("last_pay_id", $lastPay->id)->sum("amount");
 
                 $lastPayAmount = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $salesIncentives)- $totalDeductions;
 
@@ -584,6 +678,7 @@ class LastPayController extends Controller
                     "year" => $lastPay->year,
                     "total_deductions" => $totalDeductions,
                     "last_pay" => round($lastPayAmount, 2),
+                    "sss_loans" => $includeSssLoans ? "Yes" : "No",
                     "message" => "Last pay updated successfully"
                 ]);
             }
