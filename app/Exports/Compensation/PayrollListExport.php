@@ -26,12 +26,17 @@ class PayrollListExport implements FromCollection, WithHeadings
             "Payment Type",
             "On Hold",
             "Holding Date",
+            "Bank Description",
+            "Bank Number",
         ];
     }
 
     public function collection()
     {
         return $this->payrollList->map(function ($list) {
+            
+            $bank = $list->employee->latest_bank_details;
+
             return [
                 $list->employee->full_name,
                 $list->employee->employee_number,
@@ -41,6 +46,9 @@ class PayrollListExport implements FromCollection, WithHeadings
                 $list->is_bank ? "Bank" : "Cash",
                 $list->is_hold ? "Yes" : "No",
                 $list->holded_at ?? null,
+                $bank?->bank_account_type?->description ?? null,
+                $bank?->bank_number? "'" . $bank->bank_number: null,
+           
             ];
         });
     }
