@@ -354,7 +354,8 @@ class LastPayController extends Controller
                     $incentives += $incentive->incentive_amount;
                 }
 
-                $allPayrolls = Payroll::whereYear("pay_date", $yearHolded)
+                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
+                $allPayrolls = Payroll::where("pay_date", ">", $thirteenthMonthStartDate)
                 ->where("employee_id", $employee->id)
                 ->where("status", "final")
                 ->get();
