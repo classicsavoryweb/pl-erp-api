@@ -473,6 +473,8 @@ class ATDController extends Controller
                 $groupedTransactions[$transactionNumber][] = $transaction["employee_number"];
             }
 
+            $successAll = true;
+
             foreach ($groupedTransactions as $transactionNumber => $employeeNumbers) {
                 $transactionLink = env('CS_HUB_URL_LINK')."/generate-atd/".$transactionNumber;
                 $user = env('CS_HUB_ADMIN_EMAIL');
@@ -489,16 +491,18 @@ class ATDController extends Controller
                     "employee_numbers" => $employeeNumbers
                 ]);
 
-                if ($response->successful()) {
-
-                    DB::commit();
-                    return $this->sendResponse(["message" => "ATD successfully created"]);
+                if (!$response->successful()) {
+                    $successAll = false;
                 }
             }
 
-            Log::info($response);
+            if ($successAll) {
+                DB::commit();
+                return $this->sendResponse(["message" => "ATD successfully created"]);
+            }
+
             DB::rollBack();
-            return $this->sendError(["message" => "Something went wrong"]);
+            return $this->sendError(["message" => "Some ATD requests failed."]);
         } catch (Exception $e) {
             DB::rollBack();
             Log::info($e);
