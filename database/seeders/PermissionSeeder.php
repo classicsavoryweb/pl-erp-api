@@ -154,6 +154,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_transactions_module"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "view_transactions_schedule_time"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "perform_transactions_schedule_time"], ["module" => "transactions"]);
+        Permission::updateOrCreate(["name" => "transfer_time_keeping_branch"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "export_all_transactions_schedule_time"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "view_transactions_actual_time"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "perform_transactions_actual_time"], ["module" => "transactions"]);

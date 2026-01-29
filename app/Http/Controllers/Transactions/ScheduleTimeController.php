@@ -536,4 +536,30 @@ class ScheduleTimeController extends Controller
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
+
+    public function transferTimekeepingBranch(Request $request, $scheduleId) {
+        try {
+            $request->validate([
+                "branch_id" => "required"
+            ]);
+
+            $schedule = ScheduleTime::find($scheduleId);
+
+            if ($schedule) {
+                $cutOff = $this->getCutOffForDate($schedule->date);
+
+                ScheduleTime::where("employee_id", $schedule->employee_id)
+                ->whereBetween("date", $cutOff)
+                ->update([
+                    "branch_id" => $request->branch_id
+                ]);
+
+                return $this->sendResponse(["message" => "Timekeeping branch transferred successfully."]);
+            }
+
+            return $this->sendError(["message" => "Schedule not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
 }
