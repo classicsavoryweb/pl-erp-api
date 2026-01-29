@@ -123,10 +123,10 @@ class ATDController extends Controller
                 $deductions = $deductions->where('deduction_id', $request->deduction_id);
             }
 
-            if ($request->has(["date_created_from", "date_created_to"])) {
-                $deductions = $deductions->whereBetween('date_created', [$request->date_created_from, $request->date_created_to]);
+            if ($request->has(["created_at_from", "created_at_to"])) {
+                $deductions = $deductions->whereBetween('created_at', [$request->created_at_from, $request->created_at_to]);
             }
-
+            
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
                 $keyword = $request->key_word;
