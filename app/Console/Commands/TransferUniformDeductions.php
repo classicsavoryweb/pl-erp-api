@@ -135,7 +135,7 @@ class TransferUniformDeductions extends Command
                     ]);
                 }
 
-                $this->createEntries($entries);
+                // $this->createEntries($entries);
 
                 DB::connection("bridge_files")
                 ->table("uniform_data_entry")
