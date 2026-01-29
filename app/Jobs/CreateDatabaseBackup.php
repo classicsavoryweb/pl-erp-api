@@ -41,7 +41,12 @@ class CreateDatabaseBackup implements ShouldQueue
 
         $mysqldumpPath = env("SQL_DUMP_PATH"); 
         
-        $command = "$mysqldumpPath --user=" . env('DB_USERNAME') . " --password=" . env('DB_PASSWORD') . " --host=" . env('DB_HOST') . " " . env('DB_DATABASE') . " > " . $tempFilePath;
+        $command = "$mysqldumpPath --user=" . env('DB_USERNAME') .
+           " --password=" . env('DB_PASSWORD') .
+           " --host=" . env('DB_HOST') .
+           " --port=" . env('DB_PORT', 3306) .
+           " " . env('DB_DATABASE') .
+           " > " . $tempFilePath;
         
         $returnVar = NULL;
         $output = NULL;
