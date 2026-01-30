@@ -416,6 +416,21 @@ class TimeKeepingService
             } else {
                 $overtime = ($decimalHours - $totalDurationHOurs >= 1) ? $decimalHours - $totalDurationHOurs : 0;
             }
+
+            if ($parsedLastPunch->greaterThan($tenPM)) {
+                $flexDiffInSeconds = $parsedFirstPunch->diffInSeconds($tenPM);
+                $flexiHours = $flexDiffInSeconds / 3600;
+
+                if ($flexiHours > $totalDurationHOurs) {
+                    $flexOTDiffInSeconds = $parsedLastPunch->diffInSeconds($tenPM);
+                    $flexiOTHours = $flexOTDiffInSeconds / 3600;
+                    $nightDiffOt = $flexiOTHours;
+                } else {
+                    $flexNightDiffInSeconds = $parsedLastPunch->diffInSeconds($tenPM);
+                    $flexNightDiff = $flexNightDiffInSeconds / 3600;
+                    $nightDiffHours = $flexNightDiff;
+                }
+            }
         }
 
         //undertime 240 or 285 conversion to half day

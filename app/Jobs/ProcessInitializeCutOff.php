@@ -45,7 +45,12 @@ class ProcessInitializeCutOff implements ShouldQueue
 
         foreach ($includedEmployees as $includedEmployee) {
             $employee = $includedEmployee->employee;
-            $timeKeepingSummary = TimeKeepingSummary::with(["employee"])
+            $timeKeepingSummary = TimeKeepingSummary::with([
+                "employee",
+                "employee.current_position",
+                "employee.schedule",
+                "employee.schedule.schedule_type"
+            ])
             ->where("cut_off", $this->cutOff->start_date."-".$this->cutOff->end_date)
             ->where("employee_id",  $employee->id)
             ->first();

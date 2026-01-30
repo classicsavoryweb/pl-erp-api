@@ -150,8 +150,8 @@ class PayrollController extends Controller
                 $tardinessOffenses = Tardiness::with(["tardiness_sanction"])
                 ->where("employee_id", $payroll->employee_id)
                 ->where("status", "Approved")
-                ->orderBy("month", "DESC")
-                ->where("year", $year)
+                ->whereIn("year", [$year - 1, $year])
+                ->orderBy("id", "DESC")
                 ->get();
 
                 $payroll["tardiness_list"] = $tardiness;
