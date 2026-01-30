@@ -665,7 +665,7 @@ class PayrollService {
         $status = "initial";
 
         //cutoff 26-10
-        if (Carbon::parse($cutOff->start_date)->day == 26) {
+        if ($cutOff->part == 1) {
             
             $startDate = Carbon::parse($cutOff->start_date)->subMonths(1)->day(26)->format("Y-m-d");
             $endDate = Carbon::parse($cutOff->start_date)->day(25)->format("Y-m-d");
@@ -787,15 +787,13 @@ class PayrollService {
                 $remarks = "With ".$absent." absents";
             }
 
-            $year = Carbon::parse($firstCutOff['end_time'])->year;
-            $month = Carbon::parse($firstCutOff['end_time'])->month;
+            $tardinessDateBasis = Carbon::parse($payDate)->subMonths(2);
 
             $tardiness = Tardiness::with(["tardiness_sanction"])
-            ->where("year", $year)
-            ->where("month", $month)
+            ->where("year", $tardinessDateBasis->year)
+            ->where("month", $tardinessDateBasis->month)
             ->where("employee_id", $employee->id)
             ->where("status", "Approved")
-            ->where("da_status", "Sent")
             ->first();
 
             if ($tardiness) {
