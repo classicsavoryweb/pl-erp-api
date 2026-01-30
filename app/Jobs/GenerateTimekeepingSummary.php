@@ -119,6 +119,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ->where("date", $timeKeeping->date)
                     ->first();
 
+                    if (
+                        !$schedule || 
+                        !property_exists($schedule, 'timetable') ||
+                        !$schedule->timetable
+                    ) {
+                        continue;
+                    }
+
                     $adjustedTimeKeeping = $this->timeKeepingService->computeTimeKeeping(
                         $timeKeeping->branch_id,
                         $log,
