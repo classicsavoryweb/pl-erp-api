@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ActivityLogsController;
 use App\Http\Controllers\Admin\DatabaseBackupsController;
 use App\Http\Controllers\Admin\RolesPermissionController;
+use App\Http\Controllers\Admin\TardinessDisablerController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -25,5 +26,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-database-backups", [DatabaseBackupsController::class, "getAllDatabaseBackups"]);
     Route::middleware(["permission:perform_database_backups"])->post("/create-database-backup", [DatabaseBackupsController::class,"createDatabaseBackup"]);
     Route::middleware(["permission:perform_database_backups"])->get('/download-sql-file/{filename}', [DatabaseBackupsController::class, 'downloadSqlFile']);
+    //tardiness disabler
+    Route::middleware(["permission:view_tardiness_disabler"])->get("/get-all-tardiness-disablers", [TardinessDisablerController::class, "getAllTardinessDisablers"]);
+    Route::middleware(["permission:view_tardiness_disabler"])->post("/upsert-tardiness-disabler", [TardinessDisablerController::class, "upsertTardinessDisabler"]);
 
 });

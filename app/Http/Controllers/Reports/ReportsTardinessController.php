@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\EmployeeOffense;
 use App\Models\Offense;
 use App\Models\Tardiness;
+use App\Models\TardinessDisabler;
 use App\Models\TardinessMinutes;
 use App\Models\TardinessSanction;
 use Illuminate\Http\Request;
@@ -112,6 +113,7 @@ class ReportsTardinessController extends Controller
         try {
             DB::beginTransaction();
             $tardiness = Tardiness::find($id);
+            $this->guardNotDisabled($tardiness);
             $employee = Employee::find($tardiness->employee_id);
 
             if ($tardiness->status === "Pending") {
@@ -171,6 +173,7 @@ class ReportsTardinessController extends Controller
 
             DB::beginTransaction();
             $tardiness = Tardiness::find($id);
+            $this->guardNotDisabled($tardiness);
 
             if ($tardiness->status === "Voided") {
                 return $this->sendError(["message" => "Tardiness cant be voided"]);
@@ -244,6 +247,7 @@ class ReportsTardinessController extends Controller
 
             foreach($request->tardiness_id as $tardy) {
                 $tardiness = Tardiness::find($tardy);
+                $this->guardNotDisabled($tardiness);
                 $employee = Employee::find($tardiness->employee_id);
 
                 if ($tardiness->status === "Pending") {
@@ -313,6 +317,7 @@ class ReportsTardinessController extends Controller
                 ]);
             }
             $tardiness = Tardiness::find($request->id);
+            $this->guardNotDisabled($tardiness);
             $tardiness->update([
                 "total_minutes" => $totalMins
             ]);
@@ -551,6 +556,18 @@ class ReportsTardinessController extends Controller
                 "employee_number" => $employeeNumber,
                 "error" => $e->getMessage(),
             ]);
+        }
+    }
+
+    private function guardNotDisabled(Tardiness $tardiness): void
+    {
+        if (!$tardiness) {
+            throw new Exception("Tardiness not found.");
+        }
+
+        if (TardinessDisabler::isDisabled((int) $tardiness->month, (int) $tardiness->year)) {
+            $label = Carbon::create($tardiness->year, $tardiness->month, 1)->format('F Y');
+            throw new Exception("Tardiness disabled for {$label}.");
         }
     }
 
