@@ -171,11 +171,24 @@ class Employee extends Model
     protected function properFullName(): Attribute
     {
         return Attribute::get(function () {
-            $first = mb_convert_case($this->first_name, MB_CASE_TITLE, 'UTF-8');
-            $last  = mb_convert_case($this->last_name, MB_CASE_TITLE, 'UTF-8');
+            $first = mb_convert_case(
+                mb_strtolower($this->first_name, 'UTF-8'),
+                MB_CASE_TITLE,
+                'UTF-8'
+            );
+
+            $last = mb_convert_case(
+                mb_strtolower($this->last_name, 'UTF-8'),
+                MB_CASE_TITLE,
+                'UTF-8'
+            );
 
             if ($this->middle_name) {
-                $middleInitial = mb_strtoupper(mb_substr($this->middle_name, 0, 1, 'UTF-8'), 'UTF-8');
+                $middleInitial = mb_strtoupper(
+                    mb_substr($this->middle_name, 0, 1, 'UTF-8'),
+                    'UTF-8'
+                );
+
                 return "{$first} {$middleInitial}. {$last}";
             }
 
@@ -185,19 +198,21 @@ class Employee extends Model
 
     protected function formalFullName(): Attribute
     {
-        $pronoun = $this->gender === "Male" ? "Mr." : "Ms.";
-        $first = mb_convert_case($this->first_name, MB_CASE_TITLE, 'UTF-8');
-        $last  = mb_convert_case($this->last_name, MB_CASE_TITLE, 'UTF-8');
-        $fullName = strtolower($first. '. ' . $last);
+        return Attribute::get(function () {
+            $pronoun = $this->gender === "Male" ? "Mr." : "Ms.";
 
-        if ($this->middle_name) {
-            $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
-            $fullName = strtolower($first. ' ' . $middleInitial . '. ' . $last);
-        }
-        $properFullName = ucwords($fullName);
-        return Attribute::get(
-            fn () => $pronoun ." ". $properFullName
-        );
+            $first = mb_convert_case(mb_strtolower($this->first_name, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+            $last  = mb_convert_case(mb_strtolower($this->last_name, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+
+            if ($this->middle_name) {
+                $middleInitial = mb_strtoupper(mb_substr($this->middle_name, 0, 1, 'UTF-8'), 'UTF-8');
+                $fullName = "{$first} {$middleInitial}. {$last}";
+            } else {
+                $fullName = "{$first} {$last}";
+            }
+
+            return "{$pronoun} {$fullName}";
+        });
     }
 
     public function hasCompleteStatutories() {
