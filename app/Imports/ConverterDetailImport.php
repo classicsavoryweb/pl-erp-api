@@ -8,14 +8,22 @@ use App\Models\Employee;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class ConverterDetailImport implements ToCollection, WithHeadingRow
+class ConverterDetailImport implements ToCollection, WithHeadingRow, WithMultipleSheets
 {
     protected $userId;
 
     public function __construct($userId)
     {
         $this->userId = $userId;
+    }
+
+    public function sheets(): array
+    {
+        return [
+            0 => $this,
+        ];
     }
     /**
     * @param Collection $collection
