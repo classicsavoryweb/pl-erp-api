@@ -521,14 +521,14 @@ class ScheduleTimeController extends Controller
             $activeCutOff = Cutoff::where('status', 'active')->first();
 
             if ($activeCutOff) {
-                $branch = Branch::find($request->branch_id);
-                
-                if ($branch) {
-                    FetchScheduleTimeToCSHub::dispatch($branch, $activeCutOff, Auth::id(), $branch->name);
-
-                    return $this->sendResponse(["message" => "Schedules are being fetched"]);
+                foreach ($request->branch_id as $branch_id) {
+                    $branch = Branch::find($branch_id);
+                    $context = $branch?->name ?? "Unknown Branch";
+        
+                    FetchScheduleTimeToCSHub::dispatch($branch, $activeCutOff, Auth::id(), $context);
                 }
-                return $this->sendError(["message" => "No active cutoff"]);
+
+                return $this->sendResponse(["message" => "Schedules are being fetched"]);
             }
 
             return $this->sendError(["message" => "No active cutoff"]);

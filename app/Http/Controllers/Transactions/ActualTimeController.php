@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\Transactions\ActualLogsExport;
 use App\Jobs\FetchBranchLogs;
+use App\Models\Branch;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use DB;
@@ -268,13 +269,15 @@ class ActualTimeController extends Controller
     public function fetchBiotimeLogs(Request $request) {
         try {
             $request->validate([
-                "branch_id" => "required"
+                "branch_id" => "required|array"
             ]);
 
-            $branch = \App\Models\Branch::find($request->branch_id);
-            $context = $branch?->name ?? "Unknown Branch";
-
-            FetchBranchLogs::dispatch($request->branch_id, Auth::id(), $context);
+            foreach ($request->branch_id as $branch_id) {
+                $branch = Branch::find($branch_id);
+                $context = $branch?->name ?? "Unknown Branch";
+    
+                FetchBranchLogs::dispatch($branch_id, Auth::id(), $context);
+            }
 
             return $this->sendResponse(["message" => "Biotime logs are now fetching"]);
         } catch (Exception $e) {
