@@ -160,7 +160,9 @@ class EmployeeController extends Controller
             $employee->flexible_schedule = $employee->schedule->flexible_schedule ?? "";
 
             $storage = Storage::disk("hr_system_folder");
-            if ($employee->image) {
+            $storage->files('.');
+
+            if ($employee->image && $storage->exists($employee->image)) {
                 $profilePicture = $storage->get($employee->image);       
                 $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
             }
