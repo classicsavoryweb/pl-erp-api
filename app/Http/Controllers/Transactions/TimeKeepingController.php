@@ -273,9 +273,9 @@ class TimeKeepingController extends Controller
                 ])->dispatch();
                 $user = Auth::user();
                 activity()->causedBy($user)->useLog("Timekeeping Generation")
-                ->log('User generated timekeeping of '.$branch->name ?? "undefined"." branch." );
+                ->log('User generated timekeeping of '.$branch ?? "undefined"." branch." );
                 activity()->causedBy($user)->useLog("Timekeeping Summary Generation")
-                ->log('User generated timekeeping summary of '.$branch->name ?? "undefined"." branch." );
+                ->log('User generated timekeeping summary of '.$branch ?? "undefined"." branch." );
             }
 
             return $this->sendResponse(["message" => "Timekeeping are in queue for processing."]);
