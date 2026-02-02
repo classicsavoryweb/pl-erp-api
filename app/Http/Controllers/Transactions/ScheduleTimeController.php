@@ -519,12 +519,11 @@ class ScheduleTimeController extends Controller
             ]);
 
             $activeCutOff = Cutoff::where('status', 'active')->first();
-            $branches = Branch::pluck('name', 'id')->toArray();
 
             if ($activeCutOff) {
                 foreach ($request->branch_id as $branch_id) {
-                    $branch = $branches[$branch_id];
-                    $context = $branch['name'] ?? "Unknown Branch";
+                    $branch = Branch::find($branch_id);
+                    $context = $branch->name ?? "Unknown Branch";
         
                     FetchScheduleTimeToCSHub::dispatch($branch, $activeCutOff, Auth::id(), $context);
                 }

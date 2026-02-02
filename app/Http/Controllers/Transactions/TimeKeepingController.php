@@ -263,7 +263,7 @@ class TimeKeepingController extends Controller
             
             foreach ($request->branch_id as $branch_id) {
                 $branch = $branches[$branch_id];
-                $branchName = $branch['name'] ?? "Unknown Branch";
+                $branchName = $branch ?? "Unknown Branch";
     
                 Bus::chain([
                     new TransferLogsToTimeKeeping($branch_id, $cutOff, Auth::id(), true),
