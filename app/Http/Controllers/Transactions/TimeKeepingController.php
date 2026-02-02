@@ -245,49 +245,34 @@ class TimeKeepingController extends Controller
     public function generateTimeKeepingSummary(Request $request) {
         try {
             $request->validate([
-                "branch_id" => "required",
-                "cutoff" => "required",
-                "year" => "required",
+                "branch_id" => "required|array",
             ]);
 
-            $currentCutOff = $this->getCurrentCutoff();
-            $year = $request->year ?? Carbon::now()->year;
-
-            // $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
-            //     ? $year . '-' . $request->cutoff["start_time"]
-            //     : $currentCutOff['start_time'];
-
-            // $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
-            //     ? $year . '-' . $request->cutoff["end_time"]
-            //     : $currentCutOff['end_time'];
-
-            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
-            $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
-            $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
-
-            $cutOff = [
-                "start_time" => $start_time,
-                "end_time" => $end_time
-            ];
-
-            $fetchedCutOff = Cutoff::where("cut_off", $start_time."-".$end_time)->first();
+            $fetchedCutOff = Cutoff::where("status", "active")->first();
 
             if ($fetchedCutOff && ($fetchedCutOff->is_timekeeping_locked || $fetchedCutOff->is_cutoff_locked)) {
                 return $this->sendError(["message" => "Timekeeping or Cutoff is already locked."]);
             }
 
-            $branch = Branch::find($request->branch_id);
-            $branchName = $branch?->name ?? "Unknown Branch";
-
-            Bus::chain([
-                new TransferLogsToTimeKeeping($request->branch_id, $cutOff, Auth::id(), true),
-                new GenerateTimekeepingSummary($request->branch_id, $cutOff, Auth::id(), 0, $branchName)
-            ])->dispatch();
-            $user = Auth::user();
-            activity()->causedBy($user)->useLog("Timekeeping Generation")
-            ->log('User generated timekeeping of '.$branch->name ?? "undefined"." branch." );
-            activity()->causedBy($user)->useLog("Timekeeping Summary Generation")
-            ->log('User generated timekeeping summary of '.$branch->name ?? "undefined"." branch." );
+            $cutOff = [
+                "start_time" => $fetchedCutOff->start_date,
+                "end_time" => $fetchedCutOff->end_date
+            ];
+            
+            foreach ($request->branch_id as $branch_id) {
+                $branch = Branch::find($branch_id);
+                $branchName = $branch?->name ?? "Unknown Branch";
+    
+                Bus::chain([
+                    new TransferLogsToTimeKeeping($branch_id, $cutOff, Auth::id(), true),
+                    new GenerateTimekeepingSummary($branch_id, $cutOff, Auth::id(), 0, $branchName)
+                ])->dispatch();
+                $user = Auth::user();
+                activity()->causedBy($user)->useLog("Timekeeping Generation")
+                ->log('User generated timekeeping of '.$branch->name ?? "undefined"." branch." );
+                activity()->causedBy($user)->useLog("Timekeeping Summary Generation")
+                ->log('User generated timekeeping summary of '.$branch->name ?? "undefined"." branch." );
+            }
 
             return $this->sendResponse(["message" => "Timekeeping are in queue for processing."]);
         } catch(Exception $e) {
