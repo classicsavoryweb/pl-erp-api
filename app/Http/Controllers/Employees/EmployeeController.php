@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
+use Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Str;
@@ -160,12 +161,15 @@ class EmployeeController extends Controller
             $employee->incentive_leave = $employee->schedule->incentive_leave ?? "";
             $employee->flexible_schedule = $employee->schedule->flexible_schedule ?? "";
 
-            $storage = Storage::disk("hr_system_folder");
-            $storage->files('.');
+            try {
+                $storage = Storage::disk("hr_system_folder");
 
-            if ($employee->image && $storage->exists($employee->image)) {
-                $profilePicture = $storage->get($employee->image);       
-                $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
+                if ($employee->image && $storage->exists($employee->image)) {
+                    $profilePicture = $storage->get($employee->image);       
+                    $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
+                }
+            } catch (\Throwable $e) {
+                Log::info($e->getMessage());
             }
 
             return $this->sendResponse(["employee" => $employee]);
