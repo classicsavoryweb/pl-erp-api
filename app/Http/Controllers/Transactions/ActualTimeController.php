@@ -272,7 +272,10 @@ class ActualTimeController extends Controller
                 "branch_id" => "required|array"
             ]);
 
-            $branches = Branch::pluck('name', 'id')->toArray();
+            $branches = Branch::get()
+            ->pluck('name', 'id')
+            ->toArray();
+
             foreach ($request->branch_id as $branch_id) {
                 $branch = $branches[$branch_id];
                 $context = $branch ?? "Unknown Branch";

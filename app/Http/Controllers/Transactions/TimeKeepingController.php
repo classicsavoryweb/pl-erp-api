@@ -259,7 +259,9 @@ class TimeKeepingController extends Controller
                 "end_time" => $fetchedCutOff->end_date
             ];
 
-            $branches = Branch::pluck('name', 'id')->toArray();
+            $branches = Branch::get()
+            ->pluck('name', 'id')
+            ->toArray();
             
             foreach ($request->branch_id as $branch_id) {
                 $branch = $branches[$branch_id];
