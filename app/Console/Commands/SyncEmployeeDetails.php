@@ -75,6 +75,11 @@ class SyncEmployeeDetails extends Command
                         $tenure = "{$years} years {$months} months";
                     }
 
+                    $separationReason = $employee->separation_reason;
+                    if (is_numeric($separationReason)) {
+                        $separationReason = $employmentStatuses[(int) $separationReason] ?? $separationReason;
+                    }
+
                     $row = [
                         'EmployeeID' => $employeeId,
                         'BiometricID' => $employee->biometric_number,
@@ -92,7 +97,7 @@ class SyncEmployeeDetails extends Command
                         'Birthday' => $employee->birthday,
                         'ContactNo' => $employee->contact_number,
                         'DateSeparation' => $employee->separation_date,
-                        'SeparationReason' => $employee->separation_reason,
+                        'SeparationReason' => $separationReason,
                         'EmailAddress' => $employee->email,
                         'EmploymentStatus' => $employmentStatuses[$employee->employee_status_id] ?? null,
                         'Status' => ucfirst($employee->status),
