@@ -11,6 +11,7 @@ use App\Models\EducationHistory;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
+use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\ScheduleDetail;
 use App\Models\ScheduleType;
@@ -301,6 +302,25 @@ class EmployeeController extends Controller
         try {
 
             $employees = Employee::where("status", "active")->get();
+            return $this->sendResponse(["employees" => $employees]);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getBranchEmployees(Request $request) {
+        try {
+            $employees = Employee::where("status", "active")->get();
+            $otherEmployees = collect();
+            try {
+                $otherEmployees = OtherEmployee::where("status", "active")->get();
+            } catch (Exception $e) {
+                $otherEmployees = collect();
+            }
+
+            $employees = $employees->concat($otherEmployees)->values();
+
             return $this->sendResponse(["employees" => $employees]);
         } catch(Exception $e) {
 
