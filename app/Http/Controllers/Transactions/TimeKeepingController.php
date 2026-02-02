@@ -258,10 +258,12 @@ class TimeKeepingController extends Controller
                 "start_time" => $fetchedCutOff->start_date,
                 "end_time" => $fetchedCutOff->end_date
             ];
+
+            $branches = Branch::pluck('name', 'id')->toArray();
             
             foreach ($request->branch_id as $branch_id) {
-                $branch = Branch::find($branch_id);
-                $branchName = $branch?->name ?? "Unknown Branch";
+                $branch = $branches[$branch_id];
+                $branchName = $branch['name'] ?? "Unknown Branch";
     
                 Bus::chain([
                     new TransferLogsToTimeKeeping($branch_id, $cutOff, Auth::id(), true),
