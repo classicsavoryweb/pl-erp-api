@@ -71,6 +71,7 @@ class DeductionsController extends Controller
                 "end_loan_vendor_id" => "required",
                 "end_loan_debit_id" => "required",
                 "end_loan_credit_id" => "required",
+                "payslip_description" => "required", 
             ]);
 
             Deduction::create([
@@ -85,6 +86,7 @@ class DeductionsController extends Controller
                 "end_loan_vendor_id" => $request->end_loan_vendor_id,
                 "end_loan_debit_id" => $request->end_loan_debit_id,
                 "end_loan_credit_id" => $request->end_loan_credit_id,
+                "payslip_description" => $request->payslip_description, 
             ]);
 
             return $this->sendResponse(["message" => "Deduction created succesfully"]);
@@ -108,6 +110,7 @@ class DeductionsController extends Controller
                 "end_loan_vendor_id" => "required",
                 "end_loan_debit_id" => "required",
                 "end_loan_credit_id" => "required",
+                "payslip_description" => "required", 
             ]);
 
             Deduction::where("id", $id)->update([
@@ -122,6 +125,7 @@ class DeductionsController extends Controller
                 "end_loan_vendor_id" => $request->end_loan_vendor_id,
                 "end_loan_debit_id" => $request->end_loan_debit_id,
                 "end_loan_credit_id" => $request->end_loan_credit_id,
+                "payslip_description" => $request->payslip_description, 
             ]);
 
             return $this->sendResponse(["message" => "Deduction updated succesfully"]);
