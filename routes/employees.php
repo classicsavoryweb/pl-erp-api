@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
     Route::get("/get-employees", [EmployeeController::class, "getEmployees"]);
+    Route::get("/get-branch-employees", [EmployeeController::class, "getBranchEmployees"]);
     Route::get("/get-employees-list", [EmployeeController::class, "getEmployeeList"]);
     Route::get("/get-employee/{employee_number}", [EmployeeController::class, "getEmployee"]);
     Route::middleware(["permission:export_employee_tracking"])->get("/export-employees-list", [EmployeeController::class, "exportEmployee"]);
