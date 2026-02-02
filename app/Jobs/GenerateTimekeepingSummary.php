@@ -108,10 +108,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ->where("date", $overtime->overtime_date)
                 ->first();
                 
-                if ($isExisting) {
-                    $isExisting->delete();
-                }
-
                 if ($timeKeeping) {
                     $schedule = $timeKeeping->schedule;
                     $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
@@ -125,6 +121,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         !$schedule->timetable
                     ) {
                         continue;
+                    }
+
+                    if ($isExisting) {
+                        $isExisting->delete();
                     }
 
                     $adjustedTimeKeeping = $this->timeKeepingService->computeTimeKeeping(
