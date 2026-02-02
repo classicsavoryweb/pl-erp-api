@@ -93,7 +93,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             foreach ($employees as $employee) {
             $adjustmentOvertimes = Overtime::where("employee_id", $employee->id)
             ->whereNotBetween("overtime_date", $cutOff)
-            ->whereBetween("date_filed", [$start_date, $end_date])
+            ->whereBetween("date_filed", $cutOff)
             ->get();
 
             foreach ($adjustmentOvertimes as $overtime) {
