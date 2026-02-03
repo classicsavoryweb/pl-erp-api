@@ -34,7 +34,6 @@ class ConverterDetailImport implements ToCollection, WithHeadingRow, WithMultipl
             $employee = Employee::where("employee_number", $trans["employee_id"])->first();
 
             if ($employee) {
-                $bankAccount = $employee->latest_bank_details;
                 $branch = Branch::where("short_name", $trans["branch_code"])->first();
 
                 ConverterDetail::create([
@@ -47,7 +46,6 @@ class ConverterDetailImport implements ToCollection, WithHeadingRow, WithMultipl
                     "added_by" => $this->userId,
                     "status" => "Pending",
                     "source" => "Manual",
-                    "bank_account_number" => $bankAccount->bank_number
                 ]);
             }
         }
