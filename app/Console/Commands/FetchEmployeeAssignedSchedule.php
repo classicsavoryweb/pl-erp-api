@@ -55,7 +55,8 @@ class FetchEmployeeAssignedSchedule extends Command
                 ->get($scheduleLink,[
                     "start_date" => $start_date,
                     "end_date" => $end_date,
-                    "branch_short_name" => $branch->short_name
+                    "branch_short_name" => $branch->short_name,
+                    "company" => env("COMPANY_NAME")
                 ]);
 
                 if ($response->successful()) {
