@@ -566,7 +566,7 @@ class LastPayController extends Controller
 
             if ($lastPay && $lastPay->status === "Unposted") {
 
-                GenerateLastPayEntry::dispatch($lastPay, Auth::user()->id);
+                // GenerateLastPayEntry::dispatch($lastPay, Auth::user()->id);
 
                 $lastPay->update(["status" => "Posted"]);
 
