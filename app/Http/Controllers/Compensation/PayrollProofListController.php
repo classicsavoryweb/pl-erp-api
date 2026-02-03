@@ -43,6 +43,9 @@ class PayrollProofListController extends Controller
             if ($request->type === "INCENTIVES") {
                 $proofList = Incentives::query();
             }
+            $proofList = $proofList->with([
+            "employee.latest_bank_details.bank_account_type", 
+            ]);
 
             $proofList = $proofList->with(["employee"])
             ->where("pay_date", $cutOff->pay_date);
@@ -67,7 +70,8 @@ class PayrollProofListController extends Controller
                     "status",
                     "id",
                     "employee_id",
-                    "net_pay as amount"
+                    "net_pay as amount",
+                    "cut_off", 
                 ])->where("net_pay", ">", 0)
                 ->orderBy(
                     Employee::select("last_name")
@@ -81,12 +85,8 @@ class PayrollProofListController extends Controller
                         $q->where("bank_account_type_id", $request->bank_account_type_id);
                     });
                 });
-            } else {
-                $proofList = $proofList->whereHas("payroll_list", function ($query) {
-                    $query->where("is_bank", false);
-                });
-            }
-
+            } 
+            
             if ($request->export === true) {
                 $proofList = $proofList->whereHas("payroll_list", function ($query) {
                     $query->where("is_hold", false);

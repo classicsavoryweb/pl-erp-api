@@ -25,6 +25,8 @@ class PayrollProofListExport implements FromCollection, WithHeadings
                 return [
                     $transaction->employee->full_name,
                     $transaction->employee->employee_number,
+                    $transaction->employee->latest_bank_details->bank_account_type->description ?? '', 
+                    $transaction->cut_off,  
                     round($transaction->amount,2)
                 ];
             } else {
@@ -48,7 +50,9 @@ class PayrollProofListExport implements FromCollection, WithHeadings
             return [
                 "Full Name",
                 "Employee Number",
-                "Amount"
+                "Card Type", 
+                "Cut Off", 
+                "Amount",
             ];
         } else {
             return [
@@ -58,7 +62,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings
                 "Additional Incentive",
                 "1st Cut Off Worked Days",
                 "2nd Cut Off Worked Days",
-                "Amount"
+                "Amount",
             ];
         }
     }
