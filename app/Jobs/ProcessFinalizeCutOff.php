@@ -61,6 +61,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
             $deductions = json_decode($payroll->deductions, true);
             $adjustments = Adjustment::where("employee_id", $payroll->empployee_id)
             ->where("status", "Adjusted")
+            ->where("is_timekeeping_locked", "0")
             ->get();
 
             foreach ($adjustments as $adjustment) {
@@ -99,7 +100,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
             ]);
         }
 
-        GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
+        // GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
             $this->notifyJobFailed();
