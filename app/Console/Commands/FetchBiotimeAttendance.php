@@ -23,9 +23,14 @@ class FetchBiotimeAttendance extends Command
         $url = env('BIOMETRICS_ATTENDANCE_LINK');
         $user = env('BIOMETRICS_USERNAME');
         $password = env('BIOMETRICS_PASSWORD');
-        $employees = Employee::where("status", "active")
-        ->where("type", "Direct")
-        // ->where("branch_id", 107)
+        $employees = Employee::where('type', 'Direct')
+        ->where(function ($q) {
+            $q->where('status', 'active')
+            ->orWhere(function ($q2) {
+                $q2->where('status', 'inactive')
+                    ->where('updated_at', '>=', Carbon::now()->subMonths(2));
+            });
+        })
         ->get();
         
 
