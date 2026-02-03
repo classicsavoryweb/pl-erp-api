@@ -325,7 +325,7 @@ class ConverterController extends Controller
                 });
             }
 
-            $transactions = $transactions->with(["employee", "transaction_type", "branch"])
+            $transactions = $transactions->with(["employee", "transaction_type", "branch", "employee.latest_bank_details"])
             ->where(function ($q) {
                 $q->whereDoesntHave("converter_main")
                 ->orWhereHas("converter_main", function ($sub) {

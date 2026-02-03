@@ -154,7 +154,8 @@ class EmployeeController extends Controller
                 "dependents",
                 "contracts",
                 "schedule",
-                "schedule.schedule_type"
+                "schedule.schedule_type",
+                "separation"
             ])->where("employee_number", $employee_number)
             ->first();
 
