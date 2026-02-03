@@ -110,7 +110,6 @@ class PayrollService {
 
             $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
         
-
             $grossPayAmount = ( $salary +
                 $overtimeAmount +
                 $legalHolidayAmount +
@@ -124,7 +123,6 @@ class PayrollService {
                 $nonTaxableAmount ) -
                 $undertimeAmount -
                 $tardinessAmount;
-
 
             //clarify if $grossPayAmount will be used
             if ($employee->hasCompleteStatutories()) {
@@ -712,7 +710,11 @@ class PayrollService {
                     ->where("date", $adjustment->date)
                     ->first();
 
-                    if ($timeKeeping->final_worked_hours !== $adjustmentTimeKeeping->final_worked_hours) {
+                    if (
+                        $timeKeeping &&
+                        $adjustmentTimeKeeping &&
+                        $timeKeeping->final_worked_hours !== $adjustmentTimeKeeping->final_worked_hours
+                    ) {
                         $tobeDeducted = 0;
                         if ($hours >= $timeKeeping->final_worked_hours) {
                             $tobeDeducted = 1;
@@ -748,7 +750,11 @@ class PayrollService {
                     ->where("date", $adjustment->date)
                     ->first();
 
-                    if ($timeKeeping->final_worked_hours !== $adjustmentTimeKeeping->final_worked_hours) {
+                    if (
+                        $timeKeeping &&
+                        $adjustmentTimeKeeping &&
+                        $timeKeeping->final_worked_hours !== $adjustmentTimeKeeping->final_worked_hours
+                    ) {
                         $tobeDeducted = 0;
                         if ($hours >= $timeKeeping->final_worked_hours) {
                             $tobeDeducted = 1;

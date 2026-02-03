@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:force_adjust_all_transactions_overtime"])->post("/force-adjust-overtime/{id}", [OvertimeController::class, "forceAdjustOvertime"]);
     Route::middleware(["permission:force_adjust_all_transactions_overtime"])->post("/force-adjust-overtime-without-timekeeping", [AdjustmentController::class, "adjustTimeKeepingWithOtherOvertime"]);
     Route::middleware(["permission:import_all_transactions_overtime"])->get("/fetch-overtime", [OvertimeController::class, "fetchOvertime"]);
-
+    Route::middleware(["permission:force_adjust_all_transactions_overtime"])->post("/force-adjust-bulk-overtime", [OvertimeController::class, "bulkForceAdjust"]);
 
     //time keeping
     Route::middleware(["permission:perform_transactions_time_keeping"])->post("/generate-time-keeping", [TimeKeepingController::class, "generateTimeKeeping"]);

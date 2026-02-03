@@ -390,4 +390,87 @@ class OvertimeController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function bulkForceAdjust(Request $request) {
+        try {
+            $request->validate([
+                "overtime_id" => "required|array"
+            ]);
+
+            DB::beginTransaction();
+            $overtimes = Overtime::with(["employee"])
+            ->whereIn("id", $request->overtime_id)
+            ->where("status", "Unpaid")
+            ->get();
+
+            foreach ($overtimes as $overtime) {
+                $employee = $overtime->employee;
+
+                $timeKeeping = TimeKeeping::where("employee_id", $employee->id)
+                ->where("date", $overtime->overtime_date)
+                ->first();
+
+                if ($timeKeeping) {
+                    $schedule = $timeKeeping->schedule;
+                    $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
+                    $log = BiotimeLog::where("employee_id", $employee->id)
+                    ->where("date", $timeKeeping->date)
+                    ->first();
+
+                    $adjustedTimeKeeping = $this->timeKeepingService->computeTimeKeeping(
+                        $timeKeeping->branch_id,
+                        $log,
+                        $log->punches,
+                        $schedule->timetable,
+                        $employee,
+                        new AdjustmentTimeKeeping(),
+                        true,
+                        "force adjustment"
+                    );
+
+                    $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
+                        $adjustedTimeKeeping,
+                        $schedule->timetable,
+                        true
+                    );
+
+                    $taxable_amount = $adjustedTimeKeepingPayment->total_amount - ($oldtimeKeepingPayment->total_amount ?? 0);
+                    $amount_paid = $oldtimeKeepingPayment->total_amount ?? 0;
+                    $adjustment = Adjustment::create([
+                        "employee_id" => $employee->id,
+                        "biometric_number" => $employee->biometric_number,
+                        "date" => $timeKeeping->date,
+                        "days" => 0,
+                        "cancelled_rd" => 0,
+                        "taxable_amount" => round($taxable_amount, 2) ,
+                        "amount_paid" => round($amount_paid, 2),
+                        "correct_amount_paid" => round($adjustedTimeKeepingPayment->total_amount, 2),
+                        "actual_schedule" => $schedule->timetable,
+                        "type" => "Overtime Force Adjustments",
+                        "status" => "Approved",
+                        "added_by" => Auth::user()->id,
+                        "added_at" => now(),
+                    ]);
+
+                    foreach($log->punches as $punch) {
+                        AdjustmentPunch::create([
+                            "adjustment_id" => $adjustment->id,
+                            "punch_time" => $punch->punch_time,
+                            "date" => $timeKeeping->date,
+                            "branch_id" => $punch->branch_id ?? null
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return $this->sendResponse([
+                "message" => "Bulk overtime successfully adjusted."
+            ]);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
 }
