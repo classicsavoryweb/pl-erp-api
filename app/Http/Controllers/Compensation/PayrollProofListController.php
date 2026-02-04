@@ -79,15 +79,22 @@ class PayrollProofListController extends Controller
                 );
             }
 
-            if ($request->bank_account_type_id !== '0') {
+            if ($request->bank_account_type_id !== '0' && $request->bank_account_type_id !== 'ALL') {
                 $proofList = $proofList->whereHas("employee", function ($query) use ($request) {
                     $query->whereHas("latest_bank_details", function ($q) use ($request) {
                         $q->where("bank_account_type_id", $request->bank_account_type_id);
                     });
                 });
+            } else {
+                $proofList = $proofList->whereHas("payroll_list", function ($query) {
+                    $query->where("is_bank", false);
+                });
             } 
-            
+
             if ($request->export === true) {
+                if ($request->bank_account_type_id === 'ALL') {
+                 return $proofList->get();
+                }
                 $proofList = $proofList->whereHas("payroll_list", function ($query) {
                     $query->where("is_hold", false);
                 })->get();
