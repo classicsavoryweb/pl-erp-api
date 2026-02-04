@@ -1126,7 +1126,7 @@ class TimeKeepingService
         }
 
         foreach($otherSchedules as $schedule) {
-            $timeKeeping = $schedule->timekeeeping;
+            $timeKeeping = $schedule->timekeeping;
             $biotimeLog = $timeKeeping->biotime_log ?? null;
 
             if (!$timeKeeping || !$biotimeLog) {
