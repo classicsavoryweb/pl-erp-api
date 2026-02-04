@@ -527,20 +527,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("date", $adjustment->date)
-                    ->where("employee_id", $employee->id)
-                    ->first();
-
-                    if ($adjustmentTimeKeeping) {
-                        if ($adjustmentTimeKeeping->undertime > 0) {
-                            $adjustments_undertime += $adjustmentTimeKeeping->undertime;
-                        }
-
-                        if ($adjustmentTimeKeeping->tardiness > 0) {
-                            $adjustments_tardiness_amount += $adjustmentTimeKeeping->tardiness * $minute_rate;
-                        }
-                    }
-
                     $adjustment->update([
                         "status" => "Adjusted",
                         "timekeeping_summary_id" => $timeKeepingSummary->id
@@ -562,20 +548,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("date", $adjustment->date)
-                    ->where("employee_id", $employee->id)
-                    ->first();
-
-                    if ($adjustmentTimeKeeping) {
-                        if ($adjustmentTimeKeeping->undertime > 0) {
-                            $adjustments_undertime += $adjustmentTimeKeeping->undertime;
-                        }
-
-                        if ($adjustmentTimeKeeping->tardiness > 0) {
-                            $adjustments_tardiness_amount += $adjustmentTimeKeeping->tardiness * $minute_rate;
-                        }
-                    }
-
                     $adjustment->update([
                         "status" => "Adjusted",
                         "timekeeping_summary_id" => $timeKeepingSummary->id
@@ -584,9 +556,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $withAdjustments = true;
                 }
 
-                $adjustment_amount += round($adjustments_tardiness_amount * -1, 2);
-                $undertime += $adjustments_undertime;
-                $regular_days += $adjustments_days;
                 $cancelled_off += round($adjustments_cancelled_off, 2);
 
                 if ($withAdjustments) {
