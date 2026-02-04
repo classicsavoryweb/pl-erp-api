@@ -958,7 +958,10 @@ class TimeKeepingService
         ->where("employee_id", $employee->id)
         ->first();
         $weekDateRange = $this->getCustomWeekRange($date, $cutOff, $employee);
-        $schedules = ScheduleTime::whereBetween("date", [$weekDateRange["start"], $weekDateRange["end"] ])->get();
+        $schedules = ScheduleTime::with(["timekeeping", "timekeeping.biotime_log"])
+        ->whereBetween("date", [$weekDateRange["start"], $weekDateRange["end"] ])
+        ->where("employee_id", $employee->id)
+        ->get();
 
         //head office
         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
