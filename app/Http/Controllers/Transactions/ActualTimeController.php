@@ -169,12 +169,8 @@ class ActualTimeController extends Controller
 
             if ($biotime) {
                 $deletedIds = $request->input("deleted_punch_ids", []);
-                $punchCount = $biotime->punches()->count();
-                $canDelete =
-                    $biotime->status === "MULTIPLE LOGS" ||
-                    ($biotime->status === "INCOMPLETE" && $punchCount === 3);
                 $didModify = false;
-                if ($canDelete && is_array($deletedIds) && count($deletedIds) > 0) {
+                if (is_array($deletedIds) && count($deletedIds) > 0) {
                     $biotime->punches()->whereIn("id", $deletedIds)->delete();
                     $didModify = true;
                 }
