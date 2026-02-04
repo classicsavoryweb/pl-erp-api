@@ -29,6 +29,7 @@ class DeductionExport implements FromCollection, WithHeadings
                 $unique_deductions->end_loan_vendor_id,
                 $unique_deductions->end_loan_debit_id,
                 $unique_deductions->end_loan_credit_id,
+                $unique_deductions->payslip_description, 
             ];
         });
     }
@@ -46,6 +47,7 @@ class DeductionExport implements FromCollection, WithHeadings
             'End Loan Vendor Account',
             'End Loan Debit Account',
             'End Loan Credit Account',
+            'Pay Slip Description', 
         ];
     }
 }
