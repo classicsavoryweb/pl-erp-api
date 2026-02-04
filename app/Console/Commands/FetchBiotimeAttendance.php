@@ -28,13 +28,7 @@ class FetchBiotimeAttendance extends Command
         $endTime = Carbon::now()->endOfDay();
 
         $employees = Employee::where('type', 'Direct')
-        ->where(function ($q) use ($startTime) {
-            $q->where('status', 'active')
-            ->orWhere(function ($q2) use ($startTime) {
-                $q2->where('status', 'inactive')
-                    ->where('separation_date', '>=', $startTime->copy()->subDays(10)->toDateString() );
-            });
-        })
+        ->where('status', 'active')
         ->get();
         
 
