@@ -66,11 +66,17 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $branchId = $this->branchId;
             $employeeId = $this->employeeId;
 
+            $inactiveDate = Carbon::parse($cutOff['start_time'])->subDays(10)->format("Y-m-d");
             $employees = Employee::with(["schedule", "schedule.schedule_type"])
             ->whereHas("timekeeping", function ($query) use ($branchId) {
                 $query->where("branch_id", $branchId);
+            })->where(function ($q) use ($inactiveDate) {
+                $q->where('status', 'active')
+                ->orWhere(function ($q2) use ($inactiveDate) {
+                    $q2->where('status', 'inactive')
+                        ->where('separation_date', '>=', $inactiveDate);
+                });
             })
-            ->where("status", "active")
             ->where("type", "Direct");
 
 
