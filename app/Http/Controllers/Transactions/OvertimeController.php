@@ -25,6 +25,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Models\Branch;
+use App\Models\ScheduleTime;
 
 class OvertimeController extends Controller
 {
@@ -291,7 +292,9 @@ class OvertimeController extends Controller
             ->first();
 
             if ($timeKeeping) {
-                $schedule = $timeKeeping->schedule;
+                $schedule = ScheduleTime::where("employee_id", $employee->id)
+                ->where("date", $overtime->overtime_date)
+                ->first();
                 $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
                 $log = BiotimeLog::where("employee_id", $employee->id)
                 ->where("date", $timeKeeping->date)
@@ -411,7 +414,9 @@ class OvertimeController extends Controller
                 ->first();
 
                 if ($timeKeeping) {
-                    $schedule = $timeKeeping->schedule;
+                    $schedule = ScheduleTime::where("employee_id", $employee->id)
+                    ->where("date", $overtime->overtime_date)
+                    ->first();
                     $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
                     $log = BiotimeLog::where("employee_id", $employee->id)
                     ->where("date", $timeKeeping->date)
