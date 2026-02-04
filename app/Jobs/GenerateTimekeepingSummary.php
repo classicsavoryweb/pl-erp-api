@@ -344,7 +344,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules)) {
                     $workDays = 0;
 
-                    $schedules->filter(function ($schedule) use ($workDays) {
+                    $schedules->each(function ($schedule) use (&$workDays) {
                         if (!in_array($schedule->timetable, ['LEAVE', 'SUSPENSION', 'REST DAY', 'NO SCHEDULE'])) {
                             $workDays += 1;
                         }
