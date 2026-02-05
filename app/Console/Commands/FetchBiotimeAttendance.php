@@ -23,14 +23,14 @@ class FetchBiotimeAttendance extends Command
         $url = env('BIOMETRICS_ATTENDANCE_LINK');
         $user = env('BIOMETRICS_USERNAME');
         $password = env('BIOMETRICS_PASSWORD');
-        $employees = Employee::where("status", "active")
-        ->where("type", "Direct")
-        // ->where("branch_id", 107)
-        ->get();
-        
 
         $startTime = Carbon::now()->subDays(1)->startOfDay();
         $endTime = Carbon::now()->endOfDay();
+
+        $employees = Employee::where('type', 'Direct')
+        ->where('status', 'active')
+        ->get();
+        
 
         // $startTime = Carbon::parse("2026-01-12")->subDays(1)->startOfDay();
         // $endTime = Carbon::parse("2026-01-16")->endOfDay();

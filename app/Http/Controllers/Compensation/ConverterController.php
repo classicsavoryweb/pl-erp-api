@@ -205,10 +205,8 @@ class ConverterController extends Controller
                 "terms_id" => "required"
             ]);
 
-            $employee = Employee::with(["latest_bank_details"])->find($request->employee_id);
+            $employee = Employee::find($request->employee_id);
             $terms = Term::find($request->terms_id);
-
-            $bankAccount = $employee->latest_bank_details;
 
             ConverterDetail::create([
                 "employee_id" => $employee->id,
@@ -220,7 +218,6 @@ class ConverterController extends Controller
                 "added_by" => Auth::user()->id,
                 "status" => "Pending",
                 "source" => "Manual",
-                "bank_account_number" => $bankAccount->bank_number
             ]);
 
             DB::commit();
@@ -328,7 +325,7 @@ class ConverterController extends Controller
                 });
             }
 
-            $transactions = $transactions->with(["employee", "transaction_type", "branch"])
+            $transactions = $transactions->with(["employee", "transaction_type", "branch", "employee.latest_bank_details"])
             ->where(function ($q) {
                 $q->whereDoesntHave("converter_main")
                 ->orWhereHas("converter_main", function ($sub) {
@@ -475,7 +472,8 @@ class ConverterController extends Controller
                     foreach ($transactions as $transaction) {
 
                         $transaction->update([
-                            "status" => "Generated"
+                            "status" => "Generated",
+                            "bank_account_number" => $transaction->employee->latest_bank_details->bank_number
                         ]);
 
                         $colA = "A".$rowIndex;
@@ -485,7 +483,7 @@ class ConverterController extends Controller
 
                         $transactionDescription = $transaction->transaction_type->description ?? "";
 
-                        $bankNumber = $transaction->bank_account_number ?? $transaction->employee->latest_bank_details->bank_number;
+                        $bankNumber = $transaction->employee->latest_bank_details->bank_number;
 
                         $this->writeCell($dom, $sheetData, $colA, (string)$bankNumber);
                         $this->writeCell($dom, $sheetData, $colB,number_format($transaction->amount, 2));

@@ -34,20 +34,19 @@ class ConverterDetailImport implements ToCollection, WithHeadingRow, WithMultipl
             $employee = Employee::where("employee_number", $trans["employee_id"])->first();
 
             if ($employee) {
-                $bankAccount = $employee->latest_bank_details;
                 $branch = Branch::where("short_name", $trans["branch_code"])->first();
 
-                ConverterDetail::create([
-                    "employee_id" => $employee->id,
-                    "branch_id" => $branch->id,
-                    "amount" => $trans["amount"],
-                    "transaction_type_id" => $trans["transaction_id"],
-                    "terms" => 0,
-                    "remarks" => $trans["remarks"],
-                    "added_by" => $this->userId,
+                ConverterDetail::updateOrCreate([
                     "status" => "Pending",
                     "source" => "Manual",
-                    "bank_account_number" => $bankAccount->bank_number
+                    "employee_id" => $employee->id,
+                    "amount" => $trans["amount"],
+                    "transaction_type_id" => $trans["transaction_id"],
+                ],[
+                    "terms" => 0,
+                    "branch_id" => $branch->id,
+                    "remarks" => $trans["remarks"],
+                    "added_by" => $this->userId,
                 ]);
             }
         }

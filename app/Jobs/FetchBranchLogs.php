@@ -43,14 +43,20 @@ class FetchBranchLogs implements ShouldQueue
             $password = env('BIOMETRICS_PASSWORD');
             $branchId = $this->branchId;
 
-            $employees = Employee::where("status", "active")
-            ->where("type", "Direct")
-            ->where("branch_id", $branchId)
-            ->get();
-
             $activeCutOff = Cutoff::where('status', 'active')->first();
             $startTime = Carbon::parse($activeCutOff->start_date)->startOfDay();
             $endTime = Carbon::parse($activeCutOff->end_date)->endOfDay();
+
+            $employees = Employee::where('type', 'Direct')
+            ->where("branch_id", $branchId)
+            ->where(function ($q) use ($startTime) {
+                $q->where('status', 'active')
+                ->orWhere(function ($q2) use ($startTime) {
+                    $q2->where('status', 'inactive')
+                        ->where('separation_date', '>=', $startTime->copy()->subDays(10));
+                });
+            })
+            ->get();
 
             $failedEmployees = [];
 

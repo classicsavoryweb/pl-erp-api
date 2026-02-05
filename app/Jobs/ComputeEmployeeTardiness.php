@@ -46,7 +46,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
                 $totalTardy = 0;
 
                 foreach ($timeKeepings as $timeKeeping) {
-                    $total += $timeKeeping->tardiness;
+                    $totalTardy += $timeKeeping->tardiness;
                 }
 
                 if ($totalTardy > 60) {
@@ -63,11 +63,12 @@ class ComputeEmployeeTardiness implements ShouldQueue
                         $sanction = TardinessSanction::where("rank", $oldSanction+1)->first();
                     }
 
-                    $tardy = Tardiness::create([
+                    $tardy = Tardiness::updateOrCreate([
                         'employee_id' => $employee->id,
                         "branch_id" => $employee->current_branch->id,
                         "month" => $month,
                         "year" => $year,
+                    ],[
                         "total_minutes" => $totalTardy,
                         "tardiness_sanction_id" => $sanction->id,
                         "offense_punishment" => $sanction->punishment,
@@ -75,13 +76,16 @@ class ComputeEmployeeTardiness implements ShouldQueue
                     ]);
 
                     foreach ($timeKeepings as $timeKeeping) {
-                        TardinessMinutes::create([
-                            "employee_id" => $employee->id,
-                            "late_date" => $timeKeeping->date,
-                            "late_minutes" => $timeKeeping->tardiness,
-                            "month" => $month,
-                            "year" => $year
-                        ]);
+                        if ($timeKeeping->tardiness > 0) {
+                            TardinessMinutes::updateOrCreate([
+                                "employee_id" => $employee->id,
+                                "late_date" => $timeKeeping->date,
+                                "month" => $month,
+                                "year" => $year
+                            ],[
+                                "late_minutes" => $timeKeeping->tardiness,
+                            ]);
+                        }
                     }
                 }
             }

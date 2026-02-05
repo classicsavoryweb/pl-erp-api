@@ -57,12 +57,20 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            $thisCompanyEmployeeCount = Employee::count();
-            $otherCompanyEmployeeCount = OtherEmployee::count();
-            $employeeCount = $thisCompanyEmployeeCount + $otherCompanyEmployeeCount;
-            $company = env('COMPANY_NAME');
-            $employeeNumber = str_pad($employeeCount + 1, 7, '0', STR_PAD_LEFT);
-            $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
+            $inc = 1;
+            do {
+                $thisCompanyEmployeeCount = Employee::count();
+                $otherCompanyEmployeeCount = OtherEmployee::count();
+                $employeeCount = $thisCompanyEmployeeCount + $otherCompanyEmployeeCount;
+                $company = env('COMPANY_NAME');
+                $employeeNumber = str_pad($employeeCount + $inc, 7, '0', STR_PAD_LEFT);
+                $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
+                $inc++;
+            } while (
+                Employee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0 ||
+                OtherEmployee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0
+            );
+
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave"]);
             $position = Position::find($request->position_id);
@@ -154,7 +162,8 @@ class EmployeeController extends Controller
                 "dependents",
                 "contracts",
                 "schedule",
-                "schedule.schedule_type"
+                "schedule.schedule_type",
+                "separation"
             ])->where("employee_number", $employee_number)
             ->first();
 

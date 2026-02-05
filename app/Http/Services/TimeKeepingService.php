@@ -577,7 +577,7 @@ class TimeKeepingService
                             "status" => "approved",
                         ]);
                     } catch (Exception $e) {
-                        Log::info("CSHub overtime api error encountered: ".$e->getMessage());
+                        // Log::info("CSHub overtime api error encountered: ".$e->getMessage());
                     }
                 }
             }
@@ -959,8 +959,8 @@ class TimeKeepingService
         ->first();
         $weekDateRange = $this->getCustomWeekRange($date, $cutOff, $employee);
         $schedules = ScheduleTime::with(["timekeeping", "timekeeping.biotime_log"])
-        ->where("employee_id", $employee->id)
         ->whereBetween("date", [$weekDateRange["start"], $weekDateRange["end"] ])
+        ->where("employee_id", $employee->id)
         ->get();
 
         //head office
@@ -981,6 +981,13 @@ class TimeKeepingService
 
             foreach ($otherSchedules as $schedule) {
                 $log = $schedule->timekeeping->biotime_log ?? null;
+
+                if (!$log) {
+                    $log = BiotimeLog::where("employee_id", $schedule->employee_id)
+                    ->where("date", $schedule->date)
+                    ->first();
+                }
+
                 if (!$log && $schedule->timetable !== "NO SCHEDULE") {
                     $shouldPay = false;
                 }

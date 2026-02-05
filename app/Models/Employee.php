@@ -230,6 +230,11 @@ class Employee extends Model
     public function employee_status() {
         return $this->hasOne(EmployeeStatus::class,'id','employee_status_id');
     }
+
+    public function separation() {
+        return $this->hasOne(EmployeeStatus::class,'id','separation_reason');
+    }
+
     public function current_position() {
         return $this->hasOne(Position::class,'id','position_id');
     }
@@ -275,7 +280,7 @@ class Employee extends Model
     }
 
     public function latest_bank_details() {
-        return $this->hasOne(BankDetail::class,'employee_id','id')->latest("updated_at");
+        return $this->hasOne(BankDetail::class,'employee_id','id')->latestOfMany('updated_at');
     }
 
     public function offenses() {

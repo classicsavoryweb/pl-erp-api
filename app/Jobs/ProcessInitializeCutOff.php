@@ -55,6 +55,10 @@ class ProcessInitializeCutOff implements ShouldQueue
             ->where("employee_id",  $employee->id)
             ->first();
 
+            if ($employee->type === "Agency") {
+                continue;
+            }
+
             if ($includedEmployee->isOnMaternityLeave() || $includedEmployee->isMancom()) {
                 $this->payrollService->computeStatutoryOnly($employee, $this->cutOff);
             } else if ($timeKeepingSummary && !$includedEmployee->isOnMaternityLeave() && !$includedEmployee->isMancom()) {

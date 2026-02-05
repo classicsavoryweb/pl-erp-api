@@ -66,11 +66,17 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $branchId = $this->branchId;
             $employeeId = $this->employeeId;
 
+            $inactiveDate = Carbon::parse($cutOff['start_time'])->subDays(10)->format("Y-m-d");
             $employees = Employee::with(["schedule", "schedule.schedule_type"])
             ->whereHas("timekeeping", function ($query) use ($branchId) {
                 $query->where("branch_id", $branchId);
+            })->where(function ($q) use ($inactiveDate) {
+                $q->where('status', 'active')
+                ->orWhere(function ($q2) use ($inactiveDate) {
+                    $q2->where('status', 'inactive')
+                        ->where('separation_date', '>=', $inactiveDate);
+                });
             })
-            ->where("status", "active")
             ->where("type", "Direct");
 
 
@@ -91,9 +97,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
             }
 
             foreach ($employees as $employee) {
+            
+            if ($employee->type === "Agency") {
+                continue;
+            }
+
             $adjustmentOvertimes = Overtime::where("employee_id", $employee->id)
             ->whereNotBetween("overtime_date", $cutOff)
-            ->whereBetween("date_filed", [$start_date, $end_date])
+            ->whereBetween("date_filed", $cutOff)
             ->get();
 
             foreach ($adjustmentOvertimes as $overtime) {
@@ -516,20 +527,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("date", $adjustment->date)
-                    ->where("employee_id", $employee->id)
-                    ->first();
-
-                    if ($adjustmentTimeKeeping) {
-                        if ($adjustmentTimeKeeping->undertime > 0) {
-                            $adjustments_undertime += $adjustmentTimeKeeping->undertime;
-                        }
-
-                        if ($adjustmentTimeKeeping->tardiness > 0) {
-                            $adjustments_tardiness_amount += $adjustmentTimeKeeping->tardiness * $minute_rate;
-                        }
-                    }
-
                     $adjustment->update([
                         "status" => "Adjusted",
                         "timekeeping_summary_id" => $timeKeepingSummary->id
@@ -551,20 +548,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("date", $adjustment->date)
-                    ->where("employee_id", $employee->id)
-                    ->first();
-
-                    if ($adjustmentTimeKeeping) {
-                        if ($adjustmentTimeKeeping->undertime > 0) {
-                            $adjustments_undertime += $adjustmentTimeKeeping->undertime;
-                        }
-
-                        if ($adjustmentTimeKeeping->tardiness > 0) {
-                            $adjustments_tardiness_amount += $adjustmentTimeKeeping->tardiness * $minute_rate;
-                        }
-                    }
-
                     $adjustment->update([
                         "status" => "Adjusted",
                         "timekeeping_summary_id" => $timeKeepingSummary->id
@@ -573,9 +556,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $withAdjustments = true;
                 }
 
-                $adjustment_amount += round($adjustments_tardiness_amount * -1, 2);
-                $undertime += $adjustments_undertime;
-                $regular_days += $adjustments_days;
                 $cancelled_off += round($adjustments_cancelled_off, 2);
 
                 if ($withAdjustments) {
