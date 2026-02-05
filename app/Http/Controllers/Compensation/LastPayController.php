@@ -201,18 +201,19 @@ class LastPayController extends Controller
 
                 $companyDeductions = $companyDeductions->merge($sssLoans);
 
-                $yearSourceDate = $employee->separation_date ?: $employee->payroll_list->holded_at;
+                $yearSourceDate = $employee->separation_date;
+                $cutOff = $this->getCutOffForDate($yearSourceDate);
+                $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
                 $yearHolded = Carbon::parse($yearSourceDate)->year;
-                $dateHolded = Carbon::parse($employee->payroll_list->holded_at)->format("Y-m-d");
-                $payrolEndDate = Carbon::parse($employee->payroll_list->holded_at)->endOfMonth()->format("Y-m-d");
+                $dateHolded = Carbon::parse($employee->separation_date)->format("Y-m-d");
                 $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
-                ->where("pay_date", ">" ,$dateHolded)
+                ->where("pay_date", ">=" ,$payroll->pay_date)
                 ->get();
 
                 $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                ->where("pay_date", ">" ,$dateHolded)
+                ->where("pay_date", ">=" ,$payroll->pay_date)
                 ->get();
 
                 foreach ($payrolls as $payroll) {
@@ -334,16 +335,18 @@ class LastPayController extends Controller
                 $taxRefund = $request->tax_refund ?? 0;
                 $salesIncentives = $request->sales ?? 0;
 
-                $yearSourceDate = $employee->separation_date ?: $employee->payroll_list->holded_at;
+                $yearSourceDate = $employee->separation_date;
+                $cutOff = $this->getCutOffForDate($yearSourceDate);
+                $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
                 $yearHolded = Carbon::parse($yearSourceDate)->year;
-                $dateHolded = Carbon::parse($employee->payroll_list->holded_at)->format("Y-m-d");
+                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$dateHolded)
+                ->where("pay_date", ">=" ,$payroll->pay_date)
                 ->get();
 
                 $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$dateHolded)
+                ->where("pay_date", ">=" ,$payroll->pay_date)
                 ->get();
 
                 foreach ($payrolls as $payroll) {
