@@ -99,7 +99,8 @@ class TimeKeepingController extends Controller
                 "employee.current_position",
                 "employee.schedule.schedule_type",
                 "payment",
-                "schedule"
+                "schedule",
+                "biotime_log.punches"
             ])
             ->where("branch_id", $request->branch_id)
             ->whereBetween("date", [$start_time, $end_time]);
