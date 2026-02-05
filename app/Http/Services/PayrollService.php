@@ -423,10 +423,6 @@ class PayrollService {
                 "remarks" => $remarks
             ]);
             
-            if ($cutOff->part == 2) {
-                ComputeEmployeeTardiness::dispatch($cutOff->end_date);
-            }
-
             if ($cutOff->part == 1) {
                 $incentives = $this->computeIncentives(
                     $cutOff,

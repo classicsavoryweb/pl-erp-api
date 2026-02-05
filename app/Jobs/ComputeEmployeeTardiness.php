@@ -46,7 +46,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
                 $totalTardy = 0;
 
                 foreach ($timeKeepings as $timeKeeping) {
-                    $total += $timeKeeping->tardiness;
+                    $totalTardy += $timeKeeping->tardiness;
                 }
 
                 if ($totalTardy > 60) {
