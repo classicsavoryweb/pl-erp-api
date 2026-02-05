@@ -18,6 +18,7 @@ use Str;
 use DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Spatie\Activitylog\Models\Activity;
 
 class ActualTimeController extends Controller
 {
@@ -169,12 +170,20 @@ class ActualTimeController extends Controller
 
             if ($biotime) {
                 $deletedIds = $request->input("deleted_punch_ids", []);
-                $punchCount = $biotime->punches()->count();
-                $canDelete =
-                    $biotime->status === "MULTIPLE LOGS" ||
-                    ($biotime->status === "INCOMPLETE" && $punchCount === 3);
                 $didModify = false;
-                if ($canDelete && is_array($deletedIds) && count($deletedIds) > 0) {
+                if (is_array($deletedIds) && count($deletedIds) > 0) {
+                    $deletedPunches = $biotime->punches()
+                        ->with("branch")
+                        ->whereIn("id", $deletedIds)
+                        ->get();
+
+                    foreach ($deletedPunches as $punch) {
+                        activity()
+                            ->causedBy($user)
+                            ->performedOn($biotime)
+                            ->useLog("Biotime Punch Deletion")
+                            ->log("User deleted biotime punch");
+                    }
                     $biotime->punches()->whereIn("id", $deletedIds)->delete();
                     $didModify = true;
                 }
@@ -226,6 +235,21 @@ class ActualTimeController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getBiotimePunchDeletionLogs(Request $request, $bioTimeID) {
+        try {
+            $activities = Activity::with('causer')
+                ->where("log_name", "Biotime Punch Deletion")
+                ->where("subject_type", BiotimeLog::class)
+                ->where("subject_id", $bioTimeID)
+                ->orderBy("created_at", "desc")
+                ->get();
+
+            return $this->sendResponse($activities);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
