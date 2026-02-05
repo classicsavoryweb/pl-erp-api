@@ -228,6 +228,14 @@ class EmployeeController extends Controller
             if ($request->has(["sortColumn", "sort"])) {
                 if ($request->sortColumn === "full_name") {
                     $employees = $employees->orderBy("last_name", $request->sort);
+                } else if ($request->sortColumn === "employee_status.description") {
+                    $employees = $employees->orderBy(
+                        EmployeeStatus::select('description')
+                        ->from('employee_status')
+                        ->whereColumn('employee_status.id', 'employees.employee_status_id')
+                        ->limit(1),
+                        $request->sort
+                    );
                 } else {
                     $employees = $employees->orderBy($request->sortColumn, $request->sort);
                 }
