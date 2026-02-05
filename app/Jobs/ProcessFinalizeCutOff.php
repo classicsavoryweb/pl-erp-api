@@ -100,6 +100,10 @@ class ProcessFinalizeCutOff implements ShouldQueue
             ]);
         }
 
+        if ($this->cutOff->part == 2) {
+            ComputeEmployeeTardiness::dispatch($this->cutOff->end_date);
+        }
+
         // GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
