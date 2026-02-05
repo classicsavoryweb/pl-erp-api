@@ -345,16 +345,18 @@ class LastPayController extends Controller
                 ->where("pay_date", ">=" ,$payroll->pay_date)
                 ->get();
 
-                $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$payroll->pay_date)
-                ->get();
-
                 foreach ($payrolls as $payroll) {
                     $totalPayroll += $payroll->net_pay;
                 }
 
-                foreach ($incentivesPayroll as $incentive) {
-                    $incentives += $incentive->incentive_amount;
+                if ($request->incentives != 0) {
+                    $incentivesPayroll = Incentives::where("employee_id", $employee->id)
+                    ->where("pay_date", ">=" ,$payroll->pay_date)
+                    ->get();
+                    
+                    foreach ($incentivesPayroll as $incentive) {
+                        $incentives += $incentive->incentive_amount;
+                    }
                 }
 
                 $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
