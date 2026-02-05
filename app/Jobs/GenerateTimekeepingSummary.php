@@ -336,7 +336,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 $isExisting = TimeKeepingSummary::where("cut_off", $cutOff['start_time']."-".$cutOff['end_time'])
                 ->where("employee_id", $employee->id)
-                ->first();
+                ->get();
 
                 if ($regular_days > 13 && $employee->current_position->timekeeping_type === "Monthly") {
                     $regular_days = 13;
@@ -449,8 +449,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 $regular_days = $regular_days - $hasHalfDay;
 
-                if ($isExisting) {
-                    $isExisting->delete();
+                foreach ($isExisting as $i) {
+                    $i->delete();
                 }
 
                 //checking adjustments
