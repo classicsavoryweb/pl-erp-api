@@ -135,7 +135,16 @@ class EmployeeContractControlller extends Controller
             $durationType = "months";
 
             if ($duration == 0) {
-                $duration = $date1->diffInWeeks($date2);
+
+                $days = $date1->diffInDays($date2);
+                $weeks = intdiv($days, 7);
+                $remainderDays = $days % 7;
+
+                if ($remainderDays == 5 | 6) {
+                    $weeks += 1;
+                }
+
+                $duration = $weeks;
                 $durationType = "weeks";
             }
 
