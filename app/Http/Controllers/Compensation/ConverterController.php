@@ -369,16 +369,21 @@ class ConverterController extends Controller
                 $employee = $trans->employee;
                 $payrollList = $employee->payroll_list;
 
-                if (
-                    $payrollList->is_hold == 0 &&
-                    $payrollList->is_bank == 1 &&
-                    $employee->status == "active"
-                ) {
-                    $total_amount += $trans->amount;
-                    $includedTransactions[] = $trans;
-                } else {
+                if (!$payrollList) {
                     $excludedTransactions[] = $trans;
                     $hasExcludedTransaction = true;
+                } else {
+                    if (
+                        $payrollList->is_hold == 0 &&
+                        $payrollList->is_bank == 1 &&
+                        $employee->status == "active"
+                    ) {
+                        $total_amount += $trans->amount;
+                        $includedTransactions[] = $trans;
+                    } else {
+                        $excludedTransactions[] = $trans;
+                        $hasExcludedTransaction = true;
+                    }
                 }
             }
 
