@@ -132,6 +132,12 @@ class EmployeeContractControlller extends Controller
             $date1 = Carbon::parse($contract->contract_start_date);
             $date2 = Carbon::parse($contract->contract_end_date);
             $duration = $date1->diffInMonths($date2);
+            $durationType = "months";
+
+            if ($duration == 0) {
+                $duration = $date1->diffInWeeks($date2);
+                $durationType = "weeks";
+            }
 
             $salary_amount = 0.00;
             $salary = $position->salary()->first();
@@ -168,6 +174,7 @@ class EmployeeContractControlller extends Controller
                 "previous_contract_start_date" => $previousContract->contract_start_date ?? null,
                 "previous_contract_end_date" => $previousContract->contract_end_date ?? null,
                 "duration" => $duration,
+                "duration_type" => $durationType,
                 "proper_full_name" => $properFullName,
                 "position" => $position->description,
                 "branch" => $branch->name,
