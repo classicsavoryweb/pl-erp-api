@@ -162,9 +162,9 @@ class ReportCoeRequestsController extends Controller
             }
 
             return $this->sendResponse([
-                "first_name" => ucwords(strtolower($employee->first_name)),
-                "last_name" => ucwords(strtolower($employee->last_name)),
-                "middle_name" => ucwords(strtolower($employee->middle_name)),
+                "first_name" => mb_convert_case($employee->first_name, MB_CASE_TITLE, "UTF-8"), 
+                "last_name" =>  mb_convert_case($employee->last_name, MB_CASE_TITLE, "UTF-8"),
+                "middle_name" => mb_convert_case($employee->middle_name, MB_CASE_TITLE, "UTF-8"),
                 "gender" => $employee->gender,
                 "date_of_stay" => $dateOfStay,
                 "include_salary" => $coeRequest->include_salary,
