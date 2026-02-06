@@ -417,6 +417,13 @@ class TimeKeepingService
                 $overtime = ($decimalHours - $totalDurationHOurs >= 1) ? $decimalHours - $totalDurationHOurs : 0;
             }
 
+            if (strtolower($schedule->selection) === "flex" && $workHours < $hours) {
+                $shortMins = ($hours - $workHours) * 60;
+                $toDeduct = fmod($shortMins, 1);
+
+                $undertime = $shortMins - $toDeduct;
+            }
+
             if ($parsedLastPunch->greaterThan($tenPM)) {
                 $flexDiffInSeconds = $parsedFirstPunch->diffInSeconds($tenPM);
                 $flexiHours = $flexDiffInSeconds / 3600;
