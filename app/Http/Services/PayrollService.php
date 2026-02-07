@@ -127,7 +127,30 @@ class PayrollService {
             //clarify if $grossPayAmount will be used
             if ($employee->hasCompleteStatutories()) {
                 $philHealth = PhilhealthPercentageBase::first();
+
                 $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
+                
+                if ($basicSalary <= $philHealth->philhealth_cap) {
+                    $philHealthAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)) / 2 , 2);
+                }
+
+                if ($cutOff->part == 2) {
+                    $latestPayroll = Payroll::where("employee_id", $employee->id)
+                        ->whereNot("start_date", $cutOff->start_date)
+                        ->orderBy("start_date", "DESC")
+                        ->first();
+
+                    if ($latestPayroll) {
+                        $totalSalary = $basicSalary + $latestPayroll->gross_pay;
+                        $amount = round(($totalSalary * ($philHealth->percentage * 0.01)) , 2);
+
+                        if ($amount > $philHealth->philhealth_max) {
+                            $amount = $philHealth->philhealth_max;
+                        }
+
+                        $philHealthAmount = round(($amount - ($latestPayroll->employee_philhealth + $latestPayroll->employee_philhealth)) / 2, 2);
+                    }
+                }
 
                 if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
                     $philHealthAmount = $philHealth->philhealth_max / 2;
@@ -140,7 +163,7 @@ class PayrollService {
                     ->where('max_amount', '>=', $grossPayAmount)
                     ->first();
     
-                if (Carbon::parse($cutOff->start_date)->day === 26) {
+                if ($cutOff->part === 1) {
                     $sssEmployeeAmount = round($sss->employee_ss, 2);
                     $sssEmployerAmount = round($sss->employer_ss + ($sss->employer_cc / 2), 2);   
     
