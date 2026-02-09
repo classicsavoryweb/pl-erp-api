@@ -85,6 +85,8 @@ class PayrollProofListController extends Controller
                         $q->where("bank_account_type_id", $request->bank_account_type_id);
                     });
                 });
+            } else if ($request->bank_account_type_id === 'ALL') {
+                
             } else {
                 $proofList = $proofList->whereHas("payroll_list", function ($query) {
                     $query->where("is_bank", false);
