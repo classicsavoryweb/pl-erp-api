@@ -476,6 +476,23 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $remarks = "Retracted holiday hours from previous cutoff: " . $dateString;
                 }
 
+                if ($regular_days < 0) {
+                    $regular_days = 0;
+                    $special_leave = 0;
+                    $cancelled_off = 0;
+                    $special_holiday = 0;
+                    $legal_holiday = 0;
+                    $regular_overtime = 0;
+                    $night_differential = 0;
+                    $night_differential_overtime = 0;
+                    $legal_holiday_overtime = 0;
+                    $special_holiday_overtime = 0;
+                    $undertime = 0;
+                    $travel_time = 0;
+                    $tardiness = 0;
+                    $adjustment_amount = 0;
+                }
+
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut_off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
