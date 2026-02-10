@@ -508,8 +508,12 @@ class TimeKeepingService
 
         if ($biotimePunches->count() > 1) {
 
+            $cutOff = $this->getCutOff($scheduleTime->date);        
+            $activeCutOff = CutOff::where("start_date", $cutOff['start_time'])->where("end_date", $cutOff["end_time"])->first();
+
             $overtimeApplied = Overtime::where("employee_id", $employee->id)
             ->where("overtime_date", $log->date)
+            ->where("approve_date", "<", $activeCutOff->pay_date)
             ->whereNot("status", "Voided")
             ->first();
 
@@ -531,7 +535,6 @@ class TimeKeepingService
                     $remarks = "Approved overtime is higher than the computed overtime from the system.";
                 }
 
-                $cutOff = $this->getCutOff($scheduleTime->date);
                 $currentCutOff = $this->getCurrentCutOff();
 
                 $totalHoursPaid = $approvedOvertime;
