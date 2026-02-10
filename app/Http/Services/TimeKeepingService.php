@@ -1121,7 +1121,7 @@ class TimeKeepingService
         });
 
         $otherSchedules = $schedules->filter(function ($schedule) use ($employee) {
-            if (!in_array($schedule->timetable, ["REST DAY", "NO SCHEDULE"])) {
+            if (!in_array($schedule->timetable, ["REST DAY", "NO SCHEDULE", "INCENTIVE LEAVE"])) {
                 return $schedule;
             }
         });
