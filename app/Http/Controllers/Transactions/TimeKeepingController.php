@@ -295,9 +295,11 @@ class TimeKeepingController extends Controller
         try {
             $request->validate([
                 "timekeeping_id" => "required",
-                "tag" => "required|in:halfday,undertime",
+                "tag" => "required|in:halfday,undertime,tardiness,tardiness_undertime,tardiness_halfday",
                 "hours" => "nullable|numeric|min:0",
                 "minutes" => "nullable|numeric|min:0|max:59",
+                "tardiness_hours" => "nullable|numeric|min:0",
+                "tardiness_minutes" => "nullable|numeric|min:0|max:59",
             ]);
 
             $timeKeeping = TimeKeeping::with([
@@ -319,31 +321,47 @@ class TimeKeepingController extends Controller
             $minutes = (int) ($request->minutes ?? 0);
             $totalMinutes = ($hours * 60) + $minutes;
 
+            $tardinessHours = (int) ($request->tardiness_hours ?? 0);
+            $tardinessMinutes = (int) ($request->tardiness_minutes ?? 0);
+            $totalTardinessMinutes = ($tardinessHours * 60) + $tardinessMinutes;
+
             $scheduleType = $timeKeeping->employee?->schedule?->schedule_type?->name ?? "Normal Schedule";
             $hoursPerDay = $scheduleType === "Compressed Schedule" ? 9.5 : 8;
 
             $finalWorkedHours = $timeKeeping->final_worked_hours;
-            if ($request->tag === "halfday") {
+            if (in_array($request->tag, ["halfday", "tardiness_halfday"], true)) {
                 $finalWorkedHours = $hoursPerDay / 2;
-            } else if ($request->tag === "undertime") {
+            } else if (in_array($request->tag, ["undertime", "tardiness", "tardiness_undertime"], true)) {
                 $finalWorkedHours = $hoursPerDay;
             }
 
             $specialHolidayHours = $timeKeeping->special_holiday_hours;
             $specialHolidayOvertime = $timeKeeping->special_holiday_overtime;
-            if ($request->tag === "halfday") {
+            if (in_array($request->tag, ["halfday", "tardiness_halfday"], true)) {
                 $specialHolidayHours = $specialHolidayHours ? $specialHolidayHours / 2 : $specialHolidayHours;
                 $specialHolidayOvertime = $specialHolidayOvertime ? $specialHolidayOvertime / 2 : $specialHolidayOvertime;
             }
 
+            $undertimeMinutes = $timeKeeping->undertime;
+            if (in_array($request->tag, ["undertime", "halfday", "tardiness_undertime"], true)) {
+                $undertimeMinutes = $totalMinutes;
+            }
+
+            $tardinessOverrideMinutes = $timeKeeping->tardiness;
+            if (in_array($request->tag, ["tardiness", "tardiness_undertime", "tardiness_halfday"], true)) {
+                $tardinessOverrideMinutes = $totalTardinessMinutes;
+            }
+
             $timeKeeping->update([
-                "undertime" => $totalMinutes,
+                "undertime" => $undertimeMinutes,
+                "tardiness" => $tardinessOverrideMinutes,
                 "final_worked_hours" => $finalWorkedHours,
                 "special_holiday_hours" => $specialHolidayHours,
                 "special_holiday_overtime" => $specialHolidayOvertime,
                 "is_manual_override" => true,
                 "manual_tag" => $request->tag,
-                "manual_undertime_minutes" => $totalMinutes,
+                "manual_undertime_minutes" => in_array($request->tag, ["undertime", "halfday", "tardiness_undertime"], true) ? $undertimeMinutes : null,
+                "manual_tardiness_minutes" => in_array($request->tag, ["tardiness", "tardiness_undertime", "tardiness_halfday"], true) ? $tardinessOverrideMinutes : null,
             ]);
 
             $timeKeeping->refresh();

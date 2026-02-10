@@ -40,7 +40,8 @@ class TimeKeeping extends Model
         "paid_holiday",
         "is_manual_override",
         "manual_tag",
-        "manual_undertime_minutes"
+        "manual_undertime_minutes",
+        "manual_tardiness_minutes"
     ];
 
     public function employee() {
