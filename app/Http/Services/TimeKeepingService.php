@@ -611,7 +611,8 @@ class TimeKeepingService
                 if ($overrideRow) {
                     $manualOverride = [
                         "tag" => $overrideRow->manual_tag,
-                        "minutes" => (int) ($overrideRow->manual_undertime_minutes ?? 0),
+                        "undertime_minutes" => (int) ($overrideRow->manual_undertime_minutes ?? 0),
+                        "tardiness_minutes" => (int) ($overrideRow->manual_tardiness_minutes ?? 0),
                     ];
                 }
 
@@ -703,15 +704,29 @@ class TimeKeepingService
 
             if ($manualOverride) {
                 $hoursPerDay = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
-                $finalOverrideHours = $manualOverride["tag"] === "halfday" ? $hoursPerDay / 2 : $hoursPerDay;
+                $finalOverrideHours = in_array($manualOverride["tag"], ["halfday", "tardiness_halfday"], true)
+                    ? $hoursPerDay / 2
+                    : $hoursPerDay;
 
-                $timeKeeping->update([
-                    "undertime" => $manualOverride["minutes"],
+                $updateData = [
                     "final_worked_hours" => $finalOverrideHours,
                     "is_manual_override" => true,
                     "manual_tag" => $manualOverride["tag"],
-                    "manual_undertime_minutes" => $manualOverride["minutes"],
-                ]);
+                    "manual_undertime_minutes" => null,
+                    "manual_tardiness_minutes" => null,
+                ];
+
+                if (in_array($manualOverride["tag"], ["undertime", "halfday", "tardiness_undertime"], true)) {
+                    $updateData["undertime"] = $manualOverride["undertime_minutes"];
+                    $updateData["manual_undertime_minutes"] = $manualOverride["undertime_minutes"];
+                }
+
+                if (in_array($manualOverride["tag"], ["tardiness", "tardiness_undertime", "tardiness_halfday"], true)) {
+                    $updateData["tardiness"] = $manualOverride["tardiness_minutes"];
+                    $updateData["manual_tardiness_minutes"] = $manualOverride["tardiness_minutes"];
+                }
+
+                $timeKeeping->update($updateData);
             }
 
             if ($overtimeApplied && $approvedOvertime >= 1) {

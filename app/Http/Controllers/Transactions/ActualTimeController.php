@@ -238,6 +238,34 @@ class ActualTimeController extends Controller
         }
     }
 
+    public function deleteBiotimeLog(Request $request, $bioTimeID) {
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+            $biotime = BiotimeLog::with("punches")->find($bioTimeID);
+
+            if (!$biotime) {
+                return $this->sendError(["message" => "Biotime log not found"]);
+            }
+
+            activity()
+                ->causedBy($user)
+                ->performedOn($biotime)
+                ->useLog("Biotime Log Deletion")
+                ->log("User deleted biotime log");
+
+            $biotime->punches()->delete();
+            $biotime->delete();
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Biotime log deleted successfully."]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function getBiotimePunchDeletionLogs(Request $request, $bioTimeID) {
         try {
             $activities = Activity::with('causer')

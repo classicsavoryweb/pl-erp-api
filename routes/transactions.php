@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
     Route::middleware(["permission:perform_transactions_actual_time"])->post("/edit-biotime-punch/{id}", [ActualTimeController::class, "editBiotimePunch"]);
     Route::middleware(["permission:perform_transactions_actual_time"])->post("/create-biotime-punch", [ActualTimeController::class, "createBiotimeLog"]);
+    Route::middleware(["permission:perform_transactions_actual_time"])->post("/delete-biotime-log/{id}", [ActualTimeController::class, "deleteBiotimeLog"]);
     Route::middleware(["permission:perform_transactions_actual_time"])->get("/get-biotime-punch-deletion-logs/{id}", [ActualTimeController::class, "getBiotimePunchDeletionLogs"]);
     Route::middleware(["permission:import_transactions_actual_time"])->post("/import-biotime-logs", [ActualTimeController::class, "importTransactionsActualTimeLogs"]);
     Route::middleware(["permission:export_all_transactions_actual_logs"])->get("/export-all-transactions-actual-logs", [ActualTimeController::class, "exportAllTransactionsActualLogs"]);
