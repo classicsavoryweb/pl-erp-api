@@ -518,6 +518,12 @@ class PayrollService {
             $additionalWorkingHoursTotal = 0;
             $workingHoursDeductionTotal = 0;
  
+            $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
+
+            if ($payrollRollListEmployee->isMancom()) {
+                $cutOffBaseSalary = $employee->mancomCutOffBaseSalary();
+            }
+
             $basicSalary = $cutOffBaseSalary;
 
             if ($employee->hasCompleteStatutories()) {
@@ -539,8 +545,6 @@ class PayrollService {
                 $sssEmployeeAmount = round($sss->employee_ss, 2);
                 $sssEmployerAmount = round($sss->employer_ss, 2);
             }
-
-            $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
 
             if ($payrollRollListEmployee->isOnMaternityLeave()) {
                 $basicSalary = 0;
