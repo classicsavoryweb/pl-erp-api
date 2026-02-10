@@ -127,6 +127,7 @@ class FetchOvertimeJob implements ShouldQueue
                             "purpose" => $overtime["purpose"],
                             "total_hours" => $overtime["total_hrs"],
                             "status" => ucfirst($overtime["status_payroll"]),
+                            "approve_date" => $overtime["update_date"]
                         ]);
                     }
                 }
