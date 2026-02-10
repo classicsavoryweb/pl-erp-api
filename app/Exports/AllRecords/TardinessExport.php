@@ -5,6 +5,8 @@ namespace App\Exports\AllRecords;
 use Illuminate\Database\Eloquent\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Carbon\Carbon;
+
 
 class TardinessExport implements FromCollection, WithHeadings
 {
@@ -23,7 +25,7 @@ class TardinessExport implements FromCollection, WithHeadings
                 $record->employee->full_name ?? "",
                 optional($record->employee->current_branch)->short_name ?? "",
                 optional($record->tardiness_sanction)->count ?? "",
-                $record->month,
+                Carbon::create()->month($record->month)->format('F'), 
                 $record->year,
                 $record->total_minutes,
                 $record->nte_status ?? "",
