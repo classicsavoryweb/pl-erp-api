@@ -75,7 +75,7 @@ class Payroll extends Model
     }
 
     public function timekeeping_branch() {
-        return $this->hasOne(Branch::class, "id", "branch_id");
+        return $this->hasOne(Branch::class, "id", "timekeeping_branch_id");
     }
 
     public function getActivitylogOptions(): LogOptions
