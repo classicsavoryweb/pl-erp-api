@@ -375,6 +375,83 @@ class PayrollController extends Controller
         }
     }
 
+    public function updatePayrollContributions(Request $request, $payrollId) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "employee_sss" => "required|numeric|min:0",
+                "employer_sss" => "required|numeric|min:0",
+                "employee_pagibig" => "required|numeric|min:0",
+                "employer_pagibig" => "required|numeric|min:0",
+                "employee_philhealth" => "required|numeric|min:0",
+                "employer_philhealth" => "required|numeric|min:0",
+                "withholding_tax" => "required|numeric|min:0",
+            ]);
+
+            $payroll = Payroll::with([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($payrollId);
+
+            if (!$payroll) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Payroll not found"]);
+            }
+
+            $employeeSss = (float) $request->employee_sss;
+            $employerSss = (float) $request->employer_sss;
+            $employeePagibig = (float) $request->employee_pagibig;
+            $employerPagibig = (float) $request->employer_pagibig;
+            $employeePhilhealth = (float) $request->employee_philhealth;
+            $employerPhilhealth = (float) $request->employer_philhealth;
+            $withholdingTax = (float) $request->withholding_tax;
+
+            $contributionTotal = round($employeeSss + $employeePagibig + $employeePhilhealth, 2);
+            $grossPay = (float) $payroll->gross_pay;
+            $taxableIncome = round($grossPay - $contributionTotal, 2);
+            $netPay = $taxableIncome
+                - $withholdingTax
+                - (float) $payroll->total_deductions
+                - (float) $payroll->manual_deductions
+                + (float) $payroll->non_taxable_adjustment;
+
+            $payroll->update([
+                "employee_sss" => $employeeSss,
+                "employer_sss" => $employerSss,
+                "employee_pagibig" => $employeePagibig,
+                "employer_pagibig" => $employerPagibig,
+                "employee_philhealth" => $employeePhilhealth,
+                "employer_philhealth" => $employerPhilhealth,
+                "withholding_tax" => round($withholdingTax, 2),
+                "contribution_total" => $contributionTotal,
+                "taxable_income" => $taxableIncome,
+                "net_pay" => round($netPay, 2),
+            ]);
+
+            DB::commit();
+
+            $payroll = $payroll->refresh()->load([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ]);
+
+            return $this->sendResponse([
+                "message" => "Contributions updated successfully",
+                "details" => $payroll
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function updatePayrollDetails (Request $request, $payrollId) {
         try {
             DB::beginTransaction();
