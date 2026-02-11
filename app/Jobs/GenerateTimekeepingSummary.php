@@ -536,17 +536,13 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 $withAdjustments = false;
                 foreach($adjustments as $adjustment) {                      
-                    if ($adjustment->days > 0) {
-                        $adjustments_days += $adjustment->days;
-                    } else {
-                        if ($adjustment->taxable_amount !== 0) {
-                            $adjustment_amount += $adjustment->taxable_amount;
-                        }
-
-                        if ($adjustment->cancelled_rd > 0) {
-                            $adjustments_cancelled_off += $adjustment->cancelled_rd;
-                        }
+                    if ($adjustment->taxable_amount !== 0) {
+                        $adjustment_amount += $adjustment->taxable_amount;
                     }
+
+                        // if ($adjustment->cancelled_rd > 0) {
+                        //     $adjustments_cancelled_off += $adjustment->cancelled_rd;
+                        // }
 
                     $adjustment->update([
                         "status" => "Adjusted",
@@ -557,16 +553,20 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
 
                 foreach($anotherAdjustments as $adjustment) {
-                    if ($adjustment->days > 0) {
-                        $adjustments_days += $adjustment->days;
-                    } else {
-                        if ($adjustment->taxable_amount !== 0) {
-                            $adjustment_amount += $adjustment->taxable_amount;
-                        }
+                    // if ($adjustment->days > 0) {
+                    //     $adjustments_days += $adjustment->days;
+                    // } else {
+                    //     if ($adjustment->taxable_amount !== 0) {
+                    //         $adjustment_amount += $adjustment->taxable_amount;
+                    //     }
 
-                        if ($adjustment->cancelled_rd > 0) {
-                            $adjustments_cancelled_off += $adjustment->cancelled_rd;
-                        }
+                    //     if ($adjustment->cancelled_rd > 0) {
+                    //         $adjustments_cancelled_off += $adjustment->cancelled_rd;
+                    //     }
+                    // }
+
+                    if ($adjustment->taxable_amount !== 0) {
+                        $adjustment_amount += $adjustment->taxable_amount;
                     }
 
                     $adjustment->update([
