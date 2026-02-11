@@ -384,10 +384,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 } else {
                     $absent = 0;
 
-                    $restDays = $schedules->filter(function ($schedule) use ($employee) {
-                        if (in_array($schedule->timetable, ["REST DAY"])) {
-                            return $schedule;
-                        }
+                    $restDays = $schedules->filter(function ($schedule) {
+                        return in_array($schedule->timetable, ["REST DAY"]);
                     });
 
                     foreach ($schedules as $sched) {
@@ -432,8 +430,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             $weekDateRange = $this->getCustomWeekRange($rd->date, $cutOff, $employee);
                             $rdSched = ScheduleTime::where("employee_id", $employee->id)
                             ->whereBetween("date", $weekDateRange)
+                            ->where("timetable", "REST DAY")
                             ->get();
-
+                            
                             if ($rdSched->count() == 2) {
                                 $absent += 1;
                                 break;
