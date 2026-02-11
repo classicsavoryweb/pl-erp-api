@@ -513,7 +513,6 @@ class TimeKeepingService
 
             $overtimeApplied = Overtime::where("employee_id", $employee->id)
             ->where("overtime_date", $log->date)
-            ->where("approve_date", "<", $activeCutOff->pay_date)
             ->whereNot("status", "Voided")
             ->first();
 
