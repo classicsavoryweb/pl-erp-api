@@ -602,7 +602,6 @@ class TimeKeepingService
             }
 
             $isExisting = $model->where("employee_id", $employee->id)
-                ->where("biotime_log_id", $log->id)
                 ->where("date" , $log->date)
                 ->get();
 
