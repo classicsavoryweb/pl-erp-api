@@ -257,6 +257,10 @@ class EmployeeController extends Controller
                 $employees = $employees->where("type", $request->type);
             }
 
+            if ($request->has(["agency_id"])) {
+                $employees = $employees->where("agency_id", $request->agency_id);
+            }
+
             if ($request->has(["date_from", "date_to"])) {
                 $employees = $employees->whereBetween('date_hired', [$request->date_from, $request->date_to]);
             }
