@@ -158,27 +158,6 @@ class CutOffController extends Controller
                     "initializations" => json_encode($newJson)
                 ]);
 
-                $cutoffValue = $createdCutOff->cut_off;
-
-                $payrollLists = PayrollList::where('is_hold', 1)->get();
-
-                foreach ($payrollLists as $payrollList) {
-
-                    $holdedCutoffs = [];
-
-                    if (!empty($payrollList->holded_cutoffs)) {
-                        $holdedCutoffs = json_decode($payrollList->holded_cutoffs, true) ?? [];
-                    }
-
-                    if (!in_array($cutoffValue, $holdedCutoffs)) {
-                        $holdedCutoffs[] = $cutoffValue;
-                    }
-
-                    $payrollList->update([
-                        'holded_cutoffs' => json_encode($holdedCutoffs),
-                    ]);
-                }
-
                 //trigger a cut off initialization job
                 ProcessFinalizeCutOff::dispatch($createdCutOff, Auth::user()->id, $createdCutOff->cut_off);
 

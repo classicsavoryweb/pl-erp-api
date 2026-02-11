@@ -9,6 +9,7 @@ use App\Models\DeductionHistory;
 use App\Models\EmployeeDeduction;
 use App\Models\Incentives;
 use App\Models\Payroll;
+use App\Models\PayrollList;
 use App\Models\TimeKeepingSummary;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -102,6 +103,27 @@ class ProcessFinalizeCutOff implements ShouldQueue
 
         if ($this->cutOff->part == 2) {
             ComputeEmployeeTardiness::dispatch($this->cutOff->end_date);
+        }
+
+        $cutoffValue = $this->cutOff->cut_off;
+
+        $payrollLists = PayrollList::where('is_hold', 1)->get();
+
+        foreach ($payrollLists as $payrollList) {
+
+            $holdedCutoffs = [];
+
+            if (!empty($payrollList->holded_cutoffs)) {
+                $holdedCutoffs = json_decode($payrollList->holded_cutoffs, true) ?? [];
+            }
+
+            if (!in_array($cutoffValue, $holdedCutoffs)) {
+                $holdedCutoffs[] = $cutoffValue;
+            }
+
+            $payrollList->update([
+                'holded_cutoffs' => json_encode($holdedCutoffs),
+            ]);
         }
 
         // GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
