@@ -11,8 +11,12 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\Transactions\ActualLogsExport;
+use App\Http\Services\TimeKeepingService;
 use App\Jobs\FetchBranchLogs;
+use App\Jobs\GenerateTimekeepingSummary;
+use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\Branch;
+use App\Models\TimeKeeping;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use DB;
@@ -22,6 +26,12 @@ use Spatie\Activitylog\Models\Activity;
 
 class ActualTimeController extends Controller
 {
+    protected $timeKeepingService;
+
+    public function __construct() {
+        $this->timeKeepingService = new TimeKeepingService();
+    }
+
     public function getAllBiotimeTransactions(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -227,6 +237,34 @@ class ActualTimeController extends Controller
                 if ($didModify) {
                     $biotime->is_modified = true;
                     $biotime->save();
+
+                    $timeKeeping = TimeKeeping::where("date", $biotime->date)
+                    ->where("employee_id", $biotime->employee_id)
+                    ->first();
+    
+                    if ($timeKeeping) {
+                        $cutOff = $this->getCutOffForDate($timeKeeping->date);
+                        $timeKeeping = $this->timeKeepingService->computeTimeKeeping(
+                            $timeKeeping->branch_id,
+                            $biotime,
+                            $biotime->punches,
+                            $timeKeeping->schedule,
+                            $biotime->employee,
+                            new TimeKeeping(),
+                            false,
+                            "timekeeping"
+                        );
+                        $this->timeKeepingService->computePayment($timeKeeping, $timeKeeping->schedule);
+
+                        GenerateTimekeepingSummary::dispatchSync(
+                            $timeKeeping->branch_id,
+                            $cutOff,
+                            null,
+                            $timeKeeping->employee_id,
+                            null,
+                            false
+                        );
+                    }
                 }
             }
 

@@ -252,6 +252,7 @@ class AdjustmentController extends Controller
                 $activeCutOff = Cutoff::where("status", "active")->first();
                 $timeKeeping = TimeKeeping::whereBetween("date", [$activeCutOff->start_date, $activeCutOff->end_date])
                 ->where("date", ">", $cutOffFromAdjustment['end_time'])
+                ->where("employee_id", $employee->id)
                 ->first();
 
                 if ($timeKeeping) {
