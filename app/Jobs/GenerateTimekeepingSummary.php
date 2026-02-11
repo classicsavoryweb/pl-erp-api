@@ -97,7 +97,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
             }
 
             foreach ($employees as $employee) {
-            
             if ($employee->type === "Agency") {
                 continue;
             }
@@ -358,7 +357,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($employee->current_position->timekeeping_type === "Monthly") {
                         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                            if ($workDays > $regular_days) {
+                            if ($workDays > $regular_days && ($workDays - $regular_days) != .5) {
                                 $regular_days = 11 - ($workDays - $regular_days);
                             } else {
                                 $regular_days = 11;
