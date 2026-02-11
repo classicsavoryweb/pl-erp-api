@@ -26,6 +26,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use App\Support\NotifiesJobStatus;
+use Carbon\CarbonInterface;
 use Log;
 class GenerateTimekeepingSummary implements ShouldQueue
 {
@@ -427,7 +428,17 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ) {
                         $absentToBeAdded = $restDays->count() - 2;
 
-                        $absent += $absentToBeAdded;
+                        foreach ($restDays as $rd) {
+                            $weekDateRange = $this->getCustomWeekRange($rd->date, $cutOff, $employee);
+                            $rdSched = ScheduleTime::where("employee_id", $employee->id)
+                            ->whereBetween("date", $weekDateRange)
+                            ->get();
+
+                            if ($rdSched->count() == 2) {
+                                $absent += 1;
+                                break;
+                            }
+                        }
                     }
 
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
@@ -636,5 +647,35 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $formattedHours = floor($hours / 0.5) * 0.5;
         }   
         return $formattedHours;
+    }
+
+    private function getCustomWeekRange($date, $cutOff, $employee)
+    {
+        $holidayDate = Carbon::parse($date);
+        $startOfWeek = $holidayDate->copy()->startOfWeek(CarbonInterface::MONDAY);
+        $endOfWeek = $holidayDate->copy()->endOfWeek(CarbonInterface::SUNDAY);
+
+        $startDate = Carbon::parse($cutOff["start_time"]);
+        $endDate = Carbon::parse($cutOff["end_time"]);
+
+        if ($endOfWeek->gt($endDate)) {
+            $newStart = Carbon::parse($endDate)
+            ->addDay()
+            ->format("Y-m-d");
+
+            $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
+            ->whereBetween("date", [$newStart, $endOfWeek->format("Y-m-d")])
+            ->get();
+
+            if ($timeKeepings->count() === 0) {
+                $endOfWeek = $endDate;
+            }
+
+        }
+
+        return [
+            "start" => $startOfWeek->format("Y-m-d"),
+            "end" => $endOfWeek->format("Y-m-d")
+        ];
     }
 }
