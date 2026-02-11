@@ -238,12 +238,12 @@ class ActualTimeController extends Controller
                     $biotime->is_modified = true;
                     $biotime->save();
 
-                    $timeKeeping = TimeKeeping::where("date", $biotime->date)
+                    $cutOff = $this->getCutOffForDate($biotime->date);
+                    $timeKeeping = TimeKeeping::whereBetween("date", $cutOff)
                     ->where("employee_id", $biotime->employee_id)
                     ->first();
     
                     if ($timeKeeping) {
-                        $cutOff = $this->getCutOffForDate($timeKeeping->date);
                         $timeKeeping = $this->timeKeepingService->computeTimeKeeping(
                             $timeKeeping->branch_id,
                             $biotime,
