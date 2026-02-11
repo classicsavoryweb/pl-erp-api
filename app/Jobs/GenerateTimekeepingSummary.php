@@ -187,6 +187,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             ->whereBetween("date", $cutOff)
             ->get();
 
+            $actualWorkedDays = 0;
             $regular_days = 0;
             $special_leave= 0;
             $cancelled_off= 0;
@@ -256,18 +257,22 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($hours == $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0 && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
+                        $actualWorkedDays += $schedule->days;
                     } else if ( $hours / 2 >= $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
                         $halfDayCount += 1;
+                        $actualWorkedDays += 1;
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
                         $regular_days += 1;
+                        $actualWorkedDays += 1;
                         $holidayConvertedToDays = true;
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {
                         $regular_days += 1;
+                        $actualWorkedDays += 1;
                     }
 
                     if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0) {
@@ -357,17 +362,17 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($employee->current_position->timekeeping_type === "Monthly") {
                         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                            if ($workDays > $regular_days && ($workDays - $regular_days) != .5) {
-                                $regular_days = 11 - ($workDays - $regular_days);
+                            if ($workDays > $actualWorkedDays) {
+                                $regular_days = 11 - ($workDays - $actualWorkedDays);
                             } else {
                                 $regular_days = 11;
                             }
                         }
 
                         if ($employee->schedule->schedule_type->name === "Normal Schedule") {
-                            if ($workDays > $regular_days && $workDays < 13 ) {
-                                $regular_days = 13 - ($workDays - $regular_days);
-                            } else if ($workDays > $regular_days && $workDays > 13) {
+                            if ($workDays > $actualWorkedDays && $workDays < 13 ) {
+                                $regular_days = 13 - ($workDays - $actualWorkedDays);
+                            } else if ($workDays > $actualWorkedDays && $workDays > 13) {
                                 $regular_days = 13;
                             } else {
                                 $regular_days = 13;
