@@ -273,6 +273,7 @@ class EmployeeController extends Controller
 
             $employees = $employees->with([
                 "current_position",
+                "latest_position",
                 "agency",
                 "current_branch",
                 "home_branch",
