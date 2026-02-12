@@ -54,6 +54,7 @@ class EmployeePositionControlller extends Controller
             $employee->update([
                 "position_id" => $position->id,
                 "station_id" => $position->station_id,
+                "oic_status" => $request->oic_assignment == "Yes" ? "OIC" : null,
             ]);
             $employee->positions()->attach($request->position_id, [
                 ...$request->all()
@@ -79,6 +80,7 @@ class EmployeePositionControlller extends Controller
             $employee = Employee::where("employee_number", $employee_number)->first();
             $employee->update([
                 "position_id" => $request->position_id,
+                "oic_status" => $request->oic_assignment == "Yes" ? "OIC" : null,
             ]);
             EmployeePosition::where("id", $request->id)->update( [
                 ...$request->except(["id"])
