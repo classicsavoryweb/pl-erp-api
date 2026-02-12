@@ -462,7 +462,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 }
 
-                if ($halfDayCount > 0) {
+                if ($halfDayCount > 0 && $employee->current_position->timekeeping_type === "Monthly") {
                     $hasHalfDay = $halfDayCount * 0.5;
                 }
 
