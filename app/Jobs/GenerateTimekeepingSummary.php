@@ -98,6 +98,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
             }
 
             foreach ($employees as $employee) {
+
+            // Log::info("=========================");
+            // Log::info($employee->full_name);
             if ($employee->type === "Agency") {
                 continue;
             }
@@ -276,10 +279,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $actualWorkedDays += 1;
                     }
 
-                    if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0) {
-                        $cancelled_off += $timeKeep->cancelled_off_hours;
-                    }
-
                     if ($timeKeep->tardiness > 0) {
                         $tardiness += $timeKeep->tardiness;
                         $lateDate[] = [
@@ -299,6 +298,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $totalOT = $timeKeep->approved_overtime;
                     if ($employee->current_branch->type === "Branch") {
                         $totalOT = floor($timeKeep->approved_overtime);
+                    }
+
+                    if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0 && $totalOT > 0) {
+                        $cancelled_off += $timeKeep->cancelled_off_hours ? floor($timeKeep->cancelled_off_hours) : $totalOT;
                     }
                     
                     if ($timeKeep->legal_holiday === "Yes" && $holidayIsPaid) {
@@ -462,6 +465,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
 
                 $regular_days = $regular_days - $hasHalfDay;
+                // Log::info("DED HALF DAYS: ".$hasHalfDay);
+                // Log::info("REG DAYS: ".$regular_days);
 
                 foreach ($isExisting as $i) {
                     $i->delete();

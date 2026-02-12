@@ -626,10 +626,6 @@ class TimeKeepingService
                 }
             }
 
-            if (!$isAdjustment && $actualSchedule?->timetable === "REST DAY") {
-                return;
-            }
-
             // Log::info("UNPROCESSED: ".$finalWorkHours);
             // Log::info("WORKED HOURS: ".$workHours);
             // Log::info("SHOULD BE HALFDAY: ".$shouldBeHalfDay);
@@ -700,7 +696,7 @@ class TimeKeepingService
                 "approved_overtime" => $this->formatHours($approvedOvertime),
                 "remarks" => $remarks,
                 "final_worked_hours" => $finalWorkHours,
-                "cancelled_off_hours" => $cancelled_off_hours,
+                "cancelled_off_hours" => $this->formatHours($cancelled_off_hours),
             ]);
 
             if ($manualOverride) {
@@ -863,7 +859,7 @@ class TimeKeepingService
                 - ($tardinessDeduction + $undertimeDeduction);
 
             if ($timeKeeping->is_cancelled_off) {
-                $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours;
+                $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours > $timeKeeping->approved_overtime ? $timeKeeping->cancelled_off_hours : $timeKeeping->approved_overtime;
 
                 if ($employee->schedule->schedule_type->name === "Normal Schedule") {
                     $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours < 8 ? $timeKeeping->cancelled_off_hours : 8;
@@ -871,7 +867,7 @@ class TimeKeepingService
                     $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours < 9.5 ? $timeKeeping->cancelled_off_hours : 9.5;
                 }
 
-                $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.69);
+                $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.3);
 
                 if ($timeKeeping->legal_holiday === "Yes") {
                     $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 2.6);
