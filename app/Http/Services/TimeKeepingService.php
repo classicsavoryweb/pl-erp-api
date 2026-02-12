@@ -591,15 +591,6 @@ class TimeKeepingService
                 }
             }
 
-            if ($schedule->selection === "REST DAY") {
-                $isCancelledOff = true;
-                $overtime = 0;
-                $legalHolidayOvertime = 0;
-                $specialHolidayOvertime = 0;
-                $tardiness = 0;
-                $cancelled_off_hours = round($decimalHours, 2);
-            }
-
             $isExisting = $model->where("employee_id", $employee->id)
                 ->where("date" , $log->date)
                 ->get();
@@ -670,6 +661,17 @@ class TimeKeepingService
                 } else if ($specialHoliday === "Yes") {
                     $specialHolidayHours = $hours;
                 }
+            }
+
+            if ($schedule->selection === "REST DAY") {
+                $isCancelledOff = true;
+                $overtime = 0;
+                $legalHolidayOvertime = 0;
+                $specialHolidayOvertime = 0;
+                $tardiness = 0;
+                $nightDiffOt = 0;
+                $nightDiffHours = 0;
+                $cancelled_off_hours = round($decimalHours, 2);
             }
 
             $timeKeeping = $model->create([
