@@ -15,8 +15,6 @@ use App\Http\Services\TimeKeepingService;
 use App\Jobs\FetchBranchLogs;
 use App\Jobs\GenerateTimekeepingSummary;
 use App\Jobs\TransferLogsToTimeKeeping;
-use App\Jobs\GenerateTimekeepingSummary;
-use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\Branch;
 use App\Models\ScheduleTime;
 use Maatwebsite\Excel\Facades\Excel;
