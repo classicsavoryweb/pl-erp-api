@@ -46,6 +46,7 @@ class FetchOvertimeInCSHub extends Command
         ->addDays(24)
         ->endOfDay();
         $dayOfMonth = Carbon::now()->day;
+        $part = 1;
 
         if ($dayOfMonth >= 1 && $dayOfMonth <= 15) {
             $startDate = $now->copy()->subMonth()->startOfMonth()->addDays(25)->format("Y-m-d"); //26
@@ -53,6 +54,16 @@ class FetchOvertimeInCSHub extends Command
         } else {
             $startDate = $now->copy()->startOfMonth()->startOfMonth()->addDays(10)->format("Y-m-d"); //11
             $endDate = $now->copy()->startOfMonth()->addDays(24)->format("Y-m-d"); //25
+            $part = 2;
+        }
+        
+        $oldStartDate = $startDate;
+        if ($part == 1) {
+            $date = Carbon::parse($oldStartDate)->day(11)->format("Y-m-d");
+            $startDate = $date;
+        } else {
+            $date = Carbon::parse($oldStartDate)->subMonth()->day(26)->format("Y-m-d");
+            $startDate = $date;
         }
 
         $response = Http::withBasicAuth($user, $password)
