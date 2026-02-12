@@ -89,6 +89,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             $activeCutOff = Cutoff::where("status", "active")->first();
 
+            $adjustmentRemarks = "";
+
             $start_date = Carbon::parse($activeCutOff->start_date)->subMonth()->day(26)->format("Y-m-d");
             $end_date = Carbon::parse($start_date)->addMonth()->day(10)->format("Y-m-d");
 
@@ -564,6 +566,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "timekeeping_summary_id" => $timeKeepingSummary->id
                     ]);
 
+                    $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
                     $withAdjustments = true;
                 }
 
@@ -601,7 +604,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "regular_days" => $regular_days,
                         "adjustment_amount" => $adjustment_amount,
                         "cancelled_off" => $this->formatHours($cancelled_off),
-                        "remarks" => $timeKeepingSummary->remarks ? $timeKeepingSummary->remarks . " | With adjustments"  : "With adjustments"
+                        "remarks" => $adjustmentRemarks
                     ]);
                 }
 
