@@ -30,14 +30,25 @@ class TransferLogsToTimeKeeping implements ShouldQueue
     protected $timeKeepingService;
     protected $userId;
     protected $suppressNotification = false;
+    protected $employeeId;
+    protected $dates;
 
-    public function __construct(string $branchId, $cutoff, ?int $userId = null, bool $suppressNotification = false)
+    public function __construct(
+        string $branchId,
+        $cutoff,
+        ?int $userId = null,
+        bool $suppressNotification = false,
+        ?int $employeeId = null,
+        ?array $dates = null
+    )
     {
         $this->branchId = $branchId;
         $this->cutOff = $cutoff;
         $this->timeKeepingService = new TimeKeepingService();
         $this->userId = $userId;
         $this->suppressNotification = $suppressNotification;
+        $this->employeeId = $employeeId;
+        $this->dates = $dates;
     }
 
     public function handle(): void
@@ -45,14 +56,22 @@ class TransferLogsToTimeKeeping implements ShouldQueue
         try {
             DB::beginTransaction();
 
-            $schedules = ScheduleTime::with([
+            $schedulesQuery = ScheduleTime::with([
                 "employee",
                 "employee.schedule",
                 "employee.schedule.schedule_type"
             ])
             ->where("branch_id", $this->branchId)
-            ->whereBetween("date", $this->cutOff)
-            ->get();
+            ->whereBetween("date", $this->cutOff);
+
+            if (!empty($this->employeeId)) {
+                $schedulesQuery->where("employee_id", $this->employeeId);
+            }
+            if (!empty($this->dates)) {
+                $schedulesQuery->whereIn("date", $this->dates);
+            }
+
+            $schedules = $schedulesQuery->get();
 
             foreach($schedules as $actualSchedule) {
                 $employee = $actualSchedule->employee;
@@ -228,15 +247,23 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 }
             }
             
-            $timeKeepings = TimeKeeping::with([
+            $timeKeepingsQuery = TimeKeeping::with([
                 "employee",
                 "employee.schedule",
                 "employee.schedule.schedule_type",
                 "schedule"
             ])
             ->where("branch_id", $this->branchId)
-            ->whereBetween("date", $this->cutOff)
-            ->get();
+            ->whereBetween("date", $this->cutOff);
+
+            if (!empty($this->employeeId)) {
+                $timeKeepingsQuery->where("employee_id", $this->employeeId);
+            }
+            if (!empty($this->dates)) {
+                $timeKeepingsQuery->whereIn("date", $this->dates);
+            }
+
+            $timeKeepings = $timeKeepingsQuery->get();
 
             foreach($timeKeepings as $timeKeep) {
                 $actualSchedule = $timeKeep->schedule;
