@@ -44,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_employee_contracts"])->post("/add-employee-contract/{employee_number}", [EmployeeContractControlller::class, "addContract"]);
     Route::middleware(["permission:perform_employee_contracts"])->post("/edit-employee-contract/{employee_number}", [EmployeeContractControlller::class, "editContract"]);
     Route::get("/get-employee-contract-details/{id}", [EmployeeContractControlller::class, "getContractDetails"]);
+    Route::middleware(["permission:perform_employee_contracts"])->post('/employee/contracts/{id}/void', [EmployeeContractControlller::class, "voidEmployeeContract"]); 
     //bank details history
     Route::get("/get-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "getEmployeeBankDetailsHistory"]);
     Route::middleware(["permission:perform_employee_bank_details"])->post("/add-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "addBankDetails"]);

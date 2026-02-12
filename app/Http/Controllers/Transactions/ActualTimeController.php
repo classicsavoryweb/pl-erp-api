@@ -11,7 +11,10 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\Transactions\ActualLogsExport;
+use App\Http\Services\TimeKeepingService;
 use App\Jobs\FetchBranchLogs;
+use App\Jobs\GenerateTimekeepingSummary;
+use App\Jobs\TransferLogsToTimeKeeping;
 use App\Jobs\GenerateTimekeepingSummary;
 use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\Branch;
@@ -25,6 +28,12 @@ use Spatie\Activitylog\Models\Activity;
 
 class ActualTimeController extends Controller
 {
+    protected $timeKeepingService;
+
+    public function __construct() {
+        $this->timeKeepingService = new TimeKeepingService();
+    }
+
     public function getAllBiotimeTransactions(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;

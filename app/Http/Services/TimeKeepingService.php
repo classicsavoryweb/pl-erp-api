@@ -417,6 +417,13 @@ class TimeKeepingService
                 $overtime = ($decimalHours - $totalDurationHOurs >= 1) ? $decimalHours - $totalDurationHOurs : 0;
             }
 
+            if (strtolower($schedule->selection) === "flex" && $workHours < $hours) {
+                $shortMins = ($hours - $workHours) * 60;
+                $toDeduct = fmod($shortMins, 1);
+
+                $undertime = $shortMins - $toDeduct;
+            }
+
             if ($parsedLastPunch->greaterThan($tenPM)) {
                 $flexDiffInSeconds = $parsedFirstPunch->diffInSeconds($tenPM);
                 $flexiHours = $flexDiffInSeconds / 3600;
@@ -501,6 +508,9 @@ class TimeKeepingService
 
         if ($biotimePunches->count() > 1) {
 
+            $cutOff = $this->getCutOff($scheduleTime->date);        
+            $activeCutOff = CutOff::where("start_date", $cutOff['start_time'])->where("end_date", $cutOff["end_time"])->first();
+
             $overtimeApplied = Overtime::where("employee_id", $employee->id)
             ->where("overtime_date", $log->date)
             ->whereNot("status", "Voided")
@@ -524,7 +534,6 @@ class TimeKeepingService
                     $remarks = "Approved overtime is higher than the computed overtime from the system.";
                 }
 
-                $cutOff = $this->getCutOff($scheduleTime->date);
                 $currentCutOff = $this->getCurrentCutOff();
 
                 $totalHoursPaid = $approvedOvertime;
@@ -582,17 +591,7 @@ class TimeKeepingService
                 }
             }
 
-            if ($schedule->selection === "REST DAY") {
-                $isCancelledOff = true;
-                $overtime = 0;
-                $legalHolidayOvertime = 0;
-                $specialHolidayOvertime = 0;
-                $tardiness = 0;
-                $cancelled_off_hours = round($decimalHours, 2);
-            }
-
             $isExisting = $model->where("employee_id", $employee->id)
-                ->where("biotime_log_id", $log->id)
                 ->where("date" , $log->date)
                 ->get();
 
@@ -616,10 +615,6 @@ class TimeKeepingService
                     }
                     $t->delete();
                 }
-            }
-
-            if (!$isAdjustment && $actualSchedule?->timetable === "REST DAY") {
-                return;
             }
 
             // Log::info("UNPROCESSED: ".$finalWorkHours);
@@ -668,6 +663,17 @@ class TimeKeepingService
                 }
             }
 
+            if ($schedule->selection === "REST DAY") {
+                $isCancelledOff = true;
+                $overtime = 0;
+                $legalHolidayOvertime = 0;
+                $specialHolidayOvertime = 0;
+                $tardiness = 0;
+                $nightDiffOt = 0;
+                $nightDiffHours = 0;
+                $cancelled_off_hours = round($decimalHours, 2);
+            }
+
             $timeKeeping = $model->create([
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
@@ -692,7 +698,7 @@ class TimeKeepingService
                 "approved_overtime" => $this->formatHours($approvedOvertime),
                 "remarks" => $remarks,
                 "final_worked_hours" => $finalWorkHours,
-                "cancelled_off_hours" => $cancelled_off_hours,
+                "cancelled_off_hours" => $this->formatHours($cancelled_off_hours),
             ]);
 
             if ($manualOverride) {
@@ -855,7 +861,7 @@ class TimeKeepingService
                 - ($tardinessDeduction + $undertimeDeduction);
 
             if ($timeKeeping->is_cancelled_off) {
-                $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours;
+                $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours > $timeKeeping->approved_overtime ? $timeKeeping->cancelled_off_hours : $timeKeeping->approved_overtime;
 
                 if ($employee->schedule->schedule_type->name === "Normal Schedule") {
                     $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours < 8 ? $timeKeeping->cancelled_off_hours : 8;
@@ -863,11 +869,11 @@ class TimeKeepingService
                     $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours < 9.5 ? $timeKeeping->cancelled_off_hours : 9.5;
                 }
 
-                $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.69);
+                $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.3);
 
-                if ($timeKeeping->legal_holiday === "Yes") {
-                    $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 2.6);
-                }
+                // if ($timeKeeping->legal_holiday === "Yes") {
+                //     $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 2.6);
+                // }
 
                 $totalAmount = $cancelled_off;
             }
@@ -1114,7 +1120,7 @@ class TimeKeepingService
         });
 
         $otherSchedules = $schedules->filter(function ($schedule) use ($employee) {
-            if (!in_array($schedule->timetable, ["REST DAY", "NO SCHEDULE"])) {
+            if (!in_array($schedule->timetable, ["REST DAY", "NO SCHEDULE", "INCENTIVE LEAVE"])) {
                 return $schedule;
             }
         });

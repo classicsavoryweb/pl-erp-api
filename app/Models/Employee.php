@@ -101,6 +101,19 @@ class Employee extends Model
         }
     }
 
+    public function mancomCutOffBaseSalary()
+    {
+        $salary = 0;
+
+        try {
+            $salary = $this->mancom_salary->salary;
+
+            return $salary / 2;
+        } catch (Exception $e) {
+            return $salary;
+        }
+    }
+
     public function cutOffBaseSalary()
     {
         $salary = 0;
@@ -273,6 +286,10 @@ class Employee extends Model
 
     public function dependents() {
         return $this->hasMany(Dependents::class, 'employee_id','id');
+    }
+
+    public function mancom_salary() {
+        return $this->hasOne(MancomSalary::class, 'employee_number','employee_number');
     }
 
     public function bank_details() {

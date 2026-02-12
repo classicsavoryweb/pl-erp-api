@@ -26,6 +26,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use App\Support\NotifiesJobStatus;
+use Carbon\CarbonInterface;
 use Log;
 class GenerateTimekeepingSummary implements ShouldQueue
 {
@@ -88,6 +89,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             $activeCutOff = Cutoff::where("status", "active")->first();
 
+            $adjustmentRemarks = "";
+
             $start_date = Carbon::parse($activeCutOff->start_date)->subMonth()->day(26)->format("Y-m-d");
             $end_date = Carbon::parse($start_date)->addMonth()->day(10)->format("Y-m-d");
 
@@ -97,7 +100,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
             }
 
             foreach ($employees as $employee) {
-            
+
+            // Log::info("=========================");
+            // Log::info($employee->full_name);
             if ($employee->type === "Agency") {
                 continue;
             }
@@ -188,6 +193,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             ->whereBetween("date", $cutOff)
             ->get();
 
+            $actualWorkedDays = 0;
             $regular_days = 0;
             $special_leave= 0;
             $cancelled_off= 0;
@@ -257,22 +263,22 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($hours == $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0 && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
+                        $actualWorkedDays += $schedule->days;
                     } else if ( $hours / 2 >= $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0  && !$timeKeep->is_cancelled_off) {
                         $regular_days += .5;
                         $halfDayCount += 1;
+                        $actualWorkedDays += 1;
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
                         $regular_days += 1;
+                        $actualWorkedDays += 1;
                         $holidayConvertedToDays = true;
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {
                         $regular_days += 1;
-                    }
-
-                    if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0) {
-                        $cancelled_off += $timeKeep->cancelled_off_hours;
+                        $actualWorkedDays += 1;
                     }
 
                     if ($timeKeep->tardiness > 0) {
@@ -294,6 +300,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $totalOT = $timeKeep->approved_overtime;
                     if ($employee->current_branch->type === "Branch") {
                         $totalOT = floor($timeKeep->approved_overtime);
+                    }
+
+                    if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0 && $totalOT > 0) {
+                        $cancelled_off += $timeKeep->cancelled_off_hours ? floor($timeKeep->cancelled_off_hours) : $totalOT;
                     }
                     
                     if ($timeKeep->legal_holiday === "Yes" && $holidayIsPaid) {
@@ -358,17 +368,17 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($employee->current_position->timekeeping_type === "Monthly") {
                         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                            if ($workDays > $regular_days) {
-                                $regular_days = 11 - ($workDays - $regular_days);
+                            if ($workDays > $actualWorkedDays) {
+                                $regular_days = 11 - ($workDays - $actualWorkedDays);
                             } else {
                                 $regular_days = 11;
                             }
                         }
 
                         if ($employee->schedule->schedule_type->name === "Normal Schedule") {
-                            if ($workDays > $regular_days && $workDays < 13 ) {
-                                $regular_days = 13 - ($workDays - $regular_days);
-                            } else if ($workDays > $regular_days && $workDays > 13) {
+                            if ($workDays > $actualWorkedDays && $workDays < 13 ) {
+                                $regular_days = 13 - ($workDays - $actualWorkedDays);
+                            } else if ($workDays > $actualWorkedDays && $workDays > 13) {
                                 $regular_days = 13;
                             } else {
                                 $regular_days = 13;
@@ -379,10 +389,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 } else {
                     $absent = 0;
 
-                    $restDays = $schedules->filter(function ($schedule) use ($employee) {
-                        if (in_array($schedule->timetable, ["REST DAY"])) {
-                            return $schedule;
-                        }
+                    $restDays = $schedules->filter(function ($schedule) {
+                        return in_array($schedule->timetable, ["REST DAY"]);
                     });
 
                     foreach ($schedules as $sched) {
@@ -423,7 +431,18 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ) {
                         $absentToBeAdded = $restDays->count() - 2;
 
-                        $absent += $absentToBeAdded;
+                        foreach ($restDays as $rd) {
+                            $weekDateRange = $this->getCustomWeekRange($rd->date, $cutOff, $employee);
+                            $rdSched = ScheduleTime::where("employee_id", $employee->id)
+                            ->whereBetween("date", $weekDateRange)
+                            ->where("timetable", "REST DAY")
+                            ->get();
+                            
+                            if ($rdSched->count() == 2) {
+                                $absent += 1;
+                                break;
+                            }
+                        }
                     }
 
                     if ($employee->schedule->schedule_type->name === "Compressed Schedule" && $employee->current_position->timekeeping_type === "Monthly") {
@@ -448,6 +467,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
 
                 $regular_days = $regular_days - $hasHalfDay;
+                // Log::info("DED HALF DAYS: ".$hasHalfDay);
+                // Log::info("REG DAYS: ".$regular_days);
 
                 foreach ($isExisting as $i) {
                     $i->delete();
@@ -474,6 +495,23 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $regular_overtime += $deductions['special_holiday_overtime_deduction'] + $deductions['legal_holiday_overtime_deduction'];
                     $dateString = implode(", ", $deductions["dates"]);
                     $remarks = "Retracted holiday hours from previous cutoff: " . $dateString;
+                }
+
+                if ($regular_days < 0) {
+                    $regular_days = 0;
+                    $special_leave = 0;
+                    $cancelled_off = 0;
+                    $special_holiday = 0;
+                    $legal_holiday = 0;
+                    $regular_overtime = 0;
+                    $night_differential = 0;
+                    $night_differential_overtime = 0;
+                    $legal_holiday_overtime = 0;
+                    $special_holiday_overtime = 0;
+                    $undertime = 0;
+                    $travel_time = 0;
+                    $tardiness = 0;
+                    $adjustment_amount = 0;
                 }
 
                 $timeKeepingSummary = TimeKeepingSummary::create([
@@ -515,37 +553,38 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 $withAdjustments = false;
                 foreach($adjustments as $adjustment) {                      
-                    if ($adjustment->days > 0) {
-                        $adjustments_days += $adjustment->days;
-                    } else {
-                        if ($adjustment->taxable_amount !== 0) {
-                            $adjustment_amount += $adjustment->taxable_amount;
-                        }
-
-                        if ($adjustment->cancelled_rd > 0) {
-                            $adjustments_cancelled_off += $adjustment->cancelled_rd;
-                        }
+                    if ($adjustment->taxable_amount !== 0) {
+                        $adjustment_amount += $adjustment->taxable_amount;
                     }
+
+                        // if ($adjustment->cancelled_rd > 0) {
+                        //     $adjustments_cancelled_off += $adjustment->cancelled_rd;
+                        // }
 
                     $adjustment->update([
                         "status" => "Adjusted",
                         "timekeeping_summary_id" => $timeKeepingSummary->id
                     ]);
 
+                    $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
                     $withAdjustments = true;
                 }
 
                 foreach($anotherAdjustments as $adjustment) {
-                    if ($adjustment->days > 0) {
-                        $adjustments_days += $adjustment->days;
-                    } else {
-                        if ($adjustment->taxable_amount !== 0) {
-                            $adjustment_amount += $adjustment->taxable_amount;
-                        }
+                    // if ($adjustment->days > 0) {
+                    //     $adjustments_days += $adjustment->days;
+                    // } else {
+                    //     if ($adjustment->taxable_amount !== 0) {
+                    //         $adjustment_amount += $adjustment->taxable_amount;
+                    //     }
 
-                        if ($adjustment->cancelled_rd > 0) {
-                            $adjustments_cancelled_off += $adjustment->cancelled_rd;
-                        }
+                    //     if ($adjustment->cancelled_rd > 0) {
+                    //         $adjustments_cancelled_off += $adjustment->cancelled_rd;
+                    //     }
+                    // }
+
+                    if ($adjustment->taxable_amount !== 0) {
+                        $adjustment_amount += $adjustment->taxable_amount;
                     }
 
                     $adjustment->update([
@@ -565,7 +604,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "regular_days" => $regular_days,
                         "adjustment_amount" => $adjustment_amount,
                         "cancelled_off" => $this->formatHours($cancelled_off),
-                        "remarks" => $timeKeepingSummary->remarks ? $timeKeepingSummary->remarks . " | With adjustments"  : "With adjustments"
+                        "remarks" => $adjustmentRemarks
                     ]);
                 }
 
@@ -615,5 +654,35 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $formattedHours = floor($hours / 0.5) * 0.5;
         }   
         return $formattedHours;
+    }
+
+    private function getCustomWeekRange($date, $cutOff, $employee)
+    {
+        $holidayDate = Carbon::parse($date);
+        $startOfWeek = $holidayDate->copy()->startOfWeek(CarbonInterface::MONDAY);
+        $endOfWeek = $holidayDate->copy()->endOfWeek(CarbonInterface::SUNDAY);
+
+        $startDate = Carbon::parse($cutOff["start_time"]);
+        $endDate = Carbon::parse($cutOff["end_time"]);
+
+        if ($endOfWeek->gt($endDate)) {
+            $newStart = Carbon::parse($endDate)
+            ->addDay()
+            ->format("Y-m-d");
+
+            $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
+            ->whereBetween("date", [$newStart, $endOfWeek->format("Y-m-d")])
+            ->get();
+
+            if ($timeKeepings->count() === 0) {
+                $endOfWeek = $endDate;
+            }
+
+        }
+
+        return [
+            "start" => $startOfWeek->format("Y-m-d"),
+            "end" => $endOfWeek->format("Y-m-d")
+        ];
     }
 }

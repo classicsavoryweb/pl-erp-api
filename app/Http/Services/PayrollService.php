@@ -127,7 +127,30 @@ class PayrollService {
             //clarify if $grossPayAmount will be used
             if ($employee->hasCompleteStatutories()) {
                 $philHealth = PhilhealthPercentageBase::first();
+
                 $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
+                
+                if ($basicSalary <= $philHealth->philhealth_cap) {
+                    $philHealthAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)) / 2 , 2);
+                }
+
+                if ($cutOff->part == 2) {
+                    $latestPayroll = Payroll::where("employee_id", $employee->id)
+                        ->whereNot("start_date", $cutOff->start_date)
+                        ->orderBy("start_date", "DESC")
+                        ->first();
+
+                    if ($latestPayroll) {
+                        $totalSalary = $basicSalary + $latestPayroll->gross_pay;
+                        $amount = round(($totalSalary * ($philHealth->percentage * 0.01)) , 2);
+
+                        if ($amount > $philHealth->philhealth_max) {
+                            $amount = $philHealth->philhealth_max;
+                        }
+
+                        $philHealthAmount = round(($amount - ($latestPayroll->employee_philhealth + $latestPayroll->employee_philhealth)) / 2, 2);
+                    }
+                }
 
                 if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
                     $philHealthAmount = $philHealth->philhealth_max / 2;
@@ -140,7 +163,7 @@ class PayrollService {
                     ->where('max_amount', '>=', $grossPayAmount)
                     ->first();
     
-                if (Carbon::parse($cutOff->start_date)->day === 26) {
+                if ($cutOff->part == 1) {
                     $sssEmployeeAmount = round($sss->employee_ss, 2);
                     $sssEmployerAmount = round($sss->employer_ss + ($sss->employer_cc / 2), 2);   
     
@@ -170,12 +193,14 @@ class PayrollService {
                         if ($pagibigShares > $pagibig->max_deduction) {
                             $pagibigShares = $pagibig->max_deduction;
                         }
-    
+                        $latestSSS = SSS::where("employee_ss", $latestPayroll->employee_sss)->first();
+
                         $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
                         $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
-    
+
+                        $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
                         $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                        $sssEmployerAmount = round(($sss->employer_ss + ($sss->employer_cc / 2)) - $latestPayroll->employer_sss, 2);   
+                        $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestPayroll->employer_sss, 2);   
                     } else {
                         $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
                         $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
@@ -183,7 +208,7 @@ class PayrollService {
                         $pagibigEmployer = round($pagibigAmount / 2, 2);
     
                         $sssEmployeeAmount = round($sss->employee_ss, 2);
-                        $sssEmployerAmount = round($sss->employer_ss + ($sss->employer_cc / 2), 2);   
+                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
                     }
 
                 }
@@ -300,6 +325,8 @@ class PayrollService {
                 $employeeDeductions = EmployeeDeduction::with(["deduction"])
                     ->where("employee_id", $employee->id)
                     ->where("balance", ">", 1)
+                    ->where("date_created", "<=", $cutOff->pay_date)
+                    ->where("end_loan_status", "!=", "Yes")
                     ->get();
 
                 $companyLoans = $employeeDeductions->filter(fn($deduct) => !in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
@@ -491,6 +518,12 @@ class PayrollService {
             $additionalWorkingHoursTotal = 0;
             $workingHoursDeductionTotal = 0;
  
+            $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
+
+            if ($payrollRollListEmployee->isMancom()) {
+                $cutOffBaseSalary = $employee->mancomCutOffBaseSalary();
+            }
+
             $basicSalary = $cutOffBaseSalary;
 
             if ($employee->hasCompleteStatutories()) {
@@ -512,8 +545,6 @@ class PayrollService {
                 $sssEmployeeAmount = round($sss->employee_ss, 2);
                 $sssEmployerAmount = round($sss->employer_ss, 2);
             }
-
-            $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
 
             if ($payrollRollListEmployee->isOnMaternityLeave()) {
                 $basicSalary = 0;

@@ -11,6 +11,7 @@ use App\Models\Entry;
 use App\Models\LastPay;
 use App\Models\LastPayDeduction;
 use App\Models\LastPaySetup;
+use App\Models\OtherCompany\OtherEmployee;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -90,7 +91,14 @@ class GenerateLastPayEntry implements ShouldQueue
 
         $userId = $this->user;
         $user = User::find($userId);
-        $employee_id = $user->employee->id;
+        $employee_id = "";
+        if ($user->employee) {
+            $employee_id = $user->employee->id;
+        } else {
+            $employee = OtherEmployee::where("employee_number", $user->employee_number)->first();
+            $employee_id = $employee->id;
+        }
+        
 
         $lastPaySetups = LastPaySetup::all()->keyBy('setup_type');
 

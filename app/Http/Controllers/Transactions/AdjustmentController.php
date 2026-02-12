@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Transactions;
 
 use App\Http\Controllers\Controller;
 use App\Http\Services\TimeKeepingService;
+use App\Jobs\GenerateTimekeepingSummary;
 use App\Models\Adjustment;
 use App\Models\AdjustmentPunch;
 use App\Models\AdjustmentTimeKeeping;
 use App\Models\BiotimeLog;
 use App\Models\BiotimePunch;
+use App\Models\Cutoff;
 use App\Models\Employee;
 use App\Models\Overtime;
 use App\Models\ScheduleMasterlist;
@@ -245,6 +247,27 @@ class AdjustmentController extends Controller
                     "added_by" => Auth::user()->id,
                     "added_at" => now(),
                 ]);
+
+                $cutOffFromAdjustment = $this->getCutOffForDate($request->date);
+                $activeCutOff = Cutoff::where("status", "active")->first();
+                $timeKeeping = TimeKeeping::whereBetween("date", [$activeCutOff->start_date, $activeCutOff->end_date])
+                ->where("date", ">", $cutOffFromAdjustment['end_time'])
+                ->where("employee_id", $employee->id)
+                ->first();
+
+                if ($timeKeeping) {
+                    GenerateTimekeepingSummary::dispatchSync(
+                        $timeKeeping->branch_id,
+                        [
+                            "start_time" => $activeCutOff->start_date, 
+                            "end_time" => $activeCutOff->end_date
+                        ],
+                        Auth::id(),
+                        $timeKeeping->employee_id,
+                        "Timekeeping added taxable adjustment",
+                        true
+                    );
+                }
             }
             DB::commit();
             return $this->sendResponse(["message" => "Adjustment created successfully"]);
