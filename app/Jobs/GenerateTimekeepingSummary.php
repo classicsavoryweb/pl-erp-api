@@ -555,19 +555,15 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 foreach($adjustments as $adjustment) {                      
                     if ($adjustment->taxable_amount !== 0) {
                         $adjustment_amount += $adjustment->taxable_amount;
+                        $adjustment->update([
+                            "status" => "Adjusted",
+                            "timekeeping_summary_id" => $timeKeepingSummary->id
+                        ]);
+    
+                        $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
+                        $withAdjustments = true;
                     }
 
-                        // if ($adjustment->cancelled_rd > 0) {
-                        //     $adjustments_cancelled_off += $adjustment->cancelled_rd;
-                        // }
-
-                    $adjustment->update([
-                        "status" => "Adjusted",
-                        "timekeeping_summary_id" => $timeKeepingSummary->id
-                    ]);
-
-                    $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-                    $withAdjustments = true;
                 }
 
                 foreach($anotherAdjustments as $adjustment) {
