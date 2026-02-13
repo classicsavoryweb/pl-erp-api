@@ -77,7 +77,7 @@ class PayrollProofListController extends Controller
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "payroll.employee_id")
                 );
-            } else if ($request->type === "PAYROLL" && $request->export) {
+            } else if ($request->type === "PAYROLL" && $request->export && !$request->converter) {
                 $proofList = $proofList->select(['*'])
                 ->addSelect("net_pay as amount")
                 ->with([
@@ -85,6 +85,18 @@ class PayrollProofListController extends Controller
                     "employee",
                     "timekeeping_summary"
                 ]);
+            } else if ($request->type === "PAYROLL" && $request->export && $request->converter) {
+                $proofList = $proofList->select([
+                    "status",
+                    "id",
+                    "employee_id",
+                    "net_pay as amount",
+                    "cut_off", 
+                ])->where("net_pay", ">", 0)
+                ->orderBy(
+                    Employee::select("last_name")
+                        ->whereColumn("employees.id", "payroll.employee_id")
+                );
             }
 
             if ($request->bank_account_type_id !== '0' && $request->bank_account_type_id !== 'ALL') {
@@ -153,6 +165,7 @@ class PayrollProofListController extends Controller
             // }
 
             $request["export"] = true;
+            $request["converter"] = true;
             $proofLists = $this->getProofList($request);
 
             $converterToUse = $request->bank_account_type_id == 1 ? "CASH_CARD_CONVERTER" : "SAVINGS_CONVERTER";
