@@ -433,9 +433,11 @@ class TimeKeepingService
                     $flexiOTHours = $flexOTDiffInSeconds / 3600;
                     $nightDiffOt = $flexiOTHours;
                 } else {
-                    $flexNightDiffInSeconds = $parsedLastPunch->diffInSeconds($tenPM);
-                    $flexNightDiff = $flexNightDiffInSeconds / 3600;
-                    $nightDiffHours = $flexNightDiff;
+                    if (strtolower($schedule->selection) === "flex") {
+                        $flexNightDiffInSeconds = $parsedLastPunch->diffInSeconds($tenPM);
+                        $flexNightDiff = $flexNightDiffInSeconds / 3600;
+                        $nightDiffHours = $flexNightDiff;
+                    }
                 }
             }
         }
