@@ -148,9 +148,9 @@ class PayrollProofListController extends Controller
                 return $this->sendError(["message" => "You cant generate inactive cutoff"], 404);
             }
 
-            if ($cutOff && $cutOff->is_cutoff_locked !== 1 && $cutOff->status === "active") {
-                return $this->sendError(["message" => "You cant generate unfinalized cutoff"], 409);
-            }
+            // if ($cutOff && $cutOff->is_cutoff_locked !== 1 && $cutOff->status === "active") {
+            //     return $this->sendError(["message" => "You cant generate unfinalized cutoff"], 409);
+            // }
 
             $request["export"] = true;
             $proofLists = $this->getProofList($request);
