@@ -591,6 +591,37 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $withAdjustments = true;
                 }
 
+                $manualAdjustments = Adjustment::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+                ->where("employee_id", $employee->id)
+                ->where("type", "Manual Taxable Adjustment")
+                ->where("is_timekeeping_locked", 0)
+                ->orderBy("created_at", "DESC")
+                ->get();
+
+                if ($manualAdjustments->count() > 0) {
+                    $latestManual = $manualAdjustments->first(function ($adjustment) {
+                        return in_array($adjustment->status, ["Approved", "Adjusted"], true);
+                    });
+
+                    if ($latestManual) {
+                        $adjustment_amount = $latestManual->taxable_amount ?? 0;
+                        $adjustmentRemarks = $adjustmentRemarks . $latestManual->date ." ".$latestManual->type." - ".$latestManual->taxable_amount." | ";
+                        $withAdjustments = true;
+                    }
+
+                    foreach ($manualAdjustments as $adjustment) {
+                        $updatePayload = [
+                            "timekeeping_summary_id" => $timeKeepingSummary->id
+                        ];
+
+                        if (in_array($adjustment->status, ["Approved", "Adjusted"], true)) {
+                            $updatePayload["status"] = "Adjusted";
+                        }
+
+                        $adjustment->update($updatePayload);
+                    }
+                }
+
                 $cancelled_off += round($adjustments_cancelled_off, 2);
 
                 if ($withAdjustments) {
