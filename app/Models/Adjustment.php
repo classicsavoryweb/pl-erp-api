@@ -41,4 +41,8 @@ class Adjustment extends Model
         return $this->belongsTo(TimeKeepingSummary::class, "timekeeping_summary_id", "id");
     }
 
+    public function added_by_user() {
+        return $this->hasOne(User::class, "id", "added_by");
+    }
+
 }
