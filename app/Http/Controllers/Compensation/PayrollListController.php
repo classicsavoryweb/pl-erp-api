@@ -25,7 +25,7 @@ class PayrollListController extends Controller
                 "employee.latest_bank_details.bank_account_type",
                 "employee.current_position",
                 "employee.current_position.salary",
-                "employee.home_branch.rate_code"
+                "employee.home_branch"
             ]);
 
         //             $salaryPosition = $this->current_position->salary;
