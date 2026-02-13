@@ -39,7 +39,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings
                     round($transaction->special_holiday_amount,2) ?? '',
                     $transaction->timekeeping_summary->legal_holiday ?? '',
                     round($transaction->legal_holiday_amount,2) ?? '',
-                    $transaction->timekeeping_summary->overtime ?? '',
+                    $transaction->timekeeping_summary->regular_overtime ?? '',
                     round($transaction->overtime_amount,2) ?? '',
                     $transaction->timekeeping_summary->legal_holiday_overtime ?? '', 
                     round($transaction->legal_holiday_overtime_amount,2) ?? '',
