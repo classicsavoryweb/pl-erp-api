@@ -20,7 +20,6 @@ class PayrollListExport implements FromCollection, WithHeadings
         return [
             "Full Name",
             "Employee Number",
-            "Monthly Salary",
             "Status",
             "On Maternity Leave",
             "Mancom",
@@ -42,7 +41,6 @@ class PayrollListExport implements FromCollection, WithHeadings
             return [
                 $list->employee->full_name,
                 $list->employee->employee_number,
-                $list->employee->monthlySalary(),
                 $list->is_included ? "Included" : "Excluded",
                 $list->is_on_maternity_leave ? "Yes" : "No",
                 $list->is_mancom ? "Yes" : "No",
