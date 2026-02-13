@@ -10,6 +10,7 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Carbon\Carbon;
 use Exception;
+use Throwable;
 
 class Employee extends Model
 {
@@ -83,20 +84,28 @@ class Employee extends Model
     {
         $monthlySalary = 0;
 
-        $salaryPosition = $this->current_position->salary;
-        $rateCode = $this->home_branch->rate_code;
+        $salaryPosition = $this->current_position?->salary;
+        $rateCode = $this->home_branch?->rate_code;
 
         try {
+            if (!$salaryPosition) {
+                return $monthlySalary;
+            }
+
             if ($salaryPosition->rate_category === "MINIMUM") {
+                if (!$rateCode) {
+                    return $monthlySalary;
+                }
+
                 $minimumRate = Rate::where("code", $rateCode)->first();
 
-                $monthlySalary = $minimumRate->minimum * 26;
+                $monthlySalary = $minimumRate?->minimum ? $minimumRate->minimum * 26 : 0;
             } else {
-                $monthlySalary = $salaryPosition->basic_salary;
+                $monthlySalary = $salaryPosition->basic_salary ?? 0;
             }
 
             return $monthlySalary;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return $monthlySalary;
         }
     }

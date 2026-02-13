@@ -19,7 +19,13 @@ class PayrollListController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $payrollList = PayrollList::with(["employee", "employee.latest_bank_details", "employee.latest_bank_details.bank_account_type"]);
+            $payrollList = PayrollList::with([
+                "employee",
+                "employee.latest_bank_details",
+                "employee.latest_bank_details.bank_account_type",
+                "employee.current_position.salary",
+                "employee.home_branch",
+            ]);
 
             if ($request->has(["branch_id"])) {
                 $payrollList = $payrollList->whereHas("employee", function ($query) use ($request) {
