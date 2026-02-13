@@ -29,6 +29,7 @@ class PayrollListExport implements FromCollection, WithHeadings
             "Holding Date",
             "Bank Description",
             "Bank Number",
+            "Monthly Rate"
         ];
     }
 
@@ -50,7 +51,7 @@ class PayrollListExport implements FromCollection, WithHeadings
                 $list->holded_at ?? null,
                 $bank?->bank_account_type?->description ?? null,
                 $bank?->bank_number? "'" . $bank->bank_number: null,
-           
+                number_format($list->employee->monthlySalary(), 2)
             ];
         });
     }
