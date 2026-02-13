@@ -357,6 +357,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ->where("employee_id",$employee->id)
                 ->get();
 
+                $overRideAttendance = $regular_days;
                 if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules)) {
                     $workDays = 0;
 
@@ -512,6 +513,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $travel_time = 0;
                     $tardiness = 0;
                     $adjustment_amount = 0;
+                }
+
+                if ($overRideAttendance <= 3) {
+                    $regular_days = $overRideAttendance;
                 }
 
                 $timeKeepingSummary = TimeKeepingSummary::create([
