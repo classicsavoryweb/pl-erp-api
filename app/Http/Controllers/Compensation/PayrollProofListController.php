@@ -65,7 +65,7 @@ class PayrollProofListController extends Controller
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "incentives.employee_id")
                 );
-            } else {
+            } else if ($request->type === "PAYROLL" && !$request->export) {
                 $proofList = $proofList->select([
                     "status",
                     "id",
@@ -77,6 +77,14 @@ class PayrollProofListController extends Controller
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "payroll.employee_id")
                 );
+            } else if ($request->type === "PAYROLL" && $request->export) {
+                $proofList = $proofList->select(['*'])
+                ->addSelect("net_pay as amount")
+                ->with([
+                    "timekeeping_branch",
+                    "employee",
+                    "timekeeping_summary"
+                ]);
             }
 
             if ($request->bank_account_type_id !== '0' && $request->bank_account_type_id !== 'ALL') {
@@ -92,24 +100,23 @@ class PayrollProofListController extends Controller
             } 
 
             if ($request->export === true) {
-                if ($request->bank_account_type_id === 'ALL') {
-                    return $proofList->get();
-                }
+                // if ($request->bank_account_type_id === 'ALL') {
+                //     return $proofList->get();
+                // }
+                // if ($request->type !== "INCENTIVES") {
+                //     $proofList = $proofList->select(['*'])
+                //     ->addSelect("net_pay as amount")
+                //     ->with([
+                //         "timekeeping_branch",
+                //         "employee",
+                //         "timekeeping_summary"
+                //     ]);
+                // }
+                // $proofList = $proofList->whereHas("payroll_list", function ($query) {
+                //     $query->where("is_hold", false);
+                // })->get();
 
-                if ($request->type !== "INCENTIVES") {
-                    $proofList = $proofList->select(['*'])
-                    ->addSelect("net_pay as amount")
-                    ->with([
-                        "timekeeping_branch",
-                        "employee",
-                        "timekeeping_summary"
-                    ]);
-                }
-                $proofList = $proofList->whereHas("payroll_list", function ($query) {
-                    $query->where("is_hold", false);
-                })->get();
-
-                return $proofList;
+                return $proofList->get();
             }
 
             $proofList = $proofList->paginate(10);
