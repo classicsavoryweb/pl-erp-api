@@ -114,21 +114,20 @@ class FetchOvertimeJob implements ShouldQueue
                         ->where("overtime_date",$overtime["overtime_date"])
                         ->first();
                         if ($isExisting && $isExisting->status === "Unpaid") {
-                            $isExisting->delete();
+                            Overtime::updateOrCreate([
+                                "date_filed" => $overtime["date_filed"],
+                                "employee_id"=> $employee->id,
+                                "biometric_number" => $employee->biometric_number,
+                                "overtime_date" => $overtime["overtime_date"],
+                            ],[
+                                "cshub_overtime_id" => $overtime["id"],
+                                "purpose" => $overtime["purpose"],
+                                "total_hours" => $overtime["total_hrs"],
+                                "status" => ucfirst($overtime["status_payroll"]),
+                                "approve_date" => $overtime["update_date"]
+                            ]);
                         }
 
-                        Overtime::updateOrCreate([
-                            "date_filed" => $overtime["date_filed"],
-                            "employee_id"=> $employee->id,
-                            "biometric_number" => $employee->biometric_number,
-                            "overtime_date" => $overtime["overtime_date"],
-                        ],[
-                            "cshub_overtime_id" => $overtime["id"],
-                            "purpose" => $overtime["purpose"],
-                            "total_hours" => $overtime["total_hrs"],
-                            "status" => ucfirst($overtime["status_payroll"]),
-                            "approve_date" => $overtime["update_date"]
-                        ]);
                     }
                 }
             }

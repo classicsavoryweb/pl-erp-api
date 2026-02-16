@@ -123,7 +123,14 @@ class AdjustmentController extends Controller
                 $oldTimeKeeping = TimeKeeping::where("employee_id", $employee->id)
                 ->where("date", $request->date)
                 ->first();
-
+                
+                $adjustmentIsOnActiveCutOff = Cutoff::where("status", "active")
+                ->where("start_date", '=<', $request->date)
+                ->first();
+                
+                if ($adjustmentIsOnActiveCutOff) {
+                    return $this->sendError(["message" => "You cannot adjust dates on current cutoff"]);
+                }
                 // if (!$oldTimeKeeping) {
                 //     return $this->sendError(["message" => "Timekeeping not found"]);
                 // }

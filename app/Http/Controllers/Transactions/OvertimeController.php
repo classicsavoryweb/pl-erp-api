@@ -319,10 +319,11 @@ class OvertimeController extends Controller
 
                 $taxable_amount = $adjustedTimeKeepingPayment->total_amount - ($oldtimeKeepingPayment->total_amount ?? 0);
                 $amount_paid = $oldtimeKeepingPayment->total_amount ?? 0;
-                $adjustment = Adjustment::create([
+                $adjustment = Adjustment::updateOrCreate([
                     "employee_id" => $employee->id,
                     "biometric_number" => $employee->biometric_number,
                     "date" => $timeKeeping->date,
+                ],[
                     "days" => 0,
                     "cancelled_rd" => 0,
                     "taxable_amount" => round($taxable_amount, 2) ,
@@ -336,9 +337,10 @@ class OvertimeController extends Controller
                 ]);
 
                 foreach($log->punches as $punch) {
-                    AdjustmentPunch::create([
+                    AdjustmentPunch::updateOrCreate([
                         "adjustment_id" => $adjustment->id,
                         "punch_time" => $punch->punch_time,
+                    ],[
                         "date" => $timeKeeping->date,
                         "branch_id" => $punch->branch_id ?? null
                     ]);
@@ -441,10 +443,11 @@ class OvertimeController extends Controller
 
                     $taxable_amount = $adjustedTimeKeepingPayment->total_amount - ($oldtimeKeepingPayment->total_amount ?? 0);
                     $amount_paid = $oldtimeKeepingPayment->total_amount ?? 0;
-                    $adjustment = Adjustment::create([
+                    $adjustment = Adjustment::updateOrCreate([
                         "employee_id" => $employee->id,
                         "biometric_number" => $employee->biometric_number,
                         "date" => $timeKeeping->date,
+                    ],[
                         "days" => 0,
                         "cancelled_rd" => 0,
                         "taxable_amount" => round($taxable_amount, 2) ,
@@ -458,9 +461,10 @@ class OvertimeController extends Controller
                     ]);
 
                     foreach($log->punches as $punch) {
-                        AdjustmentPunch::create([
+                        AdjustmentPunch::updateOrCreate([
                             "adjustment_id" => $adjustment->id,
                             "punch_time" => $punch->punch_time,
+                        ],[
                             "date" => $timeKeeping->date,
                             "branch_id" => $punch->branch_id ?? null
                         ]);

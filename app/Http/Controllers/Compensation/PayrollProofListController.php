@@ -65,7 +65,27 @@ class PayrollProofListController extends Controller
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "incentives.employee_id")
                 );
-            } else {
+            } else if ($request->type === "PAYROLL" && !$request->export) {
+                $proofList = $proofList->select([
+                    "status",
+                    "id",
+                    "employee_id",
+                    "net_pay as amount",
+                    "cut_off", 
+                ])->where("net_pay", ">", 0)
+                ->orderBy(
+                    Employee::select("last_name")
+                        ->whereColumn("employees.id", "payroll.employee_id")
+                );
+            } else if ($request->type === "PAYROLL" && $request->export && !$request->converter) {
+                $proofList = $proofList->select(['*'])
+                ->addSelect("net_pay as amount")
+                ->with([
+                    "timekeeping_branch",
+                    "employee",
+                    "timekeeping_summary"
+                ]);
+            } else if ($request->type === "PAYROLL" && $request->export && $request->converter) {
                 $proofList = $proofList->select([
                     "status",
                     "id",
@@ -92,24 +112,23 @@ class PayrollProofListController extends Controller
             } 
 
             if ($request->export === true) {
-                if ($request->bank_account_type_id === 'ALL') {
-                    return $proofList->get();
-                }
+                // if ($request->bank_account_type_id === 'ALL') {
+                //     return $proofList->get();
+                // }
+                // if ($request->type !== "INCENTIVES") {
+                //     $proofList = $proofList->select(['*'])
+                //     ->addSelect("net_pay as amount")
+                //     ->with([
+                //         "timekeeping_branch",
+                //         "employee",
+                //         "timekeeping_summary"
+                //     ]);
+                // }
+                // $proofList = $proofList->whereHas("payroll_list", function ($query) {
+                //     $query->where("is_hold", false);
+                // })->get();
 
-                if ($request->type !== "INCENTIVES") {
-                    $proofList = $proofList->select(['*'])
-                    ->addSelect("net_pay as amount")
-                    ->with([
-                        "timekeeping_branch",
-                        "employee",
-                        "timekeeping_summary"
-                    ]);
-                }
-                $proofList = $proofList->whereHas("payroll_list", function ($query) {
-                    $query->where("is_hold", false);
-                })->get();
-
-                return $proofList;
+                return $proofList->get();
             }
 
             $proofList = $proofList->paginate(10);
@@ -141,11 +160,12 @@ class PayrollProofListController extends Controller
                 return $this->sendError(["message" => "You cant generate inactive cutoff"], 404);
             }
 
-            if ($cutOff && $cutOff->is_cutoff_locked !== 1 && $cutOff->status === "active") {
-                return $this->sendError(["message" => "You cant generate unfinalized cutoff"], 409);
-            }
+            // if ($cutOff && $cutOff->is_cutoff_locked !== 1 && $cutOff->status === "active") {
+            //     return $this->sendError(["message" => "You cant generate unfinalized cutoff"], 409);
+            // }
 
             $request["export"] = true;
+            $request["converter"] = true;
             $proofLists = $this->getProofList($request);
 
             $converterToUse = $request->bank_account_type_id == 1 ? "CASH_CARD_CONVERTER" : "SAVINGS_CONVERTER";
@@ -180,6 +200,11 @@ class PayrollProofListController extends Controller
 
                 $rowIndex = 7;
                 foreach ($proofLists as $transaction) {
+
+                    if (str_replace(' ', '', $transaction->employee->latest_bank_details->bank_number) == "") {
+                        continue;
+                    }
+
                     $colA = "A".$rowIndex;
                     $colB = "B".$rowIndex;
                     $colC = "C".$rowIndex;

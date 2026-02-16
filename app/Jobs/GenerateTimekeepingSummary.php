@@ -89,6 +89,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             $activeCutOff = Cutoff::where("status", "active")->first();
 
+            $adjustmentRemarks = "";
+
             $start_date = Carbon::parse($activeCutOff->start_date)->subMonth()->day(26)->format("Y-m-d");
             $end_date = Carbon::parse($start_date)->addMonth()->day(10)->format("Y-m-d");
 
@@ -98,6 +100,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
             }
 
             foreach ($employees as $employee) {
+
+            // Log::info("=========================");
+            // Log::info($employee->full_name);
             if ($employee->type === "Agency") {
                 continue;
             }
@@ -276,10 +281,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $actualWorkedDays += 1;
                     }
 
-                    if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0) {
-                        $cancelled_off += $timeKeep->cancelled_off_hours;
-                    }
-
                     if ($timeKeep->tardiness > 0) {
                         $tardiness += $timeKeep->tardiness;
                         $lateDate[] = [
@@ -299,6 +300,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $totalOT = $timeKeep->approved_overtime;
                     if ($employee->current_branch->type === "Branch") {
                         $totalOT = floor($timeKeep->approved_overtime);
+                    }
+
+                    if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0 && $totalOT > 0) {
+                        $cancelled_off += $timeKeep->cancelled_off_hours < $timeKeep->cancelled_off_hours ? $timeKeep->cancelled_off_hours : $totalOT;
                     }
                     
                     if ($timeKeep->legal_holiday === "Yes" && $holidayIsPaid) {
@@ -352,6 +357,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ->where("employee_id",$employee->id)
                 ->get();
 
+                $overRideAttendance = $regular_days;
                 if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules)) {
                     $workDays = 0;
 
@@ -406,7 +412,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                         if (
                             $employee->schedule->schedule_type->name === "Normal Schedule" &&
-                            !in_array($sched->timetable,["REST DAY"])
+                            !in_array($sched->timetable,["REST DAY", "INCENTIVE LEAVE"])
                         ) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
@@ -457,11 +463,13 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                 }
 
-                if ($halfDayCount > 0) {
+                if ($halfDayCount > 0 && $employee->current_position->timekeeping_type === "Monthly") {
                     $hasHalfDay = $halfDayCount * 0.5;
                 }
 
                 $regular_days = $regular_days - $hasHalfDay;
+                // Log::info("DED HALF DAYS: ".$hasHalfDay);
+                // Log::info("REG DAYS: ".$regular_days);
 
                 foreach ($isExisting as $i) {
                     $i->delete();
@@ -507,6 +515,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $adjustment_amount = 0;
                 }
 
+                if ($overRideAttendance <= 3) {
+                    $regular_days = $overRideAttendance;
+                }
+
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut_off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
@@ -548,18 +560,15 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 foreach($adjustments as $adjustment) {                      
                     if ($adjustment->taxable_amount !== 0) {
                         $adjustment_amount += $adjustment->taxable_amount;
+                        $adjustment->update([
+                            "status" => "Adjusted",
+                            "timekeeping_summary_id" => $timeKeepingSummary->id
+                        ]);
+    
+                        $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
+                        $withAdjustments = true;
                     }
 
-                        // if ($adjustment->cancelled_rd > 0) {
-                        //     $adjustments_cancelled_off += $adjustment->cancelled_rd;
-                        // }
-
-                    $adjustment->update([
-                        "status" => "Adjusted",
-                        "timekeeping_summary_id" => $timeKeepingSummary->id
-                    ]);
-
-                    $withAdjustments = true;
                 }
 
                 foreach($anotherAdjustments as $adjustment) {
@@ -587,6 +596,37 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $withAdjustments = true;
                 }
 
+                $manualAdjustments = Adjustment::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
+                ->where("employee_id", $employee->id)
+                ->where("type", "Manual Taxable Adjustment")
+                ->where("is_timekeeping_locked", 0)
+                ->orderBy("created_at", "DESC")
+                ->get();
+
+                if ($manualAdjustments->count() > 0) {
+                    $latestManual = $manualAdjustments->first(function ($adjustment) {
+                        return in_array($adjustment->status, ["Approved", "Adjusted"], true);
+                    });
+
+                    if ($latestManual) {
+                        $adjustment_amount = $latestManual->taxable_amount ?? 0;
+                        $adjustmentRemarks = $adjustmentRemarks . $latestManual->date ." ".$latestManual->type." - ".$latestManual->taxable_amount." | ";
+                        $withAdjustments = true;
+                    }
+
+                    foreach ($manualAdjustments as $adjustment) {
+                        $updatePayload = [
+                            "timekeeping_summary_id" => $timeKeepingSummary->id
+                        ];
+
+                        if (in_array($adjustment->status, ["Approved", "Adjusted"], true)) {
+                            $updatePayload["status"] = "Adjusted";
+                        }
+
+                        $adjustment->update($updatePayload);
+                    }
+                }
+
                 $cancelled_off += round($adjustments_cancelled_off, 2);
 
                 if ($withAdjustments) {
@@ -596,7 +636,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "regular_days" => $regular_days,
                         "adjustment_amount" => $adjustment_amount,
                         "cancelled_off" => $this->formatHours($cancelled_off),
-                        "remarks" => $timeKeepingSummary->remarks ? $timeKeepingSummary->remarks . " | With adjustments"  : "With adjustments"
+                        "remarks" => $adjustmentRemarks
                     ]);
                 }
 

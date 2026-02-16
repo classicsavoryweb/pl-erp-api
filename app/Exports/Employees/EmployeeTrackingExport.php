@@ -36,6 +36,33 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
         return $object;
     }
 
+    protected function isOicAssignment($employee): bool
+    {
+        if (($employee->oic_status ?? null) === 'OIC') {
+            return true;
+        }
+
+        $latestPosition = $employee->latest_position ?? null;
+        if ($latestPosition && ($latestPosition->oic_assignment ?? null) === 'Yes') {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function appendOicToPosition($employee, $column, $value)
+    {
+        if ($column !== 'current_position.description' || !$value) {
+            return $value;
+        }
+
+        if ($this->isOicAssignment($employee) && !str_ends_with($value, ' (OIC)')) {
+            return $value . ' (OIC)';
+        }
+
+        return $value;
+    }
+
     public function collection()
     {
         return $this->employees->map(function ($employee) {
@@ -46,6 +73,7 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
             if (in_array($column, ['date_hired', 'regularization_date', 'separation_date']) && $value) {
                 $value = \Carbon\Carbon::parse($value)->format('m/d/Y');
             }
+                $value = $this->appendOicToPosition($employee, $column, $value);
                 $row[] = $value;
             }
 

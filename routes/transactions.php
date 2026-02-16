@@ -56,6 +56,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_transactions_time_keeping_summary"])->post("/generate-time-keeping-summary", [TimeKeepingController::class, "generateTimeKeepingSummary"]);
     Route::get("/get-all-time-keeping-summary", [TimeKeepingController::class, "getAllTimeKeepingSummary"]);
     Route::middleware(["permission:export_all_transactions_time_keeping_summary"])->get("/export-all-time-keeping-summary", [TimeKeepingController::class, "exportAllTimeKeepingSummary"]);
+    Route::middleware(["permission:perform_transactions_adjustments"])->post("/add-timekeeping-summary-adjustment", [TimeKeepingController::class, "addTimeKeepingSummaryAdjustment"]);
+    Route::middleware(["permission:perform_transactions_adjustments"])->get("/get-timekeeping-summary-adjustment-logs", [TimeKeepingController::class, "getTimeKeepingSummaryAdjustmentLogs"]);
     
     //adjustments
     Route::get("/get-all-adjustments", [AdjustmentController::class, "getAllAdjustments"]);

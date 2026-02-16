@@ -7,6 +7,7 @@ use App\Http\Services\TimeKeepingService;
 use App\Jobs\GenerateTimekeepingSummary;
 use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\BiotimeLog;
+use App\Models\Adjustment;
 use App\Models\Employee;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
@@ -271,7 +272,9 @@ class TimeKeepingController extends Controller
                 Bus::chain([
                     new TransferLogsToTimeKeeping($branch_id, $cutOff, Auth::id(), true),
                     new GenerateTimekeepingSummary($branch_id, $cutOff, Auth::id(), 0, $branchName)
-                ])->dispatch();
+                ])
+                ->delay(now()->addSeconds(5))
+                ->dispatch();
                 $user = Auth::user();
                 activity()->causedBy($user)->useLog("Timekeeping Generation")
                 ->log('User generated timekeeping of '.$branch ?? "undefined"." branch." );
@@ -289,6 +292,97 @@ class TimeKeepingController extends Controller
         $request["export"] = true;
 
         return $this->getAllTimeKeepingSummary($request);
+    }
+
+    public function addTimeKeepingSummaryAdjustment(Request $request) {
+        try {
+            $request->validate([
+                "timekeeping_summary_id" => "required|integer",
+                "amount" => "required|numeric",
+            ]);
+
+            DB::beginTransaction();
+            $summary = TimeKeepingSummary::with("employee")->find($request->timekeeping_summary_id);
+
+            if (!$summary) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Timekeeping summary not found"]);
+            }
+
+            $amount = round((float) $request->amount, 2);
+            $user = Auth::user();
+            $userLabel = $user?->proper_full_name ?? $user?->full_name ?? $user?->email ?? "Unknown User";
+            $timestamp = now()->format("Y-m-d H:i");
+            $remarksEntry = "MANUAL TAXABLE ADJUSTMENT: {$amount} by {$userLabel} at {$timestamp} |";
+            $cutOff = $summary->cut_off ?? "";
+            $cutOffStart = strlen($cutOff) >= 21 ? substr($cutOff, 0, 10) : null;
+            $cutOffEnd = strlen($cutOff) >= 21 ? substr($cutOff, 11, 10) : null;
+            $adjustmentDate = $cutOffEnd ?? now()->format("Y-m-d");
+
+            Adjustment::where("timekeeping_summary_id", $summary->id)
+                ->where("type", "Manual Taxable Adjustment")
+                ->whereIn("status", ["Approved", "Adjusted"])
+                ->update([
+                    "status" => "Voided",
+                    "remarks" => DB::raw("CONCAT(IFNULL(remarks,''), ' Replaced by latest manual adjustment.')"),
+                ]);
+
+            Adjustment::create([
+                "employee_id" => $summary->employee_id,
+                "biometric_number" => $summary->employee?->biometric_number,
+                "date" => $adjustmentDate,
+                "days" => 0,
+                "cancelled_rd" => 0,
+                "taxable_amount" => $amount,
+                "amount_paid" => 0,
+                "correct_amount_paid" => 0,
+                "actual_schedule" => null,
+                "type" => "Manual Taxable Adjustment",
+                "status" => "Adjusted",
+                "remarks" => $remarksEntry,
+                "added_by" => Auth::user()->id,
+                "added_at" => now(),
+                "timekeeping_summary_id" => $summary->id,
+                "is_timekeeping_locked" => 0,
+            ]);
+
+            $adjustmentAmount = $amount;
+
+            $remarks = trim($summary->remarks ?? "");
+            $remarks = trim($remarks . " " . $remarksEntry);
+
+            $summary->update([
+                "adjustment_amount" => round($adjustmentAmount, 2),
+                "remarks" => trim($remarks),
+            ]);
+
+            DB::commit();
+            return $this->sendResponse([
+                "message" => "Taxable adjustment added successfully",
+                "adjustment_amount" => round($adjustmentAmount, 2),
+            ]);
+        } catch(Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getTimeKeepingSummaryAdjustmentLogs(Request $request) {
+        try {
+            $request->validate([
+                "timekeeping_summary_id" => "required|integer",
+            ]);
+
+            $adjustments = Adjustment::with("added_by_user")
+                ->where("timekeeping_summary_id", $request->timekeeping_summary_id)
+                ->where("type", "Manual Taxable Adjustment")
+                ->orderBy("created_at", "DESC")
+                ->get();
+
+            return $this->sendResponse($adjustments);
+        } catch(Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
     }
 
     public function updateTimeKeepingUndertime(Request $request) {
