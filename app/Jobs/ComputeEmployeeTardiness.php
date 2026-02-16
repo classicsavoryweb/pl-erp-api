@@ -32,7 +32,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
     {
         try {
             $endDate = $this->endDate;
-            $startDate = Carbon::parse($endDate)->subMonth()->addDay()->format("Y-m-d");
+            $startDate = Carbon::parse($endDate)->subMonth()->day(26)->format("Y-m-d");
             $year = Carbon::parse($startDate)->year;
             $month = Carbon::parse($startDate)->month;
             $employees = Employee::where("status", "active")->get();
