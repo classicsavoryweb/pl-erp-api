@@ -83,16 +83,26 @@ class Employee extends Model
     {
         $monthlySalary = 0;
 
-        $salaryPosition = $this->current_position->salary;
-        $rateCode = $this->home_branch->rate_code;
+        $salaryPosition = $this->current_position?->salary;
+        $rateCode = $this->home_branch?->rate_code;
+
+        if (!$salaryPosition) {
+            return $monthlySalary;
+        }
 
         try {
             if ($salaryPosition->rate_category === "MINIMUM") {
+                if (!$rateCode) {
+                    return $monthlySalary;
+                }
                 $minimumRate = Rate::where("code", $rateCode)->first();
+                if (!$minimumRate) {
+                    return $monthlySalary;
+                }
 
                 $monthlySalary = $minimumRate->minimum * 26;
             } else {
-                $monthlySalary = $salaryPosition->basic_salary;
+                $monthlySalary = $salaryPosition->basic_salary ?? 0;
             }
 
             return $monthlySalary;
@@ -117,16 +127,26 @@ class Employee extends Model
     public function cutOffBaseSalary()
     {
         $salary = 0;
-        $salaryPosition = $this->current_position->salary;
-        $rateCode = $this->home_branch->rate_code;
+        $salaryPosition = $this->current_position?->salary;
+        $rateCode = $this->home_branch?->rate_code;
+
+        if (!$salaryPosition) {
+            return $salary;
+        }
 
         try {
             if ($salaryPosition->rate_category === "MINIMUM") {
+                if (!$rateCode) {
+                    return $salary;
+                }
                 $minimumRate = Rate::where("code", $rateCode)->first();
+                if (!$minimumRate) {
+                    return $salary;
+                }
 
                 $salary = ($minimumRate->minimum * 26) / 2;
             } else {
-                $salary = $salaryPosition->basic_salary / 2;
+                $salary = ($salaryPosition->basic_salary ?? 0) / 2;
             }
 
             return $salary;
@@ -140,26 +160,41 @@ class Employee extends Model
         $dailySalary = 0;
 
         $scheduleType = $this->schedule->schedule_type->name ?? "N/A";
-        $salaryPosition = $this->current_position->salary;
-        $rateCode = $this->home_branch->rate_code;
+        $salaryPosition = $this->current_position?->salary;
+        $rateCode = $this->home_branch?->rate_code;
+        if (!$salaryPosition) {
+            return $dailySalary;
+        }
         try {
             if ($scheduleType === "Compressed Schedule") {
                 if ($salaryPosition->rate_category === "MINIMUM") {
+                    if (!$rateCode) {
+                        return $dailySalary;
+                    }
                     $minimumRate = Rate::where("code", $rateCode)->first();
+                    if (!$minimumRate) {
+                        return $dailySalary;
+                    }
     
                     $dailySalary = ($minimumRate->minimum * 26) / 22;
                 } else {
-                    $dailySalary = $salaryPosition->basic_salary / 22;
+                    $dailySalary = ($salaryPosition->basic_salary ?? 0) / 22;
                 }
             }
     
             if ($scheduleType === "Normal Schedule") {
                 if ($salaryPosition->rate_category === "MINIMUM") {
+                    if (!$rateCode) {
+                        return $dailySalary;
+                    }
                     $minimumRate = Rate::where("code", $rateCode)->first();
+                    if (!$minimumRate) {
+                        return $dailySalary;
+                    }
     
                     $dailySalary = $minimumRate->minimum;
                 } else {
-                    $dailySalary = $salaryPosition->basic_salary / 26;
+                    $dailySalary = ($salaryPosition->basic_salary ?? 0) / 26;
                 }
             }
 
