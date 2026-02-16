@@ -225,4 +225,20 @@ class CutOffController extends Controller
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
+
+    public function getActiveCutOff() {
+        try {
+            $cut_off = Cutoff::where("status", "active")
+                ->orderBy("id", "DESC")
+                ->first();
+
+            if (!$cut_off) {
+                return $this->sendError(["message" => "No active cutoff found"], 404);
+            }
+
+            return $this->sendResponse($cut_off);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
 }

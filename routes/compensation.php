@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //cutoff
     Route::get("/get-all-cut-off",[CutOffController::class, "getAllCutOffs"]);
     Route::get("/get-all-finalized-cut-offs",[CutOffController::class, "getAllFinalizedCutOffs"]);
+    Route::get("/get-active-cut-off", action: [CutOffController::class, "getActiveCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/create-cut-off", [CutOffController::class, "createCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/edit-cut-off/{id}", [CutOffController::class, "editCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->get("/initialize-cut-off/{id}", [CutOffController::class, "initializeCutOff"]);
