@@ -317,7 +317,6 @@ class EmployeeDeductionsController extends Controller
             $updated_balance = $balance - $amount;
 
             EmployeeDeduction::where("id", $id)->update([
-                "balance" => $updated_balance,
                 "end_loan_reason" => $request->end_loan_reason,
                 "end_loan_status" => "Yes"
             ]);

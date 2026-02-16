@@ -272,7 +272,9 @@ class TimeKeepingController extends Controller
                 Bus::chain([
                     new TransferLogsToTimeKeeping($branch_id, $cutOff, Auth::id(), true),
                     new GenerateTimekeepingSummary($branch_id, $cutOff, Auth::id(), 0, $branchName)
-                ])->dispatch();
+                ])
+                ->delay(now()->addSeconds(5))
+                ->dispatch();
                 $user = Auth::user();
                 activity()->causedBy($user)->useLog("Timekeeping Generation")
                 ->log('User generated timekeeping of '.$branch ?? "undefined"." branch." );

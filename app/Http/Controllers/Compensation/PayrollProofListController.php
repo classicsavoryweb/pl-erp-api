@@ -200,6 +200,11 @@ class PayrollProofListController extends Controller
 
                 $rowIndex = 7;
                 foreach ($proofLists as $transaction) {
+
+                    if (str_replace(' ', '', $transaction->employee->latest_bank_details->bank_number) == "") {
+                        continue;
+                    }
+
                     $colA = "A".$rowIndex;
                     $colB = "B".$rowIndex;
                     $colC = "C".$rowIndex;
