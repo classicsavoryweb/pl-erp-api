@@ -60,6 +60,7 @@ class SyncBranchDetails extends Command
                 $payload = [];
 
                 foreach ($branches as $branch) {
+                    $companyShort = $this->companyShortName($branch->company);
                     $row = [
                         'branch_id' => $branch->id,
                         'branchID' => $branch->branch_number,
@@ -68,7 +69,7 @@ class SyncBranchDetails extends Command
                         'bh_employeeid' => $branch->branch_head_employee_number,
                         'branch_head' => $branch->branch_head,
                         'bh_company' => $branch->company,
-                        'company' => $branch->company,
+                        'company' => $companyShort,
                         'branch_address' => $branch->address,
                         'area' => $branch->location,
                         'region' => $branch->location,
@@ -77,13 +78,13 @@ class SyncBranchDetails extends Command
                         'date_opened' => $branch->date_open,
                         'gh_employeeid' => $branch->group_head_employee_number,
                         'group_head' => $branch->group_head,
-                        'gh_company' => $branch->company,
+                        'gh_company' => $companyShort,
                         'kitchenID' => $branch->kitchen_oic_employee_number,
                         'kitchenName' => $branch->kitchen_oic,
-                        'kitchenCompany' => $branch->company,
+                        'kitchenCompany' => $companyShort,
                         'mancomID' => $branch->mancom_employee_number,
                         'mancomName' => $branch->mancom,
-                        'mancomCompany' => $branch->company,
+                        'mancomCompany' => $companyShort,
                     ];
 
                     $payload[] = array_intersect_key($row, $targetColumnKeys);
@@ -122,5 +123,31 @@ class SyncBranchDetails extends Command
         $this->info('Branch sync completed.');
 
         return Command::SUCCESS;
+    }
+
+    private function companyShortName(?string $company): ?string
+    {
+        if ($company === null) {
+            return null;
+        }
+
+        $normalized = strtoupper(trim($company));
+        if ($normalized === '') {
+            return $company;
+        }
+
+        if ($normalized === 'SFI' || $normalized === 'TTFC') {
+            return $normalized;
+        }
+
+        if (str_contains($normalized, 'TONY TING FOOD CONCEPTS')) {
+            return 'TTFC';
+        }
+
+        if (str_contains($normalized, 'SAVORY FASTFOOD')) {
+            return 'SFI';
+        }
+
+        return $company;
     }
 }
