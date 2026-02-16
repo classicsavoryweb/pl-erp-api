@@ -109,6 +109,75 @@ class ScheduleTimeController extends Controller
         }
     }
 
+    public function getTransactionsScheduleTimeEmployees(Request $request) {
+        try {
+            $request->validate([
+                "branch_id" => "required",
+            ]);
+
+            $schedule_time = ScheduleTime::query();
+
+            if ($request->has(["column_type", "key_word"])) {
+                $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if (Str::contains($column, '.')) {
+                    [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                    if ($relatedColumn == "full_name") {
+                        $schedule_time = $schedule_time->whereHas($relation, function ($query) use ($keyword) {
+                            $query->whereAny(
+                                ["first_name", "last_name", "middle_name"],
+                                'LIKE',
+                                "%$keyword%"
+                            )->orWhere(function ($q) use ($keyword) {
+                                $q->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                            });
+                        });
+                    } else {
+                        $schedule_time = $schedule_time->whereHas($relation, function ($query) use ($relatedColumn, $keyword) {
+                            $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                        });
+                    }
+
+                } else {
+                    $schedule_time = $schedule_time->where($column, 'LIKE', "%$keyword%");
+                }
+            }
+
+            $schedule_time = $schedule_time->where("branch_id", $request->branch_id);
+
+            if ($request->has('cutoff') && $request->filled('cutoff.start_time') && $request->filled('cutoff.end_time')) {
+                $year = $request->year ?? Carbon::now()->year;
+                $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $year);
+                $start_time = $dates["start_date"];
+                $end_time = $dates["end_date"];
+
+                $schedule_time = $schedule_time->whereBetween("date", [$start_time, $end_time]);
+            }
+
+            $employeeIds = $schedule_time->distinct()->pluck("employee_id");
+            $branch = Branch::find($request->branch_id);
+
+            $employees = Employee::with("current_branch")
+                ->whereIn("id", $employeeIds)
+                ->orderBy("last_name")
+                ->orderBy("first_name")
+                ->get();
+
+            $rows = $employees->map(function ($employee) use ($branch) {
+                return [
+                    "employee" => $employee,
+                    "branch" => $branch
+                ];
+            });
+
+            return $this->sendResponse($rows);
+        } catch(Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     private function processExcelRows(
         array $dataRows,
         array $headerRow,
@@ -558,6 +627,75 @@ class ScheduleTimeController extends Controller
             }
 
             return $this->sendError(["message" => "Schedule not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function transferTimekeepingBranchAll(Request $request) {
+        try {
+            $request->validate([
+                "source_branch_id" => "required",
+                "new_branch_id" => "required",
+            ]);
+
+            if ($request->source_branch_id == $request->new_branch_id) {
+                return $this->sendError(["message" => "Source and new branch cannot be the same."]);
+            }
+
+            $schedule_time = ScheduleTime::query();
+
+            if ($request->has(["column_type", "key_word"])) {
+                $column = $request->column_type;
+                $keyword = $request->key_word;
+
+                if (Str::contains($column, '.')) {
+                    [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                    if ($relatedColumn == "full_name") {
+                        $schedule_time = $schedule_time->whereHas($relation, function ($query) use ($keyword) {
+                            $query->whereAny(
+                                ["first_name", "last_name", "middle_name"],
+                                'LIKE',
+                                "%$keyword%"
+                            )->orWhere(function ($q) use ($keyword) {
+                                $q->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                            });
+                        });
+                    } else {
+                        $schedule_time = $schedule_time->whereHas($relation, function ($query) use ($relatedColumn, $keyword) {
+                            $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                        });
+                    }
+
+                } else {
+                    $schedule_time = $schedule_time->where($column, 'LIKE', "%$keyword%");
+                }
+            }
+
+            $schedule_time = $schedule_time->where("branch_id", $request->source_branch_id);
+
+            if ($request->has("employee_ids") && is_array($request->employee_ids) && count($request->employee_ids)) {
+                $schedule_time = $schedule_time->whereIn("employee_id", $request->employee_ids);
+            }
+
+            if ($request->has('cutoff') && $request->filled('cutoff.start_time') && $request->filled('cutoff.end_time')) {
+                $year = $request->year ?? Carbon::now()->year;
+                $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $year);
+                $start_time = $dates["start_date"];
+                $end_time = $dates["end_date"];
+
+                $schedule_time = $schedule_time->whereBetween("date", [$start_time, $end_time]);
+            }
+
+            $updated = $schedule_time->update([
+                "branch_id" => $request->new_branch_id
+            ]);
+
+            return $this->sendResponse([
+                "message" => "Timekeeping branch transferred successfully.",
+                "updated" => $updated
+            ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
