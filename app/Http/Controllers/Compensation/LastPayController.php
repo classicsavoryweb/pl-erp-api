@@ -31,7 +31,10 @@ class LastPayController extends Controller
                 "deductions",
                 "deductions.deduction",
                 "employee.government_deductions",
-                "employee.government_deductions.deduction"
+                "employee.government_deductions.deduction",
+                "activities" => function ($query) {
+                    $query->with("causer")->orderBy("id", "desc");
+                }
             ]);
 
             if ($request->has(["column_type", "key_word"])) {
@@ -409,7 +412,7 @@ class LastPayController extends Controller
                     "sales" => $salesIncentives,
                     "meal" => $meal_allowance,
                     "last_pay" => $lastPay,
-                    "status" => "Unposted"
+                    "status" => "Unposted",
                 ]);
 
                 foreach ($companyDeductions as $deduction) {
@@ -481,7 +484,6 @@ class LastPayController extends Controller
                 ->first();
 
             if ($deductionFromLastPay) {
-
                 $lastPay = LastPay::where('employee_id', $employee->id)->first();
 
                 $totalDeductions = $lastPay->total_deductions;
@@ -535,7 +537,6 @@ class LastPayController extends Controller
             $lastPayDeduction = LastPayDeduction::find($lastPayDeductionId);
 
             if ($lastPayDeduction) {
-
                 $lastPayDeduction->update([
                     "amount" => $request->amount
                 ]);
@@ -573,7 +574,18 @@ class LastPayController extends Controller
 
                 GenerateLastPayEntry::dispatch($lastPay, Auth::user()->id);
 
-                $lastPay->update(["status" => "Posted"]);
+                $lastPay->disableLogging();
+                $lastPay->update([
+                    "status" => "Posted",
+                ]);
+                $lastPay->enableLogging();
+
+                activity()
+                    ->performedOn($lastPay)
+                    ->causedBy(Auth::user())
+                    ->useLog("Last Pay")
+                    ->event("posted")
+                    ->log("posted");
 
                 DB::commit();
                 return $this->sendResponse(["message" => "Last pay posted successfully"]);
@@ -670,7 +682,7 @@ class LastPayController extends Controller
                     "total_deductions" => $totalDeductions,
                     "sales" => $salesIncentives,
                     "meal" => $meal_allowance,
-                    "last_pay" => $lastPayAmount,
+                    "last_pay" => $lastPayAmount
                 ]);
                 DB::commit();
                 return $this->sendResponse([

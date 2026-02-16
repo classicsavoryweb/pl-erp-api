@@ -17,6 +17,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:export_all_transactions_schedule_time"])->get("/export-all-transactions-schedule-time", [ScheduleTimeController::class, "exportAllTransactionsScheduleTime"]);
     Route::middleware(["permission:import_all_transactions_schedule_time"])->post("/fetch-transactions-schedule-time", [ScheduleTimeController::class, "fetchSchedules"]);
     Route::middleware(["permission:transfer_time_keeping_branch"])->post("/transfer-timekeeping-branch/{schedule_id}", [ScheduleTimeController::class, "transferTimekeepingBranch"]);
+    Route::middleware(["permission:transfer_time_keeping_branch"])->get("/get-transactions-schedule-time-employees", [ScheduleTimeController::class, "getTransactionsScheduleTimeEmployees"]);
+    Route::middleware(["permission:transfer_time_keeping_branch"])->post("/transfer-timekeeping-branch-all", [ScheduleTimeController::class, "transferTimekeepingBranchAll"]);
 
     //actual logs
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
