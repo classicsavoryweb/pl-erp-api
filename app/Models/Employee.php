@@ -15,6 +15,28 @@ class Employee extends Model
 {
     use HasFactory, LogsActivity;
 
+    protected static function booted()
+    {
+        static::saved(function (Employee $employee) {
+            if (!$employee->wasChanged('position_id')) {
+                return;
+            }
+
+            $user = $employee->user;
+            if (!$user) {
+                return;
+            }
+
+            $positionDescription = $employee->current_position?->description;
+            if (!$positionDescription && $employee->position_id) {
+                $positionDescription = Position::whereKey($employee->position_id)->value('description');
+            }
+
+            $user->position = $positionDescription;
+            $user->save();
+        });
+    }
+
     protected $fillable = [
         "image",
         "employee_number",
