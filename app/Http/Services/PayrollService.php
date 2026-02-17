@@ -231,7 +231,8 @@ class PayrollService {
                 ->where("employee_id", $employee->id)
                 ->where("balance", ">", 1)
                 ->where("date_created", "<=", $cutOff->pay_date)
-                ->where("end_loan_status", "!=", "Yes")
+                ->where("end_loan_status", "No")
+                ->where("approved_status", "Yes")
                 ->get();
     
                 foreach($employeeDeductions as $deduction) {
@@ -326,7 +327,8 @@ class PayrollService {
                     ->where("employee_id", $employee->id)
                     ->where("balance", ">", 1)
                     ->where("date_created", "<=", $cutOff->pay_date)
-                    ->where("end_loan_status", "!=", "Yes")
+                    ->where("end_loan_status", "No")
+                    ->where("approved_status", "Yes")
                     ->get();
 
                 $companyLoans = $employeeDeductions->filter(fn($deduct) => !in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
