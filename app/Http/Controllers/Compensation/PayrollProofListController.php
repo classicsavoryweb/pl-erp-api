@@ -83,7 +83,9 @@ class PayrollProofListController extends Controller
                 ->with([
                     "timekeeping_branch",
                     "employee",
-                    "timekeeping_summary"
+                    "timekeeping_summary",
+                    "employee.schedule.schedule_type",
+                    "employee.payroll_list"
                 ]);
             } else if ($request->type === "PAYROLL" && $request->export && $request->converter) {
                 $proofList = $proofList->select([

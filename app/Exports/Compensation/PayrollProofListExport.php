@@ -20,8 +20,15 @@ class PayrollProofListExport implements FromCollection, WithHeadings
     public function collection()
     {
         return $this->proofList->map(function ($transaction) {
-
             if ($this->type === "PAYROLL") {
+                $days = $transaction->employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
+                $regular_days = $transaction->timekeeping_summary->regular_days ?? "";
+                $list = $transaction->employee->payroll_list;
+
+                if ($list->isMancom() || $list->isOnMaternityLeave()) {
+                    $regular_days = $days;
+                }
+
                 return [
                     $transaction->employee->employee_number,
                     $transaction->employee->full_name,
@@ -31,7 +38,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings
                     round($transaction->daily_rate,2) ?? '',
                     round($transaction->hourly_rate,2) ?? '',
                     $transaction->tax_status ?? '',
-                    $transaction->timekeeping_summary->regular_days ?? '',
+                    $regular_days ?? '',
                     round($transaction->salary,2) ?? '',
                     $transaction->timekeeping_summary->cancelled_off_hours ?? '',
                     round($transaction->cancelled_off,2) ?? '',
