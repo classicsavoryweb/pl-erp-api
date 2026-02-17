@@ -218,7 +218,7 @@ class PayrollService {
             $totalDeductions = 0;
 
             $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-            $taxable = $taxableIncome + $taxableAdustmentAmount;
+            $taxable = $taxableIncome;
 
             $existingPayroll = Payroll::where("employee_id", $employee->id)
             ->where("cut_off", $cutOff->cut_off)
@@ -279,7 +279,7 @@ class PayrollService {
                         $tardinessAmount;
 
                     $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-                    $taxable = $taxableIncome + $taxableAdustmentAmount;
+                    $taxable = $taxableIncome;
                 }
 
 
