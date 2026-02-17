@@ -144,7 +144,7 @@ class SyncBranchDetails extends Command
             return 'TTFC';
         }
 
-        if (str_contains($normalized, 'SAVORY FAST FOOD') || str_contains($normalized, 'SAVORY FASTFOOD')) {
+         if (str_contains($normalized, 'SAVORY FAST FOOD')) {
             return 'SFI';
         }
 
