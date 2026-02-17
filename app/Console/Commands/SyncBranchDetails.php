@@ -53,10 +53,7 @@ class SyncBranchDetails extends Command
 
         $batchSize = 200;
 
-        Branch::where('updated_at', '>=', $date)
-            ->orWhere('created_at', '>=', $date)
-            ->orderBy('id')
-            ->chunkById($batchSize, function ($branches) use ($targetColumnKeys, $keyColumn) {
+        Branch::orderBy('id')->chunkById($batchSize, function ($branches) use ($targetColumnKeys, $keyColumn) {
                 $payload = [];
 
                 foreach ($branches as $branch) {
