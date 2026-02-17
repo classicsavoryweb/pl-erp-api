@@ -72,7 +72,7 @@ class PayrollProofListController extends Controller
                     "employee_id",
                     "net_pay as amount",
                     "cut_off", 
-                ])->where("net_pay", ">", 0)
+                ])
                 ->orderBy(
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "payroll.employee_id")
