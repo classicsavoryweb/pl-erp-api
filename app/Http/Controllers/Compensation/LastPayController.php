@@ -207,9 +207,14 @@ class LastPayController extends Controller
                 $yearSourceDate = $employee->separation_date;
                 $cutOff = $this->getCutOffForDate($yearSourceDate);
                 $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
-                $yearHolded = Carbon::parse($yearSourceDate)->year;
+                $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
+                $yearHolded = (int) $source->year;
+                $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
+                if ($source->greaterThanOrEqualTo($dec11)) {
+                    $yearHolded += 1;
+                }
+                $thirteenthMonthStartDate = ($yearHolded - 1) . "-12-10";
                 $dateHolded = Carbon::parse($employee->separation_date)->format("Y-m-d");
-                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
                 ->where("pay_date", ">=" ,$payroll->pay_date)
@@ -341,8 +346,13 @@ class LastPayController extends Controller
                 $yearSourceDate = $employee->separation_date;
                 $cutOff = $this->getCutOffForDate($yearSourceDate);
                 $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
-                $yearHolded = Carbon::parse($yearSourceDate)->year;
-                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
+                $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
+                $yearHolded = (int) $source->year;
+                $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
+                if ($source->greaterThanOrEqualTo($dec11)) {
+                    $yearHolded += 1;
+                }
+                $thirteenthMonthStartDate = ($yearHolded - 1) . "-12-10";
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
                 ->where("pay_date", ">=" ,$payroll->pay_date)
@@ -362,7 +372,6 @@ class LastPayController extends Controller
                     }
                 }
 
-                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
                 $allPayrolls = Payroll::where("pay_date", ">", $thirteenthMonthStartDate)
                 ->where("employee_id", $employee->id)
                 ->where("status", "final")
