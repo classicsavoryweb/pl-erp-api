@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Employees;
 use App\Exports\Employees\EmployeeTrackingExport;
 use App\Http\Controllers\Controller;
 use App\Models\Agency;
+use App\Models\Branch;
 use App\Models\BranchEmployee;
 use App\Models\Contract;
 use App\Models\EducationHistory;
@@ -233,6 +234,22 @@ class EmployeeController extends Controller
                         EmployeeStatus::select('description')
                         ->from('employee_status')
                         ->whereColumn('employee_status.id', 'employees.employee_status_id')
+                        ->limit(1),
+                        $request->sort
+                    );
+                } else if ($request->sortColumn === "current_branch.name") {
+                    $employees = $employees->orderBy(
+                        Branch::select('name')
+                        ->from('branches')
+                        ->whereColumn('branches.id', 'employees.branch_id')
+                        ->limit(1),
+                        $request->sort
+                    );
+                } else if ($request->sortColumn === "current_position.description") {
+                    $employees = $employees->orderBy(
+                        Position::select('description')
+                        ->from('positions')
+                        ->whereColumn('positions.id', 'employees.position_id')
                         ->limit(1),
                         $request->sort
                     );
