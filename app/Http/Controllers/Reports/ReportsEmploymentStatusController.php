@@ -63,6 +63,12 @@ class ReportsEmploymentStatusController extends Controller
                         $notedBy = Employee::with(["current_position"])
                         ->where("employee_number", "0007413")
                         ->first();
+
+                        if (!$notedBy) {
+                            $notedBy = OtherEmployee::with(["current_position"])
+                            ->where("employee_number", "0007413")
+                            ->first();
+                        }
                     }
                     if ($station === "front of the house") {
                         $recommendedBy = $groupHead;
