@@ -246,8 +246,6 @@ class EmployeeController extends Controller
                 "latest_position",
                 "agency",
                 "current_branch",
-                "current_branch.branch_oic",     // ✅ ADD
-                "current_branch.group_head",     // ✅ ADD
                 "home_branch",
                 "station",
                 "employee_status",

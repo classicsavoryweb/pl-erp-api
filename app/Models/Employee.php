@@ -510,20 +510,4 @@ class Employee extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
-    // Returns gender for Branch Head
-public function bh_gender(): Attribute
-{
-    return Attribute::get(function () {
-        return $this->branch_oic->gender ?? null;
-    });
-}
-
-// Returns gender for Group Head
-public function gh_gender(): Attribute
-{
-    return Attribute::get(function () {
-        return $this->group_head->gender ?? null;
-    });
-}
-
 }
