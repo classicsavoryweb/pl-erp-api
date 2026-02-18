@@ -214,6 +214,8 @@ class LastPayController extends Controller
                     $yearHolded += 1;
                 }
                 $thirteenthMonthStartDate = ($yearHolded - 1) . "-12-10";
+                $thirteenthMonthPeriodStart = Carbon::create($yearHolded - 1, 12, 11)->format("Y-m-d");
+                $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
                 $dateHolded = Carbon::parse($employee->separation_date)->format("Y-m-d");
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
@@ -232,9 +234,9 @@ class LastPayController extends Controller
                     $incentives += $incentive->incentive_amount;
                 }
 
-                $allPayrolls = Payroll::where("pay_date", ">", $thirteenthMonthStartDate)
-                ->where("employee_id", $employee->id)
+                $allPayrolls = Payroll::where("employee_id", $employee->id)
                 ->where("status", "final")
+                ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
                 ->get();
 
                 $annualSalary = 0;
@@ -353,6 +355,8 @@ class LastPayController extends Controller
                     $yearHolded += 1;
                 }
                 $thirteenthMonthStartDate = ($yearHolded - 1) . "-12-10";
+                $thirteenthMonthPeriodStart = Carbon::create($yearHolded - 1, 12, 11)->format("Y-m-d");
+                $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
                 ->where("pay_date", ">=" ,$payroll->pay_date)
@@ -372,9 +376,9 @@ class LastPayController extends Controller
                     }
                 }
 
-                $allPayrolls = Payroll::where("pay_date", ">", $thirteenthMonthStartDate)
-                ->where("employee_id", $employee->id)
+                $allPayrolls = Payroll::where("employee_id", $employee->id)
                 ->where("status", "final")
+                ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
                 ->get();
 
                 $annualSalary = 0;
