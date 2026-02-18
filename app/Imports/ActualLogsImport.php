@@ -64,6 +64,7 @@ class ActualLogsImport implements ToCollection, WithHeadingRow
                         "branch_id" => null
                     ]);
                 }
+                $log->updateStatusFromPunchesCount(count($punches));
             }
         }
     }
