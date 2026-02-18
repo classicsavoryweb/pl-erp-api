@@ -93,6 +93,10 @@ class ActualTimeController extends Controller
                 $bioTimeLogs = $bioTimeLogs->whereBetween("date", [$start_time, $end_time]);
             }
 
+            if ($request->has('status') && $request->filled('status') && $request->status !== 'ALL') {
+                $bioTimeLogs = $bioTimeLogs->where("status", $request->status);
+            }
+
             if ($request->has(["export"]) && $request->export) {
                 $bioTimeLogs = $bioTimeLogs->get();
                 return Excel::download(new ActualLogsExport($bioTimeLogs), "actual_logs.xls");
@@ -155,6 +159,7 @@ class ActualTimeController extends Controller
                             "branch_id" => $timekeeping["branch_id"]
                         ]);
                     }
+                    $biotime->updateStatusFromPunchesCount(count($timekeeping["punches"]));
 
                     $scheduleBranchId = ScheduleTime::where("employee_id", $employee->id)
                         ->where("date", $timekeeping["date"])
@@ -257,6 +262,7 @@ class ActualTimeController extends Controller
                 if ($didModify) {
                     $biotime->is_modified = true;
                     $biotime->save();
+                    $biotime->updateStatusFromPunchesCount();
 
                     $branchId = collect($request->punches)
                         ->pluck("branch_id")
