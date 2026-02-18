@@ -78,20 +78,22 @@ class ProcessFinalizeCutOff implements ShouldQueue
                     continue;
                 }
 
-                $newBalance = $employeeDeduction->balance - $deduction["deducted_amount"];
-
-                $employeeDeduction->update([
-                    "balance" => $newBalance
-                ]);
-
-                DeductionHistory::create([
-                    "employee_id" => $employeeDeduction->employee_id,
-                    "deduction_id" => $employeeDeduction->dedcution_id,
-                    "reference_doc" => $employeeDeduction->reference_doc,
-                    "amount" => $deduction["deducted_amount"],
-                    "pay_date" => $payroll->pay_date,
-                    "date_time" => now()
-                ]);
+                if ($employeeDeduction->balance > 0) 
+                    $newBalance = $employeeDeduction->balance - $deduction["deducted_amount"];
+    
+                    $employeeDeduction->update([
+                        "balance" => $newBalance
+                    ]);
+    
+                    DeductionHistory::create([
+                        "employee_id" => $employeeDeduction->employee_id,
+                        "deduction_id" => $employeeDeduction->dedcution_id,
+                        "reference_doc" => $employeeDeduction->reference_doc,
+                        "amount" => $deduction["deducted_amount"],
+                        "pay_date" => $payroll->pay_date,
+                        "date_time" => now()
+                    ]);
+                }
             }
         }
 
