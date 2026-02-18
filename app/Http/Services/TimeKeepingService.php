@@ -676,6 +676,23 @@ class TimeKeepingService
                 $cancelled_off_hours = round($decimalHours, 2);
             }
 
+            if ($workHours <= 1 && !$isCancelledOff) {
+                $finalWorkHours = 0;
+                $legalHoliday = 0;
+                $specialHoliday = 0;
+                $overtime = 0;
+                $tardiness = 0;
+                $nightDiffHours = 0;
+                $nightDiffOt = 0;
+                $legalHolidayHours = 0;
+                $legalHolidayOvertime = 0;
+                $specialHolidayHours = 0;
+                $specialHolidayOvertime = 0;
+                $undertime = 0;
+                $approvedOvertime = 0;
+                $cancelled_off_hours = 0;
+            }
+
             $timeKeeping = $model->create([
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
