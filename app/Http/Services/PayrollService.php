@@ -231,7 +231,7 @@ class PayrollService {
                 ->where("employee_id", $employee->id)
                 ->where("balance", ">", 1)
                 ->where("date_created", "<=", $cutOff->pay_date)
-                ->where("end_loan_status", "No")
+                ->where("end_loan_status", '!=', 'Yes')
                 ->where("approved_status", "Yes")
                 ->get();
     
@@ -327,7 +327,7 @@ class PayrollService {
                     ->where("employee_id", $employee->id)
                     ->where("balance", ">", 1)
                     ->where("date_created", "<=", $cutOff->pay_date)
-                    ->where("end_loan_status", "No")
+                    ->where("end_loan_status", '!=', 'Yes')
                     ->where("approved_status", "Yes")
                     ->get();
 
