@@ -4,9 +4,10 @@ namespace App\Exports\Compensation;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Illuminate\Database\Eloquent\Collection;
 
-class PayrollProofListExport implements FromCollection, WithHeadings
+class PayrollProofListExport implements FromCollection, WithHeadings, WithStrictNullComparison
 {
     protected Collection $proofList;
     protected $type;
@@ -39,44 +40,59 @@ class PayrollProofListExport implements FromCollection, WithHeadings
 
                 $branchName = $transaction->timekeeping_branch_name
                     ?? $transaction->timekeeping_branch?->name
+                    ?? $employee?->current_branch?->name
+                    ?? $employee?->home_branch?->name
+                    ?? '';
+
+                $branchCode = $transaction->timekeeping_branch_code
+                    ?? $transaction->timekeeping_branch?->short_name
+                    ?? $transaction->timekeeping_branch?->branch_number
+                    ?? $employee?->current_branch?->short_name
+                    ?? $employee?->current_branch?->branch_number
+                    ?? $employee?->home_branch?->short_name
+                    ?? $employee?->home_branch?->branch_number
                     ?? '';
 
                 $bankType = $employee?->latest_bank_details?->bank_account_type?->description ?? '';
 
                 $fmt = static function ($value) {
-                    return $value === null ? '' : round($value, 2);
+                    if ($value === null || $value === '') {
+                        return '0';
+                    }
+                    return round($value, 2);
                 };
 
                 return [
                     $employee?->employee_number ?? '',
                     $employee?->full_name ?? '',
                     $branchName,
+                    $branchCode,
                     $bankType,
                     $transaction->cut_off ?? '',
                     $fmt($transaction->daily_rate ?? null),
                     $fmt($transaction->hourly_rate ?? null),
                     $transaction->tax_status ?? '',
-                    $regular_days ?? '',
+                    $fmt($regular_days ?? null),
                     $fmt($transaction->salary ?? null),
-                    $transaction->cancelled_off_hours ?? $transaction->timekeeping_summary?->cancelled_off_hours ?? '',
+                    $fmt($transaction->cancelled_off_hours ?? $transaction->timekeeping_summary?->cancelled_off_hours ?? null),
                     $fmt($transaction->cancelled_off ?? null),
-                    $transaction->special_holiday ?? $transaction->timekeeping_summary?->special_holiday ?? '',
+                    $fmt($transaction->special_holiday ?? $transaction->timekeeping_summary?->special_holiday ?? null),
                     $fmt($transaction->special_holiday_amount ?? null),
-                    $transaction->legal_holiday ?? $transaction->timekeeping_summary?->legal_holiday ?? '',
+                    $fmt($transaction->legal_holiday ?? $transaction->timekeeping_summary?->legal_holiday ?? null),
                     $fmt($transaction->legal_holiday_amount ?? null),
-                    $transaction->regular_overtime ?? $transaction->timekeeping_summary?->regular_overtime ?? '',
+                    $fmt($transaction->regular_overtime ?? $transaction->timekeeping_summary?->regular_overtime ?? null),
                     $fmt($transaction->overtime_amount ?? null),
-                    $transaction->legal_holiday_overtime ?? $transaction->timekeeping_summary?->legal_holiday_overtime ?? '',
+                    $fmt($transaction->legal_holiday_overtime ?? $transaction->timekeeping_summary?->legal_holiday_overtime ?? null),
                     $fmt($transaction->legal_holiday_overtime_amount ?? null),
-                    $transaction->special_holiday_overtime ?? $transaction->timekeeping_summary?->special_holiday_overtime ?? '',
+                    $fmt($transaction->special_holiday_overtime ?? $transaction->timekeeping_summary?->special_holiday_overtime ?? null),
                     $fmt($transaction->special_holiday_overtime_amount ?? null),
-                    $transaction->night_differential ?? $transaction->timekeeping_summary?->night_differential ?? '',
+                    $fmt($transaction->night_differential ?? $transaction->timekeeping_summary?->night_differential ?? null),
                     $fmt($transaction->night_differential_amount ?? null),
-                    $transaction->night_differential_overtime ?? $transaction->timekeeping_summary?->night_differential_overtime ?? '',
+                    $fmt($transaction->night_differential_overtime ?? $transaction->timekeeping_summary?->night_differential_overtime ?? null),
                     $fmt($transaction->night_differential_overtime_amount ?? null),
-                    $transaction->tardiness ?? $transaction->timekeeping_summary?->tardiness ?? '',
+                    $fmt($transaction->tardiness ?? $transaction->timekeeping_summary?->tardiness ?? null),
                     $fmt($transaction->tardiness_amount ?? null),
-                    $transaction->undertime ?? $transaction->timekeeping_summary?->undertime ?? '',
+                    $fmt($transaction->undertime ?? $transaction->timekeeping_summary?->undertime ?? null),
                     $fmt($transaction->undertime_amount ?? null),
                     $fmt($transaction->taxable_adjustment ?? null),
                     $fmt($transaction->non_taxable_adjustment ?? null),
@@ -114,6 +130,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings
                 "Employee Number",
                 "Full Name",
                 "Branch",
+                "Branch Code",
                 "Card Type", 
                 "Cut Off",
                 "Daily Rate",

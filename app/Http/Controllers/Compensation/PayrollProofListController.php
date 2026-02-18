@@ -90,6 +90,8 @@ class PayrollProofListController extends Controller
                 $proofList = PayrollList::query()
                 ->with([
                     "employee",
+                    "employee.current_branch",
+                    "employee.home_branch",
                     "employee.latest_bank_details.bank_account_type",
                     "employee.schedule.schedule_type",
                     "employee.payroll_list"
@@ -137,6 +139,7 @@ class PayrollProofListController extends Controller
                     DB::raw("p.withholding_tax as withholding_tax"),
                     DB::raw("p.total_deductions as total_deductions"),
                     DB::raw("tb.name as timekeeping_branch_name"),
+                    DB::raw("COALESCE(tb.short_name, tb.branch_number) as timekeeping_branch_code"),
                     DB::raw("ts.regular_days as regular_days"),
                     DB::raw("ts.cancelled_off as cancelled_off_hours"),
                     DB::raw("ts.special_holiday as special_holiday"),
