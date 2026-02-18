@@ -4086,9 +4086,13 @@ class GenerateEntry implements ShouldQueue
                         'ent_chk'           => 'No',
                         'date_added'        => now(),
                     ]);
-                    
+                }
+
+                $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
+                foreach ($groupedEntries as $mainId => $groupedEntry) {
+                    $entry = $groupedEntry->first();
                     ApsysEntryMain::create([
-                        'ent_tran_no'       => $entry['apsys_entry_main_id'],
+                        'ent_tran_no'       => $mainId,
                         'ven_no'            => $entry['ven_no'],
                         'ven_name'          => $entry['ven_name'],
                         'ent_doc_date'      => now(),
@@ -4109,6 +4113,7 @@ class GenerateEntry implements ShouldQueue
                         'ent_due_date'      => now(),
                     ]);
                 }
+
                 $this->notifyJobFinished();
                 DB::commit();
             } catch (\Exception $e) {

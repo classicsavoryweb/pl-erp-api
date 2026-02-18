@@ -42,94 +42,94 @@ class ProcessFinalizeCutOff implements ShouldQueue
     public function handle(): void
     {
         try {
-        $payrolls = Payroll::where("cut_off", $this->cutOff->cut_off)
-        ->where("status", "initial")
-        ->get();
-
-        $incentives = Incentives::where("pay_date", $this->cutOff->pay_date)
-        ->where("status", "initial")
-        ->get();
-
-        $pay_date = $this->cutOff->pay_date;
-        $start_date = $this->cutOff->start_date;
-        $end_Date = $this->cutOff->end_date;
-
-        foreach($payrolls as $payroll) {
-            $payroll->update([
-                "status" => "final",
-            ]);
-
-            $deductions = json_decode($payroll->deductions, true);
-            $adjustments = Adjustment::where("employee_id", $payroll->employee_id)
-            ->where("status", "Adjusted")
-            ->where("is_timekeeping_locked", "0")
+            $payrolls = Payroll::where("cut_off", $this->cutOff->cut_off)
+            ->where("status", "initial")
             ->get();
 
-            foreach ($adjustments as $adjustment) {
-                $adjustment->update([
-                    "is_timekeeping_locked" => true
+            $incentives = Incentives::where("pay_date", $this->cutOff->pay_date)
+            ->where("status", "initial")
+            ->get();
+
+            $pay_date = $this->cutOff->pay_date;
+            $start_date = $this->cutOff->start_date;
+            $end_Date = $this->cutOff->end_date;
+
+            foreach($payrolls as $payroll) {
+                $payroll->update([
+                    "status" => "final",
+                ]);
+
+                $deductions = json_decode($payroll->deductions, true);
+                $adjustments = Adjustment::where("employee_id", $payroll->employee_id)
+                ->where("status", "Adjusted")
+                ->where("is_timekeeping_locked", "0")
+                ->get();
+
+                foreach ($adjustments as $adjustment) {
+                    $adjustment->update([
+                        "is_timekeeping_locked" => true
+                    ]);
+                }
+
+                foreach ($deductions as $deduction) {
+                    $employeeDeduction = EmployeeDeduction::find($deduction["deduction_id"]);
+
+                    if (!$employeeDeduction){
+                        continue;
+                    }
+
+                    if ($employeeDeduction->balance > 0) {
+                        $newBalance = $employeeDeduction->balance - $deduction["deducted_amount"];
+        
+                        $employeeDeduction->update([
+                            "balance" => $newBalance
+                        ]);
+        
+                        DeductionHistory::create([
+                            "employee_id" => $employeeDeduction->employee_id,
+                            "deduction_id" => $employeeDeduction->dedcution_id,
+                            "reference_doc" => $employeeDeduction->reference_doc,
+                            "amount" => $deduction["deducted_amount"],
+                            "pay_date" => $payroll->pay_date,
+                            "date_time" => now()
+                        ]);
+                    }
+                }
+            }
+
+            foreach ($incentives as $incentive) {
+                $incentive->update([
+                    "status" => "final"
                 ]);
             }
 
-            foreach ($deductions as $deduction) {
-                $employeeDeduction = EmployeeDeduction::find($deduction["deduction_id"]);
+            if ($this->cutOff->part == 2) {
+                ComputeEmployeeTardiness::dispatch($this->cutOff->end_date);
+            }
 
-                if (!$employeeDeduction){
-                    continue;
+            $cutoffValue = $this->cutOff->cut_off;
+
+            $payrollLists = PayrollList::where('is_hold', 1)->get();
+
+            foreach ($payrollLists as $payrollList) {
+
+                $holdedCutoffs = [];
+
+                if (!empty($payrollList->holded_cutoffs)) {
+                    $holdedCutoffs = json_decode($payrollList->holded_cutoffs, true) ?? [];
                 }
 
-                if ($employeeDeduction->balance > 0) 
-                    $newBalance = $employeeDeduction->balance - $deduction["deducted_amount"];
-    
-                    $employeeDeduction->update([
-                        "balance" => $newBalance
-                    ]);
-    
-                    DeductionHistory::create([
-                        "employee_id" => $employeeDeduction->employee_id,
-                        "deduction_id" => $employeeDeduction->dedcution_id,
-                        "reference_doc" => $employeeDeduction->reference_doc,
-                        "amount" => $deduction["deducted_amount"],
-                        "pay_date" => $payroll->pay_date,
-                        "date_time" => now()
-                    ]);
+                if (!in_array($cutoffValue, $holdedCutoffs)) {
+                    $holdedCutoffs[] = $cutoffValue;
                 }
-            }
-        }
 
-        foreach ($incentives as $incentive) {
-            $incentive->update([
-                "status" => "final"
-            ]);
-        }
-
-        if ($this->cutOff->part == 2) {
-            ComputeEmployeeTardiness::dispatch($this->cutOff->end_date);
-        }
-
-        $cutoffValue = $this->cutOff->cut_off;
-
-        $payrollLists = PayrollList::where('is_hold', 1)->get();
-
-        foreach ($payrollLists as $payrollList) {
-
-            $holdedCutoffs = [];
-
-            if (!empty($payrollList->holded_cutoffs)) {
-                $holdedCutoffs = json_decode($payrollList->holded_cutoffs, true) ?? [];
+                $payrollList->update([
+                    'holded_cutoffs' => json_encode($holdedCutoffs),
+                ]);
             }
 
-            if (!in_array($cutoffValue, $holdedCutoffs)) {
-                $holdedCutoffs[] = $cutoffValue;
-            }
-
-            $payrollList->update([
-                'holded_cutoffs' => json_encode($holdedCutoffs),
-            ]);
-        }
-
-        // GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
-        $this->notifyJobFinished();
+            GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
+            $this->notifyJobFinished();
         } catch (\Throwable $e) {
             $this->notifyJobFailed();
             throw $e;
