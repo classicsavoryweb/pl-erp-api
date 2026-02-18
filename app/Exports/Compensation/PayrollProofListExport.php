@@ -19,60 +19,78 @@ class PayrollProofListExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        return $this->proofList->map(function ($transaction) {
-            if ($this->type === "PAYROLL") {
-                $days = $transaction->employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
-                $regular_days = $transaction->timekeeping_summary->regular_days ?? "";
-                $list = $transaction->employee->payroll_list;
+        $rows = $this->proofList;
+        if ($this->type === "PAYROLL") {
+            $rows = $rows->unique("employee_id")->values();
+        }
 
-                if ($list->isMancom() || $list->isOnMaternityLeave()) {
+        return $rows->map(function ($transaction) {
+            if ($this->type === "PAYROLL") {
+                $employee = $transaction->employee;
+                $scheduleName = $employee?->schedule?->schedule_type?->name ?? '';
+                $days = $scheduleName === "Compressed Schedule" ? 11 : 13;
+
+                $regular_days = $transaction->regular_days ?? $transaction->timekeeping_summary?->regular_days ?? "";
+                $list = $employee?->payroll_list;
+
+                if ($list && ($list->isMancom() || $list->isOnMaternityLeave())) {
                     $regular_days = $days;
                 }
 
+                $branchName = $transaction->timekeeping_branch_name
+                    ?? $transaction->timekeeping_branch?->name
+                    ?? '';
+
+                $bankType = $employee?->latest_bank_details?->bank_account_type?->description ?? '';
+
+                $fmt = static function ($value) {
+                    return $value === null ? '' : round($value, 2);
+                };
+
                 return [
-                    $transaction->employee->employee_number,
-                    $transaction->employee->full_name,
-                    $transaction->timekeeping_branch->name ?? '',
-                    $transaction->employee->latest_bank_details->bank_account_type->description ?? '', 
-                    $transaction->cut_off,
-                    round($transaction->daily_rate,2) ?? '',
-                    round($transaction->hourly_rate,2) ?? '',
+                    $employee?->employee_number ?? '',
+                    $employee?->full_name ?? '',
+                    $branchName,
+                    $bankType,
+                    $transaction->cut_off ?? '',
+                    $fmt($transaction->daily_rate ?? null),
+                    $fmt($transaction->hourly_rate ?? null),
                     $transaction->tax_status ?? '',
                     $regular_days ?? '',
-                    round($transaction->salary,2) ?? '',
-                    $transaction->timekeeping_summary->cancelled_off_hours ?? '',
-                    round($transaction->cancelled_off,2) ?? '',
-                    $transaction->timekeeping_summary->special_holiday ?? '',
-                    round($transaction->special_holiday_amount,2) ?? '',
-                    $transaction->timekeeping_summary->legal_holiday ?? '',
-                    round($transaction->legal_holiday_amount,2) ?? '',
-                    $transaction->timekeeping_summary->regular_overtime ?? '',
-                    round($transaction->overtime_amount,2) ?? '',
-                    $transaction->timekeeping_summary->legal_holiday_overtime ?? '', 
-                    round($transaction->legal_holiday_overtime_amount,2) ?? '',
-                    $transaction->timekeeping_summary->special_holiday_overtime ?? '',
-                    round($transaction->special_holiday_overtime_amount,2) ?? '',
-                    $transaction->timekeeping_summary->night_differential ?? '',
-                    round($transaction->night_differential_amount,2) ?? '',
-                    $transaction->timekeeping_summary->night_differential_overtime ?? '',
-                    round($transaction->night_differential_overtime_amount,2) ?? '',
-                    $transaction->timekeeping_summary->tardiness ?? '',
-                    round($transaction->tardiness_amount,2) ?? '',
-                    $transaction->timekeeping_summary->undertime ?? '',
-                    round($transaction->undertime_amount,2) ?? '',
-                    round($transaction->taxable_adjustment,2) ?? '',
-                    round($transaction->non_taxable_adjustment,2) ?? '',
-                    round($transaction->gross_pay,2) ?? '',
-                    round($transaction->employer_sss,2) ?? '',
-                    round($transaction->employer_philhealth,2) ?? '',
-                    round($transaction->employer_pagibig,2) ?? '',
-                    round($transaction->employee_sss,2) ?? '',
-                    round($transaction->employee_philhealth,2) ?? '',
-                    round($transaction->employee_pagibig,2) ?? '',
-                    round($transaction->taxable_income,2) ?? '',
-                    round($transaction->withholding_tax,2) ?? '',
-                    round($transaction->total_deductions,2) ?? '',
-                    round($transaction->amount,2) ?? ''
+                    $fmt($transaction->salary ?? null),
+                    $transaction->cancelled_off_hours ?? $transaction->timekeeping_summary?->cancelled_off_hours ?? '',
+                    $fmt($transaction->cancelled_off ?? null),
+                    $transaction->special_holiday ?? $transaction->timekeeping_summary?->special_holiday ?? '',
+                    $fmt($transaction->special_holiday_amount ?? null),
+                    $transaction->legal_holiday ?? $transaction->timekeeping_summary?->legal_holiday ?? '',
+                    $fmt($transaction->legal_holiday_amount ?? null),
+                    $transaction->regular_overtime ?? $transaction->timekeeping_summary?->regular_overtime ?? '',
+                    $fmt($transaction->overtime_amount ?? null),
+                    $transaction->legal_holiday_overtime ?? $transaction->timekeeping_summary?->legal_holiday_overtime ?? '',
+                    $fmt($transaction->legal_holiday_overtime_amount ?? null),
+                    $transaction->special_holiday_overtime ?? $transaction->timekeeping_summary?->special_holiday_overtime ?? '',
+                    $fmt($transaction->special_holiday_overtime_amount ?? null),
+                    $transaction->night_differential ?? $transaction->timekeeping_summary?->night_differential ?? '',
+                    $fmt($transaction->night_differential_amount ?? null),
+                    $transaction->night_differential_overtime ?? $transaction->timekeeping_summary?->night_differential_overtime ?? '',
+                    $fmt($transaction->night_differential_overtime_amount ?? null),
+                    $transaction->tardiness ?? $transaction->timekeeping_summary?->tardiness ?? '',
+                    $fmt($transaction->tardiness_amount ?? null),
+                    $transaction->undertime ?? $transaction->timekeeping_summary?->undertime ?? '',
+                    $fmt($transaction->undertime_amount ?? null),
+                    $fmt($transaction->taxable_adjustment ?? null),
+                    $fmt($transaction->non_taxable_adjustment ?? null),
+                    $fmt($transaction->gross_pay ?? null),
+                    $fmt($transaction->employer_sss ?? null),
+                    $fmt($transaction->employer_philhealth ?? null),
+                    $fmt($transaction->employer_pagibig ?? null),
+                    $fmt($transaction->employee_sss ?? null),
+                    $fmt($transaction->employee_philhealth ?? null),
+                    $fmt($transaction->employee_pagibig ?? null),
+                    $fmt($transaction->taxable_income ?? null),
+                    $fmt($transaction->withholding_tax ?? null),
+                    $fmt($transaction->total_deductions ?? null),
+                    $fmt($transaction->amount ?? null)
                 ];
             } else {
                 return [
