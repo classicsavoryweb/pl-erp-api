@@ -256,6 +256,17 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ->where("amount", $transaction->amount)
                 ->first();
 
+                $deduction_count = EmployeeDeduction::where("employee_id", $employee->id)
+                    ->whereNotNull("deduction_ref")
+                    ->where("deduction_ref", "!=", '')
+                    ->count();
+
+                $base_reference = $employee->first_initial . $employee->middle_initial . $employee->last_initial . $employee->employee_number;
+                $deductionId = str_pad(8, 8, '0', STR_PAD_LEFT);
+                $deduction_reference = $base_reference . $deductionId . "|" . ($deduction_count + 1);
+
+                $user = User::find($userId);
+
                 if (!$isExisting) {
                     EmployeeDeduction::create([
                         "employee_id" => $employee->id,
@@ -275,9 +286,9 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         "approved_by" => $batch->generated_by,
                         "approved_date" => $batch->generated_at,
                         "approved_status" => "Yes",
-                        // "deduction_ref" => $deduction_reference,
-                        // "deduction_status" => $request->deduction_status,
-                        // "created_by" => Auth::user()->full_name,
+                        "end_loan_status" => "No",
+                        "deduction_ref" => $deduction_reference,
+                        "created_by" => $user ? $user->full_name : null,
                         "date_created" => $transaction->created_at->format("Y-m-d"),
                     ]);
                 }

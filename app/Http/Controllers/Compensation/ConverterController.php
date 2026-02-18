@@ -667,13 +667,17 @@ class ConverterController extends Controller
 
     public function sendTransactionEmail ($batchId) {
         try {
-            $batch = ConverterMain::find($batchId);
+            $batch = ConverterMain::with(['converter_details'])->find($batchId);
 
             if ($batch) {
                 SendTransactionToEmployeeJob::dispatch($batch, Auth::user()->id, [], false);
 
                 $batch->update([
                     "status" => "Sent",
+                ]);
+
+                $batch->converter_details()->update([
+                    "status" => "Sent"
                 ]);
 
                 return $this->sendResponse(["message" => "Transaction email sending"]);
