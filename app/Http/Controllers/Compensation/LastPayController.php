@@ -31,7 +31,10 @@ class LastPayController extends Controller
                 "deductions",
                 "deductions.deduction",
                 "employee.government_deductions",
-                "employee.government_deductions.deduction"
+                "employee.government_deductions.deduction",
+                "activities" => function ($query) {
+                    $query->with("causer")->orderBy("id", "desc");
+                }
             ]);
 
             if ($request->has(["column_type", "key_word"])) {
@@ -204,9 +207,14 @@ class LastPayController extends Controller
                 $yearSourceDate = $employee->separation_date;
                 $cutOff = $this->getCutOffForDate($yearSourceDate);
                 $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
-                $yearHolded = Carbon::parse($yearSourceDate)->year;
+                $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
+                $yearHolded = (int) $source->year;
+                $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
+                if ($source->greaterThanOrEqualTo($dec11)) {
+                    $yearHolded += 1;
+                }
+                $thirteenthMonthStartDate = ($yearHolded - 1) . "-12-10";
                 $dateHolded = Carbon::parse($employee->separation_date)->format("Y-m-d");
-                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
                 ->where("pay_date", ">=" ,$payroll->pay_date)
@@ -338,8 +346,13 @@ class LastPayController extends Controller
                 $yearSourceDate = $employee->separation_date;
                 $cutOff = $this->getCutOffForDate($yearSourceDate);
                 $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
-                $yearHolded = Carbon::parse($yearSourceDate)->year;
-                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
+                $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
+                $yearHolded = (int) $source->year;
+                $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
+                if ($source->greaterThanOrEqualTo($dec11)) {
+                    $yearHolded += 1;
+                }
+                $thirteenthMonthStartDate = ($yearHolded - 1) . "-12-10";
 
                 $payrolls = Payroll::where("employee_id", $employee->id)
                 ->where("pay_date", ">=" ,$payroll->pay_date)
@@ -359,7 +372,6 @@ class LastPayController extends Controller
                     }
                 }
 
-                $thirteenthMonthStartDate = $yearHolded - 1 . "-12-25";
                 $allPayrolls = Payroll::where("pay_date", ">", $thirteenthMonthStartDate)
                 ->where("employee_id", $employee->id)
                 ->where("status", "final")
@@ -409,7 +421,7 @@ class LastPayController extends Controller
                     "sales" => $salesIncentives,
                     "meal" => $meal_allowance,
                     "last_pay" => $lastPay,
-                    "status" => "Unposted"
+                    "status" => "Unposted",
                 ]);
 
                 foreach ($companyDeductions as $deduction) {
@@ -481,7 +493,6 @@ class LastPayController extends Controller
                 ->first();
 
             if ($deductionFromLastPay) {
-
                 $lastPay = LastPay::where('employee_id', $employee->id)->first();
 
                 $totalDeductions = $lastPay->total_deductions;
@@ -535,7 +546,6 @@ class LastPayController extends Controller
             $lastPayDeduction = LastPayDeduction::find($lastPayDeductionId);
 
             if ($lastPayDeduction) {
-
                 $lastPayDeduction->update([
                     "amount" => $request->amount
                 ]);
@@ -573,7 +583,18 @@ class LastPayController extends Controller
 
                 GenerateLastPayEntry::dispatch($lastPay, Auth::user()->id);
 
-                $lastPay->update(["status" => "Posted"]);
+                $lastPay->disableLogging();
+                $lastPay->update([
+                    "status" => "Posted",
+                ]);
+                $lastPay->enableLogging();
+
+                activity()
+                    ->performedOn($lastPay)
+                    ->causedBy(Auth::user())
+                    ->useLog("Last Pay")
+                    ->event("posted")
+                    ->log("posted");
 
                 DB::commit();
                 return $this->sendResponse(["message" => "Last pay posted successfully"]);
@@ -670,7 +691,7 @@ class LastPayController extends Controller
                     "total_deductions" => $totalDeductions,
                     "sales" => $salesIncentives,
                     "meal" => $meal_allowance,
-                    "last_pay" => $lastPayAmount,
+                    "last_pay" => $lastPayAmount
                 ]);
                 DB::commit();
                 return $this->sendResponse([

@@ -218,7 +218,7 @@ class PayrollService {
             $totalDeductions = 0;
 
             $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-            $taxable = $taxableIncome + $taxableAdustmentAmount;
+            $taxable = $taxableIncome;
 
             $existingPayroll = Payroll::where("employee_id", $employee->id)
             ->where("cut_off", $cutOff->cut_off)
@@ -231,7 +231,8 @@ class PayrollService {
                 ->where("employee_id", $employee->id)
                 ->where("balance", ">", 1)
                 ->where("date_created", "<=", $cutOff->pay_date)
-                ->where("end_loan_status", "!=", "Yes")
+                ->where("end_loan_status", '!=', 'Yes')
+                ->where("approved_status", "Yes")
                 ->get();
     
                 foreach($employeeDeductions as $deduction) {
@@ -279,7 +280,7 @@ class PayrollService {
                         $tardinessAmount;
 
                     $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-                    $taxable = $taxableIncome + $taxableAdustmentAmount;
+                    $taxable = $taxableIncome;
                 }
 
 
@@ -326,7 +327,8 @@ class PayrollService {
                     ->where("employee_id", $employee->id)
                     ->where("balance", ">", 1)
                     ->where("date_created", "<=", $cutOff->pay_date)
-                    ->where("end_loan_status", "!=", "Yes")
+                    ->where("end_loan_status", '!=', 'Yes')
+                    ->where("approved_status", "Yes")
                     ->get();
 
                 $companyLoans = $employeeDeductions->filter(fn($deduct) => !in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));

@@ -119,8 +119,19 @@ class EmployeeDeductionsController extends Controller
                 return Excel::download(new EmployeeDeductionExport($deductions), "deductions.xls");
             }
 
-            $deductions = $deductions->orderBy("start_date", "desc")
-            ->paginate($perPage);
+            $hasFilters = ($request->has("employee_id") && $request->employee_id)
+                || ($request->has(["column_type", "key_word"]) && $request->column_type && $request->key_word)
+                || ($request->has(["date_created_from", "date_created_to"]) && $request->date_created_from && $request->date_created_to);
+
+            if ($hasFilters) {
+                $deductions = $deductions
+                    ->orderByRaw("CAST(balance AS DECIMAL(15,2)) DESC")
+                    ->orderBy("start_date", "desc");
+            } else {
+                $deductions = $deductions->orderBy("start_date", "desc");
+            }
+
+            $deductions = $deductions->paginate($perPage);
 
             return $this->sendResponse($deductions);
         } catch(Exception $e) {

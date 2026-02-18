@@ -88,10 +88,11 @@ class FetchOvertimeInCSHub extends Command
 
                 $employee = Employee::where("biometric_number", $overtime["user"]["employee_biometric"])->first();
 
-                if ($employee) {
+                if ($employee && $employee->type == "Direct") {
                     $isExisting = Overtime::where("employee_id", $employee->id)
                     ->where("overtime_date",$overtime["overtime_date"])
                     ->first();
+
                     if ($isExisting && $isExisting->status === "Unpaid") {
                         $isExisting->delete();
 

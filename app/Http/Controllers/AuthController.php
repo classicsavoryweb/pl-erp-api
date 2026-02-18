@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Employee;
 use Exception;
 use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Storage;
+use Str;
 
 class AuthController extends Controller
 {
@@ -69,12 +71,37 @@ class AuthController extends Controller
                 "password" => "required",
             ]);
 
+            $employeeNumber = $request->employee_number;
+            $employeeNumberVariants = [$employeeNumber];
+            $trimmed = ltrim($employeeNumber, '0');
+            if ($trimmed === "") {
+                $trimmed = "0";
+            }
+            if ($trimmed !== $employeeNumber) {
+                $employeeNumberVariants[] = $trimmed;
+            }
+            if (Str::startsWith($employeeNumber, 'A')) {
+                $suffix = substr($employeeNumber, 1);
+                $trimmedSuffix = ltrim($suffix, '0');
+                if ($trimmedSuffix === "") {
+                    $trimmedSuffix = "0";
+                }
+                $employeeNumberVariants[] = "A" . $trimmedSuffix;
+            }
+            $employeeNumberVariants = array_values(array_unique($employeeNumberVariants));
+
+            $employee = Employee::with("current_position")
+                ->whereIn("employee_number", $employeeNumberVariants)
+                ->first();
+            $position = $employee?->current_position?->description;
+
             User::create([
                 "first_name" => $request->first_name,
                 "last_name" => $request->last_name,
                 "middle_name" => $request->middle_name,
                 "role_id" => $request->role_id,
                 "employee_number" => $request->employee_number,
+                "position" => $position,
                 "email"=> $request->email,
                 "password"=> bcrypt($request->password),
                 "status" => "active"
