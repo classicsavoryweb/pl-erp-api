@@ -143,16 +143,9 @@ class GenerateLastPayEntry implements ShouldQueue
         $branchName = $branch->name;
         $branchNumber = $branch->branch_number;
 
-        $lastPayDeduction = LastPayDeduction::where('last_pay_id', $lastPay->id)
+        $lastPayDeductions = LastPayDeduction::where('last_pay_id', $lastPay->id)
             ->where('employee_id', $lastPay->employee_id)
-            ->first();
-
-        $employeeDeduction = EmployeeDeduction::with('deduction')
-            ->where('employee_id', optional($lastPayDeduction)->employee_id)
-            ->where('reference_doc', optional($lastPayDeduction)->reference_doc)
-            ->where('balance', '>=', 1)
-            ->where('end_loan_status', '!=', 'Yes')
-            ->first();
+            ->get();
 
         $entries = [];
 
@@ -437,7 +430,13 @@ class GenerateLastPayEntry implements ShouldQueue
         }
 
         //deductions
-        if ($employeeDeduction) {
+        foreach ($lastPayDeductions as $lastPayDeduction) {
+            $employeeDeduction = EmployeeDeduction::with('deduction')
+            ->where('employee_id', optional($lastPayDeduction)->employee_id)
+            ->where('reference_doc', optional($lastPayDeduction)->reference_doc)
+            ->where('balance', '>=', 1)
+            ->where('end_loan_status', '!=', 'Yes')
+            ->first();
             if ($employeeDeduction->deduction->category === 'SSS') {
                 $entryId = $this->generateEntryId($counterEntry);
                 $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
@@ -597,9 +596,15 @@ class GenerateLastPayEntry implements ShouldQueue
                 'ent_chk'           => 'No',
                 'date_added'        => now(),
             ]);
+        }
+
+        $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
+
+        foreach ($groupedEntries as $mainId => $groupedEntry) {
+            $entry = $groupedEntry->first();
 
             ApsysEntryMain::create([
-                'ent_tran_no'       => $entry['apsys_entry_main_id'],
+                'ent_tran_no'       => $mainId,
                 'ven_no'            => $entry['ven_no'],
                 'ven_name'          => $entry['ven_name'],
                 'ent_doc_date'      => now(),
@@ -619,7 +624,7 @@ class GenerateLastPayEntry implements ShouldQueue
                 'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
                 'ent_due_date'      => now(),
             ]);
-        }
+        } 
 
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
