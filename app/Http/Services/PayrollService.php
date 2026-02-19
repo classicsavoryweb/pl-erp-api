@@ -298,17 +298,21 @@ class PayrollService {
                 // $netPayAmount = $taxable - $taxAmount;
             }
 
-            $tax = Tax::where("range_min", '<=' ,round($taxable, 2))
-            ->where("range_max", '>=',round($taxable, 2))
-            ->first();
+            if ($this->isNcrMinimum($employee)) {
+                $taxAmount = 0;
+            } else {
+                $tax = Tax::where("range_min", '<=' ,round($taxable, 2))
+                ->where("range_max", '>=',round($taxable, 2))
+                ->first();
 
-            $salaryBase = $tax->salary_base ?? 0;
-            $exemption = $tax->exemption ?? 0;
-            $percentage = $tax->percentage ?? 0;
+                $salaryBase = $tax->salary_base ?? 0;
+                $exemption = $tax->exemption ?? 0;
+                $percentage = $tax->percentage ?? 0;
 
-            $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                : 0;
+                $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                    ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                    : 0;
+            }
 
             $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
             $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount;
@@ -559,17 +563,21 @@ class PayrollService {
             if ($payrollRollListEmployee->isMancom()) {
                 $taxableIncome = round($basicSalary - $contributionTotal, 2);
 
-                $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
-                ->where("range_max", '>=',round($taxableIncome, 2))
-                ->first();
+                if ($this->isNcrMinimum($employee)) {
+                    $taxAmount = 0;
+                } else {
+                    $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
+                    ->where("range_max", '>=',round($taxableIncome, 2))
+                    ->first();
 
-                $salaryBase = $tax->salary_base ?? 0;
-                $exemption = $tax->exemption ?? 0;
-                $percentage = $tax->percentage ?? 0;
+                    $salaryBase = $tax->salary_base ?? 0;
+                    $exemption = $tax->exemption ?? 0;
+                    $percentage = $tax->percentage ?? 0;
 
-                $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                    ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                    : 0;
+                    $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                        ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                        : 0;
+                }
 
                 $netPayAmount = round($taxableIncome - $taxAmount, 2);
             }
@@ -935,6 +943,22 @@ class PayrollService {
 
             return $incentive;
         }
+    }
+
+    private function isNcrMinimum(Employee $employee): bool
+    {
+        $rateCategory = strtoupper((string) ($employee->current_position?->salary?->rate_category ?? ''));
+        if ($rateCategory !== 'MINIMUM') {
+            return false;
+        }
+
+        $branchLocation = $employee->current_branch?->location ?? $employee->home_branch?->location ?? '';
+        $branchLocation = strtoupper(trim((string) $branchLocation));
+        if ($branchLocation === '') {
+            return false;
+        }
+
+        return str_contains($branchLocation, 'NCR');
     }
 
     public function getCutOffForDate($date){
