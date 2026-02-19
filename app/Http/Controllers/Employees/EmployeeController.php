@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
+use Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Str;
@@ -162,7 +163,8 @@ class EmployeeController extends Controller
                 "dependents",
                 "contracts",
                 "schedule",
-                "schedule.schedule_type"
+                "schedule.schedule_type",
+                "separation"
             ])->where("employee_number", $employee_number)
             ->first();
 
@@ -171,10 +173,15 @@ class EmployeeController extends Controller
             $employee->incentive_leave = $employee->schedule->incentive_leave ?? "";
             $employee->flexible_schedule = $employee->schedule->flexible_schedule ?? "";
 
-            $storage = Storage::disk("hr_system_folder");
-            if ($employee->image) {
-                $profilePicture = $storage->get($employee->image);       
-                $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
+            try {
+                $storage = Storage::disk("hr_system_folder");
+
+                if ($employee->image && $storage->exists($employee->image)) {
+                    $profilePicture = $storage->get($employee->image);       
+                    $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
+                }
+            } catch (\Throwable $e) {
+                Log::info($e->getMessage());
             }
 
             return $this->sendResponse(["employee" => $employee]);
@@ -340,6 +347,25 @@ class EmployeeController extends Controller
         try {
 
             $employees = Employee::where("status", "active")->get();
+            return $this->sendResponse(["employees" => $employees]);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getBranchEmployees(Request $request) {
+        try {
+            $employees = Employee::where("status", "active")->get();
+            $otherEmployees = collect();
+            try {
+                $otherEmployees = OtherEmployee::where("status", "active")->get();
+            } catch (Exception $e) {
+                $otherEmployees = collect();
+            }
+
+            $employees = $employees->concat($otherEmployees)->values();
+
             return $this->sendResponse(["employees" => $employees]);
         } catch(Exception $e) {
 
