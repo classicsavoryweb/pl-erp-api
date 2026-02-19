@@ -12,6 +12,7 @@ use App\Models\EducationHistory;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
+use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\ScheduleDetail;
 use App\Models\ScheduleType;
@@ -56,10 +57,20 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            $employeeCount = Employee::latest()->first();
-            $company = env('COMPANY_NAME');
-            $employeeNumber = str_pad($employeeCount->id + 1, 7, '0', STR_PAD_LEFT);
-            $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
+            $inc = 1;
+            do {
+                $thisCompanyEmployeeCount = Employee::count();
+                $otherCompanyEmployeeCount = OtherEmployee::count();
+                $employeeCount = $thisCompanyEmployeeCount + $otherCompanyEmployeeCount;
+                $company = env('COMPANY_NAME');
+                $employeeNumber = str_pad($employeeCount + $inc, 7, '0', STR_PAD_LEFT);
+                $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
+                $inc++;
+            } while (
+                Employee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0 ||
+                OtherEmployee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0
+            );
+
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave"]);
             $position = Position::find($request->position_id);
