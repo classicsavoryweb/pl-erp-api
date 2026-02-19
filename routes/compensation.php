@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-contributions/{payrollId}", [PayrollController::class, "updatePayrollContributions"]);
     Route::middleware(["permission:perform_compensation_incentives"])->post("/update-payroll-incentive/{payrollId}", [PayrollController::class, "updatePayrollIncentive"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/edit-payroll-deduction-details/{payrollId}", [PayrollController::class, "editCompanyDeductions"]);
+    Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-timekeeping-branch/{payrollId}", [PayrollController::class, "updatePayrollTimekeepingBranch"]);
 
     //converter transactions
     Route::get("/get-all-converter-details", [ConverterController::class, "getAllConverterDetails"]);
