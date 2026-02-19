@@ -10,6 +10,7 @@ use App\Models\Tardiness;
 use App\Models\Tax;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
+use App\Models\Branch;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -95,6 +96,7 @@ class PayrollController extends Controller
                 "employee.current_branch",
                 "employee.current_position",
                 "employee.latest_bank_details",
+                "employee.payroll_list",
                 "timekeeping_branch",
                 "timekeeping_summary",
             ])->find($id);
@@ -167,6 +169,71 @@ class PayrollController extends Controller
             return $this->sendError(["message" => "Payroll not found"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function updatePayrollTimekeepingBranch(Request $request, $payrollId)
+    {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "timekeeping_branch_id" => "required"
+            ]);
+
+            $payroll = Payroll::with([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "employee.payroll_list",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($payrollId);
+
+            if (!$payroll) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Payroll not found"]);
+            }
+
+            if ($payroll->status === "final") {
+                DB::rollBack();
+                return $this->sendError(["message" => "Payroll is already finalized"]);
+            }
+
+            $payrollList = $payroll->employee?->payroll_list;
+            if (!$payrollList || !$payrollList->isOnMaternityLeave()) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Timekeeping branch can only be updated for maternity leave employees"]);
+            }
+
+            $branch = Branch::find($request->timekeeping_branch_id);
+            if (!$branch) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Branch not found"]);
+            }
+
+            $payroll->update([
+                "timekeeping_branch_id" => $branch->id
+            ]);
+
+            DB::commit();
+
+            $payroll = $payroll->refresh()->load([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "employee.payroll_list",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ]);
+
+            return $this->sendResponse([
+                "message" => "Timekeeping branch updated successfully",
+                "details" => $payroll
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
         }
     }
 
