@@ -33,9 +33,38 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
 
                 $regular_days = $transaction->regular_days ?? $transaction->timekeeping_summary?->regular_days ?? "";
                 $list = $employee?->payroll_list;
+                $salaryValue = $transaction->salary ?? null;
+                $grossPayValue = $transaction->gross_pay ?? null;
+                $taxableIncomeValue = $transaction->taxable_income ?? null;
+                $netPayValue = $transaction->amount ?? null;
 
                 if ($list && ($list->isMancom() || $list->isOnMaternityLeave())) {
                     $regular_days = $days;
+                }
+
+                if ($list && $list->isOnMaternityLeave()) {
+                    $dailyRate = $transaction->daily_rate ?? null;
+                    if (!$dailyRate || $dailyRate == 0) {
+                        $dailyRate = $employee?->dailySalary() ?? 0;
+                    }
+
+                    $fullSalary = $dailyRate ? round($dailyRate * $days, 2) : 0;
+                    if ($fullSalary == 0) {
+                        $fullSalary = $employee?->cutOffBaseSalary() ?? 0;
+                    }
+
+                    if ($salaryValue === null || $salaryValue == 0) {
+                        $salaryValue = $fullSalary;
+                    }
+                    if ($grossPayValue === null || $grossPayValue == 0) {
+                        $grossPayValue = $fullSalary;
+                    }
+                    if ($taxableIncomeValue === null || $taxableIncomeValue == 0) {
+                        $taxableIncomeValue = $fullSalary;
+                    }
+                    if ($netPayValue === null || $netPayValue == 0) {
+                        $netPayValue = $fullSalary;
+                    }
                 }
 
                 $branchName = $transaction->timekeeping_branch_name
@@ -73,7 +102,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                     $fmt($transaction->hourly_rate ?? null),
                     $transaction->tax_status ?? '',
                     $fmt($regular_days ?? null),
-                    $fmt($transaction->salary ?? null),
+                    $fmt($salaryValue),
                     $fmt($transaction->cancelled_off_hours ?? $transaction->timekeeping_summary?->cancelled_off_hours ?? null),
                     $fmt($transaction->cancelled_off ?? null),
                     $fmt($transaction->special_holiday ?? $transaction->timekeeping_summary?->special_holiday ?? null),
@@ -96,17 +125,17 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                     $fmt($transaction->undertime_amount ?? null),
                     $fmt($transaction->taxable_adjustment ?? null),
                     $fmt($transaction->non_taxable_adjustment ?? null),
-                    $fmt($transaction->gross_pay ?? null),
+                    $fmt($grossPayValue),
                     $fmt($transaction->employer_sss ?? null),
                     $fmt($transaction->employer_philhealth ?? null),
                     $fmt($transaction->employer_pagibig ?? null),
                     $fmt($transaction->employee_sss ?? null),
                     $fmt($transaction->employee_philhealth ?? null),
                     $fmt($transaction->employee_pagibig ?? null),
-                    $fmt($transaction->taxable_income ?? null),
+                    $fmt($taxableIncomeValue),
                     $fmt($transaction->withholding_tax ?? null),
                     $fmt($transaction->total_deductions ?? null),
-                    $fmt($transaction->amount ?? null)
+                    $fmt($netPayValue)
                 ];
             } else {
                 return [
