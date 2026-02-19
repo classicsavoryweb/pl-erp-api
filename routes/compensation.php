@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:export_all_compensation_deductions"])->get("/export-all-employee-deductions", [EmployeeDeductionsController::class, "exportAllEmployeeDeductions"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/create-employee-deduction", [EmployeeDeductionsController::class, "createEmployeeDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/edit-employee-deduction/{id}", [EmployeeDeductionsController::class, "editEmployeeDeduction"]);
+    Route::middleware(["permission:perform_compensation_deductions"])->post("/import-employee-deductions", [EmployeeDeductionsController::class, "importEmployeeDeductions"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/end-loan-transaction/{id}", [EmployeeDeductionsController::class, "endLoanTransaction"]);
     Route::get("/get-all-employee-atds", [ATDController::class, "getAllEmployeeDeductions"]);
     Route::get("/get-atd-allowed-deductions", [ATDController::class, "getAllowedATDDeductions"]);
