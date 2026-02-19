@@ -13,6 +13,7 @@ use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
 use App\Exports\Transactions\TimeKeepingExport;
 use App\Exports\Transactions\TimeKeepingSummaryExport;
+use App\Models\ScheduleTime;
 use App\Models\Branch;
 use App\Models\Cutoff;
 use Illuminate\Support\Facades\Artisan;
@@ -145,8 +146,78 @@ class TimeKeepingController extends Controller
             ->orderBy("date", "ASC");
 
             if ($request->has(["export"]) && $request->export) {
-                $timeKeepingQuery = $timeKeepingQuery->get();
-                return Excel::download(new TimeKeepingExport($timeKeepingQuery), "time_keeping.xls");
+                $scheduleQuery = ScheduleTime::with([
+                    "employee",
+                    "employee.current_position",
+                    "employee.schedule.schedule_type",
+                    "timekeeping.biotime_log.punches"
+                ])
+                ->where("schedule_time.branch_id", $request->branch_id)
+                ->whereBetween("schedule_time.date", [$start_time, $end_time]);
+
+                if ($request->has(["column_type", "key_word"])) {
+                    $column = $request->column_type;
+                    $keyword = $request->key_word;
+
+                    if (Str::contains($column, '.')) {
+                        [$relation, $relatedColumn] = explode('.', $column, 2);
+
+                        if ($relatedColumn == "full_name") {
+                            $scheduleQuery = $scheduleQuery->whereHas($relation, function ($query) use ($keyword) {
+                                $query->whereAny(
+                                    ["first_name", "last_name", "middle_name"],
+                                    'LIKE',
+                                    "%$keyword%"
+                                )->orWhere(function ($q) use ($keyword) {
+                                    $q->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                                })
+                                ->orWhere(function ($query) use ($keyword) {
+                                    $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                                });
+                            });
+                        } else {
+                            $relations = explode('.', $column);
+                            $relatedColumn = array_pop($relations);
+                            $relationPath = implode('.', $relations);
+
+                            $scheduleQuery = $scheduleQuery->whereHas($relationPath, function ($query) use ($relatedColumn, $keyword) {
+                                $query->where($relatedColumn, 'LIKE', "%$keyword%");
+                            });
+                        }
+                    } else {
+                        $timekeepingColumns = [
+                            "worked_hours",
+                            "final_worked_hours",
+                            "tardiness",
+                            "undertime",
+                            "regular_overtime",
+                            "night_diff_hours",
+                            "night_diff_overtime",
+                            "legal_holiday_hours",
+                            "legal_holiday_overtime",
+                            "special_holiday_hours",
+                            "special_holiday_overtime",
+                            "cancelled_off_hours",
+                            "approved_overtime",
+                            "travel_time"
+                        ];
+
+                        if (in_array($column, $timekeepingColumns, true)) {
+                            $scheduleQuery = $scheduleQuery->whereHas("timekeeping", function ($query) use ($column, $keyword) {
+                                $query->where($column, 'LIKE', "%$keyword%");
+                            });
+                        } else {
+                            $scheduleQuery = $scheduleQuery->where($column, 'LIKE', "%$keyword%");
+                        }
+                    }
+                }
+
+                $scheduleQuery = $scheduleQuery
+                    ->orderBy("employee_id", "ASC")
+                    ->orderBy("date", "ASC");
+
+                $scheduleRows = $scheduleQuery->get();
+                return Excel::download(new TimeKeepingExport($scheduleRows), "time_keeping.xls");
             }
 
             $timeKeeping = $timeKeepingQuery->paginate($perPage);

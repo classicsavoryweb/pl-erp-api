@@ -12,12 +12,14 @@ use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Deduction;
 use App\Models\Entry;
+use App\Imports\EmployeeDeductionsImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use DB;
 use Str;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
 
 class EmployeeDeductionsController extends Controller
 {
@@ -68,6 +70,90 @@ class EmployeeDeductionsController extends Controller
         }
 
         return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
+    }
+
+    private function getRowValue(array $row, array $keys)
+    {
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $row) && $row[$key] !== null && $row[$key] !== '') {
+                return $row[$key];
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeNumber($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        $clean = preg_replace('/[^0-9\.\-]/', '', (string) $value);
+        if ($clean === '' || $clean === '-' || $clean === '.') {
+            return null;
+        }
+
+        return (float) $clean;
+    }
+
+    private function parseImportDate($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = $this->excelDateToDateString($value);
+
+        try {
+            return Carbon::parse($normalized)->format('Y-m-d');
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    private function findEmployeeByNumber($value, int $padLength): ?Employee
+    {
+        $raw = trim((string) $value);
+        $raw = preg_replace('/\s+/', '', $raw);
+
+        if ($raw === '') {
+            return null;
+        }
+
+        $candidates = [$raw];
+
+        if (preg_match('/^0+/', $raw) === 0 && is_numeric($raw)) {
+            $numeric = (int) $raw;
+            $candidates[] = (string) $numeric;
+            if ($padLength > 0) {
+                $candidates[] = str_pad((string) $numeric, $padLength, '0', STR_PAD_LEFT);
+            }
+            $candidates[] = str_pad((string) $numeric, 7, '0', STR_PAD_LEFT);
+        }
+
+        $candidates = array_values(array_unique(array_filter($candidates)));
+
+        foreach ($candidates as $candidate) {
+            $employee = Employee::where("employee_number", $candidate)->first();
+            if ($employee) {
+                return $employee;
+            }
+        }
+
+        if (is_numeric($raw)) {
+            $numeric = (int) $raw;
+            $employee = Employee::whereRaw("CAST(employee_number AS UNSIGNED) = ?", [$numeric])->first();
+            if ($employee) {
+                return $employee;
+            }
+        }
+
+        return null;
     }
 
     public function getAllEmployeeDeductions(Request $request) {
@@ -144,6 +230,277 @@ class EmployeeDeductionsController extends Controller
         $request["export"] = true;
 
         return $this->getAllEmployeeDeductions($request);
+    }
+
+    public function importEmployeeDeductions(Request $request)
+    {
+        try {
+            $request->validate([
+                "deduction_file" => "required|file"
+            ]);
+
+            $import = new EmployeeDeductionsImport();
+            Excel::import($import, $request->file("deduction_file"));
+
+            $rows = $import->rows ?? collect();
+
+            if ($rows->isEmpty()) {
+                return $this->sendError(["message" => "No rows found in the uploaded file."]);
+            }
+
+            $deductions = Deduction::where("status", "active")->get();
+            $deductionsById = $deductions->keyBy(fn ($deduction) => (string) $deduction->id);
+            $deductionsByDescription = $deductions->keyBy(fn ($deduction) => strtolower(trim($deduction->description)));
+
+            $branchHO = Branch::where("short_name", "HO")->first();
+            $user = Auth::user();
+
+            $padLength = (int) Employee::max(DB::raw("LENGTH(employee_number)"));
+            if ($padLength <= 0) {
+                $padLength = 7;
+            }
+
+            $created = 0;
+            $updated = 0;
+            $skipped = 0;
+            $errors = [];
+
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 2;
+                $rowData = $row instanceof \Illuminate\Support\Collection ? $row->toArray() : (array) $row;
+                $hasValues = collect($rowData)->filter(fn ($value) => $value !== null && $value !== '')->isNotEmpty();
+
+                if (!$hasValues) {
+                    $skipped++;
+                    continue;
+                }
+
+                $employeeIdRaw = $this->getRowValue($rowData, [
+                    "employee_id",
+                    "employee_number",
+                    "emp_id",
+                    "emp_no"
+                ]);
+
+                if ($employeeIdRaw === null || $employeeIdRaw === '') {
+                    $errors[] = "Row {$rowNumber}: Employee ID is required.";
+                    continue;
+                }
+
+                $employee = $this->findEmployeeByNumber($employeeIdRaw, $padLength);
+
+                if (!$employee) {
+                    $errors[] = "Row {$rowNumber}: Employee not found (" . trim((string) $employeeIdRaw) . ").";
+                    continue;
+                }
+
+                $deductionIdRaw = $this->getRowValue($rowData, [
+                    "deduction_id",
+                    "deductionid"
+                ]);
+                $deductionDescRaw = $this->getRowValue($rowData, [
+                    "deduction_description",
+                    "deduction_desc",
+                    "deduction"
+                ]);
+
+                $deduction = null;
+
+                if ($deductionIdRaw !== null && $deductionIdRaw !== '') {
+                    $normalizedId = ltrim((string) $deductionIdRaw, '0');
+                    $normalizedId = $normalizedId === '' ? 0 : (int) $normalizedId;
+                    if ($normalizedId > 0) {
+                        $deduction = $deductionsById->get((string) $normalizedId);
+                    }
+                }
+
+                if (!$deduction && $deductionDescRaw) {
+                    $deduction = $deductionsByDescription->get(strtolower(trim((string) $deductionDescRaw)));
+                }
+
+                if (!$deduction) {
+                    $errors[] = "Row {$rowNumber}: Deduction not found.";
+                    continue;
+                }
+
+                $monthsRaw = $this->getRowValue($rowData, ["months", "month", "term"]);
+                $monthsValue = $this->normalizeNumber($monthsRaw);
+                if ($monthsValue === null) {
+                    $errors[] = "Row {$rowNumber}: Months is required.";
+                    continue;
+                }
+                $months = (int) $monthsValue;
+                if ($months < 0) {
+                    $months = 0;
+                }
+
+                $amountRaw = $this->getRowValue($rowData, ["amount", "loan_amount"]);
+                $amountValue = $this->normalizeNumber($amountRaw);
+                if ($amountValue === null) {
+                    $errors[] = "Row {$rowNumber}: Amount is required.";
+                    continue;
+                }
+                $amount = round($amountValue, 2);
+
+                $startDateRaw = $this->getRowValue($rowData, [
+                    "start_date_mm_dd_yyyy",
+                    "start_date",
+                    "start_date_mmddyyyy",
+                    "date_start"
+                ]);
+                $startDate = $this->parseImportDate($startDateRaw);
+
+                if (!$startDate) {
+                    $errors[] = "Row {$rowNumber}: Start Date is required or invalid.";
+                    continue;
+                }
+
+                $endDate = Carbon::parse($startDate)->addMonths($months)->format("Y-m-d");
+                $monthlyAmortization = $months > 0 ? round($amount / $months, 2) : $amount;
+                $balance = $amount;
+
+                $remarks = trim((string) ($this->getRowValue($rowData, ["remarks", "remark"]) ?? ""));
+                $transactionNumber = $this->getRowValue($rowData, ["crf_numr", "crf_num", "crf_number", "crf"]);
+                $transactionNumber = $transactionNumber !== null ? trim((string) $transactionNumber) : null;
+                if ($transactionNumber === '') {
+                    $transactionNumber = null;
+                }
+
+                $branchId = $employee->branch_id ?? $employee->home_branch_id;
+                if (!$branchId) {
+                    $errors[] = "Row {$rowNumber}: Employee has no branch assigned.";
+                    continue;
+                }
+
+                $first_initial = strtoupper(substr($employee->first_name, 0, 1));
+                $middle_initial = strtoupper(substr($employee->middle_name ?? '', 0, 1));
+                $last_initial = strtoupper(substr($employee->last_name, 0, 1));
+                $employee_number = $employee->employee_number;
+                $base_reference = $first_initial . $middle_initial . $last_initial . $employee_number;
+
+                $existingQuery = EmployeeDeduction::where("employee_id", $employee->id)
+                    ->where("deduction_id", $deduction->id);
+
+                if ($transactionNumber) {
+                    $existingQuery->where("transaction_number", $transactionNumber);
+                } else {
+                    $existingQuery->where("start_date", $startDate);
+                }
+
+                $existing = $existingQuery->first();
+                $deduction_reference = $existing?->deduction_ref;
+
+                if (!$deduction_reference) {
+                    $deduction_count = EmployeeDeduction::where("employee_id", $employee->id)
+                        ->whereNotNull("deduction_ref")
+                        ->where("deduction_ref", "!=", '')
+                        ->count();
+
+                    $deductionIdPadded = str_pad($deduction->id, 8, '0', STR_PAD_LEFT);
+                    $deduction_reference = $base_reference . $deductionIdPadded . "|" . ($deduction_count + 1);
+                }
+
+                $match = [
+                    "employee_id" => $employee->id,
+                    "deduction_id" => $deduction->id,
+                ];
+
+                if ($transactionNumber) {
+                    $match["transaction_number"] = $transactionNumber;
+                } else {
+                    $match["start_date"] = $startDate;
+                }
+
+                $employeeDeduction = EmployeeDeduction::updateOrCreate($match, [
+                    "months" => $months,
+                    "amount" => $amount,
+                    "source_of_fund" => $branchHO?->short_name,
+                    "start_date" => $startDate,
+                    "end_date" => $endDate,
+                    "monthly_amortization" => $monthlyAmortization,
+                    "balance" => $balance,
+                    "remarks" => $remarks,
+                    "debit_id" => $deduction->debit_id,
+                    "credit_id" => $deduction->credit_id,
+                    "branch_id" => $branchId,
+                    "block_payment" => "No",
+                    "approved_by" => $user?->proper_full_name,
+                    "approved_date" => now(),
+                    "approved_status" => "Yes",
+                    "deduction_ref" => $deduction_reference,
+                    "deduction_status" => "active",
+                    "created_by" => $user?->proper_full_name,
+                    "date_created" => date('Y-m-d'),
+                    "end_loan_status" => "No",
+                    "source" => "MANUAL",
+                    "transaction_number" => $transactionNumber,
+                ]);
+
+                if ($employeeDeduction->wasRecentlyCreated) {
+                    $created++;
+                } else {
+                    $updated++;
+                }
+
+                if ($employeeDeduction->wasRecentlyCreated && $employeeDeduction->amount > 0 && $branchHO) {
+                    $branchHOId = $branchHO->id;
+                    $branchHOName = $branchHO->name;
+                    $branchHONumber = $branchHO->branch_number;
+
+                    $entries = [];
+                    $entryId = $this->generateEntryId($counterEntry);
+                    $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+                    $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
+
+                    $entries = array_merge($entries, [
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => $employee->employee_number . '|' . 'Head Office',
+                            'branch_id'           => $branchHOId,
+                            'branch_number'       => $branchHONumber,
+                            'branch_name'         => $branchHOName,
+                            'ven_no'              => $employee->employee_number,
+                            'ven_name'            => $employee->full_name,
+                            'amount'              => $employeeDeduction->amount,
+                            'acc_no'              => $deduction->debit_id,
+                            'description_per_acc' => $deduction->description,
+                            'balance_type'        => 'Debit',
+                            'is_block_payment'    => 0,
+                        ],
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => $employee->employee_number . '|' . 'Head Office',
+                            'branch_id'           => $branchHOId,
+                            'branch_number'       => $branchHONumber,
+                            'branch_name'         => $branchHOName,
+                            'ven_no'              => $employee->employee_number,
+                            'ven_name'            => $employee->full_name,
+                            'amount'              => $employeeDeduction->amount,
+                            'acc_no'              => $deduction->credit_id,
+                            'description_per_acc' => $deduction->description,
+                            'balance_type'        => 'Credit',
+                            'is_block_payment'    => 0,
+                        ]
+                    ]);
+
+                    $this->createEntries($entries, $user);
+                }
+            }
+
+            return $this->sendResponse([
+                "message" => "Import completed. Created {$created}, updated {$updated}, skipped {$skipped}, errors " . count($errors) . ".",
+                "created" => $created,
+                "updated" => $updated,
+                "skipped" => $skipped,
+                "errors" => $errors,
+            ]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
     }
 
     public function getEmployeeDeduction(Request $request) {
