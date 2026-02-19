@@ -12,7 +12,6 @@ use App\Models\EducationHistory;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
-use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\ScheduleDetail;
 use App\Models\ScheduleType;
@@ -21,7 +20,6 @@ use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
-use Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Str;
@@ -58,20 +56,10 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            $inc = 1;
-            do {
-                $thisCompanyEmployeeCount = Employee::count();
-                $otherCompanyEmployeeCount = OtherEmployee::count();
-                $employeeCount = $thisCompanyEmployeeCount + $otherCompanyEmployeeCount;
-                $company = env('COMPANY_NAME');
-                $employeeNumber = str_pad($employeeCount + $inc, 7, '0', STR_PAD_LEFT);
-                $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
-                $inc++;
-            } while (
-                Employee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0 ||
-                OtherEmployee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0
-            );
-
+            $employeeCount = Employee::latest()->first();
+            $company = env('COMPANY_NAME');
+            $employeeNumber = str_pad($employeeCount->id + 1, 7, '0', STR_PAD_LEFT);
+            $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave"]);
             $position = Position::find($request->position_id);
@@ -163,8 +151,7 @@ class EmployeeController extends Controller
                 "dependents",
                 "contracts",
                 "schedule",
-                "schedule.schedule_type",
-                "separation"
+                "schedule.schedule_type"
             ])->where("employee_number", $employee_number)
             ->first();
 
@@ -173,15 +160,10 @@ class EmployeeController extends Controller
             $employee->incentive_leave = $employee->schedule->incentive_leave ?? "";
             $employee->flexible_schedule = $employee->schedule->flexible_schedule ?? "";
 
-            try {
-                $storage = Storage::disk("hr_system_folder");
-
-                if ($employee->image && $storage->exists($employee->image)) {
-                    $profilePicture = $storage->get($employee->image);       
-                    $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
-                }
-            } catch (\Throwable $e) {
-                Log::info($e->getMessage());
+            $storage = Storage::disk("hr_system_folder");
+            if ($employee->image) {
+                $profilePicture = $storage->get($employee->image);       
+                $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
             }
 
             return $this->sendResponse(["employee" => $employee]);
@@ -274,10 +256,6 @@ class EmployeeController extends Controller
                 $employees = $employees->where("type", $request->type);
             }
 
-            if ($request->has(["agency_id"])) {
-                $employees = $employees->where("agency_id", $request->agency_id);
-            }
-
             if ($request->has(["date_from", "date_to"])) {
                 $employees = $employees->whereBetween('date_hired', [$request->date_from, $request->date_to]);
             }
@@ -347,25 +325,6 @@ class EmployeeController extends Controller
         try {
 
             $employees = Employee::where("status", "active")->get();
-            return $this->sendResponse(["employees" => $employees]);
-        } catch(Exception $e) {
-
-            return $this->sendError(["message" => $e->getMessage() ]);
-        }
-    }
-
-    public function getBranchEmployees(Request $request) {
-        try {
-            $employees = Employee::where("status", "active")->get();
-            $otherEmployees = collect();
-            try {
-                $otherEmployees = OtherEmployee::where("status", "active")->get();
-            } catch (Exception $e) {
-                $otherEmployees = collect();
-            }
-
-            $employees = $employees->concat($otherEmployees)->values();
-
             return $this->sendResponse(["employees" => $employees]);
         } catch(Exception $e) {
 

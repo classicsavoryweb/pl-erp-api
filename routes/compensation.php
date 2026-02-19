@@ -12,6 +12,7 @@ use App\Http\Controllers\Compensation\PayrollController;
 use App\Http\Controllers\Compensation\PayrollListController;
 use App\Http\Controllers\Compensation\PayrollProofListController;
 use App\Http\Controllers\Compensation\PayslipController;
+use App\Http\Controllers\Compensation\PayrollListBankDetailsController;
 use Illuminate\Support\Facades\Route;
 
 //compensation routes
@@ -49,6 +50,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //payroll
     Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);
     Route::get("/get-payroll/{id}", [PayrollController::class, "getPayrollDetails"]);
+    Route::get('/payroll/export-bank-details', [PayrollListBankDetailsController::class, 'exportBankDetails']);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-deduction/{payrollId}", [PayrollController::class, "updateCompanyDeductions"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-details/{payrollId}", [PayrollController::class, "updatePayrollDetails"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-contributions/{payrollId}", [PayrollController::class, "updatePayrollContributions"]);
