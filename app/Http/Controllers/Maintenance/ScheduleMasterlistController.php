@@ -88,6 +88,9 @@ class ScheduleMasterlistController extends Controller
                 "days" => $request->days,
                 "required" => $request->required,
                 "status" => $request->status,
+                "is_flexible" => $request->is_flexible == 1 ? 1 : 0,
+                "compute_break_time" => $request->compute_break_time == 1 ? 1 : 0,
+                "compute_travel_time" => $request->compute_travel_time == 1 ? 1 : 0
             ]);
 
             $this->csHubSyncService->sync([
@@ -138,7 +141,11 @@ class ScheduleMasterlistController extends Controller
                 "days" => $request->days,
                 "required" => $request->required,
                 "status" => $request->status,
+                "is_flexible" => $request->is_flexible == 1 ? 1 : 0,
+                "compute_break_time" => $request->compute_break_time == 1 ? 1 : 0,
+                "compute_travel_time" => $request->compute_travel_time == 1 ? 1 : 0
             ]);
+
             $record->refresh();
 
             $syncPayload = [
