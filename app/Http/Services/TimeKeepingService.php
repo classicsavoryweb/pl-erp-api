@@ -569,28 +569,28 @@ class TimeKeepingService
                     "status" => $remainingHours >= 1 ? "Partialy Paid" : "Paid"
                 ]);
 
-                if (!empty($overtimeApplied->cshub_overtime_id)) {
-                    $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtimeApplied->cshub_overtime_id;
-                    $user = env('CS_HUB_ADMIN_EMAIL');
-                    $password = env('CS_HUB_ADMIN_PASSWORD');
+                // if (!empty($overtimeApplied->cshub_overtime_id)) {
+                //     $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtimeApplied->cshub_overtime_id;
+                //     $user = env('CS_HUB_ADMIN_EMAIL');
+                //     $password = env('CS_HUB_ADMIN_PASSWORD');
 
-                    try {
-                        Http::withBasicAuth($user, $password)
-                        ->withHeaders([
-                            "Accept" => "application/json",
-                            "Content-Type" => "application/json"
-                        ])->timeout(60)
-                        ->retry(50, 1000, function ($exception, $attempt) {
-                            return str_contains($exception->getMessage(), 'cURL error 60');
-                        })
-                        ->post($overtimeLink,[
-                            "status_payroll" => $payrollStatus,
-                            "status" => "approved",
-                        ]);
-                    } catch (Exception $e) {
-                        // Log::info("CSHub overtime api error encountered: ".$e->getMessage());
-                    }
-                }
+                //     try {
+                //         Http::withBasicAuth($user, $password)
+                //         ->withHeaders([
+                //             "Accept" => "application/json",
+                //             "Content-Type" => "application/json"
+                //         ])->timeout(60)
+                //         ->retry(50, 1000, function ($exception, $attempt) {
+                //             return str_contains($exception->getMessage(), 'cURL error 60');
+                //         })
+                //         ->post($overtimeLink,[
+                //             "status_payroll" => $payrollStatus,
+                //             "status" => "approved",
+                //         ]);
+                //     } catch (Exception $e) {
+                //         // Log::info("CSHub overtime api error encountered: ".$e->getMessage());
+                //     }
+                // }
             }
 
             $isExisting = $model->where("employee_id", $employee->id)
@@ -835,7 +835,7 @@ class TimeKeepingService
             $undertimeDeduction = $timeKeeping->undertime * $paymentPerMinute;
             $legal_holiday = $timeKeeping->legal_holiday_hours * $paymentPerHour;
             $special_holiday = $timeKeeping->special_holiday_hours * ($paymentPerHour * .3);
-            $night_differential = $timeKeeping->night_diff_hours * ($paymentPerHour * .1);
+            $night_differential = $timeKeeping->night_diff_hours >= 1 ? $timeKeeping->night_diff_hours * ($paymentPerHour * .1) : 0;
 
             if ($employee->current_branch->type === "Branch") {
                 $timeKeeping->regular_overtime = floor($timeKeeping->regular_overtime);
@@ -854,7 +854,7 @@ class TimeKeepingService
             
             if ($timeKeeping->night_diff_overtime > 0) {
                 if ($timeKeeping->night_diff_overtime < $timeKeeping->approved_overtime) {
-                    $night_differential_overtime = $timeKeeping->night_diff_overtime * ($paymentPerHour * .125);
+                    $night_differential_overtime = $timeKeeping->night_diff_overtime > 1 ? $timeKeeping->night_diff_overtime * ($paymentPerHour * .125) : 0;
                 } else {
                     $night_differential_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * .125);
                 }
