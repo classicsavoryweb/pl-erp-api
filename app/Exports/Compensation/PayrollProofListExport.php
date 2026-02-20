@@ -33,24 +33,46 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
 
                 $regular_days = $transaction->regular_days ?? $transaction->timekeeping_summary?->regular_days ?? "";
                 $list = $employee?->payroll_list;
+                $hasPayroll = !empty($transaction->payroll_id);
+                $salaryAmount = (float) ($transaction->salary_amount ?? $list?->salary_amount ?? 0);
                 $salaryValue = $transaction->salary ?? null;
                 $grossPayValue = $transaction->gross_pay ?? null;
                 $taxableIncomeValue = $transaction->taxable_income ?? null;
                 $netPayValue = $transaction->amount ?? null;
 
+                if ($hasPayroll && $salaryAmount > 0) {
+                    if ($salaryValue === null || $salaryValue == 0) {
+                        $salaryValue = $salaryAmount;
+                    }
+                    if ($grossPayValue === null || $grossPayValue == 0) {
+                        $grossPayValue = $salaryAmount;
+                    }
+                    if ($taxableIncomeValue === null || $taxableIncomeValue == 0) {
+                        $taxableIncomeValue = $salaryAmount;
+                    }
+                    if ($netPayValue === null || $netPayValue == 0) {
+                        $netPayValue = $salaryAmount;
+                    }
+                }
+
                 if ($list && ($list->isMancom() || $list->isOnMaternityLeave())) {
                     $regular_days = $days;
                 }
 
-                if ($list && $list->isOnMaternityLeave()) {
+                if ($list && $list->isOnMaternityLeave() && $hasPayroll) {
                     $dailyRate = $transaction->daily_rate ?? null;
                     if (!$dailyRate || $dailyRate == 0) {
-                        $dailyRate = $employee?->dailySalary() ?? 0;
+                        if ($salaryAmount > 0) {
+                            $divisor = $scheduleName === "Compressed Schedule" ? 22 : 26;
+                            $dailyRate = round($salaryAmount / $divisor, 2);
+                        } else {
+                            $dailyRate = $employee?->dailySalary() ?? 0;
+                        }
                     }
 
                     $fullSalary = $dailyRate ? round($dailyRate * $days, 2) : 0;
                     if ($fullSalary == 0) {
-                        $fullSalary = $employee?->cutOffBaseSalary() ?? 0;
+                        $fullSalary = $salaryAmount > 0 ? round($salaryAmount / 2, 2) : ($employee?->cutOffBaseSalary() ?? 0);
                     }
 
                     if ($salaryValue === null || $salaryValue == 0) {

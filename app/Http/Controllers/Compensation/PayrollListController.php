@@ -130,6 +130,7 @@ class PayrollListController extends Controller
 
             PayrollList::create([
                 "employee_id" => $request->employee_id,
+                "salary_amount" => round((float) $employee?->monthlySalary(), 2),
                 "is_included" => $request->is_included,
                 "is_statutory_only" => $request->is_statutory_only,
                 "is_mancom" => $request->is_mancom,
@@ -156,7 +157,8 @@ class PayrollListController extends Controller
                 "is_mancom" => "required",
                 "is_on_maternity_leave" => "required",
                 "is_bank" => "required",
-                "is_hold" => "required"
+                "is_hold" => "required",
+                "salary_amount" => "nullable|numeric|min:0"
             ]);
 
             PayrollList::where("id", $id)->update([
@@ -167,7 +169,8 @@ class PayrollListController extends Controller
                 "is_bank" => $request->is_bank,
                 "is_hold" => $request->is_hold,
                 "holded_at" => $request->is_hold ? now() : null,
-                "remarks" => $request->remarks
+                "remarks" => $request->remarks,
+                "salary_amount" => $request->salary_amount ?? 0
             ]);
 
             return $this->sendResponse(["message" => "Payroll updated succesfully"]);

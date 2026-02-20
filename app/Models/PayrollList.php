@@ -13,6 +13,7 @@ class PayrollList extends Model
 
     protected $fillable = [
         "employee_id",
+        "salary_amount",
         "is_included",
         "is_statutory_only",
         "is_mancom",
