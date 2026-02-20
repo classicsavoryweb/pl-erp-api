@@ -77,7 +77,7 @@ class TimeKeepingController extends Controller
     public function getAllTimeKeeping(Request $request) {
         try {
             $request->validate([
-                "branch_id" => "required",
+                "branch_id" => "nullable",
                 "cutoff" => "required",
                 "year" => "required",
             ]);
@@ -104,8 +104,11 @@ class TimeKeepingController extends Controller
                 "schedule",
                 "biotime_log.punches"
             ])
-            ->where("branch_id", $request->branch_id)
             ->whereBetween("date", [$start_time, $end_time]);
+
+            if (!empty($request->branch_id)) {
+                $timeKeepingQuery = $timeKeepingQuery->where("branch_id", $request->branch_id);
+            }
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
@@ -237,7 +240,7 @@ class TimeKeepingController extends Controller
     public function getAllTimeKeepingSummary(Request $request) {
         try {
             $request->validate([
-                "branch_id" => "required",
+                "branch_id" => "nullable",
                 "cutoff" => "required",
                 "year" => "required",
             ]);
@@ -258,11 +261,14 @@ class TimeKeepingController extends Controller
             $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
             $timeKeepingSummaryQuery = TimeKeepingSummary::with(["employee", "lates", "branch" ,"employee.current_position", "employee.current_branch", "employee.timekeeping"])
-                ->where("timekeeping_summary.branch_id", $request->branch_id)
                 ->where("cut_off", $start_time.'-'.$end_time)
                 ->join("employees", "timekeeping_summary.employee_id", "=", "employees.id")
                 ->orderBy("employees.last_name", "ASC")
                 ->select("timekeeping_summary.*");
+
+            if (!empty($request->branch_id)) {
+                $timeKeepingSummaryQuery = $timeKeepingSummaryQuery->where("timekeeping_summary.branch_id", $request->branch_id);
+            }
             
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
