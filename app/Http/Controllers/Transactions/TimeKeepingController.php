@@ -104,8 +104,11 @@ class TimeKeepingController extends Controller
                 "schedule",
                 "biotime_log.punches"
             ])
-            ->where("branch_id", $request->branch_id)
             ->whereBetween("date", [$start_time, $end_time]);
+
+            if (!empty($request->branch_id)) {
+                $timeKeepingQuery = $timeKeepingQuery->where("branch_id", $request->branch_id);
+            }
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
