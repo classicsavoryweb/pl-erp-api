@@ -172,6 +172,8 @@ class EmployeeController extends Controller
             $employee->schedule_type = $employee->schedule->schedule_type->name ?? "";
             $employee->incentive_leave = $employee->schedule->incentive_leave ?? "";
             $employee->flexible_schedule = $employee->schedule->flexible_schedule ?? "";
+            $employee->basic_salary = $employee->monthlySalary();
+            $employee->daily_rate = $employee->schedule ? $employee->dailySalary() : 0;
 
             try {
                 $storage = Storage::disk("hr_system_folder");
