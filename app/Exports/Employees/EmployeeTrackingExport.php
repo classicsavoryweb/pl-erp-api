@@ -70,9 +70,12 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
 
             foreach ($this->columns as $column) {
                 $value = $this->getNestedProperty($employee, $column);
-            if (in_array($column, ['date_hired', 'regularization_date', 'separation_date']) && $value) {
-                $value = \Carbon\Carbon::parse($value)->format('m/d/Y');
-            }
+                if ($column === 'separation_reason') {
+                    $value = $employee->separation?->description ?? $value;
+                }
+                if (in_array($column, ['date_hired', 'regularization_date', 'separation_date']) && $value) {
+                    $value = \Carbon\Carbon::parse($value)->format('m/d/Y');
+                }
                 $value = $this->appendOicToPosition($employee, $column, $value);
                 $row[] = $value;
             }

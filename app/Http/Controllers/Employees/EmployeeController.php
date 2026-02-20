@@ -298,6 +298,7 @@ class EmployeeController extends Controller
                 "home_branch",
                 "station",
                 "employee_status",
+                "separation",
                 "schedule",
                 "schedule.schedule_type"
             ])
