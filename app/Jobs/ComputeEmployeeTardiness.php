@@ -25,7 +25,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
 
     public function __construct($endDate)
     {
-        $this->$endDate = $endDate;
+        $this->endDate = $endDate;
     }
 
     public function handle(): void
