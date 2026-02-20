@@ -39,8 +39,18 @@ class PayrollService {
             DB::beginTransaction();
 
             $employee = $timeKeepingSummary->employee;
+            $employee->loadMissing(["payroll_list", "schedule.schedule_type"]);
+            $scheduleName = $employee->schedule?->schedule_type?->name ?? "Normal Schedule";
+            $payrollList = $employee->payroll_list;
+            $salaryAmount = (float) ($payrollList?->salary_amount ?? 0);
+            $useSalaryAmount = $salaryAmount > 0;
+
             $daily_rate = round($employee->dailySalary(), 2);
-            $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule" 
+            if ($useSalaryAmount) {
+                $divisor = $scheduleName === "Compressed Schedule" ? 22 : 26;
+                $daily_rate = round($salaryAmount / $divisor, 2);
+            }
+            $hourly_rate = $scheduleName === "Compressed Schedule" 
                 ? round($daily_rate / 9.5, 2)
                 : round($daily_rate / 8, 2);
             $minute_rate = $hourly_rate / 60;
@@ -48,7 +58,10 @@ class PayrollService {
             $cutOff = Cutoff::where("cut_off", $timeKeepingSummary->cut_off)->first();
             $paymentType = $employee->current_position->timekeeping_type;
             $cutOffBaseSalary = $employee->cutOffBaseSalary();
-            $baseRegularDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
+            if ($useSalaryAmount) {
+                $cutOffBaseSalary = round($salaryAmount / 2, 2);
+            }
+            $baseRegularDays = $scheduleName === "Compressed Schedule" ? 11 : 13;
             $salary = 0;
             $tardinessAmount = 0;
             $undertimeAmount = 0;
@@ -485,15 +498,28 @@ class PayrollService {
         try {
             DB::beginTransaction();
 
+            $employee->loadMissing(["payroll_list", "schedule.schedule_type"]);
+            $scheduleName = $employee->schedule?->schedule_type?->name ?? "Normal Schedule";
+            $payrollList = $employee->payroll_list;
+            $salaryAmount = (float) ($payrollList?->salary_amount ?? 0);
+            $useSalaryAmount = $salaryAmount > 0;
+
             $daily_rate = round($employee->dailySalary(), 2);
-            $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule" 
+            if ($useSalaryAmount) {
+                $divisor = $scheduleName === "Compressed Schedule" ? 22 : 26;
+                $daily_rate = round($salaryAmount / $divisor, 2);
+            }
+            $hourly_rate = $scheduleName === "Compressed Schedule" 
                 ? round($daily_rate / 9.5, 2)
                 : round($daily_rate / 8, 2);
             $minute_rate = $hourly_rate / 60;
 
             $paymentType = $employee->current_position->timekeeping_type;
             $cutOffBaseSalary = $employee->cutOffBaseSalary();
-            $baseRegularDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
+            if ($useSalaryAmount) {
+                $cutOffBaseSalary = round($salaryAmount / 2, 2);
+            }
+            $baseRegularDays = $scheduleName === "Compressed Schedule" ? 11 : 13;
             $salary = 0;
             $tardinessAmount = 0;
             $undertimeAmount = 0;
@@ -526,7 +552,7 @@ class PayrollService {
  
             $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
 
-            if ($payrollRollListEmployee->isMancom()) {
+            if ($payrollRollListEmployee->isMancom() && !$useSalaryAmount) {
                 $cutOffBaseSalary = $employee->mancomCutOffBaseSalary();
             }
 
