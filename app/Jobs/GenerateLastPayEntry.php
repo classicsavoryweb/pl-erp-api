@@ -438,7 +438,11 @@ class GenerateLastPayEntry implements ShouldQueue
             ->where('end_loan_status', '!=', 'Yes')
             ->first();
 
-            if ($employeeDeduction?->deduction && $employeeDeduction->deduction?->category === 'SSS') {
+            if (!$employeeDeduction) {
+                continue;
+            }
+
+            if ($employeeDeduction->deduction->category === 'SSS') {
                 $entryId = $this->generateEntryId($counterEntry);
                 $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
                 $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
