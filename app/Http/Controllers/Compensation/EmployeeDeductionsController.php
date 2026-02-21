@@ -612,7 +612,7 @@ class EmployeeDeductionsController extends Controller
                         'acc_no'              => $debitId,
                         'description_per_acc' => $employeeDeduction->deduction->description,
                         'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
+                        'is_block_payment'    => $deductionEntry->is_block_payment,
                     ],
                     [
                         'entry_id'            => $entryId,
@@ -628,7 +628,7 @@ class EmployeeDeductionsController extends Controller
                         'acc_no'              => $creditId,
                         'description_per_acc' => $employeeDeduction->deduction->description,
                         'balance_type'        => 'Credit',
-                        'is_block_payment'    => 0,
+                        'is_block_payment'    => $deductionEntry->is_block_payment,
                     ]
                 ]);
             }
@@ -809,28 +809,28 @@ class EmployeeDeductionsController extends Controller
                 'ent_chk'           => 'No',
                 'date_added'        => now(),
             ]);
-
-            ApsysEntryMain::create([
-                'ent_tran_no'       => $entry['apsys_entry_main_id'],
-                'ven_no'            => $entry['ven_no'],
-                'ven_name'          => $entry['ven_name'],
-                'ent_doc_date'      => now(),
-                'branch_id'         => $entry['branch_number'],
-                'branch_name'       => $entry['branch_name'],
-                'ent_header'        => '',
-                'ent_trans_amt'     => $entry['amount'],
-                'ent_post_date'     => now(),
-                'ent_module_type'   => 'Single',
-                'ent_status'        => 'Unapplied',
-                'check_no'          => null,
-                'ent_crf_no'        => '',
-                'ent_doc_no'        => $entry['document_no'],
-                'ent_module'        => 'Payroll',
-                'ent_app_amt'       => $entry['amount'],
-                'ent_unapp_amt'     => $entry['amount'],
-                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
-                'ent_due_date'      => now(),
-            ]);
         }
+
+        ApsysEntryMain::create([
+            'ent_tran_no'       => $entry[0]['apsys_entry_main_id'],
+            'ven_no'            => $entry[0]['ven_no'],
+            'ven_name'          => $entry[0]['ven_name'],
+            'ent_doc_date'      => now(),
+            'branch_id'         => $entry[0]['branch_number'],
+            'branch_name'       => $entry[0]['branch_name'],
+            'ent_header'        => '',
+            'ent_trans_amt'     => $entry[0]['amount'],
+            'ent_post_date'     => now(),
+            'ent_module_type'   => 'Single',
+            'ent_status'        => 'Unapplied',
+            'check_no'          => null,
+            'ent_crf_no'        => '',
+            'ent_doc_no'        => $entry[0]['document_no'],
+            'ent_module'        => 'Payroll',
+            'ent_app_amt'       => $entry[0]['amount'],
+            'ent_unapp_amt'     => $entry[0]['amount'],
+            'ent_block_payment' => ($entry[0]['is_block_payment'] == 1) ? 'Yes' : 'No',
+            'ent_due_date'      => now(),
+        ]);
     }
 }
