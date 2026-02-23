@@ -318,6 +318,12 @@ class LastPayController extends Controller
             ->first();
 
             if ($employee) {
+                $existingLastPay = LastPay::where("employee_id", $employee->id)->exists();
+                if ($existingLastPay) {
+                    DB::rollBack();
+                    return $this->sendError(["message" => "Last pay record already exists"]);
+                }
+
                 $companyDeductions = EmployeeDeduction::with("deduction")
                 ->where("employee_id", $employee->id)
                 ->where("balance", ">=", 1)
