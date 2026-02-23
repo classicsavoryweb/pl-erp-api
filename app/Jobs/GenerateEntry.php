@@ -4088,7 +4088,7 @@ class GenerateEntry implements ShouldQueue
                     ]);
                 }
 
-                $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
+                $groupedEntries = collect($entries)->groupBy('apsys_entry_id');
                 foreach ($groupedEntries as $mainId => $groupedEntry) {
                     $entry = $groupedEntry->first();
                     ApsysEntryMain::create([
