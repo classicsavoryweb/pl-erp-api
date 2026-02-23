@@ -35,6 +35,7 @@ class GenerateEntry implements ShouldQueue
     protected $start_date;
     protected $end_date;
     protected $user;
+    protected $apsysAvailable = true;
     private $counterEntry;
     private $counterApsysEntry;
     private $counterApsysEntryMain;
@@ -68,6 +69,10 @@ class GenerateEntry implements ShouldQueue
 
     private function generateApsysEntryId(&$counterApsysEntry)
     {
+        if (!$this->apsysAvailable) {
+            return null;
+        }
+
         if ($counterApsysEntry === null) {
             $lastEntry = ApsysEntry::orderBy('ent_tran_no', 'desc')->first();
 
@@ -84,6 +89,10 @@ class GenerateEntry implements ShouldQueue
 
     private function generateApsysEntryMainId(&$counterApsysEntryMain)
     {
+        if (!$this->apsysAvailable) {
+            return null;
+        }
+
         if ($counterApsysEntryMain === null) {
             $lastEntry = ApsysEntryMain::orderBy('ent_tran_no', 'desc')->first();
 
@@ -98,8 +107,79 @@ class GenerateEntry implements ShouldQueue
         return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
     }
 
+    private function isApsysAvailable(): bool
+    {
+        try {
+            DB::connection('apsys')->getPdo();
+            return true;
+        } catch (\Throwable $e) {
+            Log::warning('APSYS connection unavailable; generating entries without APSYS.', [
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    private function getAmortizationDebitAccNo($deduction): ?string
+    {
+        if ($this->apsysAvailable) {
+            return $deduction->amortization_debit->acc_no ?? null;
+        }
+
+        return $deduction->amortization_debit_id ?? null;
+    }
+
+    private function getAmortizationCreditAccNo($deduction): ?string
+    {
+        if ($this->apsysAvailable) {
+            return $deduction->amortization_credit->acc_no ?? null;
+        }
+
+        return $deduction->amortization_credit_id ?? null;
+    }
+
     public function handle(): void
     {
+        $this->apsysAvailable = $this->isApsysAvailable();
+
+        $eeSSSVendor = null;
+        $eeSSSDebit = null;
+        $eeSSSCredit = null;
+        $eeSSSVendorName = null;
+        $eePhilHealthVendor = null;
+        $eePhilHealthDebit = null;
+        $eePhilHealthCredit = null;
+        $eePhilHealthVendorName = null;
+        $eePagibigVendor = null;
+        $eePagibigDebit = null;
+        $eePagibigCredit = null;
+        $eePagibigVendorName = null;
+        $erSSSVendor = null;
+        $erSSSDebit = null;
+        $erSSSCredit = null;
+        $erSSSVendorName = null;
+        $erPhilHealthVendor = null;
+        $erPhilHealthDebit = null;
+        $erPhilHealthCredit = null;
+        $erPhilHealthVendorName = null;
+        $erPagibigVendor = null;
+        $erPagibigDebit = null;
+        $erPagibigCredit = null;
+        $erPagibigVendorName = null;
+        $withHoldingTaxVendor = null;
+        $withHoldingTaxDebit = null;
+        $withHoldingTaxCredit = null;
+        $withHoldingTaxVendorName = null;
+        $adjustmentVendor = null;
+        $adjustmentDebit = null;
+        $adjustmentCredit = null;
+        $adjustmentVendorName = null;
+        $vendorHONo = null;
+        $vendorHOName = null;
+        $temporaryAccountA = null;
+        $temporaryAccountB = null;
+        $accountsPayable = null;
+        $accountsPayableName = null;
         
         $vendorNames = [
             'EESSS',
@@ -117,8 +197,11 @@ class GenerateEntry implements ShouldQueue
             $record = ContributionAndTax::where('vendor_name', $vendorName)->first();
 
             if ($record) {
-                $vendor = Vendor::where('ven_no', $record->vendor_id)->first();
-                $vendorNameFromDB = $vendor ? $vendor->ven_name : null;
+                $vendorNameFromDB = null;
+                if ($this->apsysAvailable) {
+                    $vendor = Vendor::where('ven_no', $record->vendor_id)->first();
+                    $vendorNameFromDB = $vendor ? $vendor->ven_name : null;
+                }
 
                 if ($vendorName === 'EESSS') {
                     $eeSSSVendor = $record->vendor_id;
@@ -178,9 +261,13 @@ class GenerateEntry implements ShouldQueue
             }
         }
 
-        $vendor = Vendor::where("ven_name", "HO")->first();
-        $vendorHONo = $vendor->ven_no;
-        $vendorHOName = $vendor->ven_name;
+        if ($this->apsysAvailable) {
+            $vendor = Vendor::where("ven_name", "HO")->first();
+            $vendorHONo = $vendor->ven_no ?? null;
+            $vendorHOName = $vendor->ven_name ?? null;
+        } else {
+            $vendorHOName = "HO";
+        }
 
         $accountNames = [
             'TEMPORARY ACCOUNT A',
@@ -188,21 +275,22 @@ class GenerateEntry implements ShouldQueue
             'Accounts Payable',
         ];
 
-        $accountsQuery = Account::whereIn('acc_name', $accountNames)->get();
+        if ($this->apsysAvailable) {
+            $accountsQuery = Account::whereIn('acc_name', $accountNames)->get();
 
-        foreach ($accountsQuery as $acc) {
+            foreach ($accountsQuery as $acc) {
+                if ($acc->acc_name === 'TEMPORARY ACCOUNT A') {
+                    $temporaryAccountA = $acc->acc_no;
+                }
 
-            if ($acc->acc_name === 'TEMPORARY ACCOUNT A') {
-                $temporaryAccountA = $acc->acc_no;
-            }
+                if ($acc->acc_name === 'TEMPORARY ACCOUNT B') {
+                    $temporaryAccountB = $acc->acc_no;
+                }
 
-            if ($acc->acc_name === 'TEMPORARY ACCOUNT B') {
-                $temporaryAccountB = $acc->acc_no;
-            }
-
-            if ($acc->acc_name === 'Accounts Payable') {
-                $accountsPayable      = $acc->acc_no;
-                $accountsPayableName  = $acc->acc_name;
+                if ($acc->acc_name === 'Accounts Payable') {
+                    $accountsPayable      = $acc->acc_no;
+                    $accountsPayableName  = $acc->acc_name;
+                }
             }
         }
 
@@ -229,13 +317,13 @@ class GenerateEntry implements ShouldQueue
             ->where('pay_date', $this->pay_date)
             ->pluck('timekeeping_branch_id');
 
+        $hasError = false;
+
         foreach ($payrollBranchIds as $payrollBranchId) {
-            $payrollBranch = Branch::with([
-                'expense_debit',
-                'expense_credit',
-                'advance_debit',
-                'advance_credit'
-            ])->find($payrollBranchId);
+            $branchRelations = $this->apsysAvailable
+                ? ['expense_debit', 'expense_credit', 'advance_debit', 'advance_credit']
+                : [];
+            $payrollBranch = Branch::with($branchRelations)->find($payrollBranchId);
 
             $branchId = $payrollBranch->id;
             $branchName = $payrollBranch->name;
@@ -301,14 +389,16 @@ class GenerateEntry implements ShouldQueue
 
                         $employeeBankDeductionId = $employeeBankDeduction->deduction_id;
 
-                        $bankDeductionModel = Deduction::with([
-                            'amortization_debit',
-                            'amortization_credit',
-                            'amortization_vendor'
-                        ])->find($employeeBankDeductionId);
+                        $deductionRelations = $this->apsysAvailable
+                            ? ['amortization_debit', 'amortization_credit', 'amortization_vendor']
+                            : [];
+                        $bankDeductionModel = Deduction::with($deductionRelations)->find($employeeBankDeductionId);
 
-                        $vendor = Vendor::where('ven_no', $bankDeductionModel->amortization_vendor_id)->first();
-                        $bankDeductionSumsVenName = $vendor->ven_name ?? null;
+                        $bankDeductionSumsVenName = null;
+                        if ($this->apsysAvailable) {
+                            $vendor = Vendor::where('ven_no', $bankDeductionModel->amortization_vendor_id)->first();
+                            $bankDeductionSumsVenName = $vendor->ven_name ?? null;
+                        }
 
                         $bankDeductionSum->push((object)[
                             'employee_id' => $employeeId,
@@ -343,7 +433,11 @@ class GenerateEntry implements ShouldQueue
                 })
                 ->exists() ? 1 : 0;
 
-            $payrollEmployeeCashQuery = Payroll::with(['employee.vendor:ven_no,ven_name', 'employee', 'timekeeping_branch'])
+            $payrollEmployeeCashQuery = Payroll::with(
+                $this->apsysAvailable
+                    ? ['employee.vendor:ven_no,ven_name', 'employee', 'timekeeping_branch']
+                    : ['employee', 'timekeeping_branch']
+            )
                 ->where('timekeeping_branch_id', $branchId)
                 ->whereIn('employee_id', function($query) {
                     $query->select('employee_id')
@@ -365,7 +459,12 @@ class GenerateEntry implements ShouldQueue
             ];
 
             $payrollEmployeeCash = $payrollEmployeeCashQuery->first();
-            $payrollEmployeeCashVenName = $payrollEmployeeCash->employee->vendor->ven_name ?? null;
+            $payrollEmployeeCashVenName = null;
+            $payrollEmployeeCashVendorNo = null;
+            if ($this->apsysAvailable && $payrollEmployeeCash && $payrollEmployeeCash->employee) {
+                $payrollEmployeeCashVenName = $payrollEmployeeCash->employee->vendor->ven_name ?? null;
+                $payrollEmployeeCashVendorNo = $payrollEmployeeCash->employee->vendor->ven_no ?? null;
+            }
 
             foreach ($payrollEmployeeCashQuery as $payrollCash) {
                 $payrollEmployeeCashSums['grosspay'] += floatval(str_replace(',', '', $payrollCash->gross_pay));
@@ -404,14 +503,16 @@ class GenerateEntry implements ShouldQueue
 
                         $employeeCashDeductionId = $employeeCashDeduction->deduction_id;
 
-                        $cashDeductionModel = Deduction::with([
-                            'amortization_debit',
-                            'amortization_credit',
-                            'amortization_vendor'
-                        ])->find($employeeCashDeductionId);
+                        $deductionRelations = $this->apsysAvailable
+                            ? ['amortization_debit', 'amortization_credit', 'amortization_vendor']
+                            : [];
+                        $cashDeductionModel = Deduction::with($deductionRelations)->find($employeeCashDeductionId);
 
-                        $vendor = Vendor::where('ven_no', $cashDeductionModel->amortization_vendor_id)->first();
-                        $cashDeductionSumsVenName = $vendor->ven_name ?? null;
+                        $cashDeductionSumsVenName = null;
+                        if ($this->apsysAvailable) {
+                            $vendor = Vendor::where('ven_no', $cashDeductionModel->amortization_vendor_id)->first();
+                            $cashDeductionSumsVenName = $vendor->ven_name ?? null;
+                        }
 
                         $cashDeductionSum->push((object)[
                             'employee_id' => $employeeId,
@@ -770,7 +871,7 @@ class GenerateEntry implements ShouldQueue
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
                             'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $bankDeductionSums->deduction->amortization_debit->acc_no,
+                            'acc_no'              => $this->getAmortizationDebitAccNo($bankDeductionSums->deduction),
                             'description_per_acc' => 'Deduction',
                             'balance_type'        => 'Debit',
                             'is_block_payment'    => 0,
@@ -819,7 +920,7 @@ class GenerateEntry implements ShouldQueue
                             'ven_no'              => $bankDeductionSums->deduction->amortization_vendor_id,
                             'ven_name'            => $bankDeductionSums->ven_name,
                             'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $bankDeductionSums->deduction->amortization_credit->acc_no,
+                            'acc_no'              => $this->getAmortizationCreditAccNo($bankDeductionSums->deduction),
                             'description_per_acc' => 'Deduction',
                             'balance_type'        => 'Credit',
                             'is_block_payment'    => 0,
@@ -1284,7 +1385,7 @@ class GenerateEntry implements ShouldQueue
                     $grosspayEntries = [];
 
                     if ($payrollBranch->branch_number != "SFI00001") {
-                        $grosspayEntries = [
+                        $grosspayEntries[] = [
                             'entry_id'            => $firstEntry,
                             'apsys_entry_id'      => $firstApsysEntry,
                             'apsys_entry_main_id' => $firstApsysEntryMain,
@@ -1292,7 +1393,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['grosspay'],
                             'acc_no'              => $payrollBranch->advance_debit,
@@ -1301,7 +1402,7 @@ class GenerateEntry implements ShouldQueue
                             'is_block_payment'    => $isPayrollEmployeeCashOnHold ? 1 : 0
                         ];
 
-                        $grosspayEntries = [
+                        $grosspayEntries[] = [
                             'entry_id'            => $firstEntry,
                             'apsys_entry_id'      => $firstApsysEntry,
                             'apsys_entry_main_id' => $firstApsysEntryMain,
@@ -1309,7 +1410,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['grosspay'],
                             'acc_no'              => $payrollBranch->advance_credit,
@@ -1319,7 +1420,7 @@ class GenerateEntry implements ShouldQueue
                         ];
                     }
                         
-                    $grosspayEntries = [
+                    $grosspayEntries[] = [
                         'entry_id'            => $secondEntry,
                         'apsys_entry_id'      => $secondApsysEntry,
                         'apsys_entry_main_id' => $secondApsysEntryMain,
@@ -1335,7 +1436,7 @@ class GenerateEntry implements ShouldQueue
                         'balance_type'        => 'Debit',
                         'is_block_payment'    => $isPayrollEmployeeCashOnHold ? 1 : 0
                     ];
-                    $grosspayEntries = [
+                    $grosspayEntries[] = [
                         'entry_id'            => $secondEntry,
                         'apsys_entry_id'      => $secondApsysEntry,
                         'apsys_entry_main_id' => $secondApsysEntryMain,
@@ -1374,7 +1475,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eeSSS'],
                             'acc_no'              => $eeSSSDebit,
@@ -1390,7 +1491,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eeSSS'],
                             'acc_no'              => $temporaryAccountB,
@@ -1452,7 +1553,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eePh'],
                             'acc_no'              => $eePhilHealthDebit,
@@ -1468,7 +1569,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eePh'],
                             'acc_no'              => $temporaryAccountB,
@@ -1530,7 +1631,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eePagibig'],
                             'acc_no'              => $eePagibigDebit,
@@ -1546,7 +1647,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eePagibig'],
                             'acc_no'              => $temporaryAccountB,
@@ -1609,10 +1710,10 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $cashDeductionSums->deduction->amortization_debit->acc_no,
+                            'acc_no'              => $this->getAmortizationDebitAccNo($cashDeductionSums->deduction),
                             'description_per_acc' => 'Deduction',
                             'balance_type'        => 'Debit',
                             'is_block_payment'    => 0,
@@ -1625,7 +1726,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $cashTotalAmortization,
                             'acc_no'              => $temporaryAccountB,
@@ -1661,7 +1762,7 @@ class GenerateEntry implements ShouldQueue
                             'ven_no'              => $cashDeductionSums->deduction->amortization_vendor_id,
                             'ven_name'            => $cashDeductionSums->ven_name,
                             'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $cashDeductionSums->deduction->amortization_credit->acc_no,
+                            'acc_no'              => $this->getAmortizationCreditAccNo($cashDeductionSums->deduction),
                             'description_per_acc' => 'Deduction',
                             'balance_type'        => 'Credit',
                             'is_block_payment'    => 0,
@@ -1688,7 +1789,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['withHoldingTax'],
                             'acc_no'              => $withHoldingTaxDebit,
@@ -1704,7 +1805,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['withHoldingTax'],
                             'acc_no'              => $temporaryAccountB,
@@ -2236,7 +2337,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['netTaxableAdjustment'],
                             'acc_no'              => $adjustmentDebit,
@@ -2253,7 +2354,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['netTaxableAdjustment'],
                             'acc_no'              => $adjustmentCredit,
@@ -2286,7 +2387,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $cashIncentiveSums,
                             'acc_no'              => $payrollBranch->advance_debit,
@@ -2303,7 +2404,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $cashIncentiveSums,
                             'acc_no'              => $creditStoreId,
@@ -2687,7 +2788,7 @@ class GenerateEntry implements ShouldQueue
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
                             'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $bankDeductionSums->deduction->amortization_debit->acc_no,
+                            'acc_no'              => $this->getAmortizationDebitAccNo($bankDeductionSums->deduction),
                             'description_per_acc' => 'Deduction',
                             'balance_type'        => 'Debit',
                             'is_block_payment'    => 0,
@@ -2736,7 +2837,7 @@ class GenerateEntry implements ShouldQueue
                             'ven_no'              => $bankDeductionSums->deduction->amortization_vendor_id,
                             'ven_name'            => $bankDeductionSums->ven_name,
                             'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $bankDeductionSums->deduction->amortization_credit->acc_no,
+                            'acc_no'              => $this->getAmortizationCreditAccNo($bankDeductionSums->deduction),
                             'description_per_acc' => 'Deduction',
                             'balance_type'        => 'Credit',
                             'is_block_payment'    => 0,
@@ -3202,7 +3303,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['grosspay'],
                             'acc_no'              => $payrollBranch->advance_debit,
@@ -3218,7 +3319,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['grosspay'],
                             'acc_no'              => $payrollBranch->advance_credit,
@@ -3281,7 +3382,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eeSSS'],
                             'acc_no'              => $eeSSSDebit,
@@ -3297,7 +3398,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eeSSS'],
                             'acc_no'              => $temporaryAccountB,
@@ -3359,7 +3460,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eePh'],
                             'acc_no'              => $eePhilHealthDebit,
@@ -3375,7 +3476,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eePh'],
                             'acc_no'              => $temporaryAccountB,
@@ -3437,7 +3538,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eePagibig'],
                             'acc_no'              => $eePagibigDebit,
@@ -3453,7 +3554,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['eePagibig'],
                             'acc_no'              => $temporaryAccountB,
@@ -3516,10 +3617,10 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $cashDeductionSums->deduction->amortization_debit->acc_no,
+                            'acc_no'              => $this->getAmortizationDebitAccNo($cashDeductionSums->deduction),
                             'description_per_acc' => 'Deduction',
                             'balance_type'        => 'Debit',
                             'is_block_payment'    => 0,
@@ -3532,7 +3633,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $cashTotalAmortization,
                             'acc_no'              => $temporaryAccountB,
@@ -3568,7 +3669,7 @@ class GenerateEntry implements ShouldQueue
                             'ven_no'              => $cashDeductionSums->deduction->amortization_vendor_id,
                             'ven_name'            => $cashDeductionSums->ven_name,
                             'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $cashDeductionSums->deduction->amortization_credit->acc_no,
+                            'acc_no'              => $this->getAmortizationCreditAccNo($cashDeductionSums->deduction),
                             'description_per_acc' => 'Deduction',
                             'balance_type'        => 'Credit',
                             'is_block_payment'    => 0,
@@ -3595,7 +3696,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['withHoldingTax'],
                             'acc_no'              => $withHoldingTaxDebit,
@@ -3611,7 +3712,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['withHoldingTax'],
                             'acc_no'              => $temporaryAccountB,
@@ -3919,7 +4020,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['netTaxableAdjustment'],
                             'acc_no'              => $adjustmentDebit,
@@ -3936,7 +4037,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $payrollEmployeeCashSums['netTaxableAdjustment'],
                             'acc_no'              => $adjustmentCredit,
@@ -3969,7 +4070,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $cashIncentiveSums,
                             'acc_no'              => $payrollBranch->advance_debit,
@@ -3986,7 +4087,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCash->employee->vendor->ven_no,
+                            'ven_no'              => $payrollEmployeeCashVendorNo,
                             'ven_name'            => $payrollEmployeeCashVenName,
                             'amount'              => $cashIncentiveSums,
                             'acc_no'              => $creditStoreId,
@@ -4056,75 +4157,85 @@ class GenerateEntry implements ShouldQueue
                         'generated_by'               => $employee_id,
                     ]);
 
-                    ApsysEntry::create([
-                        'ent_tran_no'       => $entry['apsys_entry_id'],
-                        'ent_post_date'     => now(),
-                        'ven_no'            => $entry['ven_no'],
-                        'ent_doc_date'      => now(),
-                        'branch_id'         => $entry['branch_number'],
-                        'ent_doc_no'        => $entry['document_no'],
-                        'ent_due_date'      => now(),
-                        'ent_header'        => $entry['document_no'],
-                        'ent_crf_no'        => '',
-                        'ent_trans_amt'     => $entry['amount'],
-                        'ent_amt_due'       => $entry['amount'],
-                        'ent_module'        => 'Payroll',
-                        'acc_no'            => $entry['acc_no'],
-                        'ent_amt_per_acc'    => $entry['amount'],
-                        'ent_desc_per_acc'  => $entry['description_per_acc'],
-                        'ent_norm_bal'      => $entry['balance_type'],
-                        'ent_total'         => $entry['amount'],
-                        'ent_module_type'   => 'Single',
-                        'ent_app_amt'       => $entry['amount'],
-                        'ent_unapp_amt'     => 0,
-                        'ent_vat_amt'       => 0,
-                        'ent_nonvat_amt'    => 0,
-                        'ent_na_amt'        => $entry['amount'],
-                        'ent_inp_tax_amt'   => 0,
-                        'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
-                        'ent_status'        => 'Unapplied',
-                        'ent_chk'           => 'No',
-                        'date_added'        => now(),
-                    ]);
+                    if ($this->apsysAvailable) {
+                        ApsysEntry::create([
+                            'ent_tran_no'       => $entry['apsys_entry_id'],
+                            'ent_post_date'     => now(),
+                            'ven_no'            => $entry['ven_no'],
+                            'ent_doc_date'      => now(),
+                            'branch_id'         => $entry['branch_number'],
+                            'ent_doc_no'        => $entry['document_no'],
+                            'ent_due_date'      => now(),
+                            'ent_header'        => $entry['document_no'],
+                            'ent_crf_no'        => '',
+                            'ent_trans_amt'     => $entry['amount'],
+                            'ent_amt_due'       => $entry['amount'],
+                            'ent_module'        => 'Payroll',
+                            'acc_no'            => $entry['acc_no'],
+                            'ent_amt_per_acc'    => $entry['amount'],
+                            'ent_desc_per_acc'  => $entry['description_per_acc'],
+                            'ent_norm_bal'      => $entry['balance_type'],
+                            'ent_total'         => $entry['amount'],
+                            'ent_module_type'   => 'Single',
+                            'ent_app_amt'       => $entry['amount'],
+                            'ent_unapp_amt'     => 0,
+                            'ent_vat_amt'       => 0,
+                            'ent_nonvat_amt'    => 0,
+                            'ent_na_amt'        => $entry['amount'],
+                            'ent_inp_tax_amt'   => 0,
+                            'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
+                            'ent_status'        => 'Unapplied',
+                            'ent_chk'           => 'No',
+                            'date_added'        => now(),
+                        ]);
+                    }
                 }
 
-                $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
-                foreach ($groupedEntries as $mainId => $groupedEntry) {
-                    $entry = $groupedEntry->first();
-                    ApsysEntryMain::create([
-                        'ent_tran_no'       => $mainId,
-                        'ven_no'            => $entry['ven_no'],
-                        'ven_name'          => $entry['ven_name'],
-                        'ent_doc_date'      => now(),
-                        'branch_id'         => $entry['branch_number'],
-                        'branch_name'         => $entry['branch_name'],
-                        'ent_header'        => $entry['document_no'],
-                        'ent_trans_amt'     => $entry['amount'],
-                        'ent_post_date'     => now(),
-                        'ent_module_type'   => 'Single',
-                        'ent_status'        => 'Unapplied',
-                        'check_no'          => null,
-                        'ent_crf_no'        => '',
-                        'ent_doc_no'        => $entry['document_no'],
-                        'ent_module'        => 'Payroll',
-                        'ent_app_amt'       => $entry['amount'],
-                        'ent_unapp_amt'     => 0,
-                        'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
-                        'ent_due_date'      => now(),
-                    ]);
+                if ($this->apsysAvailable) {
+                    $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
+                    foreach ($groupedEntries as $mainId => $groupedEntry) {
+                        $entry = $groupedEntry->first();
+                        ApsysEntryMain::create([
+                            'ent_tran_no'       => $mainId,
+                            'ven_no'            => $entry['ven_no'],
+                            'ven_name'          => $entry['ven_name'],
+                            'ent_doc_date'      => now(),
+                            'branch_id'         => $entry['branch_number'],
+                            'branch_name'         => $entry['branch_name'],
+                            'ent_header'        => $entry['document_no'],
+                            'ent_trans_amt'     => $entry['amount'],
+                            'ent_post_date'     => now(),
+                            'ent_module_type'   => 'Single',
+                            'ent_status'        => 'Unapplied',
+                            'check_no'          => null,
+                            'ent_crf_no'        => '',
+                            'ent_doc_no'        => $entry['document_no'],
+                            'ent_module'        => 'Payroll',
+                            'ent_app_amt'       => $entry['amount'],
+                            'ent_unapp_amt'     => 0,
+                            'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
+                            'ent_due_date'      => now(),
+                        ]);
+                    }
                 }
 
-                $this->notifyJobFinished();
                 DB::commit();
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                $this->notifyJobFailed();
+                $hasError = true;
                 Log::error('Failed to create entry', [
                     'entry' => $entry,
                     'error' => $e->getMessage(),
                 ]);
             }
         }
+
+        if ($hasError) {
+            $this->notifyJobFailed();
+        } else {
+            $this->notifyJobFinished();
+        }
     }
 }
+
