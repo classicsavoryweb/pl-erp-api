@@ -301,6 +301,10 @@ class GenerateEntry implements ShouldQueue
 
                         $employeeBankDeductionId = $employeeBankDeduction->deduction_id;
 
+                        if (!$employeeBankDeductionId) {
+                            continue;
+                        }
+
                         $bankDeductionModel = Deduction::with([
                             'amortization_debit',
                             'amortization_credit',
