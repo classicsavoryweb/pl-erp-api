@@ -174,8 +174,11 @@ class PayrollProofListController extends Controller
                 $proofList = $proofList->whereHas("employee", function ($query) use ($request) {
                     $query->whereHas("latest_bank_details", function ($q) use ($request) {
                         $q->where("bank_account_type_id", $request->bank_account_type_id);
+                    })->whereHas("payroll_list", function ($query) {
+                        $query->where("is_bank", true);
                     });
-                })->where("is_bank", true);
+                });
+            
             } else if ($request->bank_account_type_id == '0' && $request->bank_account_type_id !== 'ALL') {
                 if ($request->type === "PAYROLL") {
                     $proofList = $proofList->where("is_bank", false);
@@ -210,6 +213,7 @@ class PayrollProofListController extends Controller
 
             return $this->sendResponse($proofList);
         } catch (Exception $e) {
+            Log::info($e);
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
@@ -275,7 +279,6 @@ class PayrollProofListController extends Controller
 
                 $rowIndex = 7;
                 foreach ($proofLists as $transaction) {
-
                     if (str_replace(' ', '', $transaction->employee->latest_bank_details->bank_number) == "") {
                         continue;
                     }
@@ -298,6 +301,7 @@ class PayrollProofListController extends Controller
 
             return response()->download($tempCopyPath, $request->type."-".now()->format("Y-m-d").'.xlsm')->deleteFileAfterSend(true);
         } catch (Exception $e) {
+            Log::info($e);
             return $this->sendError($e->getMessage());
         }
     }
