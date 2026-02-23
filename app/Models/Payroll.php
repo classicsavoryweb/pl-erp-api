@@ -56,6 +56,8 @@ class Payroll extends Model
         "additional_working_hours_total",
         "working_hours_deduction_total",
         "remarks",
+        "is_maternity",
+        "is_hold",
     ];
 
     public function employee () {
