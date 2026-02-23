@@ -301,7 +301,7 @@ class GenerateEntry implements ShouldQueue
 
         $userId = $this->user;
         $user = User::find($userId);
-        $employee_id = $user->employee->id;
+        $employee_id = $user->id;
 
         $branchHO = Branch::where('short_name', 'HO')
             ->first();
