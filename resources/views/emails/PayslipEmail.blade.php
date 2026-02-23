@@ -110,7 +110,7 @@
                     <tr>
                         <td>Night Diff OT</td>
                         <td>{{ number_format($timekeeping->night_differential_overtime, 2) }}</td>
-                        <td>{{ number_format($payroll->night_differential_overtime, 2) }}</td>
+                        <td>{{ number_format($payroll->night_differential_overtime_amount, 2) }}</td>
                     </tr>
                     <tr>
                         <td>Tardiness</td>

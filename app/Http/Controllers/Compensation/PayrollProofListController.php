@@ -175,7 +175,7 @@ class PayrollProofListController extends Controller
                     $query->whereHas("latest_bank_details", function ($q) use ($request) {
                         $q->where("bank_account_type_id", $request->bank_account_type_id);
                     });
-                });
+                })->where("is_bank", true);
             } else if ($request->bank_account_type_id == '0' && $request->bank_account_type_id !== 'ALL') {
                 if ($request->type === "PAYROLL") {
                     $proofList = $proofList->where("is_bank", false);
