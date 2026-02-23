@@ -4,6 +4,8 @@ namespace App\Exports\Compensation;
 
 use App\Models\Accounting\Vendor;
 use App\Models\Accounting\Account;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -13,10 +15,39 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class EntryExport implements FromCollection, WithHeadings, WithStyles
 {
     protected Collection $entry;
+    protected array $vendorNames = [];
+    protected array $accountNames = [];
 
     public function __construct(Collection $entry)
     {
         $this->entry = $entry;
+        $this->primeApsysLookups();
+    }
+
+    private function primeApsysLookups(): void
+    {
+        try {
+            DB::connection('apsys')->getPdo();
+        } catch (\Throwable $e) {
+            Log::warning('APSYS connection unavailable; exporting entries without APSYS.', [
+                'error' => $e->getMessage(),
+            ]);
+            return;
+        }
+
+        $vendorNos = $this->entry->pluck('vendor_no')->filter()->unique()->values();
+        if ($vendorNos->isNotEmpty()) {
+            $this->vendorNames = Vendor::whereIn('ven_no', $vendorNos)
+                ->pluck('ven_name', 'ven_no')
+                ->all();
+        }
+
+        $accountNos = $this->entry->pluck('account_no')->filter()->unique()->values();
+        if ($accountNos->isNotEmpty()) {
+            $this->accountNames = Account::whereIn('acc_no', $accountNos)
+                ->pluck('acc_name', 'acc_no')
+                ->all();
+        }
     }
 
     public function collection()
@@ -30,8 +61,7 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
             $debit  = $rows->where('balance_type', 'Debit')->first();
             $credit = $rows->where('balance_type', 'Credit')->first();
 
-            $vendor = Vendor::where('ven_no', $header->vendor_no)->first();
-            $vendorName = $vendor?->ven_name ?? '';
+            $vendorName = $this->vendorNames[$header->vendor_no] ?? '';
 
             $branchName = $header->branch?->name ?? '';
 
@@ -47,8 +77,7 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
             ]);
 
             if ($debit) {
-                $acct = Account::where('acc_no', $debit->account_no)->first();
-                $acctName = $acct?->acc_name ?? '';
+                $acctName = $this->accountNames[$debit->account_no] ?? '';
 
                 $exportRows->push([
                     "",
@@ -63,8 +92,7 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
             }
 
             if ($credit) {
-                $acct = Account::where('acc_no', $credit->account_no)->first();
-                $acctName = $acct?->acc_name ?? '';
+                $acctName = $this->accountNames[$credit->account_no] ?? '';
 
                 $exportRows->push([
                     "",
