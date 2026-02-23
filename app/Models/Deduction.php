@@ -15,7 +15,21 @@ class Deduction extends Model
     use HasFactory, LogsActivity;
 
     protected $table = "deductions";
-    protected $fillable = ["description", "category", "debit_id", "credit_id", "amortization_vendor_id", "amortization_debit_id", "amortization_credit_id", "status", "end_loan_vendor_id", "end_loan_debit_id", "end_loan_credit_id", "payslip_description"];
+    protected $fillable = [
+        "description",
+        "category",
+        "debit_id",
+        "credit_id",
+        "amortization_vendor_id",
+        "amortization_debit_id",
+        "amortization_credit_id",
+        "status",
+        "end_loan_vendor_id",
+        "end_loan_debit_id",
+        "end_loan_credit_id",
+        "payslip_description",
+        "is_block_payment"
+    ];
 
     public function cs_hub_transaction_type() {
         return $this->belongsTo(CSHubTransactionType::class);

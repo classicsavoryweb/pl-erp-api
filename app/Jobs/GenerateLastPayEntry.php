@@ -437,6 +437,11 @@ class GenerateLastPayEntry implements ShouldQueue
             ->where('balance', '>=', 1)
             ->where('end_loan_status', '!=', 'Yes')
             ->first();
+
+            if (!$employeeDeduction) {
+                continue;
+            }
+
             if ($employeeDeduction->deduction->category === 'SSS') {
                 $entryId = $this->generateEntryId($counterEntry);
                 $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
@@ -480,9 +485,9 @@ class GenerateLastPayEntry implements ShouldQueue
                         'apsys_entry_id'      => $apsysEntryId,
                         'apsys_entry_main_id' => $apsysEntryMainId,
                         'document_no'         => $employeeDeduction->reference_doc . '|Head Office',
-                        'branch_id'           => $branchId,
-                        'branch_number'       => $branchNumber,
-                        'branch_name'         => $branchName,
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
                         'ven_no'              => $sssLoansRemittanceVendor,
                         'ven_name'            => $employeeFullName,
                         'amount'              => $employeeDeduction->balance,
@@ -496,9 +501,9 @@ class GenerateLastPayEntry implements ShouldQueue
                         'apsys_entry_id'      => $apsysEntryId,
                         'apsys_entry_main_id' => $apsysEntryMainId,
                         'document_no'         => $employeeDeduction->reference_doc . '|Head Office',
-                        'branch_id'           => $branchId,
-                        'branch_number'       => $branchNumber,
-                        'branch_name'         => $branchName,
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
                         'ven_no'              => $sssLoansRemittanceVendor,
                         'ven_name'            => $employeeFullName,
                         'amount'              => $employeeDeduction->balance,
@@ -518,9 +523,9 @@ class GenerateLastPayEntry implements ShouldQueue
                         'apsys_entry_id'      => $apsysEntryId,
                         'apsys_entry_main_id' => $apsysEntryMainId,
                         'document_no'         => $employeeDeduction->reference_doc . '|Head Office',
-                        'branch_id'           => $branchId,
-                        'branch_number'       => $branchNumber,
-                        'branch_name'         => $branchName,
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
                         'ven_no'              => $employeeNumber,
                         'ven_name'            => $employeeFullName,
                         'amount'              => $employeeDeduction->balance,
@@ -534,9 +539,9 @@ class GenerateLastPayEntry implements ShouldQueue
                         'apsys_entry_id'      => $apsysEntryId,
                         'apsys_entry_main_id' => $apsysEntryMainId,
                         'document_no'         => $employeeDeduction->reference_doc . '|Head Office',
-                        'branch_id'           => $branchId,
-                        'branch_number'       => $branchNumber,
-                        'branch_name'         => $branchName,
+                        'branch_id'           => $branchHOId,
+                        'branch_number'       => $branchHONumber,
+                        'branch_name'         => $branchHOName,
                         'ven_no'              => $employeeNumber,
                         'ven_name'            => $employeeFullName,
                         'amount'              => $employeeDeduction->balance,
@@ -598,7 +603,7 @@ class GenerateLastPayEntry implements ShouldQueue
             ]);
         }
 
-        $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
+        $groupedEntries = collect($entries)->groupBy('apsys_entry_id');
 
         foreach ($groupedEntries as $mainId => $groupedEntry) {
             $entry = $groupedEntry->first();
