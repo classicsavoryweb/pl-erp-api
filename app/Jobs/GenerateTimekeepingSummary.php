@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Services\PayrollService;
 use App\Http\Services\TimeKeepingService;
 use App\Models\Adjustment;
 use App\Models\AdjustmentPunch;
@@ -39,6 +40,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
     protected $employeeId = 0;
     protected $notificationContext;
     protected $suppressNotification = false;
+    protected $payrollService;
     /**
      * Create a new job instance.
      */
@@ -58,6 +60,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $this->employeeId = $employeeId;
         $this->notificationContext = $notificationContext;
         $this->suppressNotification = $suppressNotification;
+        $this->payrollService = new PayrollService();
     }
 
     public function handle(): void
@@ -539,6 +542,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     "adjustment_amount" => $adjustment_amount,
                     "remarks" => $remarks
                 ]);
+
+                $this->payrollService->computePayroll($timeKeepingSummary);
 
                 $previousCutOff = $this->getPreviousCutOff($cutOff["start_time"]);
 
