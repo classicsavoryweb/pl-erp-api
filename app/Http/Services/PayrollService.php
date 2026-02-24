@@ -120,8 +120,8 @@ class PayrollService {
                 $legalHolidayOvertimeAmount += $timeKeepingSummary->legal_holiday_overtime > 0 ? (float)$payment->legal_holiday_overtime : 0;
                 $specialHolidayAmount += $timeKeepingSummary->special_holiday > 0 ? (float)$payment->special_holiday : 0;
                 $specialHolidayOvertimeAmount += $timeKeepingSummary->special_holiday_overtime > 0 ? (float)$payment->special_holiday_overtime : 0;
-                $nightDifferentialAmount += (float)$payment->night_differential;
-                $nightDifferentialOvertimeAmount += (float)$payment->night_differential_overtime;
+                $nightDifferentialAmount += $timeKeepingSummary->night_differential >= 1 ? (float)$payment->night_differential : 0;
+                $nightDifferentialOvertimeAmount += $timeKeepingSummary->night_differential_overtime >= 1 ? (float)$payment->night_differential_overtime : 0;
                 $cancelledOffAmount += (float)$payment->cancelled_off;
             }
 
