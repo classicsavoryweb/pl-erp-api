@@ -136,8 +136,7 @@ class PayrollService {
                 $nightDifferentialAmount +
                 $nightDifferentialOvertimeAmount +
                 $cancelledOffAmount +
-                $taxableAdustmentAmount +
-                $nonTaxableAmount ) -
+                $taxableAdustmentAmount) -
                 $undertimeAmount -
                 $tardinessAmount;
 
@@ -291,8 +290,7 @@ class PayrollService {
                         $nightDifferentialAmount +
                         $nightDifferentialOvertimeAmount +
                         $cancelledOffAmount +
-                        $taxableAdustmentAmount +
-                        $nonTaxableAmount ) -
+                        $taxableAdustmentAmount ) -
                         $undertimeAmount -
                         $tardinessAmount;
 
