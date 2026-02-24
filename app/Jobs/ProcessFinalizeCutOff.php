@@ -133,7 +133,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
                 "end_time" => $end_Date,
             ]);
 
-            GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
+            // GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
             $this->notifyJobFinished();
         } catch (\Throwable $e) {
             $this->notifyJobFailed();
