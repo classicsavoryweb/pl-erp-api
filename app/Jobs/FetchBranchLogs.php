@@ -62,6 +62,7 @@ class FetchBranchLogs implements ShouldQueue
 
             foreach($employees as $employee) {
                 try {
+                    $touchedLogIds = [];
                     $response = Http::withBasicAuth($user, $password)
                     ->withHeaders([
                         "Accept" => "application/json",
@@ -95,6 +96,7 @@ class FetchBranchLogs implements ShouldQueue
                                 "biometric_number" => $employee->biometric_number,
                                 "date" => $dateToUse->format("Y-m-d"),
                             ]);
+                            $touchedLogIds[] = $bio->id;
                             if ($bio->is_modified) {
                                 continue;
                             }
@@ -105,6 +107,7 @@ class FetchBranchLogs implements ShouldQueue
                                 "branch_id" => $branch?->id ?? null
                             ]);
                         }
+                        $this->updateBiotimeLogStatuses($touchedLogIds);
                     }
                 } catch (Exception $e) {
                     $failedEmployees[] = $employee;
@@ -115,6 +118,7 @@ class FetchBranchLogs implements ShouldQueue
             // retry failed fetches
             foreach($failedEmployees as $employee) {
                 try {
+                    $touchedLogIds = [];
                     $response = Http::withBasicAuth($user, $password)
                     ->withHeaders([
                         "Accept" => "application/json",
@@ -151,6 +155,7 @@ class FetchBranchLogs implements ShouldQueue
                                 "biometric_number" => $employee->biometric_number,
                                 "date" => $dateToUse->format("Y-m-d"),
                             ]);
+                            $touchedLogIds[] = $bio->id;
                             if ($bio->is_modified) {
                                 continue;
                             }
@@ -161,6 +166,7 @@ class FetchBranchLogs implements ShouldQueue
                                 "branch_id" => $branch?->id ?? null
                             ]);
                         }
+                        $this->updateBiotimeLogStatuses($touchedLogIds);
                     }
                 } catch (Exception $e) {
                     Log::info($e->getMessage());
@@ -178,5 +184,21 @@ class FetchBranchLogs implements ShouldQueue
     {
         $label = "Fetch Actual Schedule";
         return $this->notificationContext ? $label." ".$this->notificationContext : $label;
+    }
+
+    private function updateBiotimeLogStatuses(array $logIds): void
+    {
+        if (empty($logIds)) {
+            return;
+        }
+
+        $uniqueIds = array_values(array_unique($logIds));
+        BiotimeLog::query()
+            ->whereIn("id", $uniqueIds)
+            ->withCount("punches")
+            ->get()
+            ->each(function (BiotimeLog $log) {
+                $log->updateStatusFromPunchesCount((int) $log->punches_count);
+            });
     }
 }

@@ -202,7 +202,11 @@ class EmployeeDeductionsController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $deductions = $deductions->get();
-                return Excel::download(new EmployeeDeductionExport($deductions), "deductions.xls");
+                return Excel::download(
+                    new EmployeeDeductionExport($deductions),
+                    "deductions.xlsx",
+                    \Maatwebsite\Excel\Excel::XLSX
+                );
             }
 
             $hasFilters = ($request->has("employee_id") && $request->employee_id)
