@@ -351,7 +351,11 @@ class TimeKeepingService
             if ($differ->greaterThan($sixAM)) {
                 $nightDiffSeconds = $tenPM->diffInSeconds($sixAM);
             }
+
             $nightDiffHours = $nightDiffSeconds / 3600;
+            if ($nightDiffHours < 1) {
+                $nightDiffHours = 0;
+            }
             
             if ($overtime >= 1) {
                 if ($parsedLastPunch->greaterThan($sixAM)) {
