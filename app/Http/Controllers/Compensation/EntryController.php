@@ -80,7 +80,7 @@ class EntryController extends Controller
 
             if ($request->has(["export"]) && $request->export) {
                 $entry = $entryQuery->get();
-                return Excel::download(new EntryExport($entry), "entry.xls");
+                return Excel::download(new EntryExport($entry), "entry.xlsx", \Maatwebsite\Excel\Excel::XLSX);
             }
 
             $entry = $entryQuery->paginate($perPage);

@@ -260,7 +260,16 @@ class TimeKeepingController extends Controller
             $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
             $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
-            $timeKeepingSummaryQuery = TimeKeepingSummary::with(["employee", "lates", "branch" ,"employee.current_position", "employee.current_branch", "employee.timekeeping"])
+            $timeKeepingSummaryQuery = TimeKeepingSummary::with([
+                "employee",
+                "lates",
+                "branch",
+                "employee.current_position",
+                "employee.current_branch",
+                "employee.timekeeping",
+                "employee.schedule.schedule_type",
+                "employee.payroll_list",
+            ])
                 ->where("cut_off", $start_time.'-'.$end_time)
                 ->join("employees", "timekeeping_summary.employee_id", "=", "employees.id")
                 ->orderBy("employees.last_name", "ASC")

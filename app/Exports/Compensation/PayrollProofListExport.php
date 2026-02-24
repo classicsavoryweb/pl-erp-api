@@ -33,6 +33,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
 
                 $regular_days = $transaction->regular_days ?? $transaction->timekeeping_summary?->regular_days ?? "";
                 $list = $employee?->payroll_list;
+                $isMaternity = $list?->isOnMaternityLeave() ?? false;
                 $hasPayroll = !empty($transaction->payroll_id);
                 $salaryAmount = (float) ($transaction->salary_amount ?? $list?->salary_amount ?? 0);
                 $salaryValue = $transaction->salary ?? null;
@@ -55,11 +56,11 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                     }
                 }
 
-                if ($list && ($list->isMancom() || $list->isOnMaternityLeave())) {
+                if ($list && ($list->isMancom() || $isMaternity)) {
                     $regular_days = $days;
                 }
 
-                if ($list && $list->isOnMaternityLeave() && $hasPayroll) {
+                if ($isMaternity) {
                     $dailyRate = $transaction->daily_rate ?? null;
                     if (!$dailyRate || $dailyRate == 0) {
                         if ($salaryAmount > 0) {
@@ -75,18 +76,22 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                         $fullSalary = $salaryAmount > 0 ? round($salaryAmount / 2, 2) : ($employee?->cutOffBaseSalary() ?? 0);
                     }
 
-                    if ($salaryValue === null || $salaryValue == 0) {
-                        $salaryValue = $fullSalary;
-                    }
-                    if ($grossPayValue === null || $grossPayValue == 0) {
-                        $grossPayValue = $fullSalary;
-                    }
-                    if ($taxableIncomeValue === null || $taxableIncomeValue == 0) {
-                        $taxableIncomeValue = $fullSalary;
-                    }
-                    if ($netPayValue === null || $netPayValue == 0) {
-                        $netPayValue = $fullSalary;
-                    }
+                    // For maternity, always show per-cutoff amounts in export.
+                    $salaryValue = $fullSalary;
+                    $grossPayValue = $fullSalary;
+                    $taxableIncomeValue = $fullSalary;
+                    $netPayValue = $fullSalary;
+                }
+
+                $eeSss = (float) ($transaction->employee_sss ?? 0);
+                $eePhilhealth = (float) ($transaction->employee_philhealth ?? 0);
+                $eePagibig = (float) ($transaction->employee_pagibig ?? 0);
+                $taxableIncomeValue = max(
+                    0,
+                    (float) ($taxableIncomeValue ?? 0) - ($eeSss + $eePhilhealth + $eePagibig)
+                );
+                if ($isMaternity) {
+                    $netPayValue = $taxableIncomeValue;
                 }
 
                 $branchName = $transaction->timekeeping_branch_name
