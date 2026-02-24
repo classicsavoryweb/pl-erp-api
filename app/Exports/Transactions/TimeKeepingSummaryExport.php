@@ -53,12 +53,19 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
         });
 
         return $this->timekeeping_summary->map(function ($unique_timekeeping, $index) use ($maxLates, $maxUndertimes, $startDate, $endDate) {
+            $scheduleType = $unique_timekeeping->employee?->schedule?->schedule_type?->name
+                ?? $unique_timekeeping->employee?->current_position?->timekeeping_type
+                ?? "N/A";
+            $maternityStatus = $unique_timekeeping->employee?->payroll_list?->is_on_maternity_leave ? "Yes" : "No";
+
             $data = [
                 $index + 1,
                 $unique_timekeeping->employee->biometric_number,
                 $unique_timekeeping->branch->name,
                 $unique_timekeeping->employee->current_branch->name,
                 $unique_timekeeping->employee->full_name,
+                $scheduleType,
+                $maternityStatus,
                 $this->formatNumber($unique_timekeeping->regular_days),
                 $this->formatNumber($unique_timekeeping->adjustment_amount),
                 $this->formatNumber($unique_timekeeping->special_leave),
@@ -136,6 +143,8 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
             'Timekeeping Branch',
             'Home Branch',
             'Employee Name',
+            'Schedule Type',
+            'Maternity Status',
             'Regular Days',
             'Taxable Adjustment Amount',
             'Special Leave Days',
@@ -263,6 +272,10 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
                 $unique_timekeeping->branch->name,
                 $unique_timekeeping->employee->current_branch->name,
                 $unique_timekeeping->employee->full_name,
+                $unique_timekeeping->employee?->schedule?->schedule_type?->name
+                    ?? $unique_timekeeping->employee?->current_position?->timekeeping_type
+                    ?? "N/A",
+                $unique_timekeeping->employee?->payroll_list?->is_on_maternity_leave ? "Yes" : "No",
                 $unique_timekeeping->regular_days,
                 $unique_timekeeping->adjustment_amount,
                 $unique_timekeeping->special_leave,
@@ -366,7 +379,7 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
 
 
         for ($i = 0; $i < $maxUndertimeColumns; $i++) {
-            $colLetter = $this->getExcelColumnLetter(18 + $i);
+            $colLetter = $this->getExcelColumnLetter(20 + $i);
             $sheet->getStyle($colLetter . $headerRow . ':' . $colLetter . $lastRow)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
