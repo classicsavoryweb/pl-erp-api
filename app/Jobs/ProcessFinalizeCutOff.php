@@ -80,9 +80,9 @@ class ProcessFinalizeCutOff implements ShouldQueue
 
                     if ($employeeDeduction->balance > 0) {
                         $newBalance = $employeeDeduction->balance - $deduction["deducted_amount"];
-        
                         $employeeDeduction->update([
-                            "balance" => $newBalance
+                            "balance" => $newBalance,
+                            "end_loan_status" => $newBalance == 0 ? "Yes" : "No"
                         ]);
         
                         DeductionHistory::create([
@@ -127,6 +127,11 @@ class ProcessFinalizeCutOff implements ShouldQueue
                     'holded_cutoffs' => json_encode($holdedCutoffs),
                 ]);
             }
+            
+            UpdateOvertimeStatusJob::dispatch([
+                "start_time" => $start_date,
+                "end_time" => $end_Date,
+            ]);
 
             GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
             $this->notifyJobFinished();

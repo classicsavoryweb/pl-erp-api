@@ -301,7 +301,7 @@ class GenerateEntry implements ShouldQueue
 
         $userId = $this->user;
         $user = User::find($userId);
-        $employee_id = $user->employee->id;
+        $employee_id = $user->id;
 
         $branchHO = Branch::where('short_name', 'HO')
             ->first();
@@ -388,6 +388,10 @@ class GenerateEntry implements ShouldQueue
                         $bankTotalMonthlyAmortization += $monthlyAmortization;
 
                         $employeeBankDeductionId = $employeeBankDeduction->deduction_id;
+
+                        if (!$employeeBankDeductionId) {
+                            continue;
+                        }
 
                         $deductionRelations = $this->apsysAvailable
                             ? ['amortization_debit', 'amortization_credit', 'amortization_vendor']

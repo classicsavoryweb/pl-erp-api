@@ -41,6 +41,10 @@ class ProcessInitializeCutOff implements ShouldQueue
         try {
         $includedEmployees = PayrollList::with(["employee"])
         ->where("is_included", 1)
+        ->where(function ($query) {
+            $query->where("is_on_maternity_leave", 1)
+            ->orWhere("is_mancom", 1);
+        })
         ->get();
 
         foreach ($includedEmployees as $includedEmployee) {
@@ -56,6 +60,10 @@ class ProcessInitializeCutOff implements ShouldQueue
             ->first();
 
             if ($employee->type === "Agency") {
+                continue;
+            }
+
+            if  ($includedEmployee->isOnMaternityLeave() && $timeKeepingSummary) {
                 continue;
             }
 

@@ -45,6 +45,10 @@ class PayrollService {
             $salaryAmount = (float) ($payrollList?->salary_amount ?? 0);
             $useSalaryAmount = $salaryAmount > 0;
 
+            if ($payrollList->is_included == 0) {
+                return $payroll;
+            }
+
             $daily_rate = round($employee->dailySalary(), 2);
             if ($useSalaryAmount) {
                 $divisor = $scheduleName === "Compressed Schedule" ? 22 : 26;
@@ -295,20 +299,6 @@ class PayrollService {
                     $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
                     $taxable = $taxableIncome;
                 }
-
-
-                // $salaryBase = $tax->salary_base ?? 0;
-                // $exemption = $tax->exemption ?? 0;
-                // $percentage = $tax->percentage ?? 0;
-
-                // $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                //     ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                //     : 0;
-
-                // $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
-                // $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount + $taxableAdustmentAmount;
-                // $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
-                // $netPayAmount = $taxable - $taxAmount;
             }
 
             if ($this->isNcrMinimum($employee)) {
@@ -466,11 +456,13 @@ class PayrollService {
                 "additional_working_hours_total" => round($additionalWorkingHoursTotal, 2),
                 "working_hours_deduction_total" => round($workingHoursDeductionTotal, 2),
                 "status" => "initial",
+                "is_maternity" => $payrollList->is_on_maternity_leave,
+                "is_hold" => $payrollList->is_hold,
                 "remarks" => $remarks
             ]);
             
             if ($cutOff->part == 1) {
-                $incentives = $this->computeIncentives(
+                $this->computeIncentives(
                     $cutOff,
                     $employee,
                     $timeKeepingSummary->branch
