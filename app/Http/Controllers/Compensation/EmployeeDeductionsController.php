@@ -765,6 +765,10 @@ class EmployeeDeductionsController extends Controller
 
     private function createEntries($entries, $user)
     {
+        if (empty($entries)) {
+            return;
+        }
+
         foreach ($entries as $entry) {
 
             Entry::create([
@@ -815,26 +819,31 @@ class EmployeeDeductionsController extends Controller
             ]);
         }
 
-        ApsysEntryMain::create([
-            'ent_tran_no'       => $entry[0]['apsys_entry_main_id'],
-            'ven_no'            => $entry[0]['ven_no'],
-            'ven_name'          => $entry[0]['ven_name'],
-            'ent_doc_date'      => now(),
-            'branch_id'         => $entry[0]['branch_number'],
-            'branch_name'       => $entry[0]['branch_name'],
-            'ent_header'        => '',
-            'ent_trans_amt'     => $entry[0]['amount'],
-            'ent_post_date'     => now(),
-            'ent_module_type'   => 'Single',
-            'ent_status'        => 'Unapplied',
-            'check_no'          => null,
-            'ent_crf_no'        => '',
-            'ent_doc_no'        => $entry[0]['document_no'],
-            'ent_module'        => 'Payroll',
-            'ent_app_amt'       => $entry[0]['amount'],
-            'ent_unapp_amt'     => $entry[0]['amount'],
-            'ent_block_payment' => ($entry[0]['is_block_payment'] == 1) ? 'Yes' : 'No',
-            'ent_due_date'      => now(),
-        ]);
+        $groupedEntries = collect($entries)->groupBy('apsys_entry_id');
+        foreach ($groupedEntries as $mainId => $groupedEntry) {
+            $entry = $groupedEntry->first();
+
+            ApsysEntryMain::create([
+                'ent_tran_no'       => $mainId,
+                'ven_no'            => $entry['ven_no'],
+                'ven_name'          => $entry['ven_name'],
+                'ent_doc_date'      => now(),
+                'branch_id'         => $entry['branch_number'],
+                'branch_name'       => $entry['branch_name'],
+                'ent_header'        => $entry['document_no'],
+                'ent_trans_amt'     => $entry['amount'],
+                'ent_post_date'     => now(),
+                'ent_module_type'   => 'Single',
+                'ent_status'        => 'Unapplied',
+                'check_no'          => null,
+                'ent_crf_no'        => '',
+                'ent_doc_no'        => $entry['document_no'],
+                'ent_module'        => 'Payroll',
+                'ent_app_amt'       => $entry['amount'],
+                'ent_unapp_amt'     => 0,
+                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
+                'ent_due_date'      => now(),
+            ]);
+        }
     }
 }
