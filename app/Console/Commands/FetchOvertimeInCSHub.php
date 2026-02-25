@@ -93,22 +93,22 @@ class FetchOvertimeInCSHub extends Command
                     ->where("overtime_date",$overtime["overtime_date"])
                     ->first();
 
-                    if ($isExisting && $isExisting->status === "Unpaid") {
-                        $isExisting->delete();
-
-                        Overtime::updateOrCreate([
-                            "cshub_overtime_id" => $overtime["id"],
-                            "date_filed" => $overtime["date_filed"],
-                            "employee_id"=> $employee->id,
-                            "biometric_number" => $employee->biometric_number,
-                        ],[
-                            "overtime_date" => $overtime["overtime_date"],
-                            "purpose" => $overtime["purpose"],
-                            "total_hours" => $overtime["total_hrs"],
-                            "status" => ucfirst($overtime["status_payroll"]),
-                            "approve_date" => $overtime["update_date"]
-                        ]);
+                    if ($isExisting && $isExisting->status === "Paid") {
+                        continue;
                     }
+
+                    Overtime::updateOrCreate([
+                        "cshub_overtime_id" => $overtime["id"],
+                        "date_filed" => $overtime["date_filed"],
+                        "employee_id"=> $employee->id,
+                        "biometric_number" => $employee->biometric_number,
+                    ],[
+                        "overtime_date" => $overtime["overtime_date"],
+                        "purpose" => $overtime["purpose"],
+                        "total_hours" => $overtime["total_hrs"],
+                        "status" => ucfirst($overtime["status_payroll"]),
+                        "approve_date" => $overtime["update_date"]
+                    ]);
 
                 }
             }
