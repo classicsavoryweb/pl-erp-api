@@ -471,7 +471,8 @@ class EmployeeController extends Controller
                 "emergency_contact_relationship" => $request->emergency_contact_relationship,
                 "education_history_id" => $education->id,
                 "employee_status_id" => $request->employee_status_id,
-                "status" => $request->status
+                "status" => $request->status,
+                "home_branch_id" => $request->home_branch_id
             ]);
 
             if (!empty($request->dependents) && count($request->dependents) > 0) {
