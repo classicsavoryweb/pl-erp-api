@@ -13,6 +13,7 @@ use App\Http\Controllers\Employees\EmployeeTrainingController;
 use App\Http\Controllers\Employees\EmployeeVaccinationController;
 use App\Http\Controllers\Employees\RequirementsAttachmentController;
 use App\Http\Controllers\Maintenance\ScheduleTypeController;
+use App\Http\Controllers\Employees\EmployeePromotionController;
 use Illuminate\Support\Facades\Route;
 
 // EMPLOYEES MODULE
@@ -77,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-acting-capacity", [ActingCapacityController::class, "exportAllActingCapacity"]);
     Route::get("/get-acting-capacity/{id}", [ActingCapacityController::class, "getActingCapacity"]);
     Route::get("/get-acf/{id}", [ActingCapacityController::class, "getACFDetails"]);
+    Route::get("/get-promotion-summary/{id}", [EmployeePromotionController::class, "getPromotionSummary"]); 
     Route::middleware(["permission:perform_acting_capacity"])->post("/add-acting-capacity", [ActingCapacityController::class, "addNewActingCapacity"]);
     Route::middleware(["permission:perform_acting_capacity"])->post("/edit-acting-capacity", [ActingCapacityController::class, "editActingCapacity"]);
     Route::middleware(["permission:generate_acting_capacity"])->post("/generate-confirmation-promotion/{id}", [ActingCapacityController::class, "generateConfirmationDocuments"]);
