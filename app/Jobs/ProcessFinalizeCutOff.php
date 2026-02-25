@@ -8,6 +8,7 @@ use App\Models\Cutoff;
 use App\Models\DeductionHistory;
 use App\Models\EmployeeDeduction;
 use App\Models\Incentives;
+
 use App\Models\Payroll;
 use App\Models\PayrollList;
 use App\Models\TimeKeepingSummary;
@@ -87,7 +88,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
         
                         DeductionHistory::create([
                             "employee_id" => $employeeDeduction->employee_id,
-                            "deduction_id" => $employeeDeduction->dedcution_id,
+                            "deduction_id" => $employeeDeduction->deduction_id,
                             "reference_doc" => $employeeDeduction->reference_doc,
                             "amount" => $deduction["deducted_amount"],
                             "pay_date" => $payroll->pay_date,
