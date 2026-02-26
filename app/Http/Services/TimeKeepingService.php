@@ -1109,10 +1109,7 @@ class TimeKeepingService
             }
         }
 
-        return [
-            "should_pay" => $shouldPay,
-            "week_attendance" => $weekAttendance
-        ];
+        return $shouldPay;
     }
 
     private function getCustomWeekRange($date, $cutOff, $employee)
@@ -1256,7 +1253,7 @@ class TimeKeepingService
                 $cutOff = $this->getCutOff($timeKeeping->date);
                 $shouldBePaid = $this->payHoliday($timeKeeping->date, $employee, $cutOff, $holiday);
     
-                if (!$shouldBePaid['should_pay']) {
+                if (!$shouldBePaid) {
                     if ($timeKeeping->legal_holiday === "Yes") {
                         $deductLegal += $timeKeeping->legal_holiday_hours;
                         $deductLegalOt += $timeKeeping->legal_holiday_overtime;

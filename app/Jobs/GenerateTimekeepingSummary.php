@@ -241,9 +241,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ->first();
 
                     if ($holiday) {
-                        $payHoliday = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff, $holiday);
-
-                        $holidayIsPaid = $payHoliday['should_pay'];
+                        $holidayIsPaid = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff, $holiday);
                         $month = Carbon::parse($actualSchedule->date)->month;
 
                         if (
