@@ -119,7 +119,11 @@ class TimeKeepingService
             }
         }
 
-        if (strtolower($schedule->selection) === "flex") {
+        if (
+            strtolower($schedule->selection) === "flex" ||
+            strtolower($schedule->selection) === "flex 1" ||
+            strtolower($schedule->selection) === "flex 2"
+        ) {
             $overtime = ($decimalHours - $totalDurationHOurs >= 1) ? $decimalHours - $totalDurationHOurs : 0;
         }
 

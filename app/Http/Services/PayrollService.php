@@ -45,7 +45,7 @@ class PayrollService {
             $salaryAmount = (float) ($payrollList?->salary_amount ?? 0);
             $useSalaryAmount = $salaryAmount > 0;
 
-            if ($payrollList->is_included == 0) {
+            if (!$payrollList || $payrollList->is_included == 0) {
                 return $payroll;
             }
 
