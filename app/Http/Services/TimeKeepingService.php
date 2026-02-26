@@ -119,6 +119,10 @@ class TimeKeepingService
             }
         }
 
+        if (strtolower($schedule->selection) === "flex") {
+            $overtime = ($decimalHours - $totalDurationHOurs >= 1) ? $decimalHours - $totalDurationHOurs : 0;
+        }
+
         $holiday = Holiday::whereHas("branches", function($query) use ($branchId) {
             $query->where("branches.id", $branchId);
         })->where("date", $log->date)->first();
@@ -680,7 +684,7 @@ class TimeKeepingService
                 $cancelled_off_hours = round($decimalHours, 2);
             }
 
-            if ($workHours <= 1 && !$isCancelledOff) {
+            if ($workHours <= 1 && !$isCancelledOff && $schedule->selection !== "NO SCHEDULE") {
                 $finalWorkHours = 0;
                 $legalHoliday = 0;
                 $specialHoliday = 0;
