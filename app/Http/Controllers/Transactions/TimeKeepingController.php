@@ -347,7 +347,7 @@ class TimeKeepingController extends Controller
                 "end_time" => $fetchedCutOff->end_date
             ];
 
-            $branches = Branch::get()
+            $branches = Branch::whereIn("id", $request->branch_id)
             ->pluck('name', 'id')
             ->toArray();
             
@@ -361,6 +361,7 @@ class TimeKeepingController extends Controller
                 ])
                 ->delay(now()->addSeconds(5))
                 ->dispatch();
+
                 $user = Auth::user();
                 activity()->causedBy($user)->useLog("Timekeeping Generation")
                 ->log('User generated timekeeping of '.$branch ?? "undefined"." branch." );
