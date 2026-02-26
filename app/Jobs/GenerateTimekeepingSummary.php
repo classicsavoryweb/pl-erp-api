@@ -546,7 +546,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     "remarks" => $remarks
                 ]);
 
-                $this->payrollService->computePayroll($timeKeepingSummary);
+                // $this->payrollService->computePayroll($timeKeepingSummary);
 
                 $previousCutOff = $this->getPreviousCutOff($cutOff["start_time"]);
 
