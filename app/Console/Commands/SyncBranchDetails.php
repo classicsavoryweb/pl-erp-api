@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Branch;
+use App\Models\Employee;
+use App\Models\OtherCompany\OtherEmployee;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -55,9 +57,91 @@ class SyncBranchDetails extends Command
 
         Branch::orderBy('id')->chunkById($batchSize, function ($branches) use ($targetColumnKeys, $keyColumn) {
                 $payload = [];
+                $roleEmployeeNumbers = $branches
+                    ->flatMap(function ($branch) {
+                        return [
+                            $branch->branch_head_employee_number,
+                            $branch->group_head_employee_number,
+                            $branch->kitchen_oic_employee_number,
+                            $branch->mancom_employee_number,
+                        ];
+                    })
+                    ->filter(fn ($value) => $value !== null && trim((string) $value) !== '')
+                    ->map(fn ($value) => trim((string) $value))
+                    ->unique()
+                    ->values();
+
+                $companyByEmployeeNumber = [];
+                if ($roleEmployeeNumbers->isNotEmpty()) {
+                    $employees = Employee::query()
+                        ->select(['employee_number', 'branch_id', 'home_branch_id'])
+                        ->whereIn('employee_number', $roleEmployeeNumbers)
+                        ->get();
+
+                    $otherEmployees = OtherEmployee::query()
+                        ->select(['employee_number', 'branch_id', 'home_branch_id'])
+                        ->whereIn('employee_number', $roleEmployeeNumbers)
+                        ->get();
+
+                    $branchIds = $employees->pluck('home_branch_id')
+                        ->merge($employees->pluck('branch_id'))
+                        ->merge($otherEmployees->pluck('home_branch_id'))
+                        ->merge($otherEmployees->pluck('branch_id'))
+                        ->filter()
+                        ->unique()
+                        ->values();
+
+                    $branchCompanyById = $branchIds->isNotEmpty()
+                        ? Branch::query()->whereIn('id', $branchIds)->pluck('company', 'id')
+                        : collect();
+
+                    foreach ($employees as $employee) {
+                        $company = $branchCompanyById[$employee->home_branch_id]
+                            ?? $branchCompanyById[$employee->branch_id]
+                            ?? null;
+                        if ($company) {
+                            $companyByEmployeeNumber[$employee->employee_number] = $company;
+                        }
+                    }
+
+                    foreach ($otherEmployees as $employee) {
+                        if (isset($companyByEmployeeNumber[$employee->employee_number])) {
+                            continue;
+                        }
+                        $company = $branchCompanyById[$employee->home_branch_id]
+                            ?? $branchCompanyById[$employee->branch_id]
+                            ?? null;
+                        if ($company) {
+                            $companyByEmployeeNumber[$employee->employee_number] = $company;
+                        }
+                    }
+                }
 
                 foreach ($branches as $branch) {
                     $companyShort = $this->companyShortName($branch->company);
+                    $bhCompany = null;
+                    if ($branch->branch_head_employee_number) {
+                        $bhCompany = $companyByEmployeeNumber[trim((string) $branch->branch_head_employee_number)] ?? null;
+                    }
+                    $bhCompanyValue = $bhCompany ?? $branch->company;
+
+                    $ghCompany = null;
+                    if ($branch->group_head_employee_number) {
+                        $ghCompany = $companyByEmployeeNumber[trim((string) $branch->group_head_employee_number)] ?? null;
+                    }
+                    $ghCompanyShort = $ghCompany ? $this->companyShortName($ghCompany) : $companyShort;
+
+                    $kitchenCompany = null;
+                    if ($branch->kitchen_oic_employee_number) {
+                        $kitchenCompany = $companyByEmployeeNumber[trim((string) $branch->kitchen_oic_employee_number)] ?? null;
+                    }
+                    $kitchenCompanyShort = $kitchenCompany ? $this->companyShortName($kitchenCompany) : $companyShort;
+
+                    $mancomCompany = null;
+                    if ($branch->mancom_employee_number) {
+                        $mancomCompany = $companyByEmployeeNumber[trim((string) $branch->mancom_employee_number)] ?? null;
+                    }
+                    $mancomCompanyShort = $mancomCompany ? $this->companyShortName($mancomCompany) : $companyShort;
                     $row = [
                         'branch_id' => $branch->id,
                         'branchID' => $branch->branch_number,
@@ -65,7 +149,7 @@ class SyncBranchDetails extends Command
                         'branch_name' => $branch->name,
                         'bh_employeeid' => $branch->branch_head_employee_number,
                         'branch_head' => $branch->branch_head,
-                        'bh_company' => $branch->company,
+                        'bh_company' => $bhCompanyValue,
                         'company' => $companyShort,
                         'branch_address' => $branch->address,
                         'area' => $branch->location,
@@ -75,13 +159,13 @@ class SyncBranchDetails extends Command
                         'date_opened' => $branch->date_open,
                         'gh_employeeid' => $branch->group_head_employee_number,
                         'group_head' => $branch->group_head,
-                        'gh_company' => $companyShort,
+                        'gh_company' => $ghCompanyShort,
                         'kitchenID' => $branch->kitchen_oic_employee_number,
                         'kitchenName' => $branch->kitchen_oic,
-                        'kitchenCompany' => $companyShort,
+                        'kitchenCompany' => $kitchenCompanyShort,
                         'mancomID' => $branch->mancom_employee_number,
                         'mancomName' => $branch->mancom,
-                        'mancomCompany' => $companyShort,
+                        'mancomCompany' => $mancomCompanyShort,
                     ];
 
                     $payload[] = array_intersect_key($row, $targetColumnKeys);
