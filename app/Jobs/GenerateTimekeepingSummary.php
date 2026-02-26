@@ -274,12 +274,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
-                        $holidayConvertedToDays = false;
-                        if ($payHoliday['week_attendance'] >= 5) {
+                        // $holidayConvertedToDays = false;
+                        // if ($payHoliday['week_attendance'] >= 5) {
                             $regular_days += 1;
                             $actualWorkedDays += 1;
                             $holidayConvertedToDays = true;
-                        }
+                        // }
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {
