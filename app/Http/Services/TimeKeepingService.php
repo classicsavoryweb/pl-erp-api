@@ -60,6 +60,7 @@ class TimeKeepingService
         // Log::info("==================");
         // Log::info($employee->full_name);
         // Log::info($log->date);
+        // Log::info($schedule->selection);
 
         $travel_time = 0;
 
@@ -126,6 +127,8 @@ class TimeKeepingService
         ) {
             $overtime = ($decimalHours - $totalDurationHOurs >= 1) ? $decimalHours - $totalDurationHOurs : 0;
         }
+
+        // Log::info("OVERTIME: ". $overtime);
 
         $holiday = Holiday::whereHas("branches", function($query) use ($branchId) {
             $query->where("branches.id", $branchId);
@@ -477,7 +480,11 @@ class TimeKeepingService
                 return $punch->branch && $punch->branch->travel_time;
             });
 
-            if ($punchWithTravelTime) {
+            if (($schedule->selection === "Spot Audit" ||
+                $schedule->selection === "MEI 08:00 TO 06:30" ||
+                $schedule->selection === "MEI 09:00 TO 19:30") && 
+                $punchWithTravelTime 
+            ) {
                 if ($firstPunch->branch_id !== null) {
                     $travel_time += (float)$punchWithTravelTime->branch->travel_time;
                 }
@@ -503,8 +510,8 @@ class TimeKeepingService
                 $totalWorkedHours = 9.5;
             }
 
-            if ($totalWorkedHours > 10.5) {
-                $overtime = $totalWorkedHours - 10.5 < 1 ? 0 : $totalWorkedHours - 10.5;
+            if ($workHours > 10.5) {
+                $overtime = $workHours - 10.5 < 1 ? 0 : $workHours - 10.5;
             }
 
             if ($holiday && $legalHoliday === "Yes") {
@@ -539,6 +546,8 @@ class TimeKeepingService
             if ($specialHoliday === "Yes") {
                 $generalOvertime = $specialHolidayOvertime;
             }
+
+            Log::info("GEN OVERTIME: ". $generalOvertime);
 
             if ($overtimeApplied && $generalOvertime >= 1) {
                 if ($overtimeApplied->total_hours <= $generalOvertime) {
