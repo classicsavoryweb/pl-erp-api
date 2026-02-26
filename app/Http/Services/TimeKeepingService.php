@@ -1026,6 +1026,7 @@ class TimeKeepingService
 
         //head office
         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+            $weekAttendance = 0;
             $hasLeaveOrSuspension = $schedules->contains(function ($schedule) {
                 return in_array($schedule->timetable, ['LEAVE', 'SUSPENSION']);
             });
@@ -1067,6 +1068,8 @@ class TimeKeepingService
 
                     if (!$noSchedLogs) {
                         $noSchedWithoutLogs += 1;
+                    } else {
+                        $weekAttendance += 1;
                     }
                 }
                 if ($noSchedWithoutLogs > 1) {
@@ -1106,7 +1109,10 @@ class TimeKeepingService
             }
         }
 
-        return $shouldPay;
+        return [
+            "should_pay" => $shouldPay,
+            "week_attendance" => $weekAttendance
+        ];
     }
 
     private function getCustomWeekRange($date, $cutOff, $employee)
@@ -1250,7 +1256,7 @@ class TimeKeepingService
                 $cutOff = $this->getCutOff($timeKeeping->date);
                 $shouldBePaid = $this->payHoliday($timeKeeping->date, $employee, $cutOff, $holiday);
     
-                if (!$shouldBePaid) {
+                if (!$shouldBePaid['should_pay']) {
                     if ($timeKeeping->legal_holiday === "Yes") {
                         $deductLegal += $timeKeeping->legal_holiday_hours;
                         $deductLegalOt += $timeKeeping->legal_holiday_overtime;

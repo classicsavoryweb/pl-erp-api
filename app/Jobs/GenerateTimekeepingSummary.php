@@ -241,7 +241,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ->first();
 
                     if ($holiday) {
-                        $holidayIsPaid = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff, $holiday);
+                        $payHoliday = $this->timeKeepingService->payHoliday($actualSchedule->date, $employee, $cutOff, $holiday);
+
+                        $holidayIsPaid = $payHoliday['should_pay'];
                         $month = Carbon::parse($actualSchedule->date)->month;
 
                         if (
@@ -274,9 +276,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
-                        $regular_days += 1;
-                        $actualWorkedDays += 1;
-                        $holidayConvertedToDays = true;
+                        $holidayConvertedToDays = false;
+                        if ($payHoliday['week_attendance'] >= 5) {
+                            $regular_days += 1;
+                            $actualWorkedDays += 1;
+                            $holidayConvertedToDays = true;
+                        }
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {

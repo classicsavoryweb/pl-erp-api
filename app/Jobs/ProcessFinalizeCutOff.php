@@ -82,7 +82,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
                         $newBalance = $employeeDeduction->balance - $deduction["deducted_amount"];
                         $employeeDeduction->update([
                             "balance" => $newBalance,
-                            "end_loan_status" => $newBalance == 0 ? "Yes" : "No"
+                            // "end_loan_status" => $newBalance == 0 ? "Yes" : "No"
                         ]);
         
                         DeductionHistory::create([
