@@ -157,7 +157,8 @@ class PayrollService {
                         ->first();
 
                     if ($latestPayroll) {
-                        $totalSalary = $basicSalary + $latestPayroll->gross_pay;
+                        $latestBasic = $latestPayroll->salary - ($latestPayroll->undertime_amount + $latestPayroll->tardiness_amount);
+                        $totalSalary = $basicSalary + $latestBasic;
                         $amount = round(($totalSalary * ($philHealth->percentage * 0.01)) , 2);
 
                         if ($amount > $philHealth->philhealth_max) {
