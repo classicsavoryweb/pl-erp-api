@@ -547,8 +547,6 @@ class TimeKeepingService
                 $generalOvertime = $specialHolidayOvertime;
             }
 
-            Log::info("GEN OVERTIME: ". $generalOvertime);
-
             if ($overtimeApplied && $generalOvertime >= 1) {
                 if ($overtimeApplied->total_hours <= $generalOvertime) {
                     $approvedOvertime = $overtimeApplied->total_hours;
@@ -725,8 +723,8 @@ class TimeKeepingService
                 "special_holiday" => $specialHoliday,
                 "regular_overtime" => $this->formatHours($overtime),
                 "tardiness" => $tardiness,
-                "night_diff_hours" => $this->formatHours($nightDiffHours),
-                "night_diff_overtime" => $this->formatHours($nightDiffOt),
+                "night_diff_hours" => $this->formatHours($nightDiffHours <= 1 ? $nightDiffHours : 0),
+                "night_diff_overtime" => $this->formatHours($nightDiffOt <= 1 ? $nightDiffOt : 0),
                 "legal_holiday_hours" => $this->formatHours($legalHolidayHours),
                 "legal_holiday_overtime" => $this->formatHours($legalHolidayOvertime),
                 "special_holiday_hours" => $this->formatHours($specialHolidayHours),

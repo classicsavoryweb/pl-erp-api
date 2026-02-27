@@ -104,8 +104,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             foreach ($employees as $employee) {
 
-            // Log::info("=========================");
-            // Log::info($employee->full_name);
             if ($employee->type === "Agency") {
                 continue;
             }
@@ -274,12 +272,17 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
-                        // $holidayConvertedToDays = false;
-                        // if ($payHoliday['week_attendance'] >= 5) {
+                        $weekRange = $this->timeKeepingService->getWeekRange($actualSchedule->date);
+                        $holidayWeekTimeKeeping = TimeKeeping::whereBetween('date', $weekRange)
+                        ->where('employee_id', $employee->id)
+                        ->where("final_worked_hours" ,'>', 0)
+                        ->get();
+
+                        if ($holidayWeekTimeKeeping->count() < 5) {
                             $regular_days += 1;
                             $actualWorkedDays += 1;
                             $holidayConvertedToDays = true;
-                        // }
+                        }
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {
