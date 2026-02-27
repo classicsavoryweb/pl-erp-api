@@ -26,6 +26,7 @@ class OvertimeExport implements FromCollection, WithHeadings
                 $unique_overtime->overtime_date,
                 $unique_overtime->purpose,
                 $unique_overtime->total_hours,
+                $unique_overtime->hours_paid,
                 $unique_overtime->status,
             ];
         });
@@ -39,8 +40,9 @@ class OvertimeExport implements FromCollection, WithHeadings
             'Branch',
             'Position',
             'Overtime Date',
-            'Total Hours',
             'Purpose',
+            'Total Hours',
+            'Hours Paid',
             'Status',
         ];
     }

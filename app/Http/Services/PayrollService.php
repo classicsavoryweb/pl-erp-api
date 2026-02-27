@@ -195,7 +195,7 @@ class PayrollService {
                     ->first();
     
                     if ($latestPayroll) {
-                        $totalSalary = $basicSalary + $latestPayroll->gross_pay;
+                        $totalSalary = $grossPayAmount + $latestPayroll->gross_pay;
     
                         $sss = SSS::where('salary_range_min', '<=', $totalSalary)
                         ->where('salary_range_max', '>=', $totalSalary)

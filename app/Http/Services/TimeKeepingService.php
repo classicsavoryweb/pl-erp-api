@@ -503,14 +503,14 @@ class TimeKeepingService
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
 
             if ($totalWorkedHours < $hours) {
-                $undertime = ($totalDurationHOurs - $totalWorkedHours) * 60;
+                $undertime = ($totalWorkedHours - $hours) * 60;
             }
 
             if ($totalWorkedHours < $totalDurationHOurs && $totalWorkedHours >= $hours ) {
                 $totalWorkedHours = $hours;
             }
 
-            if ($workHours > 10.5) {
+            if ($totalWorkedHours > $totalDurationHOurs) {
                 $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
 
@@ -1081,24 +1081,27 @@ class TimeKeepingService
             $previousDate = $holidayDate->copy()->subDay()->toDateString();
             $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
             $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+            $shouldPay = true;
 
-            if ($previousDateSchedule && $previousDateSchedule->timetable === "REST DAY") {
-                $currentDate = Carbon::parse($previousDate);
-                $previousDate = $currentDate->copy()->subDay()->toDateString();
-                $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
-                $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
-
-                if (!$hasLog) {
-                    $shouldPay = false;
-                }
-
-            } else if ($previousDateSchedule && $previousDateSchedule->timetable === "INCENTIVE LEAVE") {
-                $shouldPay = true;
-            } else if ($previousDateSchedule && $previousDateSchedule->timetable === "NO SCHEDULE") {
-                $shouldPay = true;
-            } else {
-                if (!$hasLog) {
-                    $shouldPay = false;
+            if ($holiday->holiday_type == "LH") {
+                if ($previousDateSchedule && $previousDateSchedule->timetable === "REST DAY") {
+                    $currentDate = Carbon::parse($previousDate);
+                    $previousDate = $currentDate->copy()->subDay()->toDateString();
+                    $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+                    $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+    
+                    if (!$hasLog) {
+                        $shouldPay = false;
+                    }
+    
+                } else if ($previousDateSchedule && $previousDateSchedule->timetable === "INCENTIVE LEAVE") {
+                    $shouldPay = true;
+                } else if ($previousDateSchedule && $previousDateSchedule->timetable === "NO SCHEDULE") {
+                    $shouldPay = true;
+                } else {
+                    if (!$hasLog) {
+                        $shouldPay = false;
+                    }
                 }
             }
 
