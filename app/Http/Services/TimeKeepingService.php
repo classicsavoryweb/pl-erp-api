@@ -502,16 +502,16 @@ class TimeKeepingService
             $shouldBeHalfDay = false;
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
 
-            if ($totalWorkedHours < 9.5) {
-                $undertime = (10.5 - $totalWorkedHours) * 60;
+            if ($totalWorkedHours < $hours) {
+                $undertime = ($totalDurationHOurs - $totalWorkedHours) * 60;
             }
 
-            if ($totalWorkedHours < 10.5 && $totalWorkedHours >= 9.5 ) {
-                $totalWorkedHours = 9.5;
+            if ($totalWorkedHours < $totalDurationHOurs && $totalWorkedHours >= $hours ) {
+                $totalWorkedHours = $hours;
             }
 
             if ($workHours > 10.5) {
-                $overtime = $workHours - 10.5 < 1 ? 0 : $workHours - 10.5;
+                $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
 
             if ($holiday && $legalHoliday === "Yes") {
