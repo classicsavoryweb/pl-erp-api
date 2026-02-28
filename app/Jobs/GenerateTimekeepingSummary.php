@@ -92,8 +92,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             $activeCutOff = Cutoff::where("status", "active")->first();
 
-            $adjustmentRemarks = "";
-
             $start_date = Carbon::parse($activeCutOff->start_date)->subMonth()->day(26)->format("Y-m-d");
             $end_date = Carbon::parse($start_date)->addMonth()->day(10)->format("Y-m-d");
 
@@ -103,6 +101,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             }
 
             foreach ($employees as $employee) {
+            $adjustmentRemarks = "";
 
             if ($employee->type === "Agency") {
                 continue;
