@@ -68,6 +68,6 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware("permission:unapprove_transactions_adjustments")->get("/unapprove-adjustments/{id}", [AdjustmentController::class, "unapproveAdjustments"]);
     Route::middleware("permission:unapprove_transactions_adjustments")->get("/void-adjustments/{id}", [AdjustmentController::class, "voidAdjustments"]);
     Route::middleware("permission:perform_transactions_adjustments")->post("/create-adjustments", [AdjustmentController::class, "createAdjustments"]);
-    // Route::middleware("permission:perform_transactions_adjustments")->post("/edit-adjustments/{id}", [AdjustmentController::class, "editAdjustments"]);
+    Route::middleware("permission:perform_transactions_adjustments")->post("/edit-adjustments/{id}", [AdjustmentController::class, "editAdjustments"]);
 
 });
