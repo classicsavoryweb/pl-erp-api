@@ -873,7 +873,7 @@ class TimeKeepingService
             
             if ($timeKeeping->night_diff_overtime > 0) {
                 if ($timeKeeping->night_diff_overtime < $timeKeeping->approved_overtime) {
-                    $night_differential_overtime = $timeKeeping->night_diff_overtime > 1 ? $timeKeeping->night_diff_overtime * ($paymentPerHour * .125) : 0;
+                    $night_differential_overtime = $timeKeeping->night_diff_overtime >= 1 ? $timeKeeping->night_diff_overtime * ($paymentPerHour * .125) : 0;
                 } else {
                     $night_differential_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * .125);
                 }
