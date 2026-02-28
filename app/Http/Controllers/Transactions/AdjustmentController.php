@@ -285,6 +285,54 @@ class AdjustmentController extends Controller
         }
     }
 
+    public function editAdjustments(Request $request, $id) {
+        try {
+            $request->validate([
+                "taxable_amount" => "required|numeric",
+                "correct_amount_paid" => "required|numeric",
+            ]);
+
+            DB::beginTransaction();
+            $adjustment = Adjustment::find($id);
+
+            if (!$adjustment) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Adjustment not found"]);
+            }
+
+            if ($adjustment->status === "Adjusted") {
+                DB::rollBack();
+                return $this->sendError(["message" => "Adjustment already adjusted and cannot be edited"]);
+            }
+
+            $taxableAmount = round((float) $request->taxable_amount, 2);
+            $correctAmountPaid = round((float) $request->correct_amount_paid, 2);
+
+            $user = Auth::user();
+            $userLabel = $user?->proper_full_name ?? $user?->full_name ?? $user?->email ?? "Unknown User";
+            $timestamp = now()->format("Y-m-d H:i");
+            $remarksEntry = "ADJUSTMENT AMOUNT EDIT: taxable={$taxableAmount} correct={$correctAmountPaid} by {$userLabel} at {$timestamp} |";
+
+            $remarks = trim($adjustment->remarks ?? "");
+            $remarks = trim($remarks . " " . $remarksEntry);
+
+            $adjustment->update([
+                "taxable_amount" => $taxableAmount,
+                "correct_amount_paid" => $correctAmountPaid,
+                "remarks" => $remarks,
+            ]);
+
+            DB::commit();
+            return $this->sendResponse([
+                "message" => "Adjustment updated successfully",
+                "adjustment" => $adjustment
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function getAdjustment($id) {
         try {
             $adjustment = Adjustment::find($id);
