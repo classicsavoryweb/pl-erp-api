@@ -210,14 +210,18 @@ class PayrollService {
                         if ($pagibigShares > $pagibig->max_deduction) {
                             $pagibigShares = $pagibig->max_deduction;
                         }
-                        $latestSSS = SSS::where("employee_ss", $latestPayroll->employee_sss)->first();
+                        $latestSSS = SSS::where('salary_range_min', '<=', $latestPayroll->gross_pay)
+                        ->where('salary_range_max', '>=', $latestPayroll->gross_pay)
+                        ->first();
 
-                        $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
-                        $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
-
-                        $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
-                        $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                        $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestPayroll->employer_sss, 2);   
+                        if ($latestSSS) {
+                            $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
+                            $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
+    
+                            $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
+                            $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
+                            $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestPayroll->employer_sss, 2);
+                        }
                     } else {
                         $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
                         $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
