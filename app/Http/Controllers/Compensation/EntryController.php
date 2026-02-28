@@ -96,6 +96,7 @@ class EntryController extends Controller
             $request->validate([
                 "date_from" => "required",
                 "date_to" => "required",
+                "send_to_apsys" => "nullable|boolean",
             ]);
 
             $pay_date = $request->pay_date;
@@ -120,8 +121,9 @@ class EntryController extends Controller
 
             $start_date = $request->date_from;
             $end_Date = $request->date_to;
+            $sendToApsys = $request->boolean("send_to_apsys", true);
 
-            GenerateEntry::dispatch($payroll, $pay_date, $start_date, $end_Date, Auth::user()->id);
+            GenerateEntry::dispatch($payroll, $pay_date, $start_date, $end_Date, Auth::user()->id, $sendToApsys);
 
             return $this->sendResponse(["message" => "Entry are in queue for processing."]);
         } catch(Exception $e) {
