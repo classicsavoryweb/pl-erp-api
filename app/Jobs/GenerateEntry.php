@@ -331,6 +331,9 @@ class GenerateEntry implements ShouldQueue
             $branchNumber = $payrollBranch->branch_number;
 
             $payrollEmployeeBankQuery = Payroll::where('timekeeping_branch_id', $branchId)
+                ->where('pay_date', $this->pay_date)
+                ->where('start_date', $this->start_date)
+                ->where('end_date', $this->end_date)
                 ->whereIn('employee_id', function($query) {
                     $query->select('employee_id')
                         ->from('payroll_list')
@@ -443,6 +446,9 @@ class GenerateEntry implements ShouldQueue
                     : ['employee', 'timekeeping_branch']
             )
                 ->where('timekeeping_branch_id', $branchId)
+                ->where('pay_date', $this->pay_date)
+                // ->where('start_date', $this->start_date)
+                // ->where('end_date', $this->end_date)
                 ->whereIn('employee_id', function($query) {
                     $query->select('employee_id')
                         ->from('payroll_list')
@@ -4242,4 +4248,3 @@ class GenerateEntry implements ShouldQueue
         }
     }
 }
-
