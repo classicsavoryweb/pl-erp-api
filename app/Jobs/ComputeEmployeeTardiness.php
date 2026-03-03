@@ -57,8 +57,6 @@ class ComputeEmployeeTardiness implements ShouldQueue
                 }
 
                 if ($totalTardy >= 60) {
-                    Log::info("INITIAL TARDY: ".$totalTardy);
-
                     $endpoint = $baseUrl."/get-applied-tardiness";
                     try {
                         $response = Http::withBasicAuth($user, $password)

@@ -214,6 +214,10 @@ class ActualTimeController extends Controller
                     return $this->sendError(["message" => "You cant edit inactive cutoff"]);
                 }
 
+                if ($activeCutOff && $activeCutOff->is_timekeeping_locked == 1) {
+                    return $this->sendError(["message" => "You cant edit inactive cutoff"]);
+                }
+
                 $deletedIds = $request->input("deleted_punch_ids", []);
                 $didModify = false;
                 if (is_array($deletedIds) && count($deletedIds) > 0) {
