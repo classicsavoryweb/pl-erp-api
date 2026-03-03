@@ -38,7 +38,8 @@ class SendPayslipsToEmployeeJob implements ShouldQueue
         foreach ($payslips as $payslip) {
             $employee = $payslip->employee;
             $cutOff = Cutoff::where("pay_date", $payslip->pay_date)->first();
-            Mail::mailer("PAYROLL_MAILER")->to($employee->email)
+            $emails = explode('/', $employee->email);
+            Mail::mailer("PAYROLL_MAILER")->to($emails)
                 ->send(new SendPayslipEmail($payslip, $cutOff));
         }
         $this->notifyJobFinished();
