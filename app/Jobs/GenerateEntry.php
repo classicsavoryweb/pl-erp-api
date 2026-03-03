@@ -35,6 +35,7 @@ class GenerateEntry implements ShouldQueue
     protected $start_date;
     protected $end_date;
     protected $user;
+    protected $sendToApsys = true;
     protected $apsysAvailable = true;
     private $counterEntry;
     private $counterApsysEntry;
@@ -42,13 +43,14 @@ class GenerateEntry implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(Collection $payroll, $pay_date, $start_date, $end_date, $user)
+    public function __construct(Collection $payroll, $pay_date, $start_date, $end_date, $user, bool $sendToApsys = true)
     {
         $this->payroll = $payroll;
         $this->pay_date = $pay_date;
         $this->start_date = $start_date;
         $this->end_date = $end_date;
         $this->user = $user;
+        $this->sendToApsys = $sendToApsys;
     }
 
     private function generateEntryId(&$counterEntry)
@@ -140,7 +142,7 @@ class GenerateEntry implements ShouldQueue
 
     public function handle(): void
     {
-        $this->apsysAvailable = $this->isApsysAvailable();
+        $this->apsysAvailable = $this->sendToApsys && $this->isApsysAvailable();
 
         $eeSSSVendor = null;
         $eeSSSDebit = null;
@@ -331,6 +333,9 @@ class GenerateEntry implements ShouldQueue
             $branchNumber = $payrollBranch->branch_number;
 
             $payrollEmployeeBankQuery = Payroll::where('timekeeping_branch_id', $branchId)
+                ->where('pay_date', $this->pay_date)
+                ->where('start_date', $this->start_date)
+                ->where('end_date', $this->end_date)
                 ->whereIn('employee_id', function($query) {
                     $query->select('employee_id')
                         ->from('payroll_list')
@@ -443,6 +448,9 @@ class GenerateEntry implements ShouldQueue
                     : ['employee', 'timekeeping_branch']
             )
                 ->where('timekeeping_branch_id', $branchId)
+                ->where('pay_date', $this->pay_date)
+                // ->where('start_date', $this->start_date)
+                // ->where('end_date', $this->end_date)
                 ->whereIn('employee_id', function($query) {
                     $query->select('employee_id')
                         ->from('payroll_list')
@@ -4242,4 +4250,3 @@ class GenerateEntry implements ShouldQueue
         }
     }
 }
-

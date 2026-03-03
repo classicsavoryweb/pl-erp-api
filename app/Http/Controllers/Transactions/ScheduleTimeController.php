@@ -77,14 +77,18 @@ class ScheduleTimeController extends Controller
                 $schedule_time = $schedule_time->whereBetween("date", [$start_time, $end_time]);
             }
 
+            $schedule_time = $schedule_time
+                ->orderBy("employee_id", "ASC")
+                ->orderBy("date", "ASC");
+
             if ($request->has(["export"]) && $request->export) {
                 $schedule_time = $schedule_time->get();
                 return Excel::download(new ScheduleTimeExport($schedule_time), "schedule_time.xls");
             }
 
             $schedule_time = $schedule_time
-            ->with(["employee", "employee.current_branch", "branch"])
-            ->paginate($perPage);
+                ->with(["employee", "employee.current_branch", "branch"])
+                ->paginate($perPage);
 
             return $this->sendResponse($schedule_time);
         } catch(Exception $e) {
