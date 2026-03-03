@@ -6,12 +6,40 @@ use App\Exports\Maintenance\BranchExport;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Employee;
+use App\Models\OtherCompany\OtherEmployee;
 use Illuminate\Http\Request;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BranchController extends Controller
 {
+    private function resolveEmployeeByNumber(?string $employeeNumber): ?array
+    {
+        if (!$employeeNumber) {
+            return null;
+        }
+
+        $employee = Employee::where("employee_number", $employeeNumber)->first();
+        if ($employee) {
+            return [
+                'employee_number' => $employee->employee_number,
+                'full_name' => $employee->full_name,
+            ];
+        }
+
+        $otherEmployee = OtherEmployee::where("employee_number", $employeeNumber)
+            ->orWhere("employee_number_2", $employeeNumber)
+            ->first();
+
+        if ($otherEmployee) {
+            return [
+                'employee_number' => $otherEmployee->employee_number,
+                'full_name' => $otherEmployee->full_name,
+            ];
+        }
+
+        return null;
+    }
     public function getAllBranches(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -110,13 +138,25 @@ class BranchController extends Controller
             $count = Branch::count();
             $format = $request->company === "Tony Ting Food Concepts Inc." ? "TTFC" : "SFI";
             $branchNumber = $format . str_pad(++$count, 5, '0', STR_PAD_LEFT);
-            $bhEmployee = Employee::where("employee_number", $request->branch_head_employee_number)->first();
-            $ghEmployee = Employee::where("employee_number", $request->group_head_employee_number)->first();
-            $mancom = Employee::where("employee_number", $request->mancom_employee_number)->first();
+            $bhEmployee = $this->resolveEmployeeByNumber($request->branch_head_employee_number);
+            $ghEmployee = $this->resolveEmployeeByNumber($request->group_head_employee_number);
+            $mancom = $this->resolveEmployeeByNumber($request->mancom_employee_number);
 
             $kitchenOIC = "";
             if ($request->has('kitchen_oic_employee_number')) {
-                $kitchenOIC = Employee::where("employee_number", $request->kitchen_oic_employee_number)->first();
+                $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
+            }
+            if (!$bhEmployee) {
+                return $this->sendError(["message" => "Branch head employee number not found."]);
+            }
+            if (!$ghEmployee) {
+                return $this->sendError(["message" => "Group head employee number not found."]);
+            }
+            if (!$mancom) {
+                return $this->sendError(["message" => "Mancom employee number not found."]);
+            }
+            if ($request->has('kitchen_oic_employee_number') && !$kitchenOIC) {
+                return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
 
             Branch::create([
@@ -133,14 +173,14 @@ class BranchController extends Controller
                 "company" => $request->company,
                 "rate_code" => $request->rate_code,
                 "branch_email" => $request->branch_email,
-                'branch_head_employee_number' => $bhEmployee->employee_number,
-                "group_head_employee_number" => $ghEmployee->employee_number,
-                'branch_head' => $bhEmployee->full_name,
-                "group_head" => $ghEmployee->full_name,
-                "mancom_employee_number" => $mancom->employee_number,
-                "mancom" => $mancom->full_name,
-                "kitchen_oic_employee_number" => $kitchenOIC->employee_number ?? null,
-                "kitchen_oic" => $kitchenOIC->full_name ?? null, 
+                'branch_head_employee_number' => $bhEmployee['employee_number'],
+                "group_head_employee_number" => $ghEmployee['employee_number'],
+                'branch_head' => $bhEmployee['full_name'],
+                "group_head" => $ghEmployee['full_name'],
+                "mancom_employee_number" => $mancom['employee_number'],
+                "mancom" => $mancom['full_name'],
+                "kitchen_oic_employee_number" => $kitchenOIC['employee_number'] ?? null,
+                "kitchen_oic" => $kitchenOIC['full_name'] ?? null, 
                 "expense_debit" => $request->expense_debit ?? null, 
                 "expense_credit" => $request->expense_credit ?? null, 
                 "advance_debit" => $request->advance_debit ?? null, 
@@ -195,13 +235,25 @@ class BranchController extends Controller
                 // "branch_ho_stat_credit" => "required",
             ]);
 
-            $bhEmployee = Employee::where("employee_number", $request->branch_head_employee_number)->first();
-            $ghEmployee = Employee::where("employee_number", $request->group_head_employee_number)->first();
-            $mancom = Employee::where("employee_number", $request->mancom_employee_number)->first();
+            $bhEmployee = $this->resolveEmployeeByNumber($request->branch_head_employee_number);
+            $ghEmployee = $this->resolveEmployeeByNumber($request->group_head_employee_number);
+            $mancom = $this->resolveEmployeeByNumber($request->mancom_employee_number);
 
             $kitchenOIC = "";
             if ($request->has('kitchen_oic_employee_number')) {
-                $kitchenOIC = Employee::where("employee_number", $request->kitchen_oic_employee_number)->first();
+                $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
+            }
+            if (!$bhEmployee) {
+                return $this->sendError(["message" => "Branch head employee number not found."]);
+            }
+            if (!$ghEmployee) {
+                return $this->sendError(["message" => "Group head employee number not found."]);
+            }
+            if (!$mancom) {
+                return $this->sendError(["message" => "Mancom employee number not found."]);
+            }
+            if ($request->has('kitchen_oic_employee_number') && !$kitchenOIC) {
+                return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
             Branch::where("id", $id)->update([
                 "name" => $request->name,
@@ -217,14 +269,14 @@ class BranchController extends Controller
                 "company" => $request->company,
                 "rate_code" => $request->rate_code,
                 "branch_email" => $request->branch_email,
-                'branch_head_employee_number' => $bhEmployee->employee_number,
-                "group_head_employee_number" => $ghEmployee->employee_number,
-                'branch_head' => $bhEmployee->full_name,
-                "group_head" => $ghEmployee->full_name,
-                "mancom_employee_number" => $mancom->employee_number,
-                "mancom" => $mancom->full_name,
-                "kitchen_oic_employee_number" => $kitchenOIC->employee_number ?? null,
-                "kitchen_oic" => $kitchenOIC->full_name ?? null,
+                'branch_head_employee_number' => $bhEmployee['employee_number'],
+                "group_head_employee_number" => $ghEmployee['employee_number'],
+                'branch_head' => $bhEmployee['full_name'],
+                "group_head" => $ghEmployee['full_name'],
+                "mancom_employee_number" => $mancom['employee_number'],
+                "mancom" => $mancom['full_name'],
+                "kitchen_oic_employee_number" => $kitchenOIC['employee_number'] ?? null,
+                "kitchen_oic" => $kitchenOIC['full_name'] ?? null,
                 "expense_debit" => $request->expense_debit ?? null, 
                 "expense_credit" => $request->expense_credit ?? null, 
                 "advance_debit" => $request->advance_debit ?? null, 

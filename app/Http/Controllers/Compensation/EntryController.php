@@ -94,22 +94,36 @@ class EntryController extends Controller
     public function generateEntries(Request $request) {
         try {
             $request->validate([
-                "pay_date" => "required",
                 "date_from" => "required",
                 "date_to" => "required",
+                "send_to_apsys" => "nullable|boolean",
             ]);
 
+            $pay_date = $request->pay_date;
+            if (!$pay_date) {
+                $payrollDate = Payroll::where("start_date", $request->date_from)
+                    ->where("end_date", $request->date_to)
+                    ->orderBy("pay_date", "DESC")
+                    ->first();
+
+                if (!$payrollDate) {
+                    return $this->sendError(["message" => "No payroll found for the selected cutoff."]);
+                }
+
+                $pay_date = $payrollDate->pay_date;
+            }
+
             $payroll = Payroll::with(["employee"])
-            ->where("pay_date", $request->pay_date)
+            ->where("pay_date", $pay_date)
             ->where("start_date", $request->date_from)
             ->where("end_date", $request->date_to)
             ->get();
 
-            $pay_date = $request->pay_date;
             $start_date = $request->date_from;
             $end_Date = $request->date_to;
+            $sendToApsys = $request->boolean("send_to_apsys", true);
 
-            GenerateEntry::dispatch($payroll, $pay_date, $start_date, $end_Date, Auth::user()->id);
+            GenerateEntry::dispatch($payroll, $pay_date, $start_date, $end_Date, Auth::user()->id, $sendToApsys);
 
             return $this->sendResponse(["message" => "Entry are in queue for processing."]);
         } catch(Exception $e) {

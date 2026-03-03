@@ -299,6 +299,7 @@ class EmployeeController extends Controller
                 "station",
                 "employee_status",
                 "separation",
+                "latest_bank_details",
                 "schedule",
                 "schedule.schedule_type"
             ])

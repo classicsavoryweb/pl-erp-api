@@ -123,8 +123,10 @@ class ATDController extends Controller
                 $deductions = $deductions->where('deduction_id', $request->deduction_id);
             }
 
-            if ($request->has(["created_at_from", "created_at_to"])) {
-                $deductions = $deductions->whereBetween('created_at', [$request->created_at_from, $request->created_at_to]);
+            if ($request->filled("created_at_from") && $request->filled("created_at_to")) {
+                $startDate = Carbon::parse($request->created_at_from)->startOfDay();
+                $endDate = Carbon::parse($request->created_at_to)->endOfDay();
+                $deductions = $deductions->whereBetween('created_at', [$startDate, $endDate]);
             }
             
             if ($request->has(["column_type", "key_word"])) {
