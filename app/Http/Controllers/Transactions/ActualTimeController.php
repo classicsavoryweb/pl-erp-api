@@ -16,6 +16,7 @@ use App\Jobs\FetchBranchLogs;
 use App\Jobs\GenerateTimekeepingSummary;
 use App\Jobs\TransferLogsToTimeKeeping;
 use App\Models\Branch;
+use App\Models\Cutoff;
 use App\Models\ScheduleTime;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
@@ -204,6 +205,15 @@ class ActualTimeController extends Controller
             $refreshTargets = [];
 
             if ($biotime) {
+                $activeCutOff = Cutoff::where("status", "active")
+                ->where("start_date", "<=", $biotime->date)
+                ->where("end_date", ">=", $biotime->date)
+                ->first();
+
+                if (!$activeCutOff) {
+                    return $this->sendError(["message" => "You cant edit inactive cutoff"]);
+                }
+
                 $deletedIds = $request->input("deleted_punch_ids", []);
                 $didModify = false;
                 if (is_array($deletedIds) && count($deletedIds) > 0) {
