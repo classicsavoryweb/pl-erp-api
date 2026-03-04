@@ -6,6 +6,7 @@ use App\Http\Controllers\Reports\ReportsPagibigController;
 use App\Http\Controllers\Reports\ReportsPhilhealthController;
 use App\Http\Controllers\Reports\ReportsSSSController;
 use App\Http\Controllers\Reports\ReportsBDOCashCardController;
+use App\Http\Controllers\Reports\ReportsDeductionController;
 use Illuminate\Support\Facades\Route;
 
 // REPORTS MODULE
@@ -47,4 +48,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post("/generate-thirteenth-month-monthly-allocation", [ReportsThirteenthMonthController::class, "generateThirteenthMonthMonthlyAllocation"]);
     Route::middleware(["permission:perform_reports_13th_month_pay_entries"])->get("/generate-thirteenth-month-monthly-allocation-entries/{id}", [ReportsThirteenthMonthController::class, "generateThirteenthMonthMonthlyAllocationEntries"]);
     Route::middleware(["permission:generate_13th_month_pay"])->get('/download-excel-file/{filename}', [ReportsThirteenthMonthController::class, 'downloadExcelFile']);
+
+    //deduction reports
+    Route::middleware(["permission:perform_reports_deductions"])->get('/export-deduction-reports', [ReportsDeductionController::class, 'exportDeductionReport']);
 });
