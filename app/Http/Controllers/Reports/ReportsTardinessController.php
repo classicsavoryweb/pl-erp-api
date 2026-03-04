@@ -531,7 +531,9 @@ class ReportsTardinessController extends Controller
 
         $baseUrl = rtrim($baseUrl, "/");
         $endpoint = $baseUrl . (Str::endsWith($baseUrl, "/api") ? "" : "/api") . "/tardiness-memo";
-
+        $sender = env('COMPANY_NAME') == "SFI" 
+            ? "Human Resources Department"
+            : "Human Resources Department 2";
         try {
             $response = Http::withBasicAuth($user, $password)
                 ->timeout(60)
@@ -541,7 +543,7 @@ class ReportsTardinessController extends Controller
                     "type" => $memoType,
                     "subject" => $subject,
                     "message" => $message,
-                    "sender_name" => "Human Resources Department",
+                    "sender_name" => $sender,
                 ]);
 
             if (!$response->successful()) {
