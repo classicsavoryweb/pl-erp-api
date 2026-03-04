@@ -13,6 +13,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use App\Support\NotifiesJobStatus;
+use Exception;
+use Log;
 
 class SendPayslipsToEmployeeJob implements ShouldQueue
 {
@@ -36,11 +38,15 @@ class SendPayslipsToEmployeeJob implements ShouldQueue
         $payslips = $this->payrolls;
 
         foreach ($payslips as $payslip) {
-            $employee = $payslip->employee;
-            $cutOff = Cutoff::where("pay_date", $payslip->pay_date)->first();
-            $emails = explode('/', $employee->email);
-            Mail::mailer("PAYROLL_MAILER")->to($emails)
-                ->send(new SendPayslipEmail($payslip, $cutOff));
+            try {
+                $employee = $payslip->employee;
+                $cutOff = Cutoff::where("pay_date", $payslip->pay_date)->first();
+                $emails = explode('/', $employee->email);
+                Mail::mailer("PAYROLL_MAILER")->to($emails)
+                    ->send(new SendPayslipEmail($payslip, $cutOff));
+            } catch (Exception $e) {
+                Log::info($e->getMessage());
+            }
         }
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
