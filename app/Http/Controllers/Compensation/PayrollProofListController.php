@@ -164,7 +164,9 @@ class PayrollProofListController extends Controller
                     "net_pay as amount",
                     "cut_off", 
                 ])->where("net_pay", ">", 0)
-                ->orderBy(
+                ->whereHas("payroll_list", function ($query) {
+                    $query->where("is_hold", false);
+                })->orderBy(
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "payroll.employee_id")
                 );
@@ -181,7 +183,8 @@ class PayrollProofListController extends Controller
             
             } else if ($request->bank_account_type_id == '0' && $request->bank_account_type_id !== 'ALL') {
                 if ($request->type === "PAYROLL") {
-                    $proofList = $proofList->where("is_bank", false);
+                    $proofList = $proofList->where("is_bank", false)
+                    ->where("is_hold", false);
                 } else {
                     $proofList = $proofList->whereHas("payroll_list", function ($query) {
                         $query->where("is_bank", false);

@@ -405,6 +405,12 @@ class TimeKeepingController extends Controller
             $cutOffStart = strlen($cutOff) >= 21 ? substr($cutOff, 0, 10) : null;
             $cutOffEnd = strlen($cutOff) >= 21 ? substr($cutOff, 11, 10) : null;
             $adjustmentDate = $cutOffEnd ?? now()->format("Y-m-d");
+            
+            $isActiveCutOff = Cutoff::where("cut_off", $cutOff)->first();
+
+            if (!$isActiveCutOff || ($isActiveCutOff && $isActiveCutOff->status == 'inactive')) {
+                return $this->sendError(["message" => "You cant edit inactive cutoff"]);
+            }
 
             Adjustment::where("timekeeping_summary_id", $summary->id)
                 ->where("type", "Manual Taxable Adjustment")
@@ -498,6 +504,16 @@ class TimeKeepingController extends Controller
                 return $this->sendError(["message" => "Schedule not found for timekeeping"]);
             }
 
+            $cutOff = $this->getCutOffForDate($timeKeeping->date);
+            
+            $isActiveCutOff = Cutoff::where("start_date", $cutOff['start_time'])
+            ->where("end_date", $cutOff['end_time'])
+            ->first();
+
+            if (!$isActiveCutOff || ($isActiveCutOff && $isActiveCutOff->status == 'inactive')) {
+                return $this->sendError(["message" => "You cant edit inactive cutoff"]);
+            }
+
             $hours = (int) ($request->hours ?? 0);
             $minutes = (int) ($request->minutes ?? 0);
             $totalMinutes = ($hours * 60) + $minutes;
@@ -549,7 +565,6 @@ class TimeKeepingController extends Controller
 
             $this->timeKeepingService->computePayment($timeKeeping, $schedule, false);
 
-            $cutOff = $this->getCutOffForDate($timeKeeping->date);
             GenerateTimekeepingSummary::dispatchSync(
                 $timeKeeping->branch_id,
                 $cutOff,

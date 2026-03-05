@@ -45,10 +45,10 @@ class ConverterDetailImport implements ToCollection, WithHeadingRow, WithMultipl
                     "employee_id" => $employee->id,
                     "amount" => $trans["amount"],
                     "transaction_type_id" => $trans["transaction_id"],
+                    "remarks" => $trans["remarks"],
                 ],[
                     "terms" => 0,
                     "branch_id" => $branch->id ?? 0,
-                    "remarks" => $trans["remarks"],
                     "added_by" => $this->userId,
                 ]);
             }
