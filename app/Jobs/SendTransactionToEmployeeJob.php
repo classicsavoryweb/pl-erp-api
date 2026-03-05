@@ -251,11 +251,6 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 $monthlyAmortization = $transaction->amount / $transaction->terms;
                 $deduction = $transaction->transaction_type->deduction;
 
-                $isExisting = EmployeeDeduction::where("employee_id", $employee->id)
-                ->where("deduction_id", $transaction->transaction_type->deduction_id)
-                ->where("amount", $transaction->amount)
-                ->first();
-
                 $deduction_count = EmployeeDeduction::where("employee_id", $employee->id)
                     ->whereNotNull("deduction_ref")
                     ->where("deduction_ref", "!=", '')
@@ -267,31 +262,29 @@ class SendTransactionToEmployeeJob implements ShouldQueue
 
                 $user = User::find($userId);
 
-                if (!$isExisting) {
-                    EmployeeDeduction::create([
-                        "employee_id" => $employee->id,
-                        "deduction_id" => $transaction->transaction_type->deduction_id,
-                        "months" => $transaction->terms,
-                        "amount" => $transaction->amount,
-                        "source_of_fund" => "HO",
-                        "start_date" => now()->format("Y-m-d"),
-                        "end_date" => now()->addMonths($transaction->terms)->format("Y-m-d"),
-                        "monthly_amortization" => round($monthlyAmortization, 2),
-                        "balance" => $transaction->amount,
-                        "remarks" => $transaction->remarks,
-                        "debit_id" => $deduction->debit_id,
-                        "credit_id" => $deduction->credit_id,
-                        "branch_id" => $employee->current_branch->id,
-                        "block_payment" => "Yes",
-                        "approved_by" => $batch->generated_by,
-                        "approved_date" => $batch->generated_at,
-                        "approved_status" => "Yes",
-                        "end_loan_status" => "No",
-                        "deduction_ref" => $deduction_reference,
-                        "created_by" => $user ? $user->full_name : null,
-                        "date_created" => $transaction->created_at->format("Y-m-d"),
-                    ]);
-                }
+                EmployeeDeduction::create([
+                    "employee_id" => $employee->id,
+                    "deduction_id" => $transaction->transaction_type->deduction_id,
+                    "months" => $transaction->terms,
+                    "amount" => $transaction->amount,
+                    "source_of_fund" => "HO",
+                    "start_date" => now()->format("Y-m-d"),
+                    "end_date" => now()->addMonths($transaction->terms)->format("Y-m-d"),
+                    "monthly_amortization" => round($monthlyAmortization, 2),
+                    "balance" => $transaction->amount,
+                    "remarks" => $transaction->remarks,
+                    "debit_id" => $deduction->debit_id,
+                    "credit_id" => $deduction->credit_id,
+                    "branch_id" => $employee->current_branch->id,
+                    "block_payment" => "Yes",
+                    "approved_by" => $batch->generated_by,
+                    "approved_date" => $batch->generated_at,
+                    "approved_status" => "Yes",
+                    "end_loan_status" => "No",
+                    "deduction_ref" => $deduction_reference,
+                    "created_by" => $user ? $user->full_name : null,
+                    "date_created" => $transaction->created_at->format("Y-m-d"),
+                ]);
             }            
         }
 
