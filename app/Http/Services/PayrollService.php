@@ -105,26 +105,16 @@ class PayrollService {
                 $salary = $daily_rate * $timeKeepingSummary->regular_days;
             }
 
-            $timeKeepings = TimeKeeping::with(["payment"])
-            ->where("employee_id", $employee->id)
-            ->whereBetween("date", [$cutOff->start_date, $cutOff->end_date])
-            ->get();
-
-            foreach($timeKeepings as $timeKeeping) {
-                $payment = $timeKeeping->payment;
-
-                $tardinessAmount += (float)$payment->tardiness_deduction;
-                $undertimeAmount += (float)$payment->undertime_deduction;
-                $overtimeAmount += (float)$payment->regular_overtime;
-                $legalHolidayAmount += $timeKeepingSummary->legal_holiday > 0 ? (float)$payment->legal_holiday : 0;
-                $legalHolidayOvertimeAmount += $timeKeepingSummary->legal_holiday_overtime > 0 ? (float)$payment->legal_holiday_overtime : 0;
-                $specialHolidayAmount += $timeKeepingSummary->special_holiday > 0 ? (float)$payment->special_holiday : 0;
-                $specialHolidayOvertimeAmount += $timeKeepingSummary->special_holiday_overtime > 0 ? (float)$payment->special_holiday_overtime : 0;
-                $nightDifferentialAmount += $timeKeepingSummary->night_differential >= 1 ? (float)$payment->night_differential : 0;
-                $nightDifferentialOvertimeAmount += $timeKeepingSummary->night_differential_overtime >= 1 ? (float)$payment->night_differential_overtime : 0;
-                $cancelledOffAmount += (float)$payment->cancelled_off;
-            }
-
+            $tardinessAmount = $timeKeepingSummary->tardiness * $minute_rate;
+            $undertimeAmount = $timeKeepingSummary->undertime * $minute_rate;
+            $overtimeAmount = $timeKeepingSummary->regular_overtime * ($hourly_rate * 1.25);
+            $legalHolidayAmount = $timeKeepingSummary->legal_holiday * $hourly_rate;
+            $legalHolidayOvertimeAmount = $timeKeepingSummary->legal_holiday_overtime * ($hourly_rate * 2.6);
+            $specialHolidayAmount = $timeKeepingSummary->special_holiday * ($hourly_rate * .3);
+            $specialHolidayOvertimeAmount = $timeKeepingSummary->special_holiday_overtime * ($hourly_rate * 1.69);
+            $nightDifferentialAmount = $timeKeepingSummary->night_differential * ($hourly_rate * .1);
+            $nightDifferentialOvertimeAmount = $timeKeepingSummary->night_differential_overtime * ($hourly_rate * .125);
+            $cancelledOffAmount = $timeKeepingSummary->cancelled_off * ($hourly_rate * 1.3);
             $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
         
             $grossPayAmount = ( $salary +
