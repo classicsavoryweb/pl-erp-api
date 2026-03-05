@@ -198,7 +198,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ];
 
                 if (!$this->isResend) {
-                    // $this->createEntries($hoEntries, $userId);
+                    $this->createEntries($hoEntries, $userId);
                 }
             }
 
@@ -240,7 +240,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ];
 
                 if (!$this->isResend) {
-                    // $this->createEntries($branchEntries, $userId);
+                    $this->createEntries($branchEntries, $userId);
                 }
             }
 
@@ -352,9 +352,13 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 'ent_chk'           => 'No',
                 'date_added'        => now(),
             ]);
+        }
 
+        $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
+        foreach ($groupedEntries as $mainId => $groupedEntry) {
+            $entry = $groupedEntry->first();
             ApsysEntryMain::create([
-                'ent_tran_no'       => $entry['apsys_entry_main_id'],
+                'ent_tran_no'       => $mainId,
                 'ven_no'            => $entry['ven_no'],
                 'ven_name'          => $entry['ven_name'],
                 'ent_doc_date'      => now(),
