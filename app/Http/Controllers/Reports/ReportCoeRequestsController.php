@@ -161,12 +161,15 @@ class ReportCoeRequestsController extends Controller
                 $purpose = $coeRequest->places;
             }
 
-            $middle_initial = strtoupper(substr($employee->middle_name ?? '', 0, 1));
+            $middleInitial = "";
+            if (!empty($employee->middle_name)) {
+                $middleInitial = strtoupper(substr($employee->middle_name, 0,1)).".";
+            }
 
             return $this->sendResponse([
                 "first_name" => mb_convert_case($employee->first_name, MB_CASE_TITLE, "UTF-8"), 
                 "last_name" =>  mb_convert_case($employee->last_name, MB_CASE_TITLE, "UTF-8"),
-                "middle_initial" => mb_convert_case($middle_initial, MB_CASE_TITLE, "UTF-8"),
+                "middle_initial" => mb_convert_case($middleInitial, MB_CASE_TITLE, "UTF-8"),
                 "gender" => $employee->gender,
                 "date_of_stay" => $dateOfStay,
                 "include_salary" => $coeRequest->include_salary,
