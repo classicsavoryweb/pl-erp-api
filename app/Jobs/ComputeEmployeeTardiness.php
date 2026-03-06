@@ -51,6 +51,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
                 ->get();
 
                 $totalTardy = 0;
+                $unExcusedTimeKeepings = $timeKeepings;
 
                 foreach ($timeKeepings as $timeKeeping) {
                     $totalTardy += $timeKeeping->tardiness;
@@ -74,11 +75,14 @@ class ComputeEmployeeTardiness implements ShouldQueue
 
                         if ($response->successful()) {
                             $data = $response->json();
-                            $excusedMinutes = $data['data']['excused_minutes'];
-    
-                            if ($excusedMinutes > 0) {
-                                $totalTardy = $totalTardy - $excusedMinutes;
-                            }
+                            $excusedDates = $data['data']['excused_minutes'];
+                            $dates = array_column($excusedDates, 'date');
+
+                            $unExcusedTimeKeepings = TimeKeeping::whereNotIn('date', $dates)
+                            ->where('employee_id', $employee->id)
+                            ->get();
+
+                            $totalTardy = $unExcusedTimeKeepings->sum('tardiness');
                         }
                     } catch (Exception $e) {
                         Log::info($e->getMessage());
@@ -113,7 +117,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
                         "status" => "Pending",
                     ]);
 
-                    foreach ($timeKeepings as $timeKeeping) {
+                    foreach ($unExcusedTimeKeepings as $timeKeeping) {
                         if ($timeKeeping->tardiness > 0) {
                             TardinessMinutes::updateOrCreate([
                                 "employee_id" => $employee->id,
