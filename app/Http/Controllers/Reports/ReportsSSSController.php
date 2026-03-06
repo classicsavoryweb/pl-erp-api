@@ -37,7 +37,7 @@ class ReportsSSSController extends Controller
                 $payrollEmployee = $query->get();
                 return Excel::download(
                     new ReportsSSSContributionsExport($payrollEmployee, $withDash),
-                    "sss_monthly_contribution.xls"
+                    "sss_monthly_contribution.xlsx"
                 );
             }
 
@@ -131,7 +131,7 @@ class ReportsSSSController extends Controller
 
             if ($request->has('export') && $request->export) { 
                 $payrollEmployee = $query->get()->unique('employee_id');
-                return Excel::download(new ReportsSSSLoansExport($payrollEmployee, $withDash), "sss_loans.xls"); 
+                return Excel::download(new ReportsSSSLoansExport($payrollEmployee, $withDash), "sss_loans.xlsx"); 
             }
 
             $paginated = $query->paginate($perPage);

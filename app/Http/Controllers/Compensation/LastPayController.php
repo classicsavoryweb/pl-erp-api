@@ -238,6 +238,7 @@ class LastPayController extends Controller
                 ->where("status", "final")
                 ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
                 ->get();
+                $payrollRowsOverride = $this->buildThirteenthMonthPayrollRows($allPayrolls, $yearHolded);
 
                 $annualSalary = 0;
                 $annualTaxableIncome = 0;
@@ -291,6 +292,7 @@ class LastPayController extends Controller
                     "last_pay" => round($lastPayAmount, 2),
                     "sss_loans" => $sssLoansSelected,
                     "payrolls" => $payrolls,
+                    "payroll_rows_override" => $payrollRowsOverride,
                     "date_holdeed" => $dateHolded
                 ]);
             }
@@ -302,6 +304,51 @@ class LastPayController extends Controller
         }
     }
 
+    private function buildThirteenthMonthPayrollRows($payrolls, int $yearHolded): array
+    {
+        $periods = [];
+        $current = Carbon::create($yearHolded - 1, 12, 11)->startOfDay();
+
+        for ($i = 0; $i < 24; $i++) {
+            $start = $current->copy();
+            if ($start->day === 11) {
+                $end = $start->copy()->day(25);
+                $current = $start->copy()->day(26);
+            } else {
+                $end = $start->copy()->addMonth()->day(10);
+                $current = $start->copy()->addMonth()->day(11);
+            }
+
+            $periods[] = [
+                "label" => $start->format("n/j") . " to " . $end->format("j"),
+            ];
+        }
+
+        $payrollMap = [];
+        foreach ($payrolls as $payroll) {
+            $startDate = $payroll->start_date ?? null;
+            $endDate = $payroll->end_date ?? null;
+            if (!$startDate || !$endDate) {
+                continue;
+            }
+
+            $label = Carbon::parse($startDate)->format("n/j") . " to " . Carbon::parse($endDate)->format("j");
+            $salary = $payroll->salary ?? $payroll->net_pay ?? 0;
+            $undertime = $payroll->undertime_amount ?? 0;
+            $tardiness = $payroll->tardiness_amount ?? 0;
+            $amount = $salary - ($undertime + $tardiness);
+            $payrollMap[$label] = ($payrollMap[$label] ?? 0) + $amount;
+        }
+
+        return array_map(function ($period) use ($payrollMap) {
+            $label = $period["label"];
+            return [
+                "label" => $label,
+                "amount" => round($payrollMap[$label] ?? 0, 2),
+            ];
+        }, $periods);
+    }
+
     public function createLastPayRecord(Request $request, $employeeNumber) {
         try {
             DB::beginTransaction();
@@ -311,7 +358,8 @@ class LastPayController extends Controller
                 "sl_vl" => "required",
                 "tax_refund" => "required",
                 "sales" => "required",
-                "meal_allowance" => "required"
+                "meal_allowance" => "required",
+                "thirteenth_month" => "nullable|numeric|min:0"
             ]);
             $employee = Employee::with(["payroll_list"])
             ->where("employee_number", $employeeNumber)
@@ -409,6 +457,9 @@ class LastPayController extends Controller
                     $totalWithholdingTax += $payroll->withholding_tax;
                 }
                 $month13th = $annualSalary / 12;
+                if ($request->has("thirteenth_month")) {
+                    $month13th = (float) $request->thirteenth_month;
+                }
 
                 $annualTax = AnnualTax::where("minimum_amount", "<=" , $annualTaxableIncome)
                 ->where("max_amount", ">=" , $annualTaxableIncome)
@@ -625,7 +676,8 @@ class LastPayController extends Controller
                 "sl_vl" => "required",
                 "tax_refund" => "required",
                 "sales" => "required",
-                "meal_allowance" => "required"
+                "meal_allowance" => "required",
+                "thirteenth_month" => "nullable|numeric|min:0"
             ]);
 
             $lastPay = LastPay::with(["deductions", "deductions.deduction"])->find($lastPayId);
@@ -639,6 +691,9 @@ class LastPayController extends Controller
                 $meal_allowance = $request->meal_allowance ?? 0;
                 $taxRefund = $request->tax_refund ?? 0;
                 $salesIncentives = $request->sales ?? 0;
+                if ($request->has("thirteenth_month")) {
+                    $month13th = (float) $request->thirteenth_month;
+                }
 
                 $includeSssLoans = $request->sss_loans === "Yes";
                 $currentDeductions = $lastPay->deductions ?? collect();
