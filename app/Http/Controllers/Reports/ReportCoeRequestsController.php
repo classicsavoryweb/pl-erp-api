@@ -163,7 +163,7 @@ class ReportCoeRequestsController extends Controller
 
             $middleInitial = "";
             if (!empty($employee->middle_name)) {
-                $middleInitial = strtoupper(substr($employee->middle_name, 0,1)).".";
+                $middleInitial = strtoupper(substr($employee->middle_name, 0, 1)) . ". ";
             }
 
             return $this->sendResponse([
