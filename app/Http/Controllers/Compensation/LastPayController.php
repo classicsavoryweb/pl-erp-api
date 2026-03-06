@@ -311,7 +311,8 @@ class LastPayController extends Controller
                 "sl_vl" => "required",
                 "tax_refund" => "required",
                 "sales" => "required",
-                "meal_allowance" => "required"
+                "meal_allowance" => "required",
+                "thirteenth_month" => "nullable|numeric|min:0"
             ]);
             $employee = Employee::with(["payroll_list"])
             ->where("employee_number", $employeeNumber)
@@ -409,6 +410,9 @@ class LastPayController extends Controller
                     $totalWithholdingTax += $payroll->withholding_tax;
                 }
                 $month13th = $annualSalary / 12;
+                if ($request->has("thirteenth_month")) {
+                    $month13th = (float) $request->thirteenth_month;
+                }
 
                 $annualTax = AnnualTax::where("minimum_amount", "<=" , $annualTaxableIncome)
                 ->where("max_amount", ">=" , $annualTaxableIncome)
@@ -625,7 +629,8 @@ class LastPayController extends Controller
                 "sl_vl" => "required",
                 "tax_refund" => "required",
                 "sales" => "required",
-                "meal_allowance" => "required"
+                "meal_allowance" => "required",
+                "thirteenth_month" => "nullable|numeric|min:0"
             ]);
 
             $lastPay = LastPay::with(["deductions", "deductions.deduction"])->find($lastPayId);
@@ -639,6 +644,9 @@ class LastPayController extends Controller
                 $meal_allowance = $request->meal_allowance ?? 0;
                 $taxRefund = $request->tax_refund ?? 0;
                 $salesIncentives = $request->sales ?? 0;
+                if ($request->has("thirteenth_month")) {
+                    $month13th = (float) $request->thirteenth_month;
+                }
 
                 $includeSssLoans = $request->sss_loans === "Yes";
                 $currentDeductions = $lastPay->deductions ?? collect();

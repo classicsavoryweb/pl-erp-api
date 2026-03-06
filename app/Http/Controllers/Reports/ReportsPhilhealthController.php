@@ -34,7 +34,7 @@ class ReportsPhilhealthController extends Controller
                 $payrollEmployee = $query->get();
                 return Excel::download(
                     new ReportsPhilhealthContributionsExport($payrollEmployee, $withDash),
-                    "philhealth.xls"
+                    "philhealth.xlsx"
                 );
             }
 

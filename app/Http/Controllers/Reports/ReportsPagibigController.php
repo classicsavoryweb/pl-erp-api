@@ -37,7 +37,7 @@ class ReportsPagibigController extends Controller
                 $payrollEmployee = $query->get();
                 return Excel::download(
                     new ReportsPagibigContributionsExport($payrollEmployee, $withDash),
-                    "pagibig_monthly_contribution.xls"
+                    "pagibig_monthly_contribution.xlsx"
                 );
             }
 
@@ -141,7 +141,7 @@ class ReportsPagibigController extends Controller
 
             if ($request->has('export') && $request->export) { 
                 $payrollEmployee = $query->get()->unique('employee_id');
-                return Excel::download(new ReportsPagibigLoansExport($payrollEmployee, $withDash), "pagibig_loans.xls"); 
+                return Excel::download(new ReportsPagibigLoansExport($payrollEmployee, $withDash), "pagibig_loans.xlsx"); 
             }
 
             $paginated = $query->paginate($perPage);
