@@ -238,6 +238,7 @@ class LastPayController extends Controller
                 ->where("status", "final")
                 ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
                 ->get();
+                $payrollRowsOverride = $this->buildThirteenthMonthPayrollRows($allPayrolls, $yearHolded);
 
                 $annualSalary = 0;
                 $annualTaxableIncome = 0;
@@ -291,6 +292,7 @@ class LastPayController extends Controller
                     "last_pay" => round($lastPayAmount, 2),
                     "sss_loans" => $sssLoansSelected,
                     "payrolls" => $payrolls,
+                    "payroll_rows_override" => $payrollRowsOverride,
                     "date_holdeed" => $dateHolded
                 ]);
             }
@@ -300,6 +302,51 @@ class LastPayController extends Controller
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
+    }
+
+    private function buildThirteenthMonthPayrollRows($payrolls, int $yearHolded): array
+    {
+        $periods = [];
+        $current = Carbon::create($yearHolded - 1, 12, 11)->startOfDay();
+
+        for ($i = 0; $i < 24; $i++) {
+            $start = $current->copy();
+            if ($start->day === 11) {
+                $end = $start->copy()->day(25);
+                $current = $start->copy()->day(26);
+            } else {
+                $end = $start->copy()->addMonth()->day(10);
+                $current = $start->copy()->addMonth()->day(11);
+            }
+
+            $periods[] = [
+                "label" => $start->format("n/j") . " to " . $end->format("j"),
+            ];
+        }
+
+        $payrollMap = [];
+        foreach ($payrolls as $payroll) {
+            $startDate = $payroll->start_date ?? null;
+            $endDate = $payroll->end_date ?? null;
+            if (!$startDate || !$endDate) {
+                continue;
+            }
+
+            $label = Carbon::parse($startDate)->format("n/j") . " to " . Carbon::parse($endDate)->format("j");
+            $salary = $payroll->salary ?? $payroll->net_pay ?? 0;
+            $undertime = $payroll->undertime_amount ?? 0;
+            $tardiness = $payroll->tardiness_amount ?? 0;
+            $amount = $salary - ($undertime + $tardiness);
+            $payrollMap[$label] = ($payrollMap[$label] ?? 0) + $amount;
+        }
+
+        return array_map(function ($period) use ($payrollMap) {
+            $label = $period["label"];
+            return [
+                "label" => $label,
+                "amount" => round($payrollMap[$label] ?? 0, 2),
+            ];
+        }, $periods);
     }
 
     public function createLastPayRecord(Request $request, $employeeNumber) {
