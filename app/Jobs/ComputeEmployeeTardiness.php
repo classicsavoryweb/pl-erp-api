@@ -76,11 +76,13 @@ class ComputeEmployeeTardiness implements ShouldQueue
                         if ($response->successful()) {
                             $data = $response->json();
                             $excusedDates = $data['data']['excused_minutes'];
-                            $dates = array_column($excusedDates, 'date');
 
-                            $unExcusedTimeKeepings = TimeKeeping::whereNotIn('date', $dates)
-                            ->where('employee_id', $employee->id)
-                            ->get();
+                            if (count($excusedDates) > 0) {
+                                $dates = array_column($excusedDates, 'date');
+                                $unExcusedTimeKeepings = TimeKeeping::whereNotIn('date', $dates)
+                                ->where('employee_id', $employee->id)
+                                ->get();
+                            }
 
                             $totalTardy = $unExcusedTimeKeepings->sum('tardiness');
                         }
