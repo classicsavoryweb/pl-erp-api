@@ -75,10 +75,10 @@ class ComputeEmployeeTardiness implements ShouldQueue
 
                         if ($response->successful()) {
                             $data = $response->json();
-                            $excusedDates = $data['data']['excused_minutes'];
+                            $excusedDates = collect($data['data']['excused_minutes']);
 
-                            if (count($excusedDates) > 0) {
-                                $dates = array_column($excusedDates, 'date');
+                            if ($excusedDates->count() > 0) {
+                                $dates = $excusedDates->pluck('date');
                                 $unExcusedTimeKeepings = TimeKeeping::whereNotIn('date', $dates)
                                 ->where('employee_id', $employee->id)
                                 ->get();
