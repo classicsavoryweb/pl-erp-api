@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //pay slip
     Route::middleware(["permission:perform_reports_pay_slip"])->post("/submit-payslips", [PayslipController::class, "submitPayslip"]);
+    Route::middleware(["permission:perform_reports_pay_slip"])->post("/export-payslips", [PayslipController::class, "exportPayslip"]);
 
     //13th Month Pay
     Route::get("/get-all-thirteenth-month-pay", [ReportsThirteenthMonthController::class, "getAllThirteenthMonth"]);
