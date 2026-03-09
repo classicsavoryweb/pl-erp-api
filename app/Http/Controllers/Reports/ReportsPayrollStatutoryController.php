@@ -33,10 +33,21 @@ class ReportsPayrollStatutoryController extends Controller
 
             $payrolls = Payroll::with(['employee', 'employee.current_branch', 'timekeeping_branch', 'employee.current_position'])
                 ->whereBetween('start_date', [$rangeStart->toDateString(), $rangeEnd->toDateString()])
-                ->orderBy('employee_id')
                 ->get();
 
-            $payrollGroups = $payrolls->groupBy('employee_id');
+            $payrollGroups = $payrolls
+                ->groupBy('employee_id')
+                ->sortBy(function ($employeePayrolls) {
+                    $payroll = $employeePayrolls->first();
+                    $employee = $payroll?->employee;
+                    $branch = $employeePayrolls->pluck('timekeeping_branch')->filter()->first()
+                        ?? $employee?->current_branch;
+                    $branchCode = $branch?->short_name ?? '';
+                    $lastName = $employee?->last_name ?? '';
+                    $firstName = $employee?->first_name ?? '';
+                    return sprintf('%s|%s|%s', $branchCode, $lastName, $firstName);
+                })
+                ->values();
             $summaryBranches = Branch::query()
                 ->where('status', 'active')
                 ->whereNotNull('short_name')
