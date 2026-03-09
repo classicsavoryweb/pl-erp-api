@@ -218,20 +218,22 @@ class LastPayController extends Controller
                 $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
                 $dateHolded = Carbon::parse($employee->separation_date)->format("Y-m-d");
 
-                $payrolls = Payroll::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$payroll->pay_date)
-                ->get();
-
-                $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$payroll->pay_date)
-                ->get();
-
-                foreach ($payrolls as $payroll) {
-                    $totalPayroll += $payroll->net_pay;
-                }
-
-                foreach ($incentivesPayroll as $incentive) {
-                    $incentives += $incentive->incentive_amount;
+                if ($payroll) {
+                    $payrolls = Payroll::where("employee_id", $employee->id)
+                    ->where("pay_date", ">=" ,$payroll->pay_date)
+                    ->get();
+    
+                    $incentivesPayroll = Incentives::where("employee_id", $employee->id)
+                    ->where("pay_date", ">=" ,$payroll->pay_date)
+                    ->get();
+    
+                    foreach ($payrolls as $payroll) {
+                        $totalPayroll += $payroll->net_pay;
+                    }
+    
+                    foreach ($incentivesPayroll as $incentive) {
+                        $incentives += $incentive->incentive_amount;
+                    }
                 }
 
                 $allPayrolls = Payroll::where("employee_id", $employee->id)
