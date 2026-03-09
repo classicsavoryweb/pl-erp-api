@@ -18,7 +18,10 @@ class IncentivesPerEmployeeController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $incentives_per_employee = IncentivesPerEmployee::query();
+            $incentives_per_employee = IncentivesPerEmployee::with([
+                "employee",
+                "employee.current_position",
+            ])->query();
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
@@ -56,10 +59,7 @@ class IncentivesPerEmployeeController extends Controller
                 return Excel::download(new IncentivesPerEmployeeExport($incentives_per_employee), "incentives_per_employee.xls");
             }
 
-            $incentives_per_employee = $incentives_per_employee->with([
-                "employee",
-                "employee.current_position",
-            ])->paginate($perPage);
+            $incentives_per_employee = $incentives_per_employee->paginate($perPage);
             return $this->sendResponse($incentives_per_employee);
         } catch(Exception $e) {
 

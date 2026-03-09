@@ -18,7 +18,10 @@ class IncentivesManagementController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $incentives_management = IncentivesManagement::query();
+            $incentives_management = IncentivesManagement::with([
+                "employee",
+                "employee.current_position",
+            ])->query();
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
@@ -56,10 +59,7 @@ class IncentivesManagementController extends Controller
                 return Excel::download(new IncentivesManagementExport($incentives_management), "incentives_management.xls");
             }
 
-            $incentives_management = $incentives_management->with([
-                "employee",
-                "employee.current_position",
-            ])->paginate($perPage);
+            $incentives_management = $incentives_management->paginate($perPage);
             return $this->sendResponse($incentives_management);
         } catch(Exception $e) {
 

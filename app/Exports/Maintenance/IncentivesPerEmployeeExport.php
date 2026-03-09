@@ -20,6 +20,8 @@ class IncentivesPerEmployeeExport implements FromCollection, WithHeadings
         return $this->incentives_per_employee->map(function ($unique_incentives_per_employee) {
             return [
                 $unique_incentives_per_employee->employee->full_name,
+                $unique_incentives_per_employee->employee->employee_number,
+                $unique_incentives_per_employee->employee->current_position->description,
                 $unique_incentives_per_employee->amount,
                 $unique_incentives_per_employee->max_amount
             ];
@@ -30,6 +32,8 @@ class IncentivesPerEmployeeExport implements FromCollection, WithHeadings
     {
         return [
             'Employee Name',
+            'Employee Number',
+            'Current Position',
             'Amount',
             'Max Amount',
         ];
