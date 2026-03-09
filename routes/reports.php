@@ -7,6 +7,7 @@ use App\Http\Controllers\Reports\ReportsPhilhealthController;
 use App\Http\Controllers\Reports\ReportsSSSController;
 use App\Http\Controllers\Reports\ReportsBDOCashCardController;
 use App\Http\Controllers\Reports\ReportsDeductionController;
+use App\Http\Controllers\Reports\ReportsPayrollStatutoryController;
 use Illuminate\Support\Facades\Route;
 
 // REPORTS MODULE
@@ -51,4 +52,7 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //deduction reports
     Route::middleware(["permission:perform_reports_deductions"])->get('/export-deduction-reports', [ReportsDeductionController::class, 'exportDeductionReport']);
+
+    //payroll statutory reports
+    Route::get('/export-payroll-statutory', [ReportsPayrollStatutoryController::class, 'exportPayrollStatutory']);
 });

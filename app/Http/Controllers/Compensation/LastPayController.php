@@ -205,8 +205,13 @@ class LastPayController extends Controller
                 $companyDeductions = $companyDeductions->merge($sssLoans);
 
                 $yearSourceDate = $employee->separation_date;
+                if (empty($yearSourceDate)) {
+                    return $this->sendError(["message" => "Employee has no separation date."]);
+                }
                 $cutOff = $this->getCutOffForDate($yearSourceDate);
                 $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
+                $payrollPayDate = $payroll?->pay_date;
+                $payrollPayDate = $payroll?->pay_date;
                 $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
                 $yearHolded = (int) $source->year;
                 $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
@@ -218,13 +223,17 @@ class LastPayController extends Controller
                 $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
                 $dateHolded = Carbon::parse($employee->separation_date)->format("Y-m-d");
 
-                $payrolls = Payroll::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$payroll->pay_date)
-                ->get();
+                $payrolls = collect();
+                $incentivesPayroll = collect();
+                if ($payrollPayDate) {
+                    $payrolls = Payroll::where("employee_id", $employee->id)
+                        ->where("pay_date", ">=" ,$payrollPayDate)
+                        ->get();
 
-                $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$payroll->pay_date)
-                ->get();
+                    $incentivesPayroll = Incentives::where("employee_id", $employee->id)
+                        ->where("pay_date", ">=" ,$payrollPayDate)
+                        ->get();
+                }
 
                 foreach ($payrolls as $payroll) {
                     $totalPayroll += $payroll->net_pay;
@@ -261,8 +270,12 @@ class LastPayController extends Controller
                 ->where("max_amount", ">=" , $annualTaxableIncome)
                 ->first();
 
-                $amountShouldBePaid = $annualTax->tax_lower_limit + (($annualTaxableIncome - $annualTax->minimum_amount) * (0.01 * $annualTax->percentage));
-                $taxRefund = $amountShouldBePaid < $totalWithholdingTax ? $totalWithholdingTax - $amountShouldBePaid : 0;
+                if ($annualTax) {
+                    $amountShouldBePaid = $annualTax->tax_lower_limit + (($annualTaxableIncome - $annualTax->minimum_amount) * (0.01 * $annualTax->percentage));
+                    $taxRefund = $amountShouldBePaid < $totalWithholdingTax ? $totalWithholdingTax - $amountShouldBePaid : 0;
+                } else {
+                    $taxRefund = 0;
+                }
 
                 if ($lastPayDetails) {
                     $totalPayroll = $lastPayDetails->payroll_hold;
@@ -412,17 +425,20 @@ class LastPayController extends Controller
                 $thirteenthMonthPeriodStart = Carbon::create($yearHolded - 1, 12, 11)->format("Y-m-d");
                 $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
 
-                $payrolls = Payroll::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$payroll->pay_date)
-                ->get();
+                $payrolls = collect();
+                if ($payrollPayDate) {
+                    $payrolls = Payroll::where("employee_id", $employee->id)
+                        ->where("pay_date", ">=" ,$payrollPayDate)
+                        ->get();
+                }
 
                 foreach ($payrolls as $payroll) {
                     $totalPayroll += $payroll->net_pay;
                 }
 
-                if ($request->incentives != 0) {
+                if ($request->incentives != 0 && $payrollPayDate) {
                     $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                    ->where("pay_date", ">=" ,$payroll->pay_date)
+                    ->where("pay_date", ">=" ,$payrollPayDate)
                     ->get();
                     
                     foreach ($incentivesPayroll as $incentive) {
