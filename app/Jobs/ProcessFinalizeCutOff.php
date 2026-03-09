@@ -103,10 +103,6 @@ class ProcessFinalizeCutOff implements ShouldQueue
                 ]);
             }
 
-            if ($this->cutOff->part == 2) {
-                ComputeEmployeeTardiness::dispatch($this->cutOff->end_date);
-            }
-
             $cutoffValue = $this->cutOff->cut_off;
 
             $payrollLists = PayrollList::where('is_hold', 1)->get();
@@ -132,6 +128,11 @@ class ProcessFinalizeCutOff implements ShouldQueue
                 "start_time" => $start_date,
                 "end_time" => $end_Date,
             ]);
+
+            if ($this->cutOff->part == 2) {
+                ComputeEmployeeTardiness::dispatch($this->cutOff->end_date);
+                GenerateIncentiveAttendanceJob::dispatch($this->cutOff->end_date);
+            }
 
             // GenerateEntry::dispatch($payrolls, $pay_date, $start_date, $end_Date, $this->user);
             $this->notifyJobFinished();

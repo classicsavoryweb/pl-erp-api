@@ -7,6 +7,7 @@ use App\Http\Controllers\Reports\ReportsPhilhealthController;
 use App\Http\Controllers\Reports\ReportsSSSController;
 use App\Http\Controllers\Reports\ReportsBDOCashCardController;
 use App\Http\Controllers\Reports\ReportsDeductionController;
+use App\Http\Controllers\Reports\ReportsIncentiveAttendanceController;
 use App\Http\Controllers\Reports\ReportsPayrollStatutoryController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,4 +57,7 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //payroll statutory reports
     Route::get('/export-payroll-statutory', [ReportsPayrollStatutoryController::class, 'exportPayrollStatutory']);
+
+    //incentive attendance report
+    Route::middleware(["permission:perform_reports_incentive_attendance"])->get('/export-incentive-attendance', [ReportsIncentiveAttendanceController::class, 'exportIncentiveAttendance']);
 });
