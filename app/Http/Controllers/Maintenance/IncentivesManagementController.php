@@ -21,7 +21,7 @@ class IncentivesManagementController extends Controller
             $incentives_management = IncentivesManagement::with([
                 "employee",
                 "employee.current_position",
-            ])->query();
+            ]);
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;

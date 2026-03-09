@@ -20,7 +20,7 @@ class IncentivesBracketController extends Controller
             $perPage = $request->per_page ?? 10;
             $page = $request->page ?? 1;
 
-            $incentives_bracket = IncentivesBracket::with('positions')->query();
+            $incentives_bracket = IncentivesBracket::with('positions');
 
             if ($request->has(["column_type", "key_word"])) {
                $incentives_bracket = $incentives_bracket->where($request->column_type,"LIKE","%".$request->key_word."%");
