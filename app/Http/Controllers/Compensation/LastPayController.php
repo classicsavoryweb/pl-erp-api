@@ -211,7 +211,6 @@ class LastPayController extends Controller
                 $cutOff = $this->getCutOffForDate($yearSourceDate);
                 $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
                 $payrollPayDate = $payroll?->pay_date;
-                $payrollPayDate = $payroll?->pay_date;
                 $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
                 $yearHolded = (int) $source->year;
                 $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
@@ -415,6 +414,7 @@ class LastPayController extends Controller
                 $yearSourceDate = $employee->separation_date;
                 $cutOff = $this->getCutOffForDate($yearSourceDate);
                 $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
+                $payrollPayDate = $payroll?->pay_date;
                 $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
                 $yearHolded = (int) $source->year;
                 $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
