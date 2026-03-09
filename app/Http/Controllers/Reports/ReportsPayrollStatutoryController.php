@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Payroll;
 use App\Models\SSS;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -18,15 +19,15 @@ class ReportsPayrollStatutoryController extends Controller
     {
         try {
             $validated = $request->validate([
-                'year' => ['required', 'integer', 'min:2000', 'max:2100'],
+                'year' => ['required', 'integer', 'min:2000'],
                 'month' => ['required', 'integer', 'min:1', 'max:12'],
             ]);
 
-            $templatePath = storage_path('app/templates/statutory-payroll-template.xlsx');
-
-            if (!file_exists($templatePath)) {
+            $templateRelativePath = 'templates/statutory-payroll-template.xlsx';
+            if (!Storage::disk('local')->exists($templateRelativePath)) {
                 return $this->sendError(['message' => 'Statutory payroll template not found.']);
             }
+            $templatePath = Storage::disk('local')->path($templateRelativePath);
 
             $rangeEnd = Carbon::createFromDate($validated['year'], $validated['month'], 25)->startOfDay();
             $rangeStart = $rangeEnd->copy()->subMonth()->day(26)->startOfDay();
