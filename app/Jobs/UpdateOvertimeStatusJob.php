@@ -32,7 +32,9 @@ class UpdateOvertimeStatusJob implements ShouldQueue
         $cutOff = $this->cutOff;
         $cutOffPaid = Carbon::parse($cutOff["start_time"])->format("m/d/Y")." TO ". Carbon::parse($cutOff['end_time'])->format("m/d/Y");
 
-        $overtimes = Overtime::where("cutoff_paid", $cutOffPaid)->get();
+        $overtimes = Overtime::where("cutoff_paid", $cutOffPaid)
+        ->where("status", "Paid")
+        ->get();
 
         foreach ($overtimes as $overtime) {
             $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtime->cshub_overtime_id;
@@ -53,6 +55,8 @@ class UpdateOvertimeStatusJob implements ShouldQueue
             } catch (Exception $e) {
                 // Log::info("CSHub overtime api error encountered: ".$e->getMessage());
             }
+
+            sleep(1);
         }
         
     }
