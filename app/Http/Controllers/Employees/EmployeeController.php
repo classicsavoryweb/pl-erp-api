@@ -428,6 +428,61 @@ class EmployeeController extends Controller
         }
     }
 
+    public function getEmployeesWithoutPayrollList(Request $request) {
+        try {
+
+            $employees = Employee::query();
+
+            if ($request->has("keyWord")) {
+                $keyword = $request->keyWord;
+
+                $employees = $employees->where(function ($query) use ($keyword) {
+                    $query->whereAny(
+                        ["first_name", "last_name", "middle_name"],
+                        'LIKE',
+                        "%$keyword%"
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                        }
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                        }
+                    );
+                });
+            }
+
+            if ($request->has("status")) {
+                $status = $request->status;
+                switch ($status) {
+                    case "active":
+                        $employees = $employees->where("status", "active");
+                        break;
+                    case "inactive":
+                        $employees = $employees->where("status", "inactive");
+                        break; 
+                    default:
+                        break;
+                }
+            }
+
+            $employees = $employees->with([
+                "current_position",
+                "current_branch",
+                "employee_status",
+                "current_position.station",
+            ])
+            ->where("type", "Direct")
+            ->whereDoesntHave("payroll_list")
+            ->orderBy("last_name", "ASC")
+            ->get();
+            return $this->sendResponse($employees);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+
     public function updateEmployeeDetails(Request $request, $employee_number) { 
         try {
             DB::beginTransaction();

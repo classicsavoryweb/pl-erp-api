@@ -90,4 +90,6 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_schedule_type"])->post("/add-schedule-type", [ScheduleTypeController::class, "createScheduleType"]);
     Route::middleware(["permission:perform_schedule_type"])->post("/edit-schedule-type/{id}", [ScheduleTypeController::class, "editScheduleType"]);
 
+    //employees without payroll list relationship
+    Route::get("/get-employees-without-payroll-list", [EmployeeController::class, "getEmployeesWithoutPayrollList"]);
 });

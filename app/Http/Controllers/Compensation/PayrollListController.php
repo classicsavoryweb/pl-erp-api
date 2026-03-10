@@ -96,7 +96,6 @@ class PayrollListController extends Controller
 
     public function getBankDetails(Request $request, $id) {
         try {
-
             $bankDetails = BankDetail::query()
             ->with("bank_account_type")
             ->where("employee_id", $id)
@@ -168,7 +167,7 @@ class PayrollListController extends Controller
             ]);
             
             DB::commit();
-            return $this->sendResponse(["message" => "Payroll created succesfully"]);
+            return $this->sendResponse(["message" => "Employee added succesfully"]);
         } catch(Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
@@ -201,7 +200,7 @@ class PayrollListController extends Controller
                 "salary_amount" => $request->salary_amount ?? 0
             ]);
 
-            return $this->sendResponse(["message" => "Payroll updated succesfully"]);
+            return $this->sendResponse(["message" => "Employee updated succesfully"]);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
