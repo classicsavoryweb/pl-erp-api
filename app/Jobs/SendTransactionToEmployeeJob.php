@@ -104,8 +104,6 @@ class SendTransactionToEmployeeJob implements ShouldQueue
         $transactionsIds = $this->details;
 
         $userId = $this->userId;
-        $user = User::find($userId);
-        $userId = $user->employee->id;
 
         $converter_details = $batch->converter_details()
         ->with(["employee", "employee.latest_bank_details","transaction_type"]);
