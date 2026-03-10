@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Compensation;
 
 use App\Exports\Compensation\PayrollListExport;
 use App\Http\Controllers\Controller;
+use App\Models\Accounting\Vendor;
 use App\Models\BankDetail;
 use App\Models\Employee;
 use App\Models\PayrollList;
@@ -110,6 +111,8 @@ class PayrollListController extends Controller
 
     public function createPayrollList(Request $request) {
         try {
+            DB::beginTransaction();
+
             $request->validate([
                 "employee_id" => "required",
                 "is_included" => "required",
@@ -135,15 +138,39 @@ class PayrollListController extends Controller
                 "is_statutory_only" => $request->is_statutory_only,
                 "is_mancom" => $request->is_mancom,
                 "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                "has_complete_documents" => $request->has_complete_documents ?? 0,
                 "is_bank" => $request->is_bank,
                 "is_hold" => $request->is_hold,
                 "holded_at" => $request->is_hold ? now() : null,
                 "remarks" => $request->remarks,
             ]);
 
+            Vendor::create([
+                `vend_type_id` => 1,
+                `ven_no` => $employee->employee_number,
+                `ven_name`=> $employee->full_name,
+                `ven_chk_name`=> $employee->full_name,
+                `ven_address` => $employee->address,
+                `ven_tel_no` => $employee->contact_number,
+                `ven_fax_no` => "",
+                `ven_tin_no` => "",
+                `term_id` => "00008",
+                `deb_acc_no` => "None",
+                `cre_acc_no` => "4000000",
+                `vat` => "N/A",
+                `ewt_acc_no` => "EWT005",
+                `ven_stat` => "Active",
+                `ven_fields_input` => "OPTIONAL",
+                `ven_particular` => "Employee Vendor Account",
+                `related_id` => $employee->employee_number,
+                `email` => $employee->email,
+                `pay_type` => "Check",
+            ]);
+            
+            DB::commit();
             return $this->sendResponse(["message" => "Payroll created succesfully"]);
         } catch(Exception $e) {
-
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
@@ -166,6 +193,7 @@ class PayrollListController extends Controller
                 "is_statutory_only" => $request->is_statutory_only,
                 "is_mancom" => $request->is_mancom,
                 "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                "has_complete_documents" => $request->has_complete_documents ?? 0,
                 "is_bank" => $request->is_bank,
                 "is_hold" => $request->is_hold,
                 "holded_at" => $request->is_hold ? now() : null,

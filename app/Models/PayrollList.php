@@ -22,7 +22,10 @@ class PayrollList extends Model
         "is_hold",
         "remarks",
         "holded_at",
-        "holded_cutoffs"
+        "holded_cutoffs",
+        "has_complete_documents",
+        "bank_account_number",
+        "bank_account_type_id",
     ];
 
     public function employee() {
