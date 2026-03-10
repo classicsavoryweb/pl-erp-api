@@ -30,7 +30,9 @@ class PayrollListController extends Controller
                 "employee.current_branch",
                 "employee.latest_position",
                 "employee.schedule",
-                "employee.schedule.schedule_type"
+                "employee.schedule.schedule_type",
+                "current_bank_details",
+                "current_bank_details.bank_account_type"
             ]);
 
         //             $salaryPosition = $this->current_position->salary;
@@ -122,7 +124,7 @@ class PayrollListController extends Controller
                 "is_hold" => "required"
             ]);
 
-            $employee = Employee::where("id", $request->employee_id)->first();
+            $employee = Employee::with(['latest_bank_details'])->where("id", $request->employee_id)->first();
 
             $isExisting = PayrollList::where("employee_id", $employee->id)->first();
 
@@ -130,6 +132,15 @@ class PayrollListController extends Controller
                 return $this->sendError(["message" => "Employee is already existing."]);
             }
 
+            $bank_details_id = null;
+
+            if ($request->is_bank == 1) {
+                if (!$employee->latest_bank_details) {
+                    return $this->sendError(["message" => "Bank details is missing"]);
+                }
+
+                $bank_details_id = $employee->latest_bank_details->id;
+            }
             PayrollList::create([
                 "employee_id" => $request->employee_id,
                 "salary_amount" => round((float) $employee?->monthlySalary(), 2),
@@ -140,6 +151,7 @@ class PayrollListController extends Controller
                 "has_complete_documents" => $request->has_complete_documents ?? 0,
                 "is_bank" => $request->is_bank,
                 "is_hold" => $request->is_hold,
+                "bank_details_id" => $bank_details_id,
                 "holded_at" => $request->is_hold ? now() : null,
                 "remarks" => $request->remarks,
             ]);
