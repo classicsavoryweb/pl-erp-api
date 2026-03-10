@@ -568,8 +568,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 $previousCutOff = $this->getPreviousCutOff($cutOff["start_time"]);
 
-                $adjustments = Adjustment::whereBetween("date", [$previousCutOff['start_time'], $previousCutOff['end_time']])
-                ->where("employee_id", $employee->id)
+                $adjustments = Adjustment::where("employee_id", $employee->id)
                 ->where("is_timekeeping_locked", 0)
                 ->whereNot("type", "Overtime Force Adjustments")
                 ->whereIn("status", ["Approved", "Adjusted"])
@@ -598,17 +597,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
 
                 foreach($anotherAdjustments as $adjustment) {
-                    // if ($adjustment->days > 0) {
-                    //     $adjustments_days += $adjustment->days;
-                    // } else {
-                    //     if ($adjustment->taxable_amount !== 0) {
-                    //         $adjustment_amount += $adjustment->taxable_amount;
-                    //     }
-
-                    //     if ($adjustment->cancelled_rd > 0) {
-                    //         $adjustments_cancelled_off += $adjustment->cancelled_rd;
-                    //     }
-                    // }
 
                     if ($adjustment->taxable_amount !== 0) {
                         $adjustment_amount += $adjustment->taxable_amount;
@@ -619,6 +607,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "timekeeping_summary_id" => $timeKeepingSummary->id
                     ]);
 
+                    $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
                     $withAdjustments = true;
                 }
 
@@ -657,11 +646,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                 if ($withAdjustments) {
                     $timeKeepingSummary->update([
-                        "tardiness" => $tardiness,
-                        "undertime" => $undertime,
-                        "regular_days" => $regular_days,
                         "adjustment_amount" => $adjustment_amount,
-                        "cancelled_off" => $this->formatHours($cancelled_off),
                         "remarks" => $adjustmentRemarks
                     ]);
                 }
