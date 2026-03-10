@@ -32,6 +32,7 @@ class ReportIncentiveAttendanceExport implements FromCollection, WithHeadings
                 $attendance->employee->current_position->description,
                 $attendance->first_cut_off_worked_days,
                 $attendance->second_cut_off_worked_days,
+                $attendance->adjustment_days,
                 $attendance->remarks,
                 $additionalDays
             ];
@@ -46,6 +47,7 @@ class ReportIncentiveAttendanceExport implements FromCollection, WithHeadings
             'Position',
             '1st Cutoff Days',
             '2nd Cutoff Days',
+            'Deduction Days',
             'Remarks',
             'Additional Days Breakdown'
         ];
