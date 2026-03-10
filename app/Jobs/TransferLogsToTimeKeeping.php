@@ -247,28 +247,28 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 }
             }
             
-            $timeKeepingsQuery = TimeKeeping::with([
-                "employee",
-                "employee.schedule",
-                "employee.schedule.schedule_type",
-                "schedule"
-            ])
-            ->where("branch_id", $this->branchId)
-            ->whereBetween("date", $this->cutOff);
+            // $timeKeepingsQuery = TimeKeeping::with([
+            //     "employee",
+            //     "employee.schedule",
+            //     "employee.schedule.schedule_type",
+            //     "schedule"
+            // ])
+            // ->where("branch_id", $this->branchId)
+            // ->whereBetween("date", $this->cutOff);
 
-            if (!empty($this->employeeId)) {
-                $timeKeepingsQuery->where("employee_id", $this->employeeId);
-            }
-            if (!empty($this->dates)) {
-                $timeKeepingsQuery->whereIn("date", $this->dates);
-            }
+            // if (!empty($this->employeeId)) {
+            //     $timeKeepingsQuery->where("employee_id", $this->employeeId);
+            // }
+            // if (!empty($this->dates)) {
+            //     $timeKeepingsQuery->whereIn("date", $this->dates);
+            // }
 
-            $timeKeepings = $timeKeepingsQuery->get();
+            // $timeKeepings = $timeKeepingsQuery->get();
 
-            foreach($timeKeepings as $timeKeep) {
-                $actualSchedule = $timeKeep->schedule;
-                $this->timeKeepingService->computePayment($timeKeep, $actualSchedule);
-            }
+            // foreach($timeKeepings as $timeKeep) {
+            //     $actualSchedule = $timeKeep->schedule;
+            //     $this->timeKeepingService->computePayment($timeKeep, $actualSchedule);
+            // }
 
             $this->notifyJobFinished();
             DB::commit();
