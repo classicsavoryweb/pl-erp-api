@@ -38,7 +38,7 @@ class UpdateOvertimeStatusJob implements ShouldQueue
             $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtime->cshub_overtime_id;
             $user = env('CS_HUB_ADMIN_EMAIL');
             $password = env('CS_HUB_ADMIN_PASSWORD');
-            $payrollStatus = $overtime->hours_paid >= 1 ? "unpaid" : "paid";
+            $payrollStatus = $overtime->hours_paid >= 1 ? "paid" : "unpaid";
 
             try {
                 Http::withBasicAuth($user, $password)
