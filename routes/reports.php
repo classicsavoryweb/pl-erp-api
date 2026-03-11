@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Compensation\PayslipController;
+use App\Http\Controllers\Reports\IncentiveReportController;
 use App\Http\Controllers\Reports\ReportsThirteenthMonthController;
 use App\Http\Controllers\Reports\ReportsPagibigController;
 use App\Http\Controllers\Reports\ReportsPhilhealthController;
@@ -60,4 +61,5 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //incentive attendance report
     Route::middleware(["permission:perform_reports_incentive_attendance"])->get('/export-incentive-attendance', [ReportsIncentiveAttendanceController::class, 'exportIncentiveAttendance']);
+    Route::middleware(["permission:perform_reports_incentive_report"])->get('/export-incentive-report', [IncentiveReportController::class, 'exportIncentiveReport']);
 });
