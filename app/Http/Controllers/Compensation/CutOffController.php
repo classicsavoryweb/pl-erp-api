@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessFinalizeCutOff;
 use App\Jobs\ProcessInitializeCutOff;
 use App\Models\Cutoff;
+use App\Models\BranchAdditionalIncome;
 use App\Models\PayrollList;
 use Illuminate\Http\Request;
 use Exception;
@@ -73,9 +74,17 @@ class CutOffController extends Controller
                 "part" => $request->part
             ]);
 
+            $previousActiveCutOff = Cutoff::where("status", "active")
+                ->whereNot("id", $createdCutOff->id)
+                ->first();
+
             Cutoff::whereNot("id", $createdCutOff->id)
-            ->where("status", "active")
-            ->update(["status" => "inactive"]);
+                ->where("status", "active")
+                ->update(["status" => "inactive"]);
+
+            if ($previousActiveCutOff && $previousActiveCutOff->pay_date) {
+                BranchAdditionalIncome::where("pay_date", $previousActiveCutOff->pay_date)->delete();
+            }
 
             if ($initialized) {
                 ProcessInitializeCutOff::dispatch($createdCutOff, Auth::id(), $createdCutOff->cut_off);
