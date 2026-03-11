@@ -829,7 +829,10 @@ class TimeKeepingService
             $paymentPerDay = $employee->dailySalary() / 2;
         } 
         
-        if ($timeKeeping->final_worked_hours <= 1) {
+        if (
+            in_array($timeKeeping->schedule->timetable, ["REST DAY", "NO SCHEDULE"]) ||
+            $timeKeeping->final_worked_hours <= 1
+        ) {
             $paymentPerDay = 0;
         }
 
