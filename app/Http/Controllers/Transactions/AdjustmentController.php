@@ -189,7 +189,7 @@ class AdjustmentController extends Controller
                 ->orderBy("punch_time", "ASC")
                 ->get();
 
-                $this->timeKeepingService->computeTimeKeeping(
+                $adjustmentTimeKeeping = $this->timeKeepingService->computeTimeKeeping(
                     $request->branch_id,
                     $log,
                     $updatedPunches,
@@ -200,7 +200,6 @@ class AdjustmentController extends Controller
                     "taxable adjustment"
                 );
 
-                $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("biotime_log_id", $log->id)->first();
                 $adjustmentPayment = $this->timeKeepingService->computePayment(
                     $adjustmentTimeKeeping, 
                     true,
