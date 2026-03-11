@@ -488,6 +488,9 @@ class EmployeeController extends Controller
             DB::beginTransaction();
             $employee = Employee::where("employee_number", $employee_number)->first();
 
+            $request->merge(['email' => $request->email ? trim($request->email) : null]);
+            $request->validate(["email" => ["nullable","email:rfc,dns","unique:employees,email,".$employee->id,"regex:/^\S+$/"]]);
+
             $educationData = collect($request->education)
             ->except(["created_at", "updated_at"])
             ->toArray();

@@ -11,6 +11,7 @@ use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\OtherCompany\OtherEmployee;
+use App\Models\Position;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,8 +34,7 @@ class ActingCapacityController extends Controller
                     "recommended_position",
                     "branch",
                     "branch_assignment"
-                ])
-                ->orderBy("created_at","DESC");
+                ]);
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
@@ -63,6 +63,74 @@ class ActingCapacityController extends Controller
                     }
                 }
             }
+
+            $hasSort = $request->has(["sortColumn", "sort"]);
+
+            if ($hasSort) {
+                $sortColumn = $request->sortColumn;
+                $sortDirection = $request->sort;
+
+                if ($sortColumn === "employee.employee_number") {
+                    $actingCapacity = $actingCapacity->orderBy(
+                        Employee::select('employee_number')
+                        ->from('employees')
+                        ->whereColumn('employees.id', 'acting_capacity.employee_id')
+                        ->limit(1),
+                        $sortDirection
+                    );
+                } else if ($sortColumn === "employee.full_name") {
+                    $actingCapacity = $actingCapacity->orderBy(
+                        Employee::select('last_name')
+                        ->from('employees')
+                        ->whereColumn('employees.id', 'acting_capacity.employee_id')
+                        ->limit(1),
+                        $sortDirection
+                    );
+                } else if ($sortColumn === "branch.name") {
+                    $actingCapacity = $actingCapacity->orderBy(
+                        Branch::select('name')
+                        ->from('branches')
+                        ->whereColumn('branches.id', 'acting_capacity.branch_id')
+                        ->limit(1),
+                        $sortDirection
+                    );
+                } else if ($sortColumn === "branch_assignment.name") {
+                    $actingCapacity = $actingCapacity->orderBy(
+                        Branch::select('name')
+                        ->from('branches')
+                        ->whereColumn('branches.id', 'acting_capacity.branch_assignment_id')
+                        ->limit(1),
+                        $sortDirection
+                    );
+                } else if ($sortColumn === "current_position.description") {
+                    $actingCapacity = $actingCapacity->orderBy(
+                        Position::select('description')
+                        ->from('positions')
+                        ->whereColumn('positions.id', 'acting_capacity.current_position_id')
+                        ->limit(1),
+                        $sortDirection
+                    );
+                } else if ($sortColumn === "recommended_position.description") {
+                    $actingCapacity = $actingCapacity->orderBy(
+                        Position::select('description')
+                        ->from('positions')
+                        ->whereColumn('positions.id', 'acting_capacity.recommended_position_id')
+                        ->limit(1),
+                        $sortDirection
+                    );
+                } else if ($sortColumn === "latest_end_date") {
+                    $actingCapacity = $actingCapacity->orderByRaw(
+                        "COALESCE((SELECT MAX(end_date) FROM acting_capacity_extension WHERE acting_capacity_extension.acting_capacity_id = acting_capacity.id), acting_capacity.end_date) {$sortDirection}"
+                    );
+                } else {
+                    $actingCapacity = $actingCapacity->orderBy($sortColumn, $sortDirection);
+                }
+            }
+            
+            if (!$hasSort) {
+                $actingCapacity = $actingCapacity->orderBy("created_at","DESC");
+            }
+
 
             if ($request->has(["branch_id"])) {
                 $actingCapacity = $actingCapacity->whereHas("employee", function ($query) use ($request) {
