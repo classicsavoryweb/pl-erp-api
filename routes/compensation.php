@@ -103,4 +103,5 @@ Route::middleware('auth:sanctum')->group( function () {
     //additional income
     Route::get("/get-all-branch-additional-income", [BranchAdditionalIncomeController::class, "getAllBranchAdditionalIncome"]);
     Route::middleware(["permission:perform_compensation_additional_income"])->post("/save-branch-additional-income", [BranchAdditionalIncomeController::class, "updateOrCreateIncome"]);
+    Route::middleware(["permission:perform_compensation_additional_income"])->post("/import-branch-additional-income", [BranchAdditionalIncomeController::class, "importBranchAdditionalIncome"]);
 });
