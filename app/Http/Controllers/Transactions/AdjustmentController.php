@@ -131,9 +131,6 @@ class AdjustmentController extends Controller
                 if ($adjustmentIsOnActiveCutOff) {
                     return $this->sendError(["message" => "You cannot adjust dates on current cutoff"]);
                 }
-                // if (!$oldTimeKeeping) {
-                //     return $this->sendError(["message" => "Timekeeping not found"]);
-                // }
 
                 $log = BiotimeLog::where("employee_id", $employee->id)
                     ->where("date", $request->date)
@@ -204,8 +201,7 @@ class AdjustmentController extends Controller
                 );
 
                 $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("biotime_log_id", $log->id)->first();
-                $this->timeKeepingService->computePayment($adjustmentTimeKeeping, $schedule->selection, true);
-                $adjustmentPayment = TimeKeepingPayment::where("adjustment_timekeeping_id", $adjustmentTimeKeeping->id)->first();
+                $adjustmentPayment = $this->timeKeepingService->computePayment($adjustmentTimeKeeping,  true);
                 $originalPayment = null;
                 
                 $cancelled_off = 0;
@@ -214,7 +210,7 @@ class AdjustmentController extends Controller
                 $days = 0;
 
                 if ($oldTimeKeeping) {
-                    $originalPayment = TimeKeepingPayment::where("timekeeping_id", $oldTimeKeeping->id)->first();
+                    $originalPayment = $this->timeKeepingService->computePayment($oldTimeKeeping,  false);
                 }
 
                 if (!in_array($schedule->selection,["REST DAY", "NO SCHEDULE"])) {
@@ -236,8 +232,6 @@ class AdjustmentController extends Controller
 
                     $days = $days - $originalDays;
                 }
-
-                $cancelled_off = $adjustmentTimeKeeping->cancelled_off_hours - ($oldTimeKeeping->cancelled_off_hours ?? 0);
 
                 $taxable_amount = $adjustmentPayment->total_amount - ($originalPayment->total_amount ?? 0);
                 $amount_paid = $originalPayment->total_amount ?? 0;
@@ -377,7 +371,7 @@ class AdjustmentController extends Controller
                 $employee = $overtime->employee;
                 $overtimeHours = $overtime->total_hours;
                 $schedule = $timeKeeping->schedule;
-                $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
+                $oldtimeKeepingPayment = $this->timeKeepingService->computePayment($timeKeeping);
 
                 if ($timeKeeping->regular_overtime > 0 && $overtimeHours > $timeKeeping->regular_overtime) {
                     $overtimeHours = $timeKeeping->regular_overtime;
@@ -394,7 +388,6 @@ class AdjustmentController extends Controller
 
                 $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                     $adjustedTimeKeeping,
-                    $schedule->timetable,
                     true
                 );
 

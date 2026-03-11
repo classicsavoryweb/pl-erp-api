@@ -126,7 +126,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 
                 if ($timeKeeping) {
                     $schedule = $timeKeeping->schedule;
-                    $oldtimeKeepingPayment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
+                    $oldtimeKeepingPayment = $this->timeKeepingService->computePayment($timeKeeping);
                     $log = BiotimeLog::where("employee_id", $employee->id)
                     ->where("date", $timeKeeping->date)
                     ->first();
@@ -156,7 +156,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                         $adjustedTimeKeeping,
-                        $schedule->timetable,
                         true
                     );
 

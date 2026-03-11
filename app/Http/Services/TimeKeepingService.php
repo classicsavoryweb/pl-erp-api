@@ -802,176 +802,131 @@ class TimeKeepingService
         return $timeKeeping;
     }
 
-    public function computePayment($timeKeeping, $actualSchedule, $isAdjustment = false) {
-        $timekeepingPayment = null;
-        if ($timeKeeping) {
-            $employee = $timeKeeping->employee;
+    public function computePayment($timeKeeping, $isAdjustment = false) {
+        $timeKeepingPayment = null;
 
-            $date = $timeKeeping->date;
+        $employee = $timeKeeping->employee;
+        $tardinessDeduction = 0;
+        $undertimeDeduction = 0;
+        $totalAmount = 0;
+        $regular_overtime = 0;
+        $night_differential = 0;
+        $night_differential_overtime = 0;
+        $legal_holiday = 0;
+        $special_holiday = 0;
+        $legal_holiday_overtime = 0;
+        $special_holiday_overtime = 0;
+        $cancelled_off = 0;
+        $isHolidayPaid = $timeKeeping->paid_holiday == 'Yes' ? true : false;
+        $paymentPerDay = $employee->dailySalary();
+        $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
+        $paymentPerMinute = $paymentPerHour / 60;
 
-            $schedule = null;
-
-            if ($isAdjustment) {
-                $schedule = ScheduleMasterlist::where("selection", $actualSchedule)->first();
-            } else {
-                $schedule = ScheduleMasterlist::where("selection", $actualSchedule->timetable)->first();
-
-                if (!$schedule) {
-                    $schedule = ScheduleMasterlist::where("start_time", $actualSchedule->check_in)
-                    ->where("end_time", $actualSchedule->check_out)
-                    ->first();
-                }
-            }
-
-            // $scheduledBreak = Carbon::parse($date . ' ' . $schedule->time_break ?? "00:00");
-            // $scheduledBreakInHours = $scheduledBreak->hour + ($scheduledBreak->minute / 60);             
-            // $totalDutyHours = $schedule->total_hours - $this->formatHours($scheduledBreakInHours);
-            
-            $paymentPerDay = $employee->dailySalary();
-            $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
-            $paymentPerMinute = $paymentPerHour / 60;
-
-            if (
-                ($employee->schedule->schedule_type->name === "Normal Schedule" && $timeKeeping->final_worked_hours == 4) ||
-                ($employee->schedule->schedule_type->name === "Compressed Schedule" && $timeKeeping->final_worked_hours == 4.75)
-            ) {
-                $paymentPerDay = $employee->dailySalary() / 2;
-            }
-
-            $tardinessDeduction = 0;
-            $undertimeDeduction = 0;
-            $totalAmount = 0;
-            $regular_overtime = 0;
-            $night_differential = 0;
-            $night_differential_overtime = 0;
-            $legal_holiday = 0;
-            $special_holiday = 0;
-            $legal_holiday_overtime = 0;
-            $special_holiday_overtime = 0;
-            $cancelled_off = 0;
-
-            $tardinessDeduction = $timeKeeping->tardiness * $paymentPerMinute;
-            $undertimeDeduction = $timeKeeping->undertime * $paymentPerMinute;
-            $legal_holiday = $timeKeeping->legal_holiday_hours * $paymentPerHour;
-            $special_holiday = $timeKeeping->special_holiday_hours * ($paymentPerHour * .3);
-            $night_differential = $timeKeeping->night_diff_hours >= 1 ? $timeKeeping->night_diff_hours * ($paymentPerHour * .1) : 0;
-
-            if ($employee->current_branch->type === "Branch") {
-                $timeKeeping->regular_overtime = floor($timeKeeping->regular_overtime);
-                $timeKeeping->legal_holiday_overtime = floor($timeKeeping->legal_holiday_overtime);
-                $timeKeeping->special_holiday_overtime = floor($timeKeeping->special_holiday_overtime);
-                $timeKeeping->night_diff_overtime = floor($timeKeeping->night_diff_overtime);
-            }
-
-            if ($timeKeeping->regular_overtime > 0) {
-                if ($timeKeeping->regular_overtime < $timeKeeping->approved_overtime) {
-                    $regular_overtime = $timeKeeping->regular_overtime * ($paymentPerHour * 1.25);
-                } else {
-                    $regular_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * 1.25);
-                }
-            }
-            
-            if ($timeKeeping->night_diff_overtime > 0) {
-                if ($timeKeeping->night_diff_overtime < $timeKeeping->approved_overtime) {
-                    $night_differential_overtime = $timeKeeping->night_diff_overtime >= 1 ? $timeKeeping->night_diff_overtime * ($paymentPerHour * .125) : 0;
-                } else {
-                    $night_differential_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * .125);
-                }
-            }
-
-            if ($timeKeeping->legal_holiday_overtime > 0) {
-                if ($timeKeeping->legal_holiday_overtime <= $timeKeeping->approved_overtime) {
-                    $legal_holiday_overtime = $timeKeeping->legal_holiday_overtime * ($paymentPerHour * 2.6);
-                } else {
-                    $legal_holiday_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * 2.6);
-                }
-            }
-
-            if ($timeKeeping->special_holiday_overtime > 0) {
-                if ($timeKeeping->special_holiday_overtime <= $timeKeeping->approved_overtime) {
-                    $special_holiday_overtime = $timeKeeping->special_holiday_overtime * ($paymentPerHour * 1.69);
-                } else {
-                    $special_holiday_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * 1.69);
-                }
-            }
-
-            $totalAmount = ($paymentPerDay + $regular_overtime + $night_differential + $night_differential_overtime + $legal_holiday + $special_holiday + $legal_holiday_overtime + $special_holiday_overtime + $cancelled_off)
-                - ($tardinessDeduction + $undertimeDeduction);
-
-            if ($timeKeeping->is_cancelled_off) {
-                $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours > $timeKeeping->approved_overtime ? $timeKeeping->cancelled_off_hours : $timeKeeping->approved_overtime;
-
-                if ($employee->schedule->schedule_type->name === "Normal Schedule") {
-                    $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours < 8 ? $timeKeeping->cancelled_off_hours : 8;
-                } else {
-                    $cancelledOffWorkedHours = $timeKeeping->cancelled_off_hours < 9.5 ? $timeKeeping->cancelled_off_hours : 9.5;
-                }
-
-                $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 1.3);
-
-                // if ($timeKeeping->legal_holiday === "Yes") {
-                //     $cancelled_off = $cancelledOffWorkedHours * ($paymentPerHour * 2.6);
-                // }
-
-                $totalAmount = $cancelled_off;
-            }
-
-            if (!$isAdjustment) {
-                $payment = TimeKeepingPayment::where("timekeeping_id", $timeKeeping->id)->first();
-                if ($payment) {
-                    $payment->delete();
-                }
-                
-                $biotimeLog = BiotimeLog::where("employee_id", $employee->id)
-                ->where("date", $date)
-                ->first();
-
-                if (!$biotimeLog || $biotimeLog->punches()->count() == 0) {
-                    $totalAmount = 0;
-                }
-
-                $timekeepingPayment = TimeKeepingPayment::create([
-                    "timekeeping_id" => $timeKeeping->id,
-                    "base_amount" => round($paymentPerDay, 2),
-                    "tardiness_deduction" => round($tardinessDeduction, 2),
-                    "undertime_deduction" => round($undertimeDeduction, 2),
-                    "regular_overtime" => round($regular_overtime, 2),
-                    "night_differential" => round($night_differential, 2),
-                    "night_differential_overtime" => round($night_differential_overtime, 2),
-                    "legal_holiday" => round($legal_holiday, 2),
-                    "special_holiday" => round($special_holiday, 2),
-                    "legal_holiday_overtime" => round($legal_holiday_overtime, 2),
-                    "special_holiday_overtime" => round($special_holiday_overtime, 2),
-                    "cancelled_off" => round($cancelled_off, 2),
-                    "total_amount" => round($totalAmount, 2),
-                    "type" => "timekeeping"
-                ]);
-            } else {
-                $isExisting = TimeKeepingPayment::where("adjustment_timekeeping_id", $timeKeeping->id)->first();
-                if ($isExisting) {
-                    $isExisting->delete();
-                }
-
-                $timekeepingPayment = TimeKeepingPayment::create([
-                    "adjustment_timekeeping_id" => $timeKeeping->id,
-                    "base_amount" => round($paymentPerDay,2),
-                    "tardiness_deduction" => round($tardinessDeduction,2),
-                    "undertime_deduction" => round($undertimeDeduction,2),
-                    "regular_overtime" => round($regular_overtime,2),
-                    "night_differential" => round($night_differential,2),
-                    "night_differential_overtime" => round($night_differential_overtime,2),
-                    "legal_holiday" => round($legal_holiday,2),
-                    "special_holiday" => round($special_holiday,2),
-                    "legal_holiday_overtime" => round($legal_holiday_overtime,2),
-                    "special_holiday_overtime" => round($special_holiday_overtime,2),
-                    "total_amount" => round($totalAmount,2),
-                    "cancelled_off" => round($cancelled_off, 2),
-                    "type" => "adjustment_timekeeping"
-                ]);
-            }
-
-            return $timekeepingPayment;
+        if (
+            ($employee->schedule->schedule_type->name === "Normal Schedule" && $timeKeeping->final_worked_hours == 4) ||
+            ($employee->schedule->schedule_type->name === "Compressed Schedule" && $timeKeeping->final_worked_hours == 4.75)
+        ) {
+            $paymentPerDay = $employee->dailySalary() / 2;
+        } 
+        
+        if ($timeKeeping->final_worked_hours <= 1) {
+            $paymentPerDay = 0;
         }
+
+        $tardinessDeduction = $timeKeeping->tardiness * $paymentPerMinute;
+        $undertimeDeduction = $timeKeeping->undertime * $paymentPerMinute;
+        $legal_holiday =  $isHolidayPaid ? $timeKeeping->legal_holiday_hours * $paymentPerHour : 0;
+        $special_holiday = $isHolidayPaid ? $timeKeeping->special_holiday_hours * ($paymentPerHour * .3) : 0;
+        $night_differential = $timeKeeping->night_diff_hours >= 1 ? $timeKeeping->night_diff_hours * ($paymentPerHour * .1) : 0;
+
+        $timeKeeping->regular_overtime = floor($timeKeeping->regular_overtime);
+        $timeKeeping->legal_holiday_overtime = floor($timeKeeping->legal_holiday_overtime);
+        $timeKeeping->special_holiday_overtime = floor($timeKeeping->special_holiday_overtime);
+        $timeKeeping->night_diff_overtime = floor($timeKeeping->night_diff_overtime);
+
+        if (!$isHolidayPaid) {
+            if ($timeKeeping->legal_holiday_overtime > 0) {
+                $timeKeeping->regular_overtime = $timeKeeping->legal_holiday_overtime;
+            }
+            if ($timeKeeping->special_holiday_overtime > 0) {
+                $timeKeeping->regular_overtime = $timeKeeping->special_holiday_overtime;
+            }
+        }
+
+        if ($timeKeeping->regular_overtime > 0) {
+            if ($timeKeeping->regular_overtime < $timeKeeping->approved_overtime) {
+                $regular_overtime = $timeKeeping->regular_overtime * ($paymentPerHour * 1.25);
+            } else {
+                $regular_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * 1.25);
+            }
+        }
+        
+        if ($timeKeeping->night_diff_overtime > 0) {
+            if ($timeKeeping->night_diff_overtime < $timeKeeping->approved_overtime) {
+                $night_differential_overtime = $timeKeeping->night_diff_overtime >= 1 ? $timeKeeping->night_diff_overtime * ($paymentPerHour * .125) : 0;
+            } else {
+                $night_differential_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * .125);
+            }
+        }
+
+        if ($isHolidayPaid && $timeKeeping->legal_holiday_overtime > 0) {
+            if ($timeKeeping->legal_holiday_overtime <= $timeKeeping->approved_overtime) {
+                $legal_holiday_overtime = $timeKeeping->legal_holiday_overtime * ($paymentPerHour * 2.6);
+            } else {
+                $legal_holiday_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * 2.6);
+            }
+        }
+
+        if ($isHolidayPaid && $timeKeeping->special_holiday_overtime > 0) {
+            if ($timeKeeping->special_holiday_overtime <= $timeKeeping->approved_overtime) {
+                $special_holiday_overtime = $timeKeeping->special_holiday_overtime * ($paymentPerHour * 1.69);
+            } else {
+                $special_holiday_overtime = $timeKeeping->approved_overtime * ($paymentPerHour * 1.69);
+            }
+        }
+
+        if ($timeKeeping->cancelled_off_hours > 0) {
+            if ($timeKeeping->cancelled_off_hours <= $timeKeeping->approved_overtime) {
+                $cancelled_off = $timeKeeping->cancelled_off_hours * ($paymentPerHour * 1.69);
+            } else {
+                $cancelled_off = $timeKeeping->approved_overtime * ($paymentPerHour * 1.69);
+            }
+        }
+
+        $totalAmount = (
+            $paymentPerDay + 
+            $regular_overtime + 
+            $night_differential + 
+            $night_differential_overtime + 
+            $legal_holiday + 
+            $special_holiday + 
+            $legal_holiday_overtime + 
+            $special_holiday_overtime + 
+            $cancelled_off
+        ) - ($tardinessDeduction + $undertimeDeduction);
+
+        $idToUse = $isAdjustment ? "adjustment_timekeeping_id" : "timekeeping_id";
+        $timeKeepingPayment = TimeKeepingPayment::updateOrCreate(
+            [
+                $idToUse => $timeKeeping->id,
+            ],
+        [
+            "base_amount" => round($paymentPerDay, 2),
+            "tardiness_deduction" => round($tardinessDeduction, 2),
+            "undertime_deduction" => round($undertimeDeduction, 2),
+            "regular_overtime" => round($regular_overtime, 2),
+            "night_differential" => round($night_differential, 2),
+            "night_differential_overtime" => round($night_differential_overtime, 2),
+            "legal_holiday" => round($legal_holiday, 2),
+            "special_holiday" => round($special_holiday, 2),
+            "legal_holiday_overtime" => round($legal_holiday_overtime, 2),
+            "special_holiday_overtime" => round($special_holiday_overtime, 2),
+            "cancelled_off" => round($cancelled_off, 2),
+            "total_amount" => round($totalAmount, 2),
+            "type" => $isAdjustment ? "adjustment_timekeeping" : "timekeeping"
+        ]);
+
+        return $timeKeepingPayment;
     }
 
     public function getCutOff($date){

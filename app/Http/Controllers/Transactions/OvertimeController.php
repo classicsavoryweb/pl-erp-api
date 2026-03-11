@@ -313,7 +313,6 @@ class OvertimeController extends Controller
 
                 $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                     $adjustedTimeKeeping,
-                    $schedule->timetable,
                     true
                 );
 
@@ -437,7 +436,6 @@ class OvertimeController extends Controller
 
                     $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                         $adjustedTimeKeeping,
-                        $schedule->timetable,
                         true
                     );
 

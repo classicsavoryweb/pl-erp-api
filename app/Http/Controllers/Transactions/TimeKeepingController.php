@@ -563,8 +563,6 @@ class TimeKeepingController extends Controller
 
             $timeKeeping->refresh();
 
-            $this->timeKeepingService->computePayment($timeKeeping, $schedule, false);
-
             GenerateTimekeepingSummary::dispatchSync(
                 $timeKeeping->branch_id,
                 $cutOff,
