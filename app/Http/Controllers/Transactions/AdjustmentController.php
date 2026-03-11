@@ -201,7 +201,11 @@ class AdjustmentController extends Controller
                 );
 
                 $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("biotime_log_id", $log->id)->first();
-                $adjustmentPayment = $this->timeKeepingService->computePayment($adjustmentTimeKeeping,  true);
+                $adjustmentPayment = $this->timeKeepingService->computePayment(
+                    $adjustmentTimeKeeping, 
+                    true,
+                    $request->schedule
+                );
                 $originalPayment = null;
                 
                 $cancelled_off = 0;

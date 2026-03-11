@@ -802,7 +802,7 @@ class TimeKeepingService
         return $timeKeeping;
     }
 
-    public function computePayment($timeKeeping, $isAdjustment = false) {
+    public function computePayment($timeKeeping, $isAdjustment = false, $timeTable = null) {
         $timeKeepingPayment = null;
 
         $employee = $timeKeeping->employee;
@@ -822,6 +822,12 @@ class TimeKeepingService
         $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
         $paymentPerMinute = $paymentPerHour / 60;
 
+        $schedule = $timeKeeping->schedule->timetable;
+
+        if ($isAdjustment && $timeTable) {
+            $schedule = $timeTable;
+        }
+
         if (
             ($employee->schedule->schedule_type->name === "Normal Schedule" && $timeKeeping->final_worked_hours == 4) ||
             ($employee->schedule->schedule_type->name === "Compressed Schedule" && $timeKeeping->final_worked_hours == 4.75)
@@ -830,7 +836,7 @@ class TimeKeepingService
         } 
         
         if (
-            in_array($timeKeeping->schedule->timetable, ["REST DAY", "NO SCHEDULE"]) ||
+            in_array($schedule, ["REST DAY", "NO SCHEDULE"]) ||
             $timeKeeping->final_worked_hours <= 1
         ) {
             $paymentPerDay = 0;
