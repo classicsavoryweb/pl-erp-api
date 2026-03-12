@@ -32,7 +32,8 @@ class AdjustmentTimeKeeping extends Model
         "travel_time",
         "approved_overtime",
         "remarks",
-        "cancelled_off_hours"
+        "cancelled_off_hours",
+        "paid_holiday"
     ];
 
     
