@@ -57,15 +57,29 @@ class EntryController extends Controller
                 $cutoffStartSlash = str_replace("-", "/", $cutoffStart);
                 $cutoffEndSlash = str_replace("-", "/", $cutoffEnd);
 
-                $entryQuery
-                    ->where(function($query) use ($cutoffStart, $cutoffStartSlash) {
-                        $query->where("document_no", "LIKE", "%{$cutoffStart}%")
-                              ->orWhere("document_no", "LIKE", "%{$cutoffStartSlash}%");
-                    })
-                    ->where(function($query) use ($cutoffEnd, $cutoffEndSlash) {
-                        $query->where("document_no", "LIKE", "%{$cutoffEnd}%")
-                              ->orWhere("document_no", "LIKE", "%{$cutoffEndSlash}%");
-                    });
+                $cutoffPayroll = Payroll::query()
+                    ->whereRaw("DATE_FORMAT(start_date, '%m-%d') = ?", [$cutoffStart])
+                    ->whereRaw("DATE_FORMAT(end_date, '%m-%d') = ?", [$cutoffEnd])
+                    ->orderBy("pay_date", "DESC")
+                    ->first();
+
+                $cutoffPayDate = $cutoffPayroll?->pay_date;
+
+                $entryQuery->where(function($query) use ($cutoffStart, $cutoffStartSlash, $cutoffEnd, $cutoffEndSlash, $cutoffPayDate) {
+                    $query
+                        ->where(function($inner) use ($cutoffStart, $cutoffStartSlash) {
+                            $inner->where("document_no", "LIKE", "%{$cutoffStart}%")
+                                  ->orWhere("document_no", "LIKE", "%{$cutoffStartSlash}%");
+                        })
+                        ->where(function($inner) use ($cutoffEnd, $cutoffEndSlash) {
+                            $inner->where("document_no", "LIKE", "%{$cutoffEnd}%")
+                                  ->orWhere("document_no", "LIKE", "%{$cutoffEndSlash}%");
+                        });
+
+                    if ($cutoffPayDate) {
+                        $query->orWhereDate("pay_date", $cutoffPayDate);
+                    }
+                });
             }
              
             if ($request->has(["column_type", "key_word"])) {
