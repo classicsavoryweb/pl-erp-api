@@ -531,7 +531,7 @@ class TimeKeepingService
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
 
             if ($totalWorkedHours < $hours) {
-                $undertime = ($totalWorkedHours - $hours) * 60;
+                $undertime = ($hours - $totalWorkedHours) * 60;
             }
 
             if ($totalWorkedHours < $totalDurationHOurs && $totalWorkedHours >= $hours ) {
