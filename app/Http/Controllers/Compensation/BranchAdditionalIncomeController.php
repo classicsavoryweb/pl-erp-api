@@ -7,6 +7,7 @@ use App\Imports\BranchAdditionalIncomeImport;
 use App\Models\Branch;
 use App\Models\BranchAdditionalIncome;
 use App\Models\Cutoff;
+use App\Exports\Compensation\BranchAdditionalIncomeExport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -103,6 +104,21 @@ class BranchAdditionalIncomeController extends Controller
 
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function exportBranchAdditionalIncome(Request $request)
+    {
+        try {
+            $payDate = $this->resolvePayDateFromCutoff($request);
+            $rows = $this->buildBranchAdditionalIncomeRows($request, $payDate);
+
+            return Excel::download(
+                new BranchAdditionalIncomeExport($rows),
+                "branch-additional-income.xlsx"
+            );
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
@@ -280,6 +296,48 @@ class BranchAdditionalIncomeController extends Controller
         $text = str_replace("\xc2\xa0", ' ', $text);
         $text = preg_replace('/\s+/u', ' ', $text);
         return strtolower(trim($text));
+    }
+
+    private function buildBranchAdditionalIncomeRows(Request $request, ?string $payDate): Collection
+    {
+        $branches = Branch::query()
+            ->where("branches.status", "active");
+
+        if ($request->filled("branch_id")) {
+            $branches = $branches->where("branches.id", $request->branch_id);
+        }
+
+        if ($payDate) {
+            $branches = $branches
+                ->leftJoin("branch_additional_income as bai", function ($join) use ($payDate) {
+                    $join->on("bai.branch_id", "=", "branches.id")
+                        ->where("bai.pay_date", "=", $payDate);
+                })
+                ->select(
+                    "branches.id",
+                    "branches.branch_number",
+                    "branches.name",
+                    DB::raw("COALESCE(bai.amount, 0) as amount")
+                );
+        } else {
+            $branches = $branches->select(
+                "branches.id",
+                "branches.branch_number",
+                "branches.name",
+                DB::raw("0 as amount")
+            );
+        }
+
+        return $branches->orderBy("branches.name", "ASC")
+            ->get()
+            ->map(function ($row) use ($payDate) {
+                return [
+                    "branch_number" => $row->branch_number,
+                    "branch_name" => $row->name,
+                    "amount" => (float) $row->amount,
+                    "pay_date" => $payDate ?? "",
+                ];
+            });
     }
 
     private function hasCutoffSelection(Request $request): bool
