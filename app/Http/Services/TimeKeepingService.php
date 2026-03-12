@@ -1083,6 +1083,23 @@ class TimeKeepingService
         return $shouldPay;
     }
 
+    public function determinePaidHoliday($date, $employee, $branchId): bool
+    {
+        $holiday = Holiday::whereHas("branches", function($query) use ($branchId) {
+            $query->where("branches.id", $branchId);
+        })
+        ->where("date", $date)
+        ->first();
+
+        if (!$holiday) {
+            return false;
+        }
+
+        $cutOff = $this->getCutOff($date);
+
+        return $this->payHoliday($date, $employee, $cutOff, $holiday);
+    }
+
     private function getCustomWeekRange($date, $cutOff, $employee)
     {
         $holidayDate = Carbon::parse($date);

@@ -154,6 +154,13 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "force adjustment"
                     );
 
+                    $holidayIsPaid = $this->timeKeepingService->determinePaidHoliday(
+                        $timeKeeping->date,
+                        $employee,
+                        $timeKeeping->branch_id
+                    );
+                    $adjustedTimeKeeping->paid_holiday = $holidayIsPaid ? "Yes" : "No";
+
                     $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                         $adjustedTimeKeeping,
                         true
