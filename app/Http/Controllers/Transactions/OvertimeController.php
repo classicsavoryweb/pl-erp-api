@@ -310,6 +310,8 @@ class OvertimeController extends Controller
                     true,
                     "force adjustment"
                 );
+                $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday;
+                $adjustedTimeKeeping->save();
 
                 $holidayIsPaid = $this->timeKeepingService->determinePaidHoliday(
                     $timeKeeping->date,
@@ -452,6 +454,8 @@ class OvertimeController extends Controller
                         $adjustedTimeKeeping,
                         true
                     );
+                    $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday;
+                    $adjustedTimeKeeping->save();
 
                     $taxable_amount = $adjustedTimeKeepingPayment->total_amount - ($oldtimeKeepingPayment->total_amount ?? 0);
                     $amount_paid = $oldtimeKeepingPayment->total_amount ?? 0;

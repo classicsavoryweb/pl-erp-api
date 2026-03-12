@@ -340,6 +340,7 @@ class TimeKeepingService
         $tenPM = Carbon::parse($log->date." ".'22:00:00');
         $newDate = Carbon::parse($log->date)->addDay()->format('Y-m-d');
         $sixAM = Carbon::parse($newDate." ".'06:00:00');
+        $sameDaySixAM = Carbon::parse($log->date." ".'06:00:00');
         //FLEX TO BE CHANGED
         if (
             $scheduleEnd->greaterThan($tenPM) &&
@@ -460,6 +461,27 @@ class TimeKeepingService
                     $OTHours = $OTDiffInSeconds / 3600;
                     $nightDiffOt = $OTHours;
                 }
+            }
+        }
+
+        if (
+            $sameDaySixAM->greaterThan($scheduleStart) &&
+            $sameDaySixAM->greaterThan($parsedFirstPunch) &&
+            (
+                $schedule->selection !== "Spot Audit" &&
+                $schedule->selection !== "MEI 08:00 TO 06:30" &&
+                $schedule->selection !== "MEI 09:00 TO 19:30" &&
+                $schedule->selection !== "Flex 1" &&
+                $schedule->selection !== "Flex 2" &&
+                strtolower($schedule->selection) !== "flex"
+            )
+        ) {
+            if ($parsedFirstPunch->greaterThan($scheduleStart)) {
+                $ndSeconds = $parsedFirstPunch->diffInSeconds($sameDaySixAM);
+                $nightDiffHours += $ndSeconds / 3600;
+            } else {
+                $ndSeconds = $scheduleStart->diffInSeconds($sameDaySixAM);
+                $nightDiffHours += $ndSeconds / 3600;
             }
         }
 
@@ -729,8 +751,8 @@ class TimeKeepingService
                 "special_holiday" => $specialHoliday,
                 "regular_overtime" => $this->formatHours($overtime),
                 "tardiness" => $tardiness,
-                "night_diff_hours" => $this->formatHours($nightDiffHours <= 1 ? $nightDiffHours : 0),
-                "night_diff_overtime" => $this->formatHours($nightDiffOt <= 1 ? $nightDiffOt : 0),
+                "night_diff_hours" => $this->formatHours($nightDiffHours >= 1 ? $nightDiffHours : 0),
+                "night_diff_overtime" => $this->formatHours($nightDiffOt >= 1 ? $nightDiffOt : 0),
                 "legal_holiday_hours" => $this->formatHours($legalHolidayHours),
                 "legal_holiday_overtime" => $this->formatHours($legalHolidayOvertime),
                 "special_holiday_hours" => $this->formatHours($specialHolidayHours),
