@@ -677,7 +677,7 @@ class PayrollService {
                 ->whereHas('positions', function ($query) use ($employee) {
                     $query->where('positions.id', $employee->position_id);
                 })
-                ->orderBy("month", "DESC")
+                ->orderByRaw('CAST(month AS UNSIGNED) DESC')
                 ->first();
 
             if ($bracket) {
@@ -735,9 +735,6 @@ class PayrollService {
         $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
 
         $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
-
-        $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
-        $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
         
         $firstCutOffAdjustments = Adjustment::where("employee_id", $employee->id)
         ->whereBetween("created_at", [$firstCutOff['start_time']." 00:00:00", $firstCutOff['end_time']." 23:59:59"])
@@ -751,11 +748,11 @@ class PayrollService {
         ->whereIn("status", ["Approved", "Adjusted"])
         ->get();
 
-        $adjustmentDays = ($days > $firstCutOffWorkDays ? $days - $firstCutOffWorkDays : 0) +
-            ($days > $secondCutOffWorkDays ? $days - $secondCutOffWorkDays : 0);
+        $adjustmentDays = ($days > $firstCutOffDays ? $days - $firstCutOffDays : 0) +
+            ($days > $secondCutOffDays ? $days - $secondCutOffDays : 0);
 
         if ($adjustmentDays) {
-            $remarks = "With ".$adjustmentDays. " absents";
+            $remarks = "ABSENTS: ".$adjustmentDays. " | ";
         }
 
         foreach ($firstCutOffAdjustments as $adjustment) {
@@ -843,9 +840,9 @@ class PayrollService {
                     $incentiveAmount -= $deductionAmount;
 
                     if (!empty($remarks)) {
-                        $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                        $remarks .= $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     } else {
-                        $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                        $remarks = $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     }
                 }
             }       
@@ -864,9 +861,9 @@ class PayrollService {
                     $incentiveAmount -= $deductionAmount;
 
                     if (!empty($remarks)) {
-                        $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                        $remarks .= $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     } else {
-                        $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                        $remarks = $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     }
                 }
             }
