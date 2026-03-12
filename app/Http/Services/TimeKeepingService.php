@@ -443,16 +443,22 @@ class TimeKeepingService
                 $flexDiffInSeconds = $parsedFirstPunch->diffInSeconds($tenPM);
                 $flexiHours = $flexDiffInSeconds / 3600;
 
-                if ($flexiHours > $totalDurationHOurs) {
-                    $flexOTDiffInSeconds = $parsedLastPunch->diffInSeconds($tenPM);
-                    $flexiOTHours = $flexOTDiffInSeconds / 3600;
-                    $nightDiffOt = $flexiOTHours;
-                } else {
-                    if (strtolower($schedule->selection) === "flex") {
+                if (strtolower($schedule->selection) === "flex") {
+                    if ($flexiHours > $totalDurationHOurs) {
+                        $flexOTDiffInSeconds = $parsedLastPunch->diffInSeconds($tenPM);
+                        $flexiOTHours = $flexOTDiffInSeconds / 3600;
+                        $nightDiffOt = $flexiOTHours;
+                    } else {
                         $flexNightDiffInSeconds = $parsedLastPunch->diffInSeconds($tenPM);
                         $flexNightDiff = $flexNightDiffInSeconds / 3600;
                         $nightDiffHours = $flexNightDiff;
                     }
+                }
+
+                if ($schedule->selection == "NO SCHEDULE") {
+                    $OTDiffInSeconds = $parsedLastPunch->diffInSeconds($tenPM);
+                    $OTHours = $OTDiffInSeconds / 3600;
+                    $nightDiffOt = $OTHours;
                 }
             }
         }
