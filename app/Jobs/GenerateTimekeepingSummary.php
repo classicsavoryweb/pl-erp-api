@@ -153,6 +153,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         true,
                         "force adjustment"
                     );
+                    $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday;
+                    $adjustedTimeKeeping->save();
 
                     $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                         $adjustedTimeKeeping,
