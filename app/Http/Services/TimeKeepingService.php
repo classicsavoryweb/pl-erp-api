@@ -840,6 +840,16 @@ class TimeKeepingService
         ) {
             $paymentPerDay = $employee->dailySalary() / 2;
         } 
+
+        $hoursPerDay = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
+        $isHalfDay = $timeKeeping->final_worked_hours == ($hoursPerDay / 2);
+        if ($isHalfDay) {
+            $timeKeeping->regular_overtime = 0;
+            $timeKeeping->legal_holiday_overtime = 0;
+            $timeKeeping->special_holiday_overtime = 0;
+            $timeKeeping->night_diff_overtime = 0;
+            $timeKeeping->approved_overtime = 0;
+        }
         
         if (
             in_array($schedule, ["REST DAY", "NO SCHEDULE"]) ||
