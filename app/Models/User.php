@@ -30,6 +30,7 @@ class User extends Authenticatable
         'password',
         'employee_number',
         'role_id',
+        'position',
         'status'
     ];
 
@@ -98,5 +99,10 @@ class User extends Authenticatable
 
     public function employee() {
         return $this->hasOne(Employee::class, "employee_number", "employee_number");
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
     }
 }

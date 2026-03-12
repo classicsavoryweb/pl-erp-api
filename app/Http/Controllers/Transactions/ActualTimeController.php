@@ -11,15 +11,28 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\Transactions\ActualLogsExport;
+use App\Http\Services\TimeKeepingService;
 use App\Jobs\FetchBranchLogs;
+use App\Jobs\GenerateTimekeepingSummary;
+use App\Jobs\TransferLogsToTimeKeeping;
+use App\Models\Branch;
+use App\Models\Cutoff;
+use App\Models\ScheduleTime;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Spatie\Activitylog\Models\Activity;
 
 class ActualTimeController extends Controller
 {
+    protected $timeKeepingService;
+
+    public function __construct() {
+        $this->timeKeepingService = new TimeKeepingService();
+    }
+
     public function getAllBiotimeTransactions(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -81,6 +94,10 @@ class ActualTimeController extends Controller
                 $bioTimeLogs = $bioTimeLogs->whereBetween("date", [$start_time, $end_time]);
             }
 
+            if ($request->has('status') && $request->filled('status') && $request->status !== 'ALL') {
+                $bioTimeLogs = $bioTimeLogs->where("status", $request->status);
+            }
+
             if ($request->has(["export"]) && $request->export) {
                 $bioTimeLogs = $bioTimeLogs->get();
                 return Excel::download(new ActualLogsExport($bioTimeLogs), "actual_logs.xls");
@@ -116,6 +133,7 @@ class ActualTimeController extends Controller
 
             $user = Auth::user();
             $employee = Employee::where("employee_number", $request->employee_number)->first();
+            $refreshTargets = [];
 
             if ($employee) {
                 foreach ($request->time_keeping as $timekeeping) {
@@ -142,11 +160,30 @@ class ActualTimeController extends Controller
                             "branch_id" => $timekeeping["branch_id"]
                         ]);
                     }
+                    $biotime->updateStatusFromPunchesCount(count($timekeeping["punches"]));
+
+                    $scheduleBranchId = ScheduleTime::where("employee_id", $employee->id)
+                        ->where("date", $timekeeping["date"])
+                        ->value("branch_id");
+                    $branchId = $scheduleBranchId ?? $employee->branch_id ?? ($timekeeping["branch_id"] ?? null);
+
+                    $refreshTargets[] = [
+                        "employee_id" => $employee->id,
+                        "date" => $timekeeping["date"],
+                        "branch_id" => $branchId,
+                    ];
                 }
 
                 
             }
             DB::commit();
+            if (!empty($refreshTargets)) {
+                $userId = $user?->id;
+                $controller = $this;
+                app()->terminating(function () use ($refreshTargets, $userId, $controller) {
+                    $controller->refreshFromTargets($refreshTargets, $userId);
+                });
+            }
             return $this->sendResponse(["message" => "Biotime logs saved successfully."]);
         } catch (Exception $e) {
             DB::rollBack();
@@ -159,12 +196,47 @@ class ActualTimeController extends Controller
             DB::beginTransaction();
             $request->validate([
                 "punches" => "required",
+                "deleted_punch_ids" => "array",
+                "deleted_punch_ids.*" => "integer",
             ]);
 
             $user = Auth::user();
             $biotime = BiotimeLog::find($bioTimeID);
+            $refreshTargets = [];
 
             if ($biotime) {
+                $activeCutOff = Cutoff::where("status", "active")
+                ->where("start_date", "<=", $biotime->date)
+                ->where("end_date", ">=", $biotime->date)
+                ->first();
+
+                if (!$activeCutOff) {
+                    return $this->sendError(["message" => "You cant edit inactive cutoff"]);
+                }
+
+                if ($activeCutOff && $activeCutOff->is_timekeeping_locked == 1) {
+                    return $this->sendError(["message" => "You cant edit inactive cutoff"]);
+                }
+
+                $deletedIds = $request->input("deleted_punch_ids", []);
+                $didModify = false;
+                if (is_array($deletedIds) && count($deletedIds) > 0) {
+                    $deletedPunches = $biotime->punches()
+                        ->with("branch")
+                        ->whereIn("id", $deletedIds)
+                        ->get();
+
+                    foreach ($deletedPunches as $punch) {
+                        activity()
+                            ->causedBy($user)
+                            ->performedOn($biotime)
+                            ->useLog("Biotime Punch Deletion")
+                            ->log("User deleted biotime punch");
+                    }
+                    $biotime->punches()->whereIn("id", $deletedIds)->delete();
+                    $didModify = true;
+                }
+
                 foreach ($request->punches as $punch) {
                     if (isset($punch["id"])) {
                         $origPunch = BiotimePunch::find($punch["id"]);
@@ -177,13 +249,18 @@ class ActualTimeController extends Controller
                                 "branch_id" => $punch["branch_id"] ?? null,
                                 "remarks" => "Edited by ". $user->full_name." Original log ".$origPunch->punch_time
                             ]);
+                            $didModify = true;
                         } else {
+                            $branchId = $punch["branch_id"] ?? null;
                             $biotime->punches()
                             ->where("id", $punch["id"])
                             ->update([
                                 "punch_time" => $punch["punch_time"],
-                                "branch_id" => $punch["branch_id"] ?? null,
+                                "branch_id" => $branchId,
                             ]);
+                            if ($origPunch->branch_id !== $branchId) {
+                                $didModify = true;
+                            }
                         }
                     } else {
                         $biotime->punches()->create([
@@ -192,15 +269,119 @@ class ActualTimeController extends Controller
                             "branch_id" => $punch["branch_id"] ?? null,
                             "remarks" => "Added by ".$user->full_name
                         ]);
+                        $didModify = true;
                     }
+                }
+
+                if ($didModify) {
+                    $biotime->is_modified = true;
+                    $biotime->save();
+                    $biotime->updateStatusFromPunchesCount();
+
+                    $branchId = collect($request->punches)
+                        ->pluck("branch_id")
+                        ->filter()
+                        ->first();
+                    if (!$branchId) {
+                        $schedule = ScheduleTime::where("employee_id", $biotime->employee_id)
+                            ->where("date", $biotime->date)
+                            ->first();
+                        $branchId = $schedule?->branch_id ?? $biotime->employee?->branch_id;
+                    } else {
+                        $scheduleBranchId = ScheduleTime::where("employee_id", $biotime->employee_id)
+                            ->where("date", $biotime->date)
+                            ->value("branch_id");
+                        $branchId = $scheduleBranchId ?? $branchId;
+                    }
+
+                    $refreshTargets[] = [
+                        "employee_id" => $biotime->employee_id,
+                        "date" => $biotime->date,
+                        "branch_id" => $branchId,
+                    ];
                 }
             }
 
             DB::commit();
+            if (!empty($refreshTargets)) {
+                $userId = $user?->id;
+                $controller = $this;
+                app()->terminating(function () use ($refreshTargets, $userId, $controller) {
+                    $controller->refreshFromTargets($refreshTargets, $userId);
+                });
+            }
             return $this->sendResponse(["message" => "Biotime punches saved successfully."]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function deleteBiotimeLog(Request $request, $bioTimeID) {
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+            $biotime = BiotimeLog::with("punches")->find($bioTimeID);
+            $refreshTargets = [];
+
+            if (!$biotime) {
+                return $this->sendError(["message" => "Biotime log not found"]);
+            }
+
+            activity()
+                ->causedBy($user)
+                ->performedOn($biotime)
+                ->useLog("Biotime Log Deletion")
+                ->log("User deleted biotime log");
+
+            $biotime->punches()->delete();
+            $biotime->delete();
+
+            DB::commit();
+            $branchId = $biotime->punches->pluck("branch_id")->filter()->first();
+            if (!$branchId) {
+                $schedule = ScheduleTime::where("employee_id", $biotime->employee_id)
+                    ->where("date", $biotime->date)
+                    ->first();
+                $branchId = $schedule?->branch_id ?? $biotime->employee?->branch_id;
+            } else {
+                $scheduleBranchId = ScheduleTime::where("employee_id", $biotime->employee_id)
+                    ->where("date", $biotime->date)
+                    ->value("branch_id");
+                $branchId = $scheduleBranchId ?? $branchId;
+            }
+            $refreshTargets[] = [
+                "employee_id" => $biotime->employee_id,
+                "date" => $biotime->date,
+                "branch_id" => $branchId,
+            ];
+            if (!empty($refreshTargets)) {
+                $userId = $user?->id;
+                $controller = $this;
+                app()->terminating(function () use ($refreshTargets, $userId, $controller) {
+                    $controller->refreshFromTargets($refreshTargets, $userId);
+                });
+            }
+            return $this->sendResponse(["message" => "Biotime log deleted successfully."]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getBiotimePunchDeletionLogs(Request $request, $bioTimeID) {
+        try {
+            $activities = Activity::with('causer')
+                ->where("log_name", "Biotime Punch Deletion")
+                ->where("subject_type", BiotimeLog::class)
+                ->where("subject_id", $bioTimeID)
+                ->orderBy("created_at", "desc")
+                ->get();
+
+            return $this->sendResponse($activities);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
 
@@ -230,7 +411,7 @@ class ActualTimeController extends Controller
             }
 
             if ($filePath) {
-                ProcessActualTimeImport::dispatch($filePath);
+                ProcessActualTimeImport::dispatch($filePath, Auth::id());
                 $user = Auth::user();
                 activity()->causedBy($user)->useLog("Import Actual Logs")->log('User imported actual logs');
             }
@@ -244,14 +425,80 @@ class ActualTimeController extends Controller
     public function fetchBiotimeLogs(Request $request) {
         try {
             $request->validate([
-                "branch_id" => "required"
+                "branch_id" => "required|array"
             ]);
 
-            FetchBranchLogs::dispatch($request->branch_id);
+            $branches = Branch::get()
+            ->pluck('name', 'id')
+            ->toArray();
+
+            foreach ($request->branch_id as $branch_id) {
+                $branch = $branches[$branch_id];
+                $context = $branch ?? "Unknown Branch";
+    
+                FetchBranchLogs::dispatch($branch_id, Auth::id(), $context);
+            }
 
             return $this->sendResponse(["message" => "Biotime logs are now fetching"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    private function refreshFromTargets(array $targets, ?int $userId = null): void
+    {
+        if (empty($targets)) {
+            return;
+        }
+
+        $groups = [];
+        foreach ($targets as $target) {
+            if (empty($target["employee_id"]) || empty($target["date"]) || empty($target["branch_id"])) {
+                continue;
+            }
+
+            $baseDate = Carbon::parse($target["date"]);
+            $dates = [
+                $baseDate->copy()->subDay()->toDateString(),
+                $baseDate->toDateString(),
+                $baseDate->copy()->addDay()->toDateString(),
+            ];
+
+            foreach ($dates as $date) {
+                $cutOff = $this->getCutOffForDate($date);
+                $groupKey = $target["branch_id"]."|".$target["employee_id"]."|".$cutOff["start_time"]."|".$cutOff["end_time"];
+                if (!isset($groups[$groupKey])) {
+                    $groups[$groupKey] = [
+                        "branch_id" => $target["branch_id"],
+                        "employee_id" => $target["employee_id"],
+                        "cutoff" => $cutOff,
+                        "dates" => [],
+                    ];
+                }
+                $groups[$groupKey]["dates"][] = $date;
+            }
+        }
+
+        foreach ($groups as $group) {
+            $dates = array_values(array_unique($group["dates"]));
+
+            TransferLogsToTimeKeeping::dispatchSync(
+                (string) $group["branch_id"],
+                $group["cutoff"],
+                $userId,
+                true,
+                $group["employee_id"],
+                $dates
+            );
+
+            GenerateTimekeepingSummary::dispatchSync(
+                $group["branch_id"],
+                $group["cutoff"],
+                $userId,
+                $group["employee_id"],
+                "Actual Logs Update",
+                true
+            );
         }
     }
 }

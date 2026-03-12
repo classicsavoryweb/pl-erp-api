@@ -2,6 +2,7 @@
 
 namespace App\Exports\Transactions;
 
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -14,10 +15,14 @@ use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyles, WithColumnFormatting, WithCustomStartCell
 {
     protected Collection $timekeeping_summary;
+    protected $start_date;
+    protected $end_date;
 
-    public function __construct(Collection $timekeeping_summary)
+    public function __construct(Collection $timekeeping_summary, $start_date, $end_date)
     {
         $this->timekeeping_summary = $timekeeping_summary;
+        $this->start_date = $start_date;
+        $this->end_date = $end_date;
     }
 
     public function startCell(): string
@@ -27,25 +32,40 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
 
     public function collection()
     {
+        $startDate = $this->start_date;
+        $endDate = $this->end_date;
+
         $maxLates = $this->timekeeping_summary->max(function ($unique_timekeeping) {
             return count($unique_timekeeping->lates ?? []);
         });
 
-        $maxUndertimes = $this->timekeeping_summary->max(function ($unique_timekeeping) {
-            return collect($unique_timekeeping->employee->timekeeping ?? [])
-                ->filter(function ($ut) {
-                    return $ut->undertime > 0;
+        $maxUndertimes = $this->timekeeping_summary->max(function ($unique_timekeeping) use ($startDate, $endDate) {
+            return collect($unique_timekeeping->employee?->timekeeping ?? [])
+                ->filter(function ($tk) use ($startDate, $endDate) {
+                    return
+                        Carbon::parse($tk->date)->between(
+                            Carbon::parse($startDate),
+                            Carbon::parse($endDate)
+                        ) &&
+                        $tk->undertime > 0;
                 })
                 ->count();
         });
 
-        return $this->timekeeping_summary->map(function ($unique_timekeeping, $index) use ($maxLates, $maxUndertimes) {
+        return $this->timekeeping_summary->map(function ($unique_timekeeping, $index) use ($maxLates, $maxUndertimes, $startDate, $endDate) {
+            $scheduleType = $unique_timekeeping->employee?->schedule?->schedule_type?->name
+                ?? $unique_timekeeping->employee?->current_position?->timekeeping_type
+                ?? "N/A";
+            $maternityStatus = $unique_timekeeping->employee?->payroll_list?->is_on_maternity_leave ? "Yes" : "No";
+
             $data = [
                 $index + 1,
                 $unique_timekeeping->employee->biometric_number,
                 $unique_timekeeping->branch->name,
                 $unique_timekeeping->employee->current_branch->name,
                 $unique_timekeeping->employee->full_name,
+                $scheduleType,
+                $maternityStatus,
                 $this->formatNumber($unique_timekeeping->regular_days),
                 $this->formatNumber($unique_timekeeping->adjustment_amount),
                 $this->formatNumber($unique_timekeeping->special_leave),
@@ -63,9 +83,15 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
             $totalLateMins = $unique_timekeeping->tardiness;
             $data[] = $totalLateMins; 
 
-            $undertimeList = collect($unique_timekeeping->employee->timekeeping ?? [])
-                ->filter(fn($ut) => $ut->undertime > 0)
-                ->values();
+            $undertimeList = collect($unique_timekeeping->employee?->timekeeping ?? [])
+            ->filter(fn ($ut) =>
+                $ut->undertime > 0 &&
+                Carbon::parse($ut->date)->between(
+                    Carbon::parse($startDate),
+                    Carbon::parse($endDate)
+                )
+            )
+            ->values();
 
             $undertimeColumns = [];
             for ($i = 0; $i < $maxUndertimes; $i++) {
@@ -107,12 +133,18 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
 
     public function headings(): array
     {
+
+        $startDate = $this->start_date;
+        $endDate = $this->end_date;
+
         $headings = [
             'No',
             'Biometric Number',
             'Timekeeping Branch',
             'Home Branch',
             'Employee Name',
+            'Schedule Type',
+            'Maternity Status',
             'Regular Days',
             'Taxable Adjustment Amount',
             'Special Leave Days',
@@ -128,9 +160,16 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
             'Total Late Minutes'
         ];
 
-        $maxUndertimeCount = $this->timekeeping_summary->max(function ($unique_timekeeping) {
+        $maxUndertimeCount = $this->timekeeping_summary->max(function ($unique_timekeeping) use($startDate, $endDate) {
             return collect($unique_timekeeping->employee->timekeeping ?? [])
-                ->filter(fn($ut) => $ut->undertime > 0)
+                ->filter(function ($tk) use ($startDate, $endDate) {
+                    return
+                        Carbon::parse($tk->date)->between(
+                            Carbon::parse($startDate),
+                            Carbon::parse($endDate)
+                        ) &&
+                        $tk->undertime > 0;
+                })
                 ->count();
         });
 
@@ -233,6 +272,10 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
                 $unique_timekeeping->branch->name,
                 $unique_timekeeping->employee->current_branch->name,
                 $unique_timekeeping->employee->full_name,
+                $unique_timekeeping->employee?->schedule?->schedule_type?->name
+                    ?? $unique_timekeeping->employee?->current_position?->timekeeping_type
+                    ?? "N/A",
+                $unique_timekeeping->employee?->payroll_list?->is_on_maternity_leave ? "Yes" : "No",
                 $unique_timekeeping->regular_days,
                 $unique_timekeeping->adjustment_amount,
                 $unique_timekeeping->special_leave,
@@ -336,7 +379,7 @@ class TimeKeepingSummaryExport implements FromCollection, WithHeadings, WithStyl
 
 
         for ($i = 0; $i < $maxUndertimeColumns; $i++) {
-            $colLetter = $this->getExcelColumnLetter(18 + $i);
+            $colLetter = $this->getExcelColumnLetter(20 + $i);
             $sheet->getStyle($colLetter . $headerRow . ':' . $colLetter . $lastRow)->applyFromArray([
                 'borders' => [
                     'allBorders' => [

@@ -20,6 +20,7 @@ class BranchExport implements FromCollection, WithHeadings
     {
         return $this->branches->map(function ($branch) {
             return [
+                $branch->branch_number,
                 $branch->name,
                 $branch->short_name,
                 $branch->type,
@@ -27,6 +28,7 @@ class BranchExport implements FromCollection, WithHeadings
                 $branch->location,
                 $branch->company,
                 $branch->branch_email,
+                $branch->address,
                 $branch->rate_code,
                 $branch->branch_head,
                 $branch->group_head,
@@ -54,6 +56,7 @@ class BranchExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
+            'Branch Number',
             'Branch Name',
             'Short Name',
             'Type',
@@ -61,6 +64,7 @@ class BranchExport implements FromCollection, WithHeadings
             'Location',
             'Company',
             'Branch Email',
+            'Branch Address',
             'Rate Code',
             'Branch OIC',
             'Group Head',

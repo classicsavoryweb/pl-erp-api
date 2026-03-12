@@ -20,6 +20,8 @@ class IncentivesManagementExport implements FromCollection, WithHeadings
         return $this->incentives_management->map(function ($unique_incentives_management) {
             return [
                 $unique_incentives_management->employee->full_name,
+                $unique_incentives_management->employee->employee_number,
+                $unique_incentives_management->employee->current_position->description,
                 $unique_incentives_management->amount,
                 $unique_incentives_management->max_amount
             ];
@@ -29,7 +31,9 @@ class IncentivesManagementExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Employee ID',
+            'Employee Name',
+            'Employee Number',
+            'Current Position',
             'Amount',
             'Max Amount',
         ];

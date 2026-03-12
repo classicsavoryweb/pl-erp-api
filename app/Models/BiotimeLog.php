@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,29 +14,34 @@ class BiotimeLog extends Model
         "biometric_number",
         "date",
         "remarks",
-        "is_transferred"
+        "is_transferred",
+        "is_modified",
+        "status"
     ];
 
     protected $table = "biotime_logs";
 
-    protected $appends = [
-        "status"
+    protected $casts = [
+        "is_modified" => "boolean"
     ];
 
-    public function status(): Attribute {
-        $punches = $this->punches()->count();
-        $status = "";
-        if ($punches == 4) {
-            $status = "COMPLETE";
-        } else if ($punches > 4) {
-            $status = "MULTIPLE LOGS";
-        } else if ($punches <= 3) {
-            $status = "INCOMPLETE";
+    public function updateStatusFromPunchesCount(?int $punches = null): void
+    {
+        $count = $punches ?? $this->punches()->count();
+        if ($count === 4) {
+            $this->status = "COMPLETE";
+        } else if ($count > 4) {
+            $this->status = "MULTIPLE LOGS";
+        } else {
+            $this->status = "INCOMPLETE";
         }
 
-        return Attribute::get(
-            fn () => $status
-        );
+        if (method_exists($this, 'saveQuietly')) {
+            $this->saveQuietly();
+            return;
+        }
+
+        $this->save();
     }
 
     public function employee() {

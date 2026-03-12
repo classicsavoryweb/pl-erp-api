@@ -30,14 +30,31 @@ use DB;
 use Illuminate\Validation\Rules\Exists;
 
 class PayrollService {
-    public function computePayroll (TimeKeepingSummary $timeKeepingSummary) {
+    public function computePayroll (
+        TimeKeepingSummary $timeKeepingSummary,
+        $edit = false
+    ) {
         $payroll = null;
         try {
             DB::beginTransaction();
 
             $employee = $timeKeepingSummary->employee;
+            $employee->loadMissing(["payroll_list", "schedule.schedule_type"]);
+            $scheduleName = $employee->schedule?->schedule_type?->name ?? "Normal Schedule";
+            $payrollList = $employee->payroll_list;
+            $salaryAmount = (float) ($payrollList?->salary_amount ?? 0);
+            $useSalaryAmount = $salaryAmount > 0;
+
+            if (!$payrollList || $payrollList->is_included == 0) {
+                return $payroll;
+            }
+
             $daily_rate = round($employee->dailySalary(), 2);
-            $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule" 
+            if ($useSalaryAmount) {
+                $divisor = $scheduleName === "Compressed Schedule" ? 22 : 26;
+                $daily_rate = round($salaryAmount / $divisor, 2);
+            }
+            $hourly_rate = $scheduleName === "Compressed Schedule" 
                 ? round($daily_rate / 9.5, 2)
                 : round($daily_rate / 8, 2);
             $minute_rate = $hourly_rate / 60;
@@ -45,7 +62,10 @@ class PayrollService {
             $cutOff = Cutoff::where("cut_off", $timeKeepingSummary->cut_off)->first();
             $paymentType = $employee->current_position->timekeeping_type;
             $cutOffBaseSalary = $employee->cutOffBaseSalary();
-            $baseRegularDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
+            if ($useSalaryAmount) {
+                $cutOffBaseSalary = round($salaryAmount / 2, 2);
+            }
+            $baseRegularDays = $scheduleName === "Compressed Schedule" ? 11 : 13;
             $salary = 0;
             $tardinessAmount = 0;
             $undertimeAmount = 0;
@@ -85,29 +105,18 @@ class PayrollService {
                 $salary = $daily_rate * $timeKeepingSummary->regular_days;
             }
 
-            $timeKeepings = TimeKeeping::with(["payment"])
-            ->where("employee_id", $employee->id)
-            ->whereBetween("date", [$cutOff->start_date, $cutOff->end_date])
-            ->get();
-
-            foreach($timeKeepings as $timeKeeping) {
-                $payment = $timeKeeping->payment;
-
-                $tardinessAmount += (float)$payment->tardiness_deduction;
-                $undertimeAmount += (float)$payment->undertime_deduction;
-                $overtimeAmount += (float)$payment->regular_overtime;
-                $legalHolidayAmount += (float)$payment->legal_holiday;
-                $legalHolidayOvertimeAmount += (float)$payment->legal_holiday_overtime;
-                $specialHolidayAmount += (float)$payment->special_holiday;
-                $specialHolidayOvertimeAmount += (float)$payment->special_holiday_overtime;
-                $nightDifferentialAmount += (float)$payment->night_differential;
-                $nightDifferentialOvertimeAmount += (float)$payment->night_differential_overtime;
-                $cancelledOffAmount += (float)$payment->cancelled_off;
-            }
-
+            $tardinessAmount = $timeKeepingSummary->tardiness * $minute_rate;
+            $undertimeAmount = $timeKeepingSummary->undertime * $minute_rate;
+            $overtimeAmount = $timeKeepingSummary->regular_overtime * ($hourly_rate * 1.25);
+            $legalHolidayAmount = $timeKeepingSummary->legal_holiday * $hourly_rate;
+            $legalHolidayOvertimeAmount = $timeKeepingSummary->legal_holiday_overtime * ($hourly_rate * 2.6);
+            $specialHolidayAmount = $timeKeepingSummary->special_holiday * ($hourly_rate * .3);
+            $specialHolidayOvertimeAmount = $timeKeepingSummary->special_holiday_overtime * ($hourly_rate * 1.69);
+            $nightDifferentialAmount = $timeKeepingSummary->night_differential * ($hourly_rate * .1);
+            $nightDifferentialOvertimeAmount = $timeKeepingSummary->night_differential_overtime * ($hourly_rate * .125);
+            $cancelledOffAmount = $timeKeepingSummary->cancelled_off * ($hourly_rate * 1.3);
             $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
         
-
             $grossPayAmount = ( $salary +
                 $overtimeAmount +
                 $legalHolidayAmount +
@@ -117,16 +126,38 @@ class PayrollService {
                 $nightDifferentialAmount +
                 $nightDifferentialOvertimeAmount +
                 $cancelledOffAmount +
-                $taxableAdustmentAmount +
-                $nonTaxableAmount ) -
+                $taxableAdustmentAmount) -
                 $undertimeAmount -
                 $tardinessAmount;
-
 
             //clarify if $grossPayAmount will be used
             if ($employee->hasCompleteStatutories()) {
                 $philHealth = PhilhealthPercentageBase::first();
+
                 $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
+                
+                if ($basicSalary <= $philHealth->philhealth_cap) {
+                    $philHealthAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)) / 2 , 2);
+                }
+
+                if ($cutOff->part == 2) {
+                    $latestPayroll = Payroll::where("employee_id", $employee->id)
+                        ->whereNot("start_date", $cutOff->start_date)
+                        ->orderBy("start_date", "DESC")
+                        ->first();
+
+                    if ($latestPayroll) {
+                        $latestBasic = $latestPayroll->salary - ($latestPayroll->undertime_amount + $latestPayroll->tardiness_amount);
+                        $totalSalary = $basicSalary + $latestBasic;
+                        $amount = round(($totalSalary * ($philHealth->percentage * 0.01)) , 2);
+
+                        if ($amount > $philHealth->philhealth_max) {
+                            $amount = $philHealth->philhealth_max;
+                        }
+
+                        $philHealthAmount = round(($amount - ($latestPayroll->employee_philhealth + $latestPayroll->employee_philhealth)) / 2, 2);
+                    }
+                }
 
                 if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
                     $philHealthAmount = $philHealth->philhealth_max / 2;
@@ -139,9 +170,9 @@ class PayrollService {
                     ->where('max_amount', '>=', $grossPayAmount)
                     ->first();
     
-                if (Carbon::parse($cutOff->start_date)->day === 11) {
+                if ($cutOff->part == 1) {
                     $sssEmployeeAmount = round($sss->employee_ss, 2);
-                    $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+                    $sssEmployerAmount = round($sss->employer_ss + ($sss->employer_cc / 2), 2);   
     
                     $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
                     $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
@@ -154,7 +185,7 @@ class PayrollService {
                     ->first();
     
                     if ($latestPayroll) {
-                        $totalSalary = $basicSalary + $latestPayroll->gross_pay;
+                        $totalSalary = $grossPayAmount + $latestPayroll->gross_pay;
     
                         $sss = SSS::where('salary_range_min', '<=', $totalSalary)
                         ->where('salary_range_max', '>=', $totalSalary)
@@ -165,12 +196,22 @@ class PayrollService {
                         ->first();
     
                         $pagibigShares = $totalSalary * (0.01 * $pagibig->percentage);
+
+                        if ($pagibigShares > $pagibig->max_deduction) {
+                            $pagibigShares = $pagibig->max_deduction;
+                        }
+                        $latestSSS = SSS::where('salary_range_min', '<=', $latestPayroll->gross_pay)
+                        ->where('salary_range_max', '>=', $latestPayroll->gross_pay)
+                        ->first();
+
+                        if ($latestSSS) {
+                            $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
+                            $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
     
-                        $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
-                        $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
-    
-                        $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                        $sssEmployerAmount = round(($sss->employer_ss + $sss->employer_cc) - $latestPayroll->employer_sss, 2);   
+                            $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
+                            $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
+                            $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestPayroll->employer_sss, 2);
+                        }
                     } else {
                         $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
                         $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
@@ -178,33 +219,17 @@ class PayrollService {
                         $pagibigEmployer = round($pagibigAmount / 2, 2);
     
                         $sssEmployeeAmount = round($sss->employee_ss, 2);
-                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
                     }
 
                 }
             }     
 
-            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-            $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
-            ->where("range_max", '>=',round($taxableIncome, 2))
-            ->first();
-
-            $salaryBase = $tax->salary_base ?? 0;
-            $exemption = $tax->exemption ?? 0;
-            $percentage = $tax->percentage ?? 0;
-
-            $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                : 0;
-
-
-            $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
-            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount + $taxableAdustmentAmount;
-            $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
-            $netPayAmount = $taxableIncome - $taxAmount;
-
             $deductions = [];
             $totalDeductions = 0;
+
+            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
+            $taxable = $taxableIncome;
 
             $existingPayroll = Payroll::where("employee_id", $employee->id)
             ->where("cut_off", $cutOff->cut_off)
@@ -215,13 +240,19 @@ class PayrollService {
             if (!$existingPayroll) {
                 $employeeDeductions = EmployeeDeduction::with(["deduction"])
                 ->where("employee_id", $employee->id)
-                ->where("balance", ">", 1)
-                ->where("end_loan_status", "!=", "Yes")
+                ->where("balance", ">", 0.01)
+                ->where("date_created", "<=", $cutOff->pay_date)
+                ->where("end_loan_status", '!=', 'Yes')
+                ->where("approved_status", "Yes")
                 ->get();
     
                 foreach($employeeDeductions as $deduction) {
-                    $amountToDeduct = $deduction->monthly_amortization / 2;
-    
+                    $amountToDeduct = $deduction->monthly_amortization;
+
+                    if ($deduction->months > 0) {
+                        $amountToDeduct = $deduction->monthly_amortization / 2;
+                    }
+
                     if ($amountToDeduct > $deduction->balance) {
                         $amountToDeduct = $deduction->balance;
                     }
@@ -232,7 +263,7 @@ class PayrollService {
                         "monthly_amortization" => $deduction->monthly_amortization,
                         "balance" => $deduction->balance,
                         "deducted_amount" => $amountToDeduct,
-                        "payslip_description" => $deduction->payslip_description
+                        "payslip_description" => $deduction->deduction->payslip_description
                     ];
                     $totalDeductions += $amountToDeduct;
                 }
@@ -242,7 +273,47 @@ class PayrollService {
                 $manualDeductions = $existingPayroll->manual_deductions;
                 $nonTaxableAmount = $existingPayroll->non_taxable_adjustment;
                 $remarks = $existingPayroll->remarks;
+                if (!$edit) {
+                    $taxableAdustmentAmount = $existingPayroll->taxable_adjustment;
+
+                    $grossPayAmount = ( $salary +
+                        $overtimeAmount +
+                        $legalHolidayAmount +
+                        $legalHolidayOvertimeAmount + 
+                        $specialHolidayAmount +
+                        $specialHolidayOvertimeAmount +
+                        $nightDifferentialAmount +
+                        $nightDifferentialOvertimeAmount +
+                        $cancelledOffAmount +
+                        $taxableAdustmentAmount ) -
+                        $undertimeAmount -
+                        $tardinessAmount;
+
+                    $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
+                    $taxable = $taxableIncome;
+                }
             }
+
+            if ($this->isNcrMinimum($employee)) {
+                $taxAmount = 0;
+            } else {
+                $tax = Tax::where("range_min", '<=' ,round($taxable, 2))
+                ->where("range_max", '>=',round($taxable, 2))
+                ->first();
+
+                $salaryBase = $tax->salary_base ?? 0;
+                $exemption = $tax->exemption ?? 0;
+                $percentage = $tax->percentage ?? 0;
+
+                $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                    ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                    : 0;
+            }
+
+            $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
+            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount;
+            $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
+            $netPayAmount = $taxable - $taxAmount;
 
             $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
 
@@ -255,6 +326,9 @@ class PayrollService {
                 $employeeDeductions = EmployeeDeduction::with(["deduction"])
                     ->where("employee_id", $employee->id)
                     ->where("balance", ">", 1)
+                    ->where("date_created", "<=", $cutOff->pay_date)
+                    ->where("end_loan_status", '!=', 'Yes')
+                    ->where("approved_status", "Yes")
                     ->get();
 
                 $companyLoans = $employeeDeductions->filter(fn($deduct) => !in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
@@ -278,7 +352,7 @@ class PayrollService {
 
                         $removedDeductions[] = $deduction->deduction->id;
 
-                        $deduction->delete();
+                        // $deduction->delete();
                         break;
                     } else {
                         $totalDeductions -= $amountToDeduct;
@@ -286,14 +360,18 @@ class PayrollService {
     
                         $removedDeductions[] = $deduction->deduction->id;
     
-                        $deduction->delete();
+                        // $deduction->delete();
                     }
                 }
 
                 if ($netPayAmount < 1000) {
                     $amountToDeduct = 0;
                     foreach ($governmentLoans as $deduction) {
-                        $amountToDeduct = $deduction->monthly_amortization / 2;
+                        $amountToDeduct = $deduction->monthly_amortization;
+                        if ($deduction->months > 0) {
+                            $amountToDeduct = $deduction->monthly_amortization / 2;
+                        }
+
                         if ($amountToDeduct > $deduction->balance) {
                             $amountToDeduct = $deduction->balance;
                         }
@@ -306,7 +384,7 @@ class PayrollService {
 
                             $removedDeductions[] = $deduction->deduction->id;
 
-                            $deduction->delete();
+                            // $deduction->delete();
                             break;
                         } else {
                             $totalDeductions -= $amountToDeduct;
@@ -314,7 +392,7 @@ class PayrollService {
         
                             $removedDeductions[] = $deduction->deduction->id;
         
-                            $deduction->delete();
+                            // $deduction->delete();
                         }
                     }
                 }
@@ -326,7 +404,7 @@ class PayrollService {
                 }
             }
 
-            Payroll::updateOrCreate(
+            $payroll = Payroll::updateOrCreate(
                 [
                 "employee_id" => $employee->id,
                 "cut_off" => $cutOff->cut_off,
@@ -371,18 +449,18 @@ class PayrollService {
                 "additional_working_hours_total" => round($additionalWorkingHoursTotal, 2),
                 "working_hours_deduction_total" => round($workingHoursDeductionTotal, 2),
                 "status" => "initial",
+                "is_maternity" => $payrollList->is_on_maternity_leave,
+                "is_hold" => $payrollList->is_hold,
                 "remarks" => $remarks
             ]);
             
-            if ($cutOff->part == 2) {
-                ComputeEmployeeTardiness::dispatch($cutOff->end_date);
-            }
-
-            $incentives = $this->computeIncentives(
-                $cutOff,
-                $employee,
-                $timeKeepingSummary->branch
-            );
+            // if ($cutOff->part == 1) {
+            //     $this->computeIncentives(
+            //         $cutOff,
+            //         $employee,
+            //         $timeKeepingSummary->branch
+            //     );
+            // }
 
             DB::commit();
             return [
@@ -405,15 +483,28 @@ class PayrollService {
         try {
             DB::beginTransaction();
 
+            $employee->loadMissing(["payroll_list", "schedule.schedule_type"]);
+            $scheduleName = $employee->schedule?->schedule_type?->name ?? "Normal Schedule";
+            $payrollList = $employee->payroll_list;
+            $salaryAmount = (float) ($payrollList?->salary_amount ?? 0);
+            $useSalaryAmount = $salaryAmount > 0;
+
             $daily_rate = round($employee->dailySalary(), 2);
-            $hourly_rate = $employee->schedule->schedule_type->name === "Compressed Schedule" 
+            if ($useSalaryAmount) {
+                $divisor = $scheduleName === "Compressed Schedule" ? 22 : 26;
+                $daily_rate = round($salaryAmount / $divisor, 2);
+            }
+            $hourly_rate = $scheduleName === "Compressed Schedule" 
                 ? round($daily_rate / 9.5, 2)
                 : round($daily_rate / 8, 2);
             $minute_rate = $hourly_rate / 60;
 
             $paymentType = $employee->current_position->timekeeping_type;
             $cutOffBaseSalary = $employee->cutOffBaseSalary();
-            $baseRegularDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
+            if ($useSalaryAmount) {
+                $cutOffBaseSalary = round($salaryAmount / 2, 2);
+            }
+            $baseRegularDays = $scheduleName === "Compressed Schedule" ? 11 : 13;
             $salary = 0;
             $tardinessAmount = 0;
             $undertimeAmount = 0;
@@ -444,6 +535,12 @@ class PayrollService {
             $additionalWorkingHoursTotal = 0;
             $workingHoursDeductionTotal = 0;
  
+            $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
+
+            if ($payrollRollListEmployee->isMancom() && !$useSalaryAmount) {
+                $cutOffBaseSalary = $employee->mancomCutOffBaseSalary();
+            }
+
             $basicSalary = $cutOffBaseSalary;
 
             if ($employee->hasCompleteStatutories()) {
@@ -466,8 +563,6 @@ class PayrollService {
                 $sssEmployerAmount = round($sss->employer_ss, 2);
             }
 
-            $payrollRollListEmployee = PayrollList::where("employee_id", $employee->id)->first();
-
             if ($payrollRollListEmployee->isOnMaternityLeave()) {
                 $basicSalary = 0;
             }
@@ -479,17 +574,21 @@ class PayrollService {
             if ($payrollRollListEmployee->isMancom()) {
                 $taxableIncome = round($basicSalary - $contributionTotal, 2);
 
-                $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
-                ->where("range_max", '>=',round($taxableIncome, 2))
-                ->first();
+                if ($this->isNcrMinimum($employee)) {
+                    $taxAmount = 0;
+                } else {
+                    $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
+                    ->where("range_max", '>=',round($taxableIncome, 2))
+                    ->first();
 
-                $salaryBase = $tax->salary_base ?? 0;
-                $exemption = $tax->exemption ?? 0;
-                $percentage = $tax->percentage ?? 0;
+                    $salaryBase = $tax->salary_base ?? 0;
+                    $exemption = $tax->exemption ?? 0;
+                    $percentage = $tax->percentage ?? 0;
 
-                $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                    ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                    : 0;
+                    $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                        ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                        : 0;
+                }
 
                 $netPayAmount = round($taxableIncome - $taxAmount, 2);
             }
@@ -560,27 +659,27 @@ class PayrollService {
     }
 
     public function computeIncentives(Cutoff $cutOff, Employee $employee, Branch $branch) {
-
         $incentivesAmount = 0;
 
         $position = $employee->current_position;
         $formerIncentives = Incentives::where("employee_id", $employee->id)
+        ->whereNot("pay_date", $cutOff->pay_date)
         ->orderBy("pay_date", "DESC")
         ->first();
 
-        if ($formerIncentives && Carbon::parse($cutOff->start_date)->day === 15) {
+        if ($formerIncentives && $cutOff->part == 2) {
             $position = Position::where("id", $formerIncentives->position_id)->first();
         }
 
-        if ($position->rank === 1) {
+        if ($position->rank == 1) {
             $months = Carbon::now()->diffInMonths($employee->date_hired);
             $bracket = IncentivesBracket::where("month", "<=", $months)
                 ->whereHas('positions', function ($query) use ($employee) {
-                    $query->where('id', $employee->position_id);
+                    $query->where('positions.id', $employee->position_id);
                 })
                 ->orderBy("month", "DESC")
                 ->first();
-            
+
             if ($bracket) {
                 $incentivesAmount = $bracket->amount;
             }
@@ -611,245 +710,220 @@ class PayrollService {
         $additionalIncentive = 0;
         $adjustmentDays = 0;
         $adjustmentPercent = 0;
+        $additionalDays = [];
         $status = "initial";
+    
+        $startDate = Carbon::parse($cutOff->start_date)->subMonths(1)->day(26)->format("Y-m-d");
+        $endDate = Carbon::parse($cutOff->start_date)->day(25)->format("Y-m-d");
 
-        //cutoff 26-10
-        if (Carbon::parse($cutOff->start_date)->day == 26) {
-            
-            $startDate = Carbon::parse($cutOff->start_date)->subMonths(1)->day(26)->format("Y-m-d");
-            $endDate = Carbon::parse($cutOff->start_date)->day(25)->format("Y-m-d");
+        $firstCutOff = $this->getCutOffForDate($startDate);
+        $secondCutOff = $this->getCutOffForDate($endDate);
+        $currentCutOff = $this->getCutOffForDate($cutOff->pay_date);
 
-            $firstCutOff = $this->getCutOffForDate($startDate);
-            $secondCutOff = $this->getCutOffForDate($endDate);
-            
-            $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-            ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
-            ->first();
+        $month = Carbon::parse($secondCutOff['end_time'])->month;
+        $year = Carbon::parse($secondCutOff['end_time'])->year;
+        
+        $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+        ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
+        ->first();
 
-            $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-            ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
-            ->first();
+        $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+        ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
+        ->first();
 
-            $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
-            $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
+        $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
+        $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
 
-            $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
+        $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
 
-            $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
-            $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
+        $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
+        $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
+        
+        $firstCutOffAdjustments = Adjustment::where("employee_id", $employee->id)
+        ->whereBetween("created_at", [$firstCutOff['start_time']." 00:00:00", $firstCutOff['end_time']." 23:59:59"])
+        ->where('days' , '>', 0)
+        ->whereIn("status", ["Approved", "Adjusted"])
+        ->get();
 
-            $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
-            + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
-            
-            $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
+        $secondCutOffAdjustments = Adjustment::where("employee_id", $employee->id)
+        ->whereBetween("created_at", [$secondCutOff['start_time']." 00:00:00", $secondCutOff['end_time']." 23:59:59"])
+        ->where('days' , '>', 0)
+        ->whereIn("status", ["Approved", "Adjusted"])
+        ->get();
 
-            if ($firstTimeKeeping && $firstTimeKeeping->adjustment_amount == 0) {
-                $adjustments = Adjustment::whereBetween("date", [$firstCutOff['start_time'], $firstCutOff['end_time']])
-                ->where("employee_id", $employee->id)
-                ->whereIn("status", ["Approved", "Adjusted"])
-                ->get();
+        $adjustmentDays = ($days > $firstCutOffWorkDays ? $days - $firstCutOffWorkDays : 0) +
+            ($days > $secondCutOffWorkDays ? $days - $secondCutOffWorkDays : 0);
 
-                $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
-
-                foreach ($adjustments as $adjustment) {
-                    $timeKeeping = TimeKeeping::where("date", $adjustment->date)
-                    ->where("employee_id", $employee->id)
-                    ->first();
-
-                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("employee_id", $employee->id)
-                    ->where("date", $adjustment->date)
-                    ->first();
-
-                    if ($timeKeeping->final_worked_hours !== $adjustmentTimeKeeping->final_worked_hours) {
-                        $tobeDeducted = 0;
-                        if ($hours >= $timeKeeping->final_worked_hours) {
-                            $tobeDeducted = 1;
-                        } else if ($hours / 2 == $timeKeeping->final_worked_hours) {
-                            $tobeDeducted = 0.5;
-                        }
-                        
-                        $monthWorkedDays -= $tobeDeducted;
-
-                        if ($hours >= $adjustmentTimeKeeping->final_worked_hours) {
-                            $monthWorkedDays += 1;
-                        } else if ($hours / 2 == $timeKeeping->final_worked_hours) {
-                            $monthWorkedDays += 0.5;
-                        }
-                    }
-                }
-            }
-
-            if ($secondTimeKeeping && $secondTimeKeeping->adjustment_amount == 0) {
-                $adjustments = Adjustment::whereBetween("date", [$secondCutOff['start_time'], $secondCutOff['end_time']])
-                ->where("employee_id", $employee->id)
-                ->whereIn("status", ["Approved", "Adjusted"])
-                ->get();
-                
-                $hours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
-
-                foreach ($adjustments as $adjustment) {
-                    $timeKeeping = TimeKeeping::where("date", $adjustment->date)
-                    ->where("employee_id", $employee->id)
-                    ->first();
-
-                    $adjustmentTimeKeeping = AdjustmentTimeKeeping::where("employee_id", $employee->id)
-                    ->where("date", $adjustment->date)
-                    ->first();
-
-                    if ($timeKeeping->final_worked_hours !== $adjustmentTimeKeeping->final_worked_hours) {
-                        $tobeDeducted = 0;
-                        if ($hours >= $timeKeeping->final_worked_hours) {
-                            $tobeDeducted = 1;
-                        } else if ($hours / 2 == $timeKeeping->final_worked_hours) {
-                            $tobeDeducted = 0.5;
-                        }
-                        
-                        $monthWorkedDays -= $tobeDeducted;
-
-                        if ($hours >= $adjustmentTimeKeeping->final_worked_hours) {
-                            $monthWorkedDays += 1;
-                        } else if ($hours / 2 == $timeKeeping->final_worked_hours) {
-                            $monthWorkedDays += 0.5;
-                        }
-                    }
-                }
-            }
-
-            if ($monthWorkedDays > 0 && $monthWorkedDays >= $monthShouldBeWorkDays) {
-                $incentiveAmount = $incentivesAmount;
-            } else if ($monthWorkedDays > 0 && $monthShouldBeWorkDays > $monthWorkedDays) {
-                $absent = $monthShouldBeWorkDays - $monthWorkedDays;
-
-                $dailyIncentives = $incentivesAmount / 26;
-
-                if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                    $dailyIncentives = $incentivesAmount / 22; 
-                }
-
-                if ($monthWorkedDays === $monthShouldBeWorkDays / 2) {
-                    $incentiveAmount = $incentivesAmount / 2;
-                } else {
-                    $incentiveAmount = $incentivesAmount - ($absent * $dailyIncentives);
-                }
-
-                $adjustmentDays = $absent;
-                $remarks = "With ".$absent." absents";
-            }
-
-            $year = Carbon::parse($firstCutOff['end_time'])->year;
-            $month = Carbon::parse($firstCutOff['end_time'])->month;
-
-            $tardiness = Tardiness::with(["tardiness_sanction"])
-            ->where("year", $year)
-            ->where("month", $month)
-            ->where("employee_id", $employee->id)
-            ->where("status", "Approved")
-            ->where("da_status", "Sent")
-            ->first();
-
-            if ($tardiness) {
-                $percentage = $tardiness->tardiness_sanction->incentives_deduction;
-                $adjustmentPercent = $percentage;
-
-                if ($percentage > 0) {
-                    $deduction = $maxAmount * ($percentage * 0.01);
-
-                    if ($deduction >= $incentiveAmount) {
-                        $incentiveAmount = 0;
-                    } else {
-                        $incentiveAmount -= $deduction;
-                    }
-
-                    $tardiness->deduction_status = 1;
-                    $tardiness->save();
-                }
-            }
-
-            $firstCutoffUndertime = $firstTimeKeeping->undertime ?? 0;
-            $secondCutoffUndertime = $secondTimeKeeping->undertime ?? 0;
-            $totalUndertimeForMonth = $firstCutoffUndertime + $secondCutoffUndertime;
-
-            if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                $allowedUndertimePerMonth = 900; 
-                $basisForDeduction = 240; 
-
-                $excessiveUndertime = $totalUndertimeForMonth - $allowedUndertimePerMonth;
-
-                if ($excessiveUndertime > 0) {
-                    $numberToDeduct = floor($excessiveUndertime / $basisForDeduction);
-
-                    if ($numberToDeduct > 0) {
-                        $amountToBeDeduct = $numberToDeduct * 0.5;
-                        $adjustmentDays += $amountToBeDeduct;
-
-                        $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
-
-                        $incentiveAmount -= $deductionAmount;
-
-                        if (!empty($remarks)) {
-                            $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
-                        } else {
-                            $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
-                        }
-                    }
-                }       
-            } else {
-                if ($totalUndertimeForMonth >= 240) {
-                    $basisForDeduction = 240;
-
-                    $numberToDeduct = floor($totalUndertimeForMonth / $basisForDeduction);
-
-                    if ($numberToDeduct > 0) {
-                        $amountToBeDeduct = $numberToDeduct * 0.5;
-                        $adjustmentDays += $amountToBeDeduct;
-
-                        $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
-
-                        $incentiveAmount -= $deductionAmount;
-
-                        if (!empty($remarks)) {
-                            $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
-                        } else {
-                            $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
-                        }
-                    }
-                }
-            }
-
-            $existingIncentives = Incentives::where("employee_id", $employee->id)
-            ->where("pay_date", $payDate)
-            ->first();
-
-            if ($existingIncentives) {
-                if ($existingIncentives->additional_incentive > 0) {
-                    $additionalIncentive = $existingIncentives->additional_incentive;
-                }
-
-                if ($existingIncentives->adjustment_percent > 0) {
-                    $adjustmentPercent = $existingIncentives->adjustment_percent;
-                }
-            }
-
-            $incentive = Incentives::updateOrCreate([
-                "employee_id" => $employeeId,
-                "position_id" => $positionId,
-                "pay_date" => $payDate,
-            ],[
-                "branch_id" => $branchId,
-                "incentive_amount" => $incentiveAmount,
-                "max_amount" => $maxAmount,
-                "remarks" => $remarks,
-                "amount_rate" => $amountRate,
-                "additional_incentive" => $additionalIncentive,
-                "adjustment_days" => $adjustmentDays,
-                "adjustment_percent" => $adjustmentPercent,
-                "first_cut_off_worked_days" => $firstCutOffDays,
-                "second_cut_off_worked_days" => $secondCutOffDays,
-                "status" => $status
-            ]);
-
-            return $incentive;
+        if ($adjustmentDays) {
+            $remarks = "With ".$adjustmentDays. " absents";
         }
+
+        foreach ($firstCutOffAdjustments as $adjustment) {
+            $additionalDays[] = [
+                "date" => $adjustment->date,
+                "days" => $adjustment->days
+            ];
+
+            $firstCutOffDays += $adjustment->days;
+        }
+
+        foreach ($secondCutOffAdjustments as $adjustment) {
+            $additionalDays[] = [
+                "date" => $adjustment->date,
+                "days" => $adjustment->days
+            ];
+
+            $secondCutOffDays += $adjustment->days;
+        }
+
+        $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
+        $monthShouldBeWorkDays = 26;
+        $dailyIncentives = $incentivesAmount / 26;
+        if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+            $dailyIncentives = $incentivesAmount / 22; 
+            $monthShouldBeWorkDays = 22;
+        }
+
+        if ($employee->current_position->timekeeping_type == "Daily") {
+            if ($monthWorkedDays > $monthShouldBeWorkDays) {
+                $incentiveAmount = $amountRate;
+            } else {
+                $incentiveAmount = $dailyIncentives * $monthWorkedDays;
+            }
+        } else {
+            $incentiveAmount = $dailyIncentives * $monthWorkedDays;
+        }
+
+        $tardinessDateBasis = Carbon::parse($currentCutOff['end_time'])->subMonths(2);
+
+        $tardiness = Tardiness::with(["tardiness_sanction"])
+        ->where("year", $tardinessDateBasis->year)
+        ->where("month", $tardinessDateBasis->month)
+        ->where("employee_id", $employee->id)
+        ->where("status", "Approved")
+        ->first();
+
+        if ($tardiness) {
+            $percentage = $tardiness->tardiness_sanction->incentives_deduction;
+            $adjustmentPercent = $percentage;
+
+            if ($percentage > 0) {
+                $deduction = $maxAmount * ($percentage * 0.01);
+
+                if ($deduction >= $incentiveAmount) {
+                    $incentiveAmount = 0;
+                } else {
+                    $incentiveAmount -= $deduction;
+                }
+
+                $tardiness->deduction_status = 1;
+                $tardiness->save();
+            }
+        }
+
+        $firstCutoffUndertime = $firstTimeKeeping->undertime ?? 0;
+        $secondCutoffUndertime = $secondTimeKeeping->undertime ?? 0;
+        $totalUndertimeForMonth = $firstCutoffUndertime + $secondCutoffUndertime;
+
+        if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+            $allowedUndertimePerMonth = 900; 
+            $basisForDeduction = 240; 
+
+            $excessiveUndertime = $totalUndertimeForMonth - $allowedUndertimePerMonth;
+
+            if ($excessiveUndertime > 0) {
+                $numberToDeduct = floor($excessiveUndertime / $basisForDeduction);
+
+                if ($numberToDeduct > 0) {
+                    $amountToBeDeduct = $numberToDeduct * 0.5;
+                    $adjustmentDays += $amountToBeDeduct;
+
+                    $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
+
+                    $incentiveAmount -= $deductionAmount;
+
+                    if (!empty($remarks)) {
+                        $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                    } else {
+                        $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                    }
+                }
+            }       
+        } else {
+            if ($totalUndertimeForMonth >= 240) {
+                $basisForDeduction = 240;
+
+                $numberToDeduct = floor($totalUndertimeForMonth / $basisForDeduction);
+
+                if ($numberToDeduct > 0) {
+                    $amountToBeDeduct = $numberToDeduct * 0.5;
+                    $adjustmentDays += $amountToBeDeduct;
+
+                    $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
+
+                    $incentiveAmount -= $deductionAmount;
+
+                    if (!empty($remarks)) {
+                        $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                    } else {
+                        $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                    }
+                }
+            }
+        }
+
+        $existingIncentives = Incentives::where("employee_id", $employee->id)
+        ->where("pay_date", $payDate)
+        ->first();
+
+        if ($existingIncentives) {
+            if ($existingIncentives->additional_incentive > 0) {
+                $additionalIncentive = $existingIncentives->additional_incentive;
+            }
+
+            if ($existingIncentives->adjustment_percent > 0) {
+                $adjustmentPercent = $existingIncentives->adjustment_percent;
+            }
+        }
+        
+        $incentive = Incentives::updateOrCreate([
+            "employee_id" => $employeeId,
+            "position_id" => $positionId,
+            "pay_date" => $currentCutOff['end_time'],
+            "month" => $month,
+            "year" => $year
+        ],[
+            "branch_id" => $branchId,
+            "incentive_amount" => 0 > $incentiveAmount ? 0 : $incentiveAmount,
+            "max_amount" => $maxAmount,
+            "remarks" => $remarks,
+            "amount_rate" => $amountRate,
+            "additional_incentive" => $additionalIncentive,
+            "adjustment_days" => $adjustmentDays,
+            "adjustment_percent" => $adjustmentPercent,
+            "first_cut_off_worked_days" => $firstCutOffDays,
+            "second_cut_off_worked_days" => $secondCutOffDays,
+            "additional_days" => json_encode($additionalDays),
+            "status" => $status
+        ]);
+
+        return $incentive;
+    }
+
+    private function isNcrMinimum(Employee $employee): bool
+    {
+        $rateCategory = strtoupper((string) ($employee->current_position?->salary?->rate_category ?? ''));
+        if ($rateCategory !== 'MINIMUM') {
+            return false;
+        }
+
+        $branchLocation = $employee->current_branch?->location ?? $employee->home_branch?->location ?? '';
+        $branchLocation = strtoupper(trim((string) $branchLocation));
+        if ($branchLocation === '') {
+            return false;
+        }
+
+        return str_contains($branchLocation, 'NCR');
     }
 
     public function getCutOffForDate($date){

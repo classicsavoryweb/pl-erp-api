@@ -66,6 +66,7 @@ return [
             'driver' => "local",
             'root' => env('STORAGE_PATH'),
             'visibility' => 'private',
+            'throw' => false,
         ],
 
         's3' => [

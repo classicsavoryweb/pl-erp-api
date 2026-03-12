@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Employees;
 use App\Exports\Employees\EmployeeTrackingExport;
 use App\Http\Controllers\Controller;
 use App\Models\Agency;
+use App\Models\Branch;
 use App\Models\BranchEmployee;
 use App\Models\Contract;
 use App\Models\EducationHistory;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
+use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\ScheduleDetail;
 use App\Models\ScheduleType;
@@ -19,6 +21,7 @@ use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
+use Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Str;
@@ -41,18 +44,43 @@ class EmployeeController extends Controller
                 "contact_number" => "required",
                 "contract_duration" => "required",
             ]);
+            
+            $duplicate = Employee::where('first_name', $request->first_name)
+                ->where('last_name', $request->last_name)
+                ->where('gender', $request->gender)
+                ->where('position_id', $request->position_id)
+                ->where('status', 'active') 
+                ->first();
 
-            $employeeCount = Employee::latest()->first();
-            $company = env('COMPANY_NAME');
-            $employeeNumber = str_pad($employeeCount->id + 1, 7, '0', STR_PAD_LEFT);
-            $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
+            if ($duplicate) {
+                return $this->sendError([
+                    "message" => "Employee already exists"
+                ]);
+            }
+
+            $inc = 1;
+            do {
+                $thisCompanyEmployeeCount = Employee::count();
+                $otherCompanyEmployeeCount = OtherEmployee::count();
+                $employeeCount = $thisCompanyEmployeeCount + $otherCompanyEmployeeCount;
+                $company = env('COMPANY_NAME');
+                $employeeNumber = str_pad($employeeCount + $inc, 7, '0', STR_PAD_LEFT);
+                $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
+                $inc++;
+            } while (
+                Employee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0 ||
+                OtherEmployee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0
+            );
+
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave"]);
             $position = Position::find($request->position_id);
             $biometricsNumber = "";
 
             if ($request->type === "Direct") {
-                $biometricsNumber = "10".$employeeNumber;
+                $prefix = env('COMPANY_NAME') == "SFI" ? "10" : "30";
+
+                $biometricsNumber = $prefix . $employeeNumber;
             }
             if ($request->type === "Agency") {
                 $agency = Agency::find($request->agency_id);
@@ -66,7 +94,7 @@ class EmployeeController extends Controller
                 } else {
                     $biometricsNumber = "12".$employeeNumber;
                 }
-
+                $employeeNumber = "A".$employeeNumber;
                 $employeeNumber2 = $company."-".$agency->name."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             }
 
@@ -135,7 +163,8 @@ class EmployeeController extends Controller
                 "dependents",
                 "contracts",
                 "schedule",
-                "schedule.schedule_type"
+                "schedule.schedule_type",
+                "separation"
             ])->where("employee_number", $employee_number)
             ->first();
 
@@ -143,11 +172,18 @@ class EmployeeController extends Controller
             $employee->schedule_type = $employee->schedule->schedule_type->name ?? "";
             $employee->incentive_leave = $employee->schedule->incentive_leave ?? "";
             $employee->flexible_schedule = $employee->schedule->flexible_schedule ?? "";
+            $employee->basic_salary = $employee->monthlySalary();
+            $employee->daily_rate = $employee->schedule ? $employee->dailySalary() : 0;
 
-            $storage = Storage::disk("hr_system_folder");
-            if ($employee->image) {
-                $profilePicture = $storage->get($employee->image);       
-                $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
+            try {
+                $storage = Storage::disk("hr_system_folder");
+
+                if ($employee->image && $storage->exists($employee->image)) {
+                    $profilePicture = $storage->get($employee->image);       
+                    $employee->profile_picture = 'data:image/jpeg;base64,' . base64_encode($profilePicture);
+                }
+            } catch (\Throwable $e) {
+                Log::info($e->getMessage());
             }
 
             return $this->sendResponse(["employee" => $employee]);
@@ -195,6 +231,30 @@ class EmployeeController extends Controller
             if ($request->has(["sortColumn", "sort"])) {
                 if ($request->sortColumn === "full_name") {
                     $employees = $employees->orderBy("last_name", $request->sort);
+                } else if ($request->sortColumn === "employee_status.description") {
+                    $employees = $employees->orderBy(
+                        EmployeeStatus::select('description')
+                        ->from('employee_status')
+                        ->whereColumn('employee_status.id', 'employees.employee_status_id')
+                        ->limit(1),
+                        $request->sort
+                    );
+                } else if ($request->sortColumn === "current_branch.name") {
+                    $employees = $employees->orderBy(
+                        Branch::select('name')
+                        ->from('branches')
+                        ->whereColumn('branches.id', 'employees.branch_id')
+                        ->limit(1),
+                        $request->sort
+                    );
+                } else if ($request->sortColumn === "current_position.description") {
+                    $employees = $employees->orderBy(
+                        Position::select('description')
+                        ->from('positions')
+                        ->whereColumn('positions.id', 'employees.position_id')
+                        ->limit(1),
+                        $request->sort
+                    );
                 } else {
                     $employees = $employees->orderBy($request->sortColumn, $request->sort);
                 }
@@ -216,6 +276,10 @@ class EmployeeController extends Controller
                 $employees = $employees->where("type", $request->type);
             }
 
+            if ($request->filled("agency_id")) {
+                $employees = $employees->where("agency_id", $request->agency_id);
+            }
+
             if ($request->has(["date_from", "date_to"])) {
                 $employees = $employees->whereBetween('date_hired', [$request->date_from, $request->date_to]);
             }
@@ -226,7 +290,19 @@ class EmployeeController extends Controller
                 $employees = $employees->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END");
             }
 
-            $employees = $employees->with(["current_position", "agency", "current_branch", "station", "employee_status", "schedule", "schedule.schedule_type"])
+            $employees = $employees->with([
+                "current_position",
+                "latest_position",
+                "agency",
+                "current_branch",
+                "home_branch",
+                "station",
+                "employee_status",
+                "separation",
+                "latest_bank_details",
+                "schedule",
+                "schedule.schedule_type"
+            ])
             ->orderBy("date_hired", "desc");
 
             if ($request->has(["export"]) && $request->export) {
@@ -275,6 +351,25 @@ class EmployeeController extends Controller
         try {
 
             $employees = Employee::where("status", "active")->get();
+            return $this->sendResponse(["employees" => $employees]);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getBranchEmployees(Request $request) {
+        try {
+            $employees = Employee::where("status", "active")->get();
+            $otherEmployees = collect();
+            try {
+                $otherEmployees = OtherEmployee::where("status", "active")->get();
+            } catch (Exception $e) {
+                $otherEmployees = collect();
+            }
+
+            $employees = $employees->concat($otherEmployees)->values();
+
             return $this->sendResponse(["employees" => $employees]);
         } catch(Exception $e) {
 
@@ -333,10 +428,68 @@ class EmployeeController extends Controller
         }
     }
 
+    public function getEmployeesWithoutPayrollList(Request $request) {
+        try {
+
+            $employees = Employee::query();
+
+            if ($request->has("keyWord")) {
+                $keyword = $request->keyWord;
+
+                $employees = $employees->where(function ($query) use ($keyword) {
+                    $query->whereAny(
+                        ["first_name", "last_name", "middle_name"],
+                        'LIKE',
+                        "%$keyword%"
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                        }
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                        }
+                    );
+                });
+            }
+
+            if ($request->has("status")) {
+                $status = $request->status;
+                switch ($status) {
+                    case "active":
+                        $employees = $employees->where("status", "active");
+                        break;
+                    case "inactive":
+                        $employees = $employees->where("status", "inactive");
+                        break; 
+                    default:
+                        break;
+                }
+            }
+
+            $employees = $employees->with([
+                "current_position",
+                "current_branch",
+                "employee_status",
+                "current_position.station",
+            ])
+            ->where("type", "Direct")
+            ->whereDoesntHave("payroll_list")
+            ->orderBy("last_name", "ASC")
+            ->get();
+            return $this->sendResponse($employees);
+        } catch(Exception $e) {
+
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+
     public function updateEmployeeDetails(Request $request, $employee_number) { 
         try {
             DB::beginTransaction();
             $employee = Employee::where("employee_number", $employee_number)->first();
+
+            $request->merge(['email' => $request->email ? trim($request->email) : null]);
+            $request->validate(["email" => ["nullable","email:rfc,dns","unique:employees,email,".$employee->id,"regex:/^\S+$/"]]);
 
             $educationData = collect($request->education)
             ->except(["created_at", "updated_at"])
@@ -421,7 +574,8 @@ class EmployeeController extends Controller
                 "emergency_contact_relationship" => $request->emergency_contact_relationship,
                 "education_history_id" => $education->id,
                 "employee_status_id" => $request->employee_status_id,
-                "status" => $request->status
+                "status" => $request->status,
+                "home_branch_id" => $request->home_branch_id
             ]);
 
             if (!empty($request->dependents) && count($request->dependents) > 0) {

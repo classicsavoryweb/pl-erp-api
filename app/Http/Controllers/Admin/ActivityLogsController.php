@@ -13,6 +13,7 @@ class ActivityLogsController extends Controller
             $perPage = $request->per_page ?? 10;
 
             $activityLogs = Activity::with('causer')
+            ->whereNot("causer_id", null)
             ->orderBy("created_at", "desc")
             ->paginate($perPage);
 

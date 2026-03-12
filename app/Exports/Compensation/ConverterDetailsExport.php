@@ -2,6 +2,7 @@
 
 namespace App\Exports\Compensation;
 
+use Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,6 +19,7 @@ class ConverterDetailsExport implements FromCollection, WithHeadings
     public function collection()
     {
         return $this->transactions->map(function ($transaction) {
+
             return [
                 $transaction->employee->full_name,
                 $transaction->employee->employee_number,
@@ -28,6 +30,10 @@ class ConverterDetailsExport implements FromCollection, WithHeadings
                 $transaction->remarks,
                 $transaction->source,
                 $transaction->status,
+                $transaction->admin_added->proper_full_name ?? "",
+                $transaction->created_at,
+                $transaction->converter_main->batch_number ?? "",
+                $transaction->converter_main->status ?? "",
             ];
         });
     }
@@ -44,6 +50,10 @@ class ConverterDetailsExport implements FromCollection, WithHeadings
             'Remarks',
             'Source',
             'Status',
+            'Added By',
+            'Date Created',
+            'Batch Number',
+            'Batch Status',
         ];
     }
 }

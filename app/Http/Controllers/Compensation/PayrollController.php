@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\PayrollService;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\Tardiness;
+use App\Models\Tax;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
+use App\Models\Branch;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -93,6 +96,7 @@ class PayrollController extends Controller
                 "employee.current_branch",
                 "employee.current_position",
                 "employee.latest_bank_details",
+                "employee.payroll_list",
                 "timekeeping_branch",
                 "timekeeping_summary",
             ])->find($id);
@@ -148,8 +152,8 @@ class PayrollController extends Controller
                 $tardinessOffenses = Tardiness::with(["tardiness_sanction"])
                 ->where("employee_id", $payroll->employee_id)
                 ->where("status", "Approved")
-                ->orderBy("month", "DESC")
-                ->where("year", $year)
+                ->whereIn("year", [$year - 1, $year])
+                ->orderBy("id", "DESC")
                 ->get();
 
                 $payroll["tardiness_list"] = $tardiness;
@@ -165,6 +169,71 @@ class PayrollController extends Controller
             return $this->sendError(["message" => "Payroll not found"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function updatePayrollTimekeepingBranch(Request $request, $payrollId)
+    {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "timekeeping_branch_id" => "required"
+            ]);
+
+            $payroll = Payroll::with([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "employee.payroll_list",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($payrollId);
+
+            if (!$payroll) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Payroll not found"]);
+            }
+
+            if ($payroll->status === "final") {
+                DB::rollBack();
+                return $this->sendError(["message" => "Payroll is already finalized"]);
+            }
+
+            $payrollList = $payroll->employee?->payroll_list;
+            if (!$payrollList || !$payrollList->isOnMaternityLeave()) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Timekeeping branch can only be updated for maternity leave employees"]);
+            }
+
+            $branch = Branch::find($request->timekeeping_branch_id);
+            if (!$branch) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Branch not found"]);
+            }
+
+            $payroll->update([
+                "timekeeping_branch_id" => $branch->id
+            ]);
+
+            DB::commit();
+
+            $payroll = $payroll->refresh()->load([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "employee.payroll_list",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ]);
+
+            return $this->sendResponse([
+                "message" => "Timekeeping branch updated successfully",
+                "details" => $payroll
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
         }
     }
 
@@ -373,11 +442,89 @@ class PayrollController extends Controller
         }
     }
 
+    public function updatePayrollContributions(Request $request, $payrollId) {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                "employee_sss" => "required|numeric|min:0",
+                "employer_sss" => "required|numeric|min:0",
+                "employee_pagibig" => "required|numeric|min:0",
+                "employer_pagibig" => "required|numeric|min:0",
+                "employee_philhealth" => "required|numeric|min:0",
+                "employer_philhealth" => "required|numeric|min:0",
+                "withholding_tax" => "required|numeric|min:0",
+            ]);
+
+            $payroll = Payroll::with([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ])->find($payrollId);
+
+            if (!$payroll) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Payroll not found"]);
+            }
+
+            $employeeSss = (float) $request->employee_sss;
+            $employerSss = (float) $request->employer_sss;
+            $employeePagibig = (float) $request->employee_pagibig;
+            $employerPagibig = (float) $request->employer_pagibig;
+            $employeePhilhealth = (float) $request->employee_philhealth;
+            $employerPhilhealth = (float) $request->employer_philhealth;
+            $withholdingTax = (float) $request->withholding_tax;
+
+            $contributionTotal = round($employeeSss + $employeePagibig + $employeePhilhealth, 2);
+            $grossPay = (float) $payroll->gross_pay;
+            $taxableIncome = round($grossPay - $contributionTotal, 2);
+            $netPay = $taxableIncome
+                - $withholdingTax
+                - (float) $payroll->total_deductions
+                - (float) $payroll->manual_deductions
+                + (float) $payroll->non_taxable_adjustment;
+
+            $payroll->update([
+                "employee_sss" => $employeeSss,
+                "employer_sss" => $employerSss,
+                "employee_pagibig" => $employeePagibig,
+                "employer_pagibig" => $employerPagibig,
+                "employee_philhealth" => $employeePhilhealth,
+                "employer_philhealth" => $employerPhilhealth,
+                "withholding_tax" => round($withholdingTax, 2),
+                "contribution_total" => $contributionTotal,
+                "taxable_income" => $taxableIncome,
+                "net_pay" => round($netPay, 2),
+            ]);
+
+            DB::commit();
+
+            $payroll = $payroll->refresh()->load([
+                "employee",
+                "employee.current_branch",
+                "employee.latest_bank_details",
+                "timekeeping_branch",
+                "timekeeping_summary",
+            ]);
+
+            return $this->sendResponse([
+                "message" => "Contributions updated successfully",
+                "details" => $payroll
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function updatePayrollDetails (Request $request, $payrollId) {
         try {
             DB::beginTransaction();
 
-            $payroll = Payroll::with(["employee",
+            $payroll = Payroll::with([
+                "employee",
                 "employee.current_branch",
                 "employee.latest_bank_details",
                 "timekeeping_branch",
@@ -385,29 +532,61 @@ class PayrollController extends Controller
             ])->find($payrollId);
 
             if ($payroll) {
+                $payrollService = new PayrollService();
                 $remarks = $request->remarks ?? null;
                 $manual_deductions = $request->manual_deductions ?? 0;
                 $non_taxable_adjustments = $request->non_taxable_adjustment ?? 0;
+                $taxable_adjustment = $request->taxable_adjustment ?? 0;
 
                 $newNetPay = $payroll->net_pay;
 
-                if ($non_taxable_adjustments != $payroll->non_taxable_adjustments) {
-                    $newNetPay += $non_taxable_adjustments - $payroll->non_taxable_adjustments;
-                }
-                
                 $amountToDeduct = 0;
+                $taxableIncome = $payroll->taxable_income;
+                $withHoldingTax = $payroll->withholding_tax;
+                $totalDeductions = $payroll->total_deductions;
+                $additionalWorkingHoursTotal = $payroll->additional_working_hours_total;
 
                 if ($manual_deductions != $payroll->manual_deductions) {
                     $amountToDeduct = $manual_deductions - $payroll->manual_deductions;
                     $newNetPay -= $amountToDeduct;
                 }
 
-                $payroll->update([
-                    "non_taxable_adjustment" => $non_taxable_adjustments,
-                    "manual_deductions" => $manual_deductions,
-                    "net_pay" => $newNetPay,
-                    "remarks" => $remarks
-                ]);
+                if ($non_taxable_adjustments != $payroll->non_taxable_adjustment) {
+                    $newNetPay += $non_taxable_adjustments - $payroll->non_taxable_adjustment;
+                    $remarks = "NON TAXABLE ADJUSTMENT MANUALLY ENCODED: ". $non_taxable_adjustments . " | ";
+                    $payroll->update([
+                        "non_taxable_adjustment" => $non_taxable_adjustments,
+                        "manual_deductions" => $manual_deductions,
+                        "taxable_adjustment" => $taxable_adjustment,
+                        "withholding_tax" => $withHoldingTax,
+                        "net_pay" => round($newNetPay,2),
+                        "additional_working_hours_total" => $additionalWorkingHoursTotal,
+                        "remarks" => $remarks
+                    ]);
+                }
+
+                if ($taxable_adjustment != $payroll->taxable_adjustment) {
+                    $timeKeeping = TimeKeepingSummary::where("employee_id", $payroll->employee_id)
+                    ->where("cut_off", $payroll->cut_off)
+                    ->first();
+
+                    $timeKeeping->adjustment_amount = $taxable_adjustment;
+
+                    $remarks = 'TAXABLE ADJUSTMENT MANUALLY ENCODED : '.$taxable_adjustment . " | ";
+                    $payroll->update([
+                        "remarks" => $remarks
+                    ]);
+
+                    $newComputation = $payrollService->computePayroll($timeKeeping, true);
+
+                    $payroll = $newComputation['payroll']->load([
+                        "employee",
+                        "employee.current_branch",
+                        "employee.latest_bank_details",
+                        "timekeeping_branch",
+                        "timekeeping_summary",
+                    ]);
+                }
 
                 DB::commit();
                 return $this->sendResponse([

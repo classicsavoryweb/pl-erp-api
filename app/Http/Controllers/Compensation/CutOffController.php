@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessFinalizeCutOff;
 use App\Jobs\ProcessInitializeCutOff;
 use App\Models\Cutoff;
+use App\Models\BranchAdditionalIncome;
+use App\Models\PayrollList;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
@@ -72,12 +74,20 @@ class CutOffController extends Controller
                 "part" => $request->part
             ]);
 
+            $previousActiveCutOff = Cutoff::where("status", "active")
+                ->whereNot("id", $createdCutOff->id)
+                ->first();
+
             Cutoff::whereNot("id", $createdCutOff->id)
-            ->where("status", "active")
-            ->update(["status" => "inactive"]);
+                ->where("status", "active")
+                ->update(["status" => "inactive"]);
+
+            if ($previousActiveCutOff && $previousActiveCutOff->pay_date) {
+                BranchAdditionalIncome::where("pay_date", $previousActiveCutOff->pay_date)->delete();
+            }
 
             if ($initialized) {
-                ProcessInitializeCutOff::dispatch($createdCutOff);
+                ProcessInitializeCutOff::dispatch($createdCutOff, Auth::id(), $createdCutOff->cut_off);
             }
 
             DB::commit();
@@ -114,7 +124,7 @@ class CutOffController extends Controller
                 ]);
 
                 //trigger a cut off initialization job
-                ProcessInitializeCutOff::dispatch($createdCutOff);
+                ProcessInitializeCutOff::dispatch($createdCutOff, Auth::id(), $createdCutOff->cut_off);
 
                 DB::commit();
                 return $this->sendResponse([
@@ -158,7 +168,7 @@ class CutOffController extends Controller
                 ]);
 
                 //trigger a cut off initialization job
-                ProcessFinalizeCutOff::dispatch($createdCutOff, Auth::user()->id);
+                ProcessFinalizeCutOff::dispatch($createdCutOff, Auth::user()->id, $createdCutOff->cut_off);
 
                 DB::commit();
                 return $this->sendResponse([
@@ -220,6 +230,22 @@ class CutOffController extends Controller
             ->get();
 
             return $this->sendResponse($cut_offs);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getActiveCutOff() {
+        try {
+            $cut_off = Cutoff::where("status", "active")
+                ->orderBy("id", "DESC")
+                ->first();
+
+            if (!$cut_off) {
+                return $this->sendError(["message" => "No active cutoff found"], 404);
+            }
+
+            return $this->sendResponse($cut_off);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }

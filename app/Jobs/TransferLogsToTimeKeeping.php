@@ -15,6 +15,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Support\NotifiesJobStatus;
 use Carbon\Carbon;
 use Log;
 use Exception;
@@ -22,16 +23,32 @@ use DB;
 class TransferLogsToTimeKeeping implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected $branchId;
     protected $cutOff;
     protected $timeKeepingService;
+    protected $userId;
+    protected $suppressNotification = false;
+    protected $employeeId;
+    protected $dates;
 
-    public function __construct(string $branchId, $cutoff)
+    public function __construct(
+        string $branchId,
+        $cutoff,
+        ?int $userId = null,
+        bool $suppressNotification = false,
+        ?int $employeeId = null,
+        ?array $dates = null
+    )
     {
         $this->branchId = $branchId;
         $this->cutOff = $cutoff;
         $this->timeKeepingService = new TimeKeepingService();
+        $this->userId = $userId;
+        $this->suppressNotification = $suppressNotification;
+        $this->employeeId = $employeeId;
+        $this->dates = $dates;
     }
 
     public function handle(): void
@@ -39,24 +56,45 @@ class TransferLogsToTimeKeeping implements ShouldQueue
         try {
             DB::beginTransaction();
 
-            $schedules = ScheduleTime::where("branch_id", $this->branchId)
-            ->whereBetween("date", $this->cutOff)
-            ->get();
+            $schedulesQuery = ScheduleTime::with([
+                "employee",
+                "employee.schedule",
+                "employee.schedule.schedule_type"
+            ])
+            ->where("branch_id", $this->branchId)
+            ->whereBetween("date", $this->cutOff);
+
+            if (!empty($this->employeeId)) {
+                $schedulesQuery->where("employee_id", $this->employeeId);
+            }
+            if (!empty($this->dates)) {
+                $schedulesQuery->whereIn("date", $this->dates);
+            }
+
+            $schedules = $schedulesQuery->get();
 
             foreach($schedules as $actualSchedule) {
                 $employee = $actualSchedule->employee;
 
-                $log = BiotimeLog::where("date", $actualSchedule->date)
+                if ($employee->type === "Agency") {
+                    continue;
+                }
+
+                $log = BiotimeLog::with([
+                    "punches" => function ($q) {
+                        $q->orderBy('punch_time', 'ASC');
+                    },
+                ])->where("date", $actualSchedule->date)
                 ->where("employee_id", $employee->id)
                 ->first();
 
-                if (isset($log)) {
-                    $bioTimePunches = $log->punches()->orderBy("punch_time", "ASC")->get();
+                if (isset($log) && $actualSchedule->timetable != "LEAVE") {
+                    $bioTimePunches = $log->punches;
                     $this->timeKeepingService->computeTimeKeeping(
                         $this->branchId,
                         $log,
                         $bioTimePunches,
-                        $actualSchedule->timetable,
+                        $actualSchedule,
                         $employee,
                         new TimeKeeping(),
                         false,
@@ -119,7 +157,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     }
                     
                     if (
-                        ($actualSchedule->timetable == "NO SCHEDULE" || $actualSchedule->timetable == "SUSPENSION" || $actualSchedule->timetable == "REST DAY" || $actualSchedule->timetable == "LEAVE" ) &&
+                        ($actualSchedule->timetable == "NO SCHEDULE" || $actualSchedule->timetable == "SUSPENSION" || $actualSchedule->timetable == "REST DAY" || $actualSchedule->timetable == "LEAVE") &&
                         $employee->current_position->timekeeping_type === "Daily" &&
                         $employee->current_branch->type === "Branch" &&
                         // !$isRequiredToReport &&
@@ -179,22 +217,65 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                             "final_worked_hours" => 0
                         ]);
                     }
+                    
+                    $sched = ["NO SCHEDULE","SUSPENSION", "REST DAY", "LEAVE", "INCENTIVE LEAVE"];
+
+                    if (!in_array($actualSchedule->timetable ,$sched)) {
+                        TimeKeeping::create([
+                            "employee_id" => $employee->id,
+                            "biometric_number" => $employee->biometric_number,
+                            "biotime_log_id" => null,
+                            "schedule_time_id" => $actualSchedule->id,
+                            "date" => $actualSchedule->date,
+                            "worked_hours" => 0,
+                            "legal_holiday" => $holidayType == "LH" ? "Yes" : "No",
+                            "special_holiday" => $holidayType == "SH" ? "Yes" : "No",
+                            "regular_overtime" => 0,
+                            "tardiness" => 0,
+                            "night_diff_hours" => 0,
+                            "night_diff_overtime" => 0,
+                            "legal_holiday_hours" => 0,
+                            "legal_holiday_overtime" => 0,
+                            "special_holiday_hours" => 0,
+                            "special_holiday_overtime" => 0,
+                            "undertime" => 0,
+                            "is_cancelled_off" => false,
+                            "branch_id" => $this->branchId,
+                            "final_worked_hours" => 0
+                        ]);
+                    }
                 }
             }
             
-            $timeKeepings = TimeKeeping::where("branch_id", $this->branchId)
-            ->whereBetween("date", $this->cutOff)
-            ->get();
+            // $timeKeepingsQuery = TimeKeeping::with([
+            //     "employee",
+            //     "employee.schedule",
+            //     "employee.schedule.schedule_type",
+            //     "schedule"
+            // ])
+            // ->where("branch_id", $this->branchId)
+            // ->whereBetween("date", $this->cutOff);
 
-            foreach($timeKeepings as $timeKeep) {
-                $actualSchedule = $timeKeep->schedule;
-                $this->timeKeepingService->computePayment($timeKeep, $actualSchedule);
-            }
+            // if (!empty($this->employeeId)) {
+            //     $timeKeepingsQuery->where("employee_id", $this->employeeId);
+            // }
+            // if (!empty($this->dates)) {
+            //     $timeKeepingsQuery->whereIn("date", $this->dates);
+            // }
 
+            // $timeKeepings = $timeKeepingsQuery->get();
+
+            // foreach($timeKeepings as $timeKeep) {
+            //     $actualSchedule = $timeKeep->schedule;
+            //     $this->timeKeepingService->computePayment($timeKeep, $actualSchedule);
+            // }
+
+            $this->notifyJobFinished();
             DB::commit();
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            Log::error($e);
             DB::rollBack();
+            $this->notifyJobFailed();
         }
     }
 

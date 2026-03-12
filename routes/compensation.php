@@ -12,6 +12,7 @@ use App\Http\Controllers\Compensation\PayrollController;
 use App\Http\Controllers\Compensation\PayrollListController;
 use App\Http\Controllers\Compensation\PayrollProofListController;
 use App\Http\Controllers\Compensation\PayslipController;
+use App\Http\Controllers\Compensation\PayrollListBankDetailsController;
 use Illuminate\Support\Facades\Route;
 
 //compensation routes
@@ -27,6 +28,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //cutoff
     Route::get("/get-all-cut-off",[CutOffController::class, "getAllCutOffs"]);
     Route::get("/get-all-finalized-cut-offs",[CutOffController::class, "getAllFinalizedCutOffs"]);
+    Route::get("/get-active-cut-off", action: [CutOffController::class, "getActiveCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/create-cut-off", [CutOffController::class, "createCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/edit-cut-off/{id}", [CutOffController::class, "editCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->get("/initialize-cut-off/{id}", [CutOffController::class, "initializeCutOff"]);
@@ -38,6 +40,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:export_all_compensation_deductions"])->get("/export-all-employee-deductions", [EmployeeDeductionsController::class, "exportAllEmployeeDeductions"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/create-employee-deduction", [EmployeeDeductionsController::class, "createEmployeeDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/edit-employee-deduction/{id}", [EmployeeDeductionsController::class, "editEmployeeDeduction"]);
+    Route::middleware(["permission:perform_compensation_deductions"])->post("/import-employee-deductions", [EmployeeDeductionsController::class, "importEmployeeDeductions"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/end-loan-transaction/{id}", [EmployeeDeductionsController::class, "endLoanTransaction"]);
     Route::get("/get-all-employee-atds", [ATDController::class, "getAllEmployeeDeductions"]);
     Route::get("/get-atd-allowed-deductions", [ATDController::class, "getAllowedATDDeductions"]);
@@ -48,10 +51,13 @@ Route::middleware('auth:sanctum')->group( function () {
     //payroll
     Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);
     Route::get("/get-payroll/{id}", [PayrollController::class, "getPayrollDetails"]);
+    Route::get('/payroll/export-bank-details', [PayrollListBankDetailsController::class, 'exportBankDetails']);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-deduction/{payrollId}", [PayrollController::class, "updateCompanyDeductions"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-details/{payrollId}", [PayrollController::class, "updatePayrollDetails"]);
+    Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-contributions/{payrollId}", [PayrollController::class, "updatePayrollContributions"]);
     Route::middleware(["permission:perform_compensation_incentives"])->post("/update-payroll-incentive/{payrollId}", [PayrollController::class, "updatePayrollIncentive"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/edit-payroll-deduction-details/{payrollId}", [PayrollController::class, "editCompanyDeductions"]);
+    Route::middleware(["permission:perform_compensation_payroll"])->post("/update-payroll-timekeeping-branch/{payrollId}", [PayrollController::class, "updatePayrollTimekeepingBranch"]);
 
     //converter transactions
     Route::get("/get-all-converter-details", [ConverterController::class, "getAllConverterDetails"]);
@@ -72,7 +78,8 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_converter"])->post("/create-cshub-applied-transactions", [ConverterController::class, "createCSHubTransactions"]);
     Route::middleware(["permission:perform_compensation_converter"])->get("/send-transaction-email/{batchId}", [ConverterController::class, "sendTransactionEmail"]);
     Route::middleware(["permission:perform_compensation_converter"])->post("/resend-transaction-email/{batchId}", [ConverterController::class, "resendTransactionEmail"]);
-    
+    Route::get("/export-converter-batch-transactions", [ConverterController::class, "exportConverterMainTransactions"]);
+
     //prooflist
     Route::get("/get-all-payroll-prooflist", [PayrollProofListController::class, "getProofList"]);
     Route::middleware(["permission:perform_compensation_payroll_prooflist"])->get("/generate-payroll-prooflist-converter", [PayrollProofListController::class, "generateConverterForProoflist"]);
@@ -96,4 +103,6 @@ Route::middleware('auth:sanctum')->group( function () {
     //additional income
     Route::get("/get-all-branch-additional-income", [BranchAdditionalIncomeController::class, "getAllBranchAdditionalIncome"]);
     Route::middleware(["permission:perform_compensation_additional_income"])->post("/save-branch-additional-income", [BranchAdditionalIncomeController::class, "updateOrCreateIncome"]);
+    Route::middleware(["permission:perform_compensation_additional_income"])->post("/import-branch-additional-income", [BranchAdditionalIncomeController::class, "importBranchAdditionalIncome"]);
+    Route::middleware(["permission:perform_compensation_additional_income"])->get("/export-branch-additional-income", [BranchAdditionalIncomeController::class, "exportBranchAdditionalIncome"]);
 });

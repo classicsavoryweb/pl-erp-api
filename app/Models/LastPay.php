@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class LastPay extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = "last_pay";
 
@@ -42,5 +44,28 @@ class LastPay extends Model
 
     public function deductions() {
         return $this->hasMany(LastPayDeduction::class, "last_pay_id", "id");
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                "employee_id",
+                "payroll_hold",
+                "thirteenth_month",
+                "year",
+                "sl_vl",
+                "tax_refund",
+                "incentives",
+                "total_deductions",
+                "sales",
+                "meal",
+                "last_pay",
+                "status",
+            ])
+            ->useLogName('Last Pay')
+            ->logOnlyDirty()
+            ->dontLogIfAttributesChangedOnly(["last_pay_number"])
+            ->dontSubmitEmptyLogs();
     }
 }

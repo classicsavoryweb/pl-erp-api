@@ -13,12 +13,14 @@ use App\Http\Controllers\Employees\EmployeeTrainingController;
 use App\Http\Controllers\Employees\EmployeeVaccinationController;
 use App\Http\Controllers\Employees\RequirementsAttachmentController;
 use App\Http\Controllers\Maintenance\ScheduleTypeController;
+use App\Http\Controllers\Employees\EmployeePromotionController;
 use Illuminate\Support\Facades\Route;
 
 // EMPLOYEES MODULE
 Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-all-employees", [EmployeeController::class, "getAllEmployees"]);
     Route::get("/get-employees", [EmployeeController::class, "getEmployees"]);
+    Route::get("/get-branch-employees", [EmployeeController::class, "getBranchEmployees"]);
     Route::get("/get-employees-list", [EmployeeController::class, "getEmployeeList"]);
     Route::get("/get-employee/{employee_number}", [EmployeeController::class, "getEmployee"]);
     Route::middleware(["permission:export_employee_tracking"])->get("/export-employees-list", [EmployeeController::class, "exportEmployee"]);
@@ -43,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_employee_contracts"])->post("/add-employee-contract/{employee_number}", [EmployeeContractControlller::class, "addContract"]);
     Route::middleware(["permission:perform_employee_contracts"])->post("/edit-employee-contract/{employee_number}", [EmployeeContractControlller::class, "editContract"]);
     Route::get("/get-employee-contract-details/{id}", [EmployeeContractControlller::class, "getContractDetails"]);
+    Route::middleware(["permission:perform_employee_contracts"])->post('/employee/contracts/{id}/void', [EmployeeContractControlller::class, "voidEmployeeContract"]); 
     //bank details history
     Route::get("/get-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "getEmployeeBankDetailsHistory"]);
     Route::middleware(["permission:perform_employee_bank_details"])->post("/add-employee-bank-details/{employee_number}", [EmployeeBankAccountController::class, "addBankDetails"]);
@@ -75,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-acting-capacity", [ActingCapacityController::class, "exportAllActingCapacity"]);
     Route::get("/get-acting-capacity/{id}", [ActingCapacityController::class, "getActingCapacity"]);
     Route::get("/get-acf/{id}", [ActingCapacityController::class, "getACFDetails"]);
+    Route::get("/get-promotion-summary/{id}", [EmployeePromotionController::class, "getPromotionSummary"]); 
     Route::middleware(["permission:perform_acting_capacity"])->post("/add-acting-capacity", [ActingCapacityController::class, "addNewActingCapacity"]);
     Route::middleware(["permission:perform_acting_capacity"])->post("/edit-acting-capacity", [ActingCapacityController::class, "editActingCapacity"]);
     Route::middleware(["permission:generate_acting_capacity"])->post("/generate-confirmation-promotion/{id}", [ActingCapacityController::class, "generateConfirmationDocuments"]);
@@ -86,4 +90,6 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_schedule_type"])->post("/add-schedule-type", [ScheduleTypeController::class, "createScheduleType"]);
     Route::middleware(["permission:perform_schedule_type"])->post("/edit-schedule-type/{id}", [ScheduleTypeController::class, "editScheduleType"]);
 
+    //employees without payroll list relationship
+    Route::get("/get-employees-without-payroll-list", [EmployeeController::class, "getEmployeesWithoutPayrollList"]);
 });

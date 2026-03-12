@@ -13,6 +13,7 @@ class PayrollList extends Model
 
     protected $fillable = [
         "employee_id",
+        "salary_amount",
         "is_included",
         "is_statutory_only",
         "is_mancom",
@@ -20,11 +21,18 @@ class PayrollList extends Model
         "is_bank",
         "is_hold",
         "remarks",
-        "holded_at"
+        "holded_at",
+        "holded_cutoffs",
+        "has_complete_documents",
+        "bank_details_id"
     ];
 
     public function employee() {
         return $this->belongsTo(Employee::class, "employee_id", "id");
+    }
+
+    public function current_bank_details() {
+        return $this->hasOne(BankDetail::class, "id", "bank_details_id");
     }
 
     public function isIncludedInPayroll() {

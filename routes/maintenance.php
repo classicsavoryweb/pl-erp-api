@@ -84,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function() {
     //branches
     Route::get("/get-all-branches", [BranchController::class, "getAllBranches"]);
     Route::get("/get-branches", [BranchController::class, "getBranches"]);
+    Route::get("/get-filter-branches", [BranchController::class, "getFilterBranches"]);
     Route::get("/export-all-branches", [BranchController::class, "exportBranches"]);
     Route::middleware(["permission:perform_branches"])->post("/create-branch", [BranchController::class, "createBranch"]);
     Route::middleware(["permission:perform_branches"])->post("/edit-branch/{id}", [BranchController::class, "editBranch"]);

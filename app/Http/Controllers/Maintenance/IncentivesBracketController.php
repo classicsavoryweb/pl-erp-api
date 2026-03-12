@@ -20,7 +20,7 @@ class IncentivesBracketController extends Controller
             $perPage = $request->per_page ?? 10;
             $page = $request->page ?? 1;
 
-            $incentives_bracket = IncentivesBracket::query();
+            $incentives_bracket = IncentivesBracket::with('positions');
 
             if ($request->has(["column_type", "key_word"])) {
                $incentives_bracket = $incentives_bracket->where($request->column_type,"LIKE","%".$request->key_word."%");
@@ -31,8 +31,7 @@ class IncentivesBracketController extends Controller
                 return Excel::download(new IncentivesBracketExport($incentives_bracket), "incentives_bracket.xls");
             }
 
-            $grouped = $incentives_bracket->with('positions')
-                ->get()
+            $grouped = $incentives_bracket->get()
                 ->groupBy('incentives_bracket_id')
                 ->map(function ($group) {
                     return [

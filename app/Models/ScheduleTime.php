@@ -21,4 +21,8 @@ class ScheduleTime extends Model
         return $this->hasOne(Branch::class, "id", "branch_id");
     }
 
+    public function timekeeping() {
+        return $this->belongsTo(TimeKeeping::class, "id", "schedule_time_id");
+    }
+
 }

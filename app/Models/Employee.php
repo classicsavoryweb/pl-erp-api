@@ -15,6 +15,28 @@ class Employee extends Model
 {
     use HasFactory, LogsActivity;
 
+    protected static function booted()
+    {
+        static::saved(function (Employee $employee) {
+            if (!$employee->wasChanged('position_id')) {
+                return;
+            }
+
+            $user = $employee->user;
+            if (!$user) {
+                return;
+            }
+
+            $positionDescription = $employee->current_position?->description;
+            if (!$positionDescription && $employee->position_id) {
+                $positionDescription = Position::whereKey($employee->position_id)->value('description');
+            }
+
+            $user->position = $positionDescription;
+            $user->save();
+        });
+    }
+
     protected $fillable = [
         "image",
         "employee_number",
@@ -83,16 +105,26 @@ class Employee extends Model
     {
         $monthlySalary = 0;
 
-        $salaryPosition = $this->current_position->salary;
-        $rateCode = $this->home_branch->rate_code;
+        $salaryPosition = $this->current_position?->salary;
+        $rateCode = $this->home_branch?->rate_code;
+
+        if (!$salaryPosition) {
+            return $monthlySalary;
+        }
 
         try {
             if ($salaryPosition->rate_category === "MINIMUM") {
+                if (!$rateCode) {
+                    return $monthlySalary;
+                }
                 $minimumRate = Rate::where("code", $rateCode)->first();
+                if (!$minimumRate) {
+                    return $monthlySalary;
+                }
 
                 $monthlySalary = $minimumRate->minimum * 26;
             } else {
-                $monthlySalary = $salaryPosition->basic_salary;
+                $monthlySalary = $salaryPosition->basic_salary ?? 0;
             }
 
             return $monthlySalary;
@@ -101,19 +133,42 @@ class Employee extends Model
         }
     }
 
+    public function mancomCutOffBaseSalary()
+    {
+        $salary = 0;
+
+        try {
+            $salary = $this->mancom_salary->salary;
+
+            return $salary / 2;
+        } catch (Exception $e) {
+            return $salary;
+        }
+    }
+
     public function cutOffBaseSalary()
     {
         $salary = 0;
-        $salaryPosition = $this->current_position->salary;
-        $rateCode = $this->home_branch->rate_code;
+        $salaryPosition = $this->current_position?->salary;
+        $rateCode = $this->home_branch?->rate_code;
+
+        if (!$salaryPosition) {
+            return $salary;
+        }
 
         try {
             if ($salaryPosition->rate_category === "MINIMUM") {
+                if (!$rateCode) {
+                    return $salary;
+                }
                 $minimumRate = Rate::where("code", $rateCode)->first();
+                if (!$minimumRate) {
+                    return $salary;
+                }
 
                 $salary = ($minimumRate->minimum * 26) / 2;
             } else {
-                $salary = $salaryPosition->basic_salary / 2;
+                $salary = ($salaryPosition->basic_salary ?? 0) / 2;
             }
 
             return $salary;
@@ -127,26 +182,41 @@ class Employee extends Model
         $dailySalary = 0;
 
         $scheduleType = $this->schedule->schedule_type->name ?? "N/A";
-        $salaryPosition = $this->current_position->salary;
-        $rateCode = $this->home_branch->rate_code;
+        $salaryPosition = $this->current_position?->salary;
+        $rateCode = $this->home_branch?->rate_code;
+        if (!$salaryPosition) {
+            return $dailySalary;
+        }
         try {
             if ($scheduleType === "Compressed Schedule") {
                 if ($salaryPosition->rate_category === "MINIMUM") {
+                    if (!$rateCode) {
+                        return $dailySalary;
+                    }
                     $minimumRate = Rate::where("code", $rateCode)->first();
+                    if (!$minimumRate) {
+                        return $dailySalary;
+                    }
     
                     $dailySalary = ($minimumRate->minimum * 26) / 22;
                 } else {
-                    $dailySalary = $salaryPosition->basic_salary / 22;
+                    $dailySalary = ($salaryPosition->basic_salary ?? 0) / 22;
                 }
             }
     
             if ($scheduleType === "Normal Schedule") {
                 if ($salaryPosition->rate_category === "MINIMUM") {
+                    if (!$rateCode) {
+                        return $dailySalary;
+                    }
                     $minimumRate = Rate::where("code", $rateCode)->first();
+                    if (!$minimumRate) {
+                        return $dailySalary;
+                    }
     
                     $dailySalary = $minimumRate->minimum;
                 } else {
-                    $dailySalary = $salaryPosition->basic_salary / 26;
+                    $dailySalary = ($salaryPosition->basic_salary ?? 0) / 26;
                 }
             }
 
@@ -170,30 +240,49 @@ class Employee extends Model
 
     protected function properFullName(): Attribute
     {
-        $fullName = strtolower($this->first_name . ' ' . $this->last_name);
-        if ($this->middle_name) {
-            $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
-            $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
-        }
-        $properFullName = ucwords($fullName);
-        return Attribute::get(
-            fn () => $properFullName
-        );
+        return Attribute::get(function () {
+            $first = mb_convert_case(
+                mb_strtolower($this->first_name, 'UTF-8'),
+                MB_CASE_TITLE,
+                'UTF-8'
+            );
+
+            $last = mb_convert_case(
+                mb_strtolower($this->last_name, 'UTF-8'),
+                MB_CASE_TITLE,
+                'UTF-8'
+            );
+
+            if ($this->middle_name) {
+                $middleInitial = mb_strtoupper(
+                    mb_substr($this->middle_name, 0, 1, 'UTF-8'),
+                    'UTF-8'
+                );
+
+                return "{$first} {$middleInitial}. {$last}";
+            }
+
+            return "{$first} {$last}";
+        });
     }
 
     protected function formalFullName(): Attribute
     {
-        $pronoun = $this->gender === "Male" ? "Mr." : "Ms.";
-        $fullName = strtolower($this->first_name . '. ' . $this->last_name);
+        return Attribute::get(function () {
+            $pronoun = $this->gender === "Male" ? "Mr." : "Ms.";
 
-        if ($this->middle_name) {
-            $middleInitial = strtoupper(substr($this->middle_name, 0, 1));
-            $fullName = strtolower($this->first_name . ' ' . $middleInitial . '. ' . $this->last_name);
-        }
-        $properFullName = ucwords($fullName);
-        return Attribute::get(
-            fn () => $pronoun ." ". $properFullName
-        );
+            $first = mb_convert_case(mb_strtolower($this->first_name, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+            $last  = mb_convert_case(mb_strtolower($this->last_name, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+
+            if ($this->middle_name) {
+                $middleInitial = mb_strtoupper(mb_substr($this->middle_name, 0, 1, 'UTF-8'), 'UTF-8');
+                $fullName = "{$first} {$middleInitial}. {$last}";
+            } else {
+                $fullName = "{$first} {$last}";
+            }
+
+            return "{$pronoun} {$fullName}";
+        });
     }
 
     public function hasCompleteStatutories() {
@@ -211,6 +300,11 @@ class Employee extends Model
     public function employee_status() {
         return $this->hasOne(EmployeeStatus::class,'id','employee_status_id');
     }
+
+    public function separation() {
+        return $this->hasOne(EmployeeStatus::class,'id','separation_reason');
+    }
+
     public function current_position() {
         return $this->hasOne(Position::class,'id','position_id');
     }
@@ -251,12 +345,16 @@ class Employee extends Model
         return $this->hasMany(Dependents::class, 'employee_id','id');
     }
 
+    public function mancom_salary() {
+        return $this->hasOne(MancomSalary::class, 'employee_number','employee_number');
+    }
+
     public function bank_details() {
         return $this->hasMany(BankDetail::class,'employee_id','id');
     }
 
     public function latest_bank_details() {
-        return $this->hasOne(BankDetail::class,'employee_id','id')->latest("updated_at");
+        return $this->hasOne(BankDetail::class,'employee_id','id')->latestOfMany('updated_at');
     }
 
     public function offenses() {

@@ -22,6 +22,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_activity_logs"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "perform_database_backups"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "view_database_backups"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "view_tardiness_disabler"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_general_dashboard"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_analytic_dashboard_hr"], ["module" => "administrators"]);
         // Permission::updateOrCreate(["name" => "view_settings"]);
@@ -33,6 +34,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_positions"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_branches"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_branches"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "edit_branches"], ["module" => "maintenance"]); 
         Permission::updateOrCreate(["name" => "view_employee_status"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_employee_status"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_stations"], ["module" => "maintenance"]);
@@ -84,20 +86,18 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_atd_access_type"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_adjustment_types"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_adjustment_types"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_incentives_management"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_incentives_management"], ["module" => "maintenance"]);
+
         Permission::updateOrCreate(["name" => "view_contributions_and_tax"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_contributions_and_tax"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_incentives_bracket"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_incentives_bracket"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_incentives_per_employee"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_incentives_per_employee"], ["module" => "maintenance"]);
+
         Permission::updateOrCreate(["name" => "view_terms"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_terms"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_last_pay_setup"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_last_pay_setup"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_tardiness_sanctions"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_tardiness_sanctions"], ["module" => "maintenance"]);
+
+        
 
         //employees module
         
@@ -117,6 +117,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_employee_offenses"], ["module" => "employees"]);
         Permission::updateOrCreate(["name" => "perform_employee_offenses"], ["module" => "employees"]);
         Permission::updateOrCreate(["name" => "view_employee_position"], ["module" => "employees"]);
+        Permission::updateOrCreate(["name" => "view_promotion_history"], ["module" => "employees"]);
         Permission::updateOrCreate(["name" => "perform_employee_position"], ["module" => "employees"]);
         Permission::updateOrCreate(["name" => "view_employee_contracts"], ["module" => "employees"]);
         Permission::updateOrCreate(["name" => "perform_employee_contracts"], ["module" => "employees"]);
@@ -155,6 +156,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_transactions_module"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "view_transactions_schedule_time"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "perform_transactions_schedule_time"], ["module" => "transactions"]);
+        Permission::updateOrCreate(["name" => "transfer_time_keeping_branch"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "export_all_transactions_schedule_time"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "view_transactions_actual_time"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "perform_transactions_actual_time"], ["module" => "transactions"]);
@@ -216,10 +218,17 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_reports_sss"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_bdo_cash_card"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_13th_month_pay"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_13th_month_pay_entries"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_pay_slip"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_pay_slip"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "generate_13th_month_pay"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_bir"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_bir"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_deductions"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_deductions"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_incentive_attendance"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_incentive_attendance"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_incentive_report"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_incentive_report"], ["module" => "reports"]);
     }
 }

@@ -15,20 +15,31 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Support\NotifiesJobStatus;
 
 class FetchScheduleTimeToCSHub implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected Branch $timeKeepingBranch;
     protected Cutoff $activeCutOff;
+    protected $userId;
+    protected $notificationContext;
     /**
      * Create a new job instance.
      */
-    public function __construct(Branch $timeKeepingBranch, Cutoff $activeCutOff)
+    public function __construct(
+        Branch $timeKeepingBranch,
+        Cutoff $activeCutOff,
+        ?int $userId = null,
+        ?string $notificationContext = null
+    )
     {
         $this->timeKeepingBranch = $timeKeepingBranch;
         $this->activeCutOff = $activeCutOff;
+        $this->userId = $userId;
+        $this->notificationContext = $notificationContext;
     }
 
     /**
@@ -55,7 +66,8 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
         ->get($scheduleLink,[
             "start_date" => $start_date,
             "end_date" => $end_date,
-            "branch_short_name" => $branch->short_name
+            "branch_short_name" => $branch->short_name,
+            "company" => env("COMPANY_NAME")
         ]);
 
         if ($response->successful()) {
@@ -65,7 +77,7 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
                 DB::beginTransaction();
                 foreach ($schedules as $schedule) {
                     $employee = Employee::where("employee_number", $schedule["employee_number"])
-                    ->where('status', 'active')
+                    ->where("type", "Direct")
                     ->first();
 
                     $sched = ScheduleMasterlist::where("selection", $schedule["schedule_name"])
@@ -86,10 +98,18 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
                         );
                     }
                 }
+                $this->notifyJobFinished();
                 DB::commit(); 
             } catch (Exception $e) {
                 DB::rollBack();
+                $this->notifyJobFailed();
             }
         }
+    }
+
+    public function getNotificationLabel(): string
+    {
+        $label = "Fetch Schedule Time";
+        return $this->notificationContext ? $label." ".$this->notificationContext : $label;
     }
 }

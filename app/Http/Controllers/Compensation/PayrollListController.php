@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Compensation;
 
 use App\Exports\Compensation\PayrollListExport;
 use App\Http\Controllers\Controller;
+use App\Models\Accounting\Vendor;
 use App\Models\BankDetail;
 use App\Models\Employee;
 use App\Models\PayrollList;
@@ -19,7 +20,23 @@ class PayrollListController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $payrollList = PayrollList::with(["employee", "employee.latest_bank_details", "employee.latest_bank_details.bank_account_type"]);
+            $payrollList = PayrollList::with([
+                "employee",
+                "employee.latest_bank_details",
+                "employee.latest_bank_details.bank_account_type",
+                "employee.current_position",
+                "employee.current_position.salary",
+                "employee.home_branch",
+                "employee.current_branch",
+                "employee.latest_position",
+                "employee.schedule",
+                "employee.schedule.schedule_type",
+                "current_bank_details",
+                "current_bank_details.bank_account_type"
+            ]);
+
+        //             $salaryPosition = $this->current_position->salary;
+        // $rateCode = $this->home_branch->rate_code;
 
             if ($request->has(["branch_id"])) {
                 $payrollList = $payrollList->whereHas("employee", function ($query) use ($request) {
@@ -81,7 +98,6 @@ class PayrollListController extends Controller
 
     public function getBankDetails(Request $request, $id) {
         try {
-
             $bankDetails = BankDetail::query()
             ->with("bank_account_type")
             ->where("employee_id", $id)
@@ -96,6 +112,8 @@ class PayrollListController extends Controller
 
     public function createPayrollList(Request $request) {
         try {
+            DB::beginTransaction();
+
             $request->validate([
                 "employee_id" => "required",
                 "is_included" => "required",
@@ -106,7 +124,7 @@ class PayrollListController extends Controller
                 "is_hold" => "required"
             ]);
 
-            $employee = Employee::where("id", $request->employee_id)->first();
+            $employee = Employee::with(['latest_bank_details'])->where("id", $request->employee_id)->first();
 
             $isExisting = PayrollList::where("employee_id", $employee->id)->first();
 
@@ -114,21 +132,56 @@ class PayrollListController extends Controller
                 return $this->sendError(["message" => "Employee is already existing."]);
             }
 
+            $bank_details_id = null;
+
+            if ($request->is_bank == 1) {
+                if (!$employee->latest_bank_details) {
+                    return $this->sendError(["message" => "Bank details is missing"]);
+                }
+
+                $bank_details_id = $employee->latest_bank_details->id;
+            }
             PayrollList::create([
                 "employee_id" => $request->employee_id,
+                "salary_amount" => round((float) $employee?->monthlySalary(), 2),
                 "is_included" => $request->is_included,
                 "is_statutory_only" => $request->is_statutory_only,
                 "is_mancom" => $request->is_mancom,
                 "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                "has_complete_documents" => $request->has_complete_documents ?? 0,
                 "is_bank" => $request->is_bank,
                 "is_hold" => $request->is_hold,
+                "bank_details_id" => $bank_details_id,
                 "holded_at" => $request->is_hold ? now() : null,
                 "remarks" => $request->remarks,
             ]);
 
-            return $this->sendResponse(["message" => "Payroll created succesfully"]);
+            Vendor::create([
+                `vend_type_id` => 1,
+                `ven_no` => $employee->employee_number,
+                `ven_name`=> $employee->full_name,
+                `ven_chk_name`=> $employee->full_name,
+                `ven_address` => $employee->address,
+                `ven_tel_no` => $employee->contact_number,
+                `ven_fax_no` => "",
+                `ven_tin_no` => "",
+                `term_id` => "00008",
+                `deb_acc_no` => "None",
+                `cre_acc_no` => "4000000",
+                `vat` => "N/A",
+                `ewt_acc_no` => "EWT005",
+                `ven_stat` => "Active",
+                `ven_fields_input` => "OPTIONAL",
+                `ven_particular` => "Employee Vendor Account",
+                `related_id` => $employee->employee_number,
+                `email` => $employee->email,
+                `pay_type` => "Check",
+            ]);
+            
+            DB::commit();
+            return $this->sendResponse(["message" => "Employee added succesfully"]);
         } catch(Exception $e) {
-
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
@@ -142,7 +195,8 @@ class PayrollListController extends Controller
                 "is_mancom" => "required",
                 "is_on_maternity_leave" => "required",
                 "is_bank" => "required",
-                "is_hold" => "required"
+                "is_hold" => "required",
+                "salary_amount" => "nullable|numeric|min:0"
             ]);
 
             PayrollList::where("id", $id)->update([
@@ -150,13 +204,15 @@ class PayrollListController extends Controller
                 "is_statutory_only" => $request->is_statutory_only,
                 "is_mancom" => $request->is_mancom,
                 "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                "has_complete_documents" => $request->has_complete_documents ?? 0,
                 "is_bank" => $request->is_bank,
                 "is_hold" => $request->is_hold,
                 "holded_at" => $request->is_hold ? now() : null,
-                "remarks" => $request->remarks
+                "remarks" => $request->remarks,
+                "salary_amount" => $request->salary_amount ?? 0
             ]);
 
-            return $this->sendResponse(["message" => "Payroll updated succesfully"]);
+            return $this->sendResponse(["message" => "Employee updated succesfully"]);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);

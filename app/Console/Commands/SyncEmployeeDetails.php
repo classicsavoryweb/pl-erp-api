@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Employee;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -51,7 +52,7 @@ class SyncEmployeeDetails extends Command
             ->pluck('description', 'id')
             ->toArray();
 
-        DB::table('employees')
+        Employee::with(["current_branch", "home_branch"])
             ->orWhere('updated_at', '>=', $date)
             ->orderBy('id')
             ->chunkById($batchSize, function ($employees) use ($targetColumnKeys, $positionNames, $branchNames, $employmentStatuses) {
@@ -65,7 +66,6 @@ class SyncEmployeeDetails extends Command
 
                     $birth = $employee->birthday ? Carbon::parse($employee->birthday) : null;
                     $hire  = $employee->date_hired ? Carbon::parse($employee->date_hired) : null;
-                    $branchId = $employee->branch_id ?? $employee->home_branch_id;
 
                     $age = $birth ? $birth->age : null;
                     $tenure = null;
@@ -75,29 +75,34 @@ class SyncEmployeeDetails extends Command
                         $tenure = "{$years} years {$months} months";
                     }
 
+                    $separationReason = $employee->separation_reason;
+                    if (is_numeric($separationReason)) {
+                        $separationReason = $employmentStatuses[(int) $separationReason] ?? $separationReason;
+                    }
+
                     $row = [
                         'EmployeeID' => $employeeId,
                         'BiometricID' => $employee->biometric_number,
                         'Company' => env('COMPANY_NAME', 'SFI'),
-                        'employeeType' => $employee->type,
+                        'employeeType' => ucfirst($employee->type),
                         'LastName' => $employee->last_name,
                         'FirstName' => $employee->first_name,
                         'MiddleName' => $employee->middle_name,
                         'Gender' => $employee->gender,
                         'PositionID' => $employee->position_id,
-                        'Position' => $positionNames[$employee->position_id] ?? null,
-                        'BranchID' => $branchId,
-                        'CurrentBranch' => $branchNames[$branchId] ?? null,
+                        'Position' => $employee->current_position->description ?? null,
+                        'BranchID' => $employee->current_branch->branch_number ?? null,
+                        'CurrentBranch' => $employee->current_branch->name ?? null,
                         'DateHired' => $employee->date_hired,
                         'Birthday' => $employee->birthday,
                         'ContactNo' => $employee->contact_number,
                         'DateSeparation' => $employee->separation_date,
-                        'SeparationReason' => $employee->separation_reason,
+                        'SeparationReason' => $separationReason,
                         'EmailAddress' => $employee->email,
                         'EmploymentStatus' => $employmentStatuses[$employee->employee_status_id] ?? null,
                         'Status' => ucfirst($employee->status),
-                        'HomeBranchID' => $employee->home_branch_id,
-                        'HomeBranchName' => $branchNames[$employee->home_branch_id] ?? null,
+                        'HomeBranchID' => $employee->home_branch->branch_number ?? null,
+                        'HomeBranchName' => $employee->home_branch->name ?? null,
                         'age' => $age,
                         'tenure' => $tenure,
                     ];

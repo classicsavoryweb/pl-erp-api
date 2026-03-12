@@ -2,6 +2,8 @@
 
 namespace App\Exports\Transactions;
 
+use Carbon\Carbon;
+use Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -22,25 +24,39 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
     public function collection()
     {
         return $this->timekeeping->map(function ($unique_timekeeping, $index): array {
+            $employee = $unique_timekeeping->employee;
+            $timekeeping = $unique_timekeeping->timekeeping;
+
+            $punches = "";
+
+            if ($timekeeping?->biotime_log?->punches) {
+                foreach ($timekeeping->biotime_log->punches as $punch) {
+                    $time = Carbon::parse($punch->punch_time)->toTimeString();
+                    $punches = $punches . $time . " | ";
+                }
+            }
+
             return [
                 $index + 1,
-                $unique_timekeeping->employee->full_name,
-                $unique_timekeeping->employee->current_position->description,
-                $unique_timekeeping->employee->biometric_number,
+                $employee?->full_name ?? "",
+                $employee?->current_position?->description ?? "",
+                $employee?->biometric_number ?? "",
                 $unique_timekeeping->date,
-                $this->formatNumber($unique_timekeeping->worked_hours),
-                $this->formatNumber($unique_timekeeping->final_worked_hours),
-                $this->formatNumber($unique_timekeeping->tardiness),
-                $this->formatNumber($unique_timekeeping->undertime),
-                $this->formatNumber($unique_timekeeping->regular_overtime),
-                $this->formatNumber($unique_timekeeping->night_diff_hours),
-                $this->formatNumber($unique_timekeeping->night_diff_overtime),
-                $this->formatNumber($unique_timekeeping->legal_holiday_hours),
-                $this->formatNumber($unique_timekeeping->legal_holiday_overtime),
-                $this->formatNumber($unique_timekeeping->special_holiday_hours),
-                $this->formatNumber($unique_timekeeping->special_holiday_overtime),
-                $this->formatNumber($unique_timekeeping->approved_overtime),
-                $this->formatNumber($unique_timekeeping->travel_time),
+                $unique_timekeeping->timetable ?? "",
+                $punches,
+                $this->formatNumber($timekeeping?->worked_hours),
+                $this->formatNumber($timekeeping?->final_worked_hours),
+                $this->formatNumber($timekeeping?->tardiness),
+                $this->formatNumber($timekeeping?->undertime),
+                $this->formatNumber($timekeeping?->regular_overtime),
+                $this->formatNumber($timekeeping?->night_diff_hours),
+                $this->formatNumber($timekeeping?->night_diff_overtime),
+                $this->formatNumber($timekeeping?->legal_holiday_hours),
+                $this->formatNumber($timekeeping?->legal_holiday_overtime),
+                $this->formatNumber($timekeeping?->special_holiday_hours),
+                $this->formatNumber($timekeeping?->special_holiday_overtime),
+                $this->formatNumber($timekeeping?->approved_overtime),
+                $this->formatNumber($timekeeping?->travel_time),
             ];
         });
     }
@@ -58,6 +74,8 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
             'Position',
             'Biometric Number',
             'Date',
+            'Schedule',
+            'Punches',
             'Actual Worked Hours',
             'Final Worked Hours',
             'Tardiness',
@@ -77,8 +95,6 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
     public function columnFormats(): array
     {
         return [
-            'F' => NumberFormat::FORMAT_NUMBER_0,
-            'G' => NumberFormat::FORMAT_NUMBER_0,
             'H' => NumberFormat::FORMAT_NUMBER_0,
             'I' => NumberFormat::FORMAT_NUMBER_0,
             'J' => NumberFormat::FORMAT_NUMBER_0,
@@ -90,15 +106,17 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
             'P' => NumberFormat::FORMAT_NUMBER_0,
             'Q' => NumberFormat::FORMAT_NUMBER_0,
             'R' => NumberFormat::FORMAT_NUMBER_0,
+            'S' => NumberFormat::FORMAT_NUMBER_0,
+            'T' => NumberFormat::FORMAT_NUMBER_0,
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         $headings = $this->headings();
-        $columns = range('A', 'R');
+        $columns = range('A', 'T');
         $rowCount = $this->timekeeping->count() + 1;
-        $sheet->getStyle('A1:R' . $rowCount)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:T' . $rowCount)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $sheet->freezePane('C2');
 
@@ -111,28 +129,41 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
         $sheet->getColumnDimension('B')->setAutoSize(true);
 
         $rows = $this->timekeeping;
-        
+
         foreach ($rows as $index => $unique_timekeeping) {
+            $employee = $unique_timekeeping->employee;
+            $timekeeping = $unique_timekeeping->timekeeping;
+            $punches = "";
+
+            if ($timekeeping?->biotime_log?->punches) {
+                foreach ($timekeeping->biotime_log->punches as $punch) {
+                    $time = Carbon::parse($punch->punch_time)->toTimeString();
+                    $punches = $punches . $time . " | "; 
+                }
+            }
+
             $rowNumber = $index + 2;
             $data = [
                 $index + 1,
-                $unique_timekeeping->employee->full_name,
-                $unique_timekeeping->employee->current_position->description,
-                $unique_timekeeping->employee->biometric_number,
+                $employee?->full_name ?? "",
+                $employee?->current_position?->description ?? "",
+                $employee?->biometric_number ?? "",
                 $unique_timekeeping->date,
-                $unique_timekeeping->worked_hours,
-                $unique_timekeeping->final_worked_hours,
-                $unique_timekeeping->tardiness,
-                $unique_timekeeping->undertime,
-                $unique_timekeeping->regular_overtime,
-                $unique_timekeeping->night_diff_hours,
-                $unique_timekeeping->night_diff_overtime,
-                $unique_timekeeping->legal_holiday_hours,
-                $unique_timekeeping->legal_holiday_overtime,
-                $unique_timekeeping->special_holiday_hours,
-                $unique_timekeeping->special_holiday_overtime,
-                $unique_timekeeping->approved_overtime,
-                $unique_timekeeping->travel_time,
+                $unique_timekeeping->timetable ?? "",
+                $punches,
+                $timekeeping?->worked_hours,
+                $timekeeping?->final_worked_hours,
+                $timekeeping?->tardiness,
+                $timekeeping?->undertime,
+                $timekeeping?->regular_overtime,
+                $timekeeping?->night_diff_hours,
+                $timekeeping?->night_diff_overtime,
+                $timekeeping?->legal_holiday_hours,
+                $timekeeping?->legal_holiday_overtime,
+                $timekeeping?->special_holiday_hours,
+                $timekeeping?->special_holiday_overtime,
+                $timekeeping?->approved_overtime,
+                $timekeeping?->travel_time,
             ];
 
             foreach ($columns as $colIndex => $col) {
@@ -140,14 +171,14 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
                 $maxLengths[$col] = max($maxLengths[$col], strlen($cellValue));
             }
 
-            if ($unique_timekeeping->employee->current_position->timekeeping_type == 'Monthly') {
+            if (($employee?->current_position?->timekeeping_type ?? null) == 'Monthly') {
                 $sheet->getStyle('B' . $rowNumber)->applyFromArray([
                     'fill' => [
                         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                         'startColor' => ['rgb' => '48c4cc']
                     ]
                 ]);
-            } elseif ($unique_timekeeping->employee->current_position->timekeeping_type == 'Daily') {
+            } elseif (($employee?->current_position?->timekeeping_type ?? null) == 'Daily') {
                 $sheet->getStyle('B' . $rowNumber)->applyFromArray([
                     'fill' => [
                         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -156,7 +187,7 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
                 ]);
             }
 
-            $sheet->getStyle('A' . $rowNumber . ':R' . $rowNumber)->applyFromArray([
+            $sheet->getStyle('A' . $rowNumber . ':T' . $rowNumber)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -166,7 +197,7 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
             ]);
         }
 
-        $sheet->getStyle('A1:R1')->applyFromArray([
+        $sheet->getStyle('A1:T1')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,

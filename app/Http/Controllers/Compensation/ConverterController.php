@@ -77,7 +77,7 @@ class ConverterController extends Controller
             }
 
             if ($request->has(["converter_main_id"])) {
-                $converters = $converters->with(["employee", "transaction_type", "branch"])
+                $converters = $converters->with(["employee", "transaction_type", "branch", "admin_added", "converter_main"])
                 ->where("converter_main_id", $request->converter_main_id)
                 ->orderBy(
                     Employee::select('last_name')->whereColumn('employees.id', 'converter_details.employee_id'),
@@ -88,7 +88,19 @@ class ConverterController extends Controller
                 return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
             }
 
-            $converters = $converters->with(["employee", "transaction_type", "branch"])            
+            if ($request->has(["converter_main_ids"])) {
+                $converters = $converters->with(["employee", "transaction_type", "branch", "admin_added", "converter_main"])
+                ->whereIn("converter_main_id", $request->converter_main_ids)
+                ->orderBy(
+                    Employee::select('last_name')->whereColumn('employees.id', 'converter_details.employee_id'),
+                    'ASC'
+                )
+                ->get();
+
+                return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
+            }
+
+            $converters = $converters->with(["employee", "transaction_type", "branch", "admin_added", "converter_main"])            
             ->orderBy("created_at", "DESC");
 
             if ($request->has(["export"]) && $request->export) {
@@ -143,11 +155,22 @@ class ConverterController extends Controller
                 ]);
             }
 
+            if ($request->has(["export"]) && $request->export) {
+                $converters = $converters->select("id")
+                ->get()
+                ->toArray();
+
+                $request["converter_main_ids"] = $converters;
+
+                return $this->getAllConverterDetails($request);
+            }
+
             $converters = $converters->with([
                 "added_by",
                 "posted_by",
                 "generated_by",
                 "voided_by",
+                "bank_account_type",
                 "converter_details" => function ($q) {
                     $q->join('employees', 'employees.id', '=', 'converter_details.employee_id')
                     ->orderBy('employees.last_name', 'ASC')
@@ -165,6 +188,12 @@ class ConverterController extends Controller
         }
     }
 
+    public function exportConverterMainTransactions(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllConverterMain($request);
+    }
+
     public function createConverterDetails(Request $request) {
         try {
             DB::beginTransaction();
@@ -176,10 +205,8 @@ class ConverterController extends Controller
                 "terms_id" => "required"
             ]);
 
-            $employee = Employee::with(["latest_bank_details"])->find($request->employee_id);
+            $employee = Employee::find($request->employee_id);
             $terms = Term::find($request->terms_id);
-
-            $bankAccount = $employee->latest_bank_details;
 
             ConverterDetail::create([
                 "employee_id" => $employee->id,
@@ -191,7 +218,6 @@ class ConverterController extends Controller
                 "added_by" => Auth::user()->id,
                 "status" => "Pending",
                 "source" => "Manual",
-                "bank_account_number" => $bankAccount->bank_number
             ]);
 
             DB::commit();
@@ -299,7 +325,7 @@ class ConverterController extends Controller
                 });
             }
 
-            $transactions = $transactions->with(["employee", "transaction_type", "branch"])
+            $transactions = $transactions->with(["employee", "transaction_type", "branch", "employee.latest_bank_details"])
             ->where(function ($q) {
                 $q->whereDoesntHave("converter_main")
                 ->orWhereHas("converter_main", function ($sub) {
@@ -328,30 +354,68 @@ class ConverterController extends Controller
                 "bank_account_type_id" => "required"
             ]);
 
-            $transactions = ConverterDetail::whereIn("id", $request->selected_transactions)->get();
+            $transactions = ConverterDetail::with([
+                "employee",
+                "employee.payroll_list",
+                "transaction_type"
+            ])
+            ->whereIn("id", $request->selected_transactions)->get();
             $total_amount = 0;
+            $excludedTransactions = [];
+            $includedTransactions = [];
+            $hasExcludedTransaction = false;
 
             foreach ($transactions as $trans) {
-                $total_amount += $trans->amount;
+                $employee = $trans->employee;
+                $payrollList = $employee->payroll_list;
+
+                if (!$payrollList) {
+                    $excludedTransactions[] = $trans;
+                    $hasExcludedTransaction = true;
+                } else {
+                    if (
+                        $payrollList->is_hold == 0 &&
+                        $payrollList->is_bank == 1 &&
+                        $employee->status == "active"
+                    ) {
+                        $total_amount += $trans->amount;
+                        $includedTransactions[] = $trans;
+                    } else {
+                        $excludedTransactions[] = $trans;
+                        $hasExcludedTransaction = true;
+                    }
+                }
             }
 
-            $batch = ConverterMain::create([
-                "count" => $transactions->count(),
-                "total_amount" => $total_amount,
-                "added_by" => Auth::user()->id,
-                "status" => "Pending",
-                "bank_account_type_id" => $request->bank_account_type_id,
-                "transaction_type_id" => $request->transaction_type_id ?? null
-            ]);
-
-            foreach ($transactions as $trans) {
-                $trans->update([
-                    "converter_main_id" => $batch->id
+            if (count($includedTransactions) > 0) {
+                $batch = ConverterMain::create([
+                    "count" => count($includedTransactions),
+                    "total_amount" => $total_amount,
+                    "added_by" => Auth::user()->id,
+                    "status" => "Pending",
+                    "bank_account_type_id" => $request->bank_account_type_id,
+                    "transaction_type_id" => $request->transaction_type_id ?? null
+                ]);
+    
+                foreach ($includedTransactions as $trans) {
+                    $trans->update([
+                        "converter_main_id" => $batch->id
+                    ]);
+                }
+    
+                DB::commit();
+                return $this->sendResponse([
+                    "has_excluded_transactions" => $hasExcludedTransaction,
+                    "transactions" => $excludedTransactions,
+                    "message" => "Batch successfully created"
                 ]);
             }
 
-            DB::commit();
-            return $this->sendResponse(["message" => "Batch successfully created"]);
+            return $this->sendError([
+                "has_excluded_transactions" => $hasExcludedTransaction,
+                "transactions" => $excludedTransactions,
+                "message" => "Batch creation failed"
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
@@ -413,7 +477,8 @@ class ConverterController extends Controller
                     foreach ($transactions as $transaction) {
 
                         $transaction->update([
-                            "status" => "Generated"
+                            "status" => "Generated",
+                            "bank_account_number" => $transaction->employee->latest_bank_details->bank_number
                         ]);
 
                         $colA = "A".$rowIndex;
@@ -423,7 +488,7 @@ class ConverterController extends Controller
 
                         $transactionDescription = $transaction->transaction_type->description ?? "";
 
-                        $bankNumber = $transaction->bank_account_number ?? $transaction->employee->latest_bank_details->bank_number;
+                        $bankNumber = $transaction->employee->latest_bank_details->bank_number;
 
                         $this->writeCell($dom, $sheetData, $colA, (string)$bankNumber);
                         $this->writeCell($dom, $sheetData, $colB,number_format($transaction->amount, 2));
@@ -505,7 +570,8 @@ class ConverterController extends Controller
                 $transactions = [];
 
                 foreach ($data['data']['transactions'] as $trans) {
-                    $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])->first();
+                    $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])
+                    ->latest()->first();
 
                     if ($isExisting && in_array($isExisting->status, ['Pending', 'Generated'])) {
                         continue;
@@ -537,18 +603,39 @@ class ConverterController extends Controller
 
                 $source = CSHubSourceType::where("description", $transaction["transaction_type"])->first();
                 $module = CSHubModule::where("description", $transaction["type"])->first();
-                $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
-                ->where("credit_status_positive", $transaction["for_crediting"])
-                ->where("deduction_status_positive", $transaction["for_liquidation"])
-                ->where("source_id", $module->id)
-                ->first();
 
                 $transactionType = CSHubTransactionType::where("transaction_type", $source->id)
-                ->where("source_id", $module->id)
-                ->first();
+                // ->where("credit_status_positive", $transaction["for_crediting"])
+                // ->where("deduction_status_positive", $transaction["for_liquidation"])
+                ->where("source_id", $module->id);
+
+                if ($transaction["type"] === "HEALTHCARE" && isset($transaction["exam_type"])) {
+                    $examType = CSHubSourceType::where("description", $transaction["exam_type"])
+                    ->where("source_type", "Exam")
+                    ->first();
+
+                    if (!$examType) {
+                        $examType = CSHubSourceType::where("description", "LIKE", "%".$transaction["exam_type"]."%")
+                        ->where("source_type", "Exam")
+                        ->first();
+                    }
+
+                    if ($examType) {
+                        $transactionType = $transactionType->where("exam_type", $examType->id);
+                    } else {
+                        $transactionType = $transactionType->where("credit_status_positive", $transaction["for_crediting"])
+                        ->where("deduction_status_positive", $transaction["for_liquidation"]);
+                    }
+                } else if ($transaction["type"] === "HEALTHCARE" && !isset($transaction["exam_type"])) {
+                    $transactionType = $transactionType->where("credit_status_positive", $transaction["for_crediting"])
+                    ->where("deduction_status_positive", $transaction["for_liquidation"]);
+                }
+                
+                $transactionType = $transactionType->first();
 
                 $isExisting = ConverterDetail::where("transaction_number", $transaction["transaction_number"])
                 ->where("employee_id", $employee->id)
+                ->whereNot("status", "Voided")
                 ->first();
 
                 if ($isExisting) {
@@ -580,13 +667,17 @@ class ConverterController extends Controller
 
     public function sendTransactionEmail ($batchId) {
         try {
-            $batch = ConverterMain::find($batchId);
+            $batch = ConverterMain::with(['converter_details'])->find($batchId);
 
             if ($batch) {
                 SendTransactionToEmployeeJob::dispatch($batch, Auth::user()->id, [], false);
 
                 $batch->update([
                     "status" => "Sent",
+                ]);
+
+                $batch->converter_details()->update([
+                    "status" => "Sent"
                 ]);
 
                 return $this->sendResponse(["message" => "Transaction email sending"]);

@@ -28,6 +28,9 @@ class Incentives extends Model
         "status",
         "first_cut_off_worked_days",
         "second_cut_off_worked_days",
+        "additional_days",
+        "month",
+        "year"
     ];
 
     public function employee() {

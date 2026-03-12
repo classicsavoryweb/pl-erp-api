@@ -14,10 +14,12 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Str; 
+use App\Support\NotifiesJobStatus;
 
 class CreateDatabaseBackup implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use NotifiesJobStatus;
 
     protected $user;
 
@@ -37,9 +39,14 @@ class CreateDatabaseBackup implements ShouldQueue
             mkdir(storage_path('app/temp_backups'), 0755, true);
         }
 
-        $mysqldumpPath = 'mysqldump'; 
+        $mysqldumpPath = env("SQL_DUMP_PATH"); 
         
-        $command = "$mysqldumpPath --user=" . env('DB_USERNAME') . " --password=" . env('DB_PASSWORD') . " --host=" . env('DB_HOST') . " " . env('DB_DATABASE') . " > " . $tempFilePath;
+        $command = "$mysqldumpPath --user=" . env('DB_USERNAME') .
+           " --password=" . env('DB_PASSWORD') .
+           " --host=" . env('DB_HOST') .
+           " --port=" . env('DB_PORT', 3306) .
+           " " . env('DB_DATABASE') .
+           " > " . $tempFilePath;
         
         $returnVar = NULL;
         $output = NULL;
@@ -79,7 +86,9 @@ class CreateDatabaseBackup implements ShouldQueue
                 'backed_up_by' => $employee_name,
             ]);
 
+            $this->notifyJobFinished();
         } catch (Exception $e) {
+            $this->notifyJobFailed();
             throw $e; 
         } finally {
             if (file_exists($tempFilePath)) {

@@ -55,4 +55,8 @@ class ConverterMain extends Model
     public function converter_details() {
         return $this->hasMany(ConverterDetail::class, "converter_main_id", "id");
     }
+
+    public function bank_account_type() {
+        return $this->hasOne(BankAccountType::class, "id", "bank_account_type_id");
+    }
 }

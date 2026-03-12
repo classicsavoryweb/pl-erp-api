@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\AdminAnnoucementMemosAttachment;
-use App\AdminAnnoucementMemosModel;
-use App\AnnouncementMemosReceiptBuildFilesModel;
 use App\User;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class TardinessMemoApiController extends ApiBaseController
 {
@@ -34,80 +30,66 @@ class TardinessMemoApiController extends ApiBaseController
             return $this->sendError(["message" => "Employee not found."]);
         }
 
-        $recipient = AnnouncementMemosReceiptBuildFilesModel::where("source_recipients", "Employee")
-            ->where("status", "active")
-            ->orderBy("id")
-            ->first();
+        $baseUrl = env("CS_HUB_URL_LINK");
+        $apiUser = env("CS_HUB_ADMIN_EMAIL");
+        $apiPassword = env("CS_HUB_ADMIN_PASSWORD");
 
-        if (!$recipient) {
-            return $this->sendError(["message" => "Memo recipient build file not configured."]);
+        if (!$baseUrl || !$apiUser || !$apiPassword) {
+            return $this->sendError(["message" => "Savory HRIS connection is not configured."], 501);
         }
 
-        $senderName = $request->input("sender_name", "Auditing Department");
-        $message = $request->input("message");
         $memoFile = $request->file("memo_file");
+        if (!$memoFile || !$memoFile->isValid()) {
+            return $this->sendError(["message" => "Invalid memo file."]);
+        }
 
-        DB::beginTransaction();
+        $senderName = $request->input("sender_name", "Human Resources Department");
+        $message = $request->input("message");
+
         try {
-            $now = Carbon::now();
+            $baseUrl = rtrim($baseUrl, "/");
+            $endpoint = preg_match("#/api$#i", $baseUrl) ? $baseUrl : $baseUrl . "/api";
+            $endpoint .= "/tardiness-memo";
 
-            $memo = new AdminAnnoucementMemosModel();
-            $memo->category = "Memo";
-            $memo->type = $request->input("type");
-            $memo->date_created = $now->toDateString();
-            $memo->subject = $request->input("subject");
-            $memo->current_branch_of_sender = $senderName;
-            $memo->name_of_sender = $senderName;
-            $memo->if_required_reply_tab = "NO";
-            $memo->req_attachment = "YES";
-            $memo->auto_unpublish = "NO";
-            $memo->message = $message;
-            $memo->if_attachment = "yes";
-            $memo->publish_recipient = $recipient->description;
-            $memo->publish_recipient_id = $recipient->id;
-            $memo->publish_date = $now->toDateString();
-            $memo->publish_addressee = $user->id;
-            $memo->publish_cc_to = "Employee";
-            $memo->source = "Employee";
-            $memo->status = "Published";
-            $memo->created_by_date = $now;
-            $memo->published_by_date = $now;
-            $memo->save();
+            $response = Http::withBasicAuth($apiUser, $apiPassword)
+                ->timeout(60)
+                ->attach(
+                    "memo_file",
+                    file_get_contents($memoFile->getRealPath()),
+                    $memoFile->getClientOriginalName()
+                )
+                ->post($endpoint, [
+                    "employee_number" => $employeeNumber,
+                    "type" => $request->input("type"),
+                    "subject" => $request->input("subject"),
+                    "message" => $message,
+                    "sender_name" => $senderName,
+                ]);
 
-            DB::table("annoucement_memo_pivot_recipient_published_models")->insert([
-                "annoucement_memos_id" => $memo->id,
-                "annoucement_memos_recipient_id" => $recipient->id,
-                "source_id" => $user->id,
-                "source" => "Employee",
-                "created_at" => $now,
-                "updated_at" => $now,
-            ]);
+            if (!$response->successful()) {
+                Log::warning("Savory HRIS memo API failed.", [
+                    "employee_number" => $employeeNumber,
+                    "status" => $response->status(),
+                    "response" => $response->body(),
+                ]);
 
-            $path = public_path("annoucement_memo_attachment");
-            if (!is_dir($path)) {
-                mkdir($path, 0755, true);
+                return $this->sendError([
+                    "message" => "Memo creation failed in Savory HRIS.",
+                    "status" => $response->status(),
+                ], 502);
             }
 
-            $safeName = preg_replace("/[^A-Za-z0-9._-]/", "_", $memoFile->getClientOriginalName());
-            $fileName = Str::random(6) . "-" . $safeName;
-            $memoFile->move($path, $fileName);
-
-            AdminAnnoucementMemosAttachment::create([
-                "annoucement_memo_id" => $memo->id,
-                "attachment" => $fileName,
-                "created_at" => $now,
-                "updated_at" => $now,
-            ]);
-
-            DB::commit();
-
             return $this->sendResponse([
-                "message" => "Memo created successfully.",
-                "memo_id" => $memo->id,
+                "message" => "Memo submitted successfully.",
+                "remote_response" => $response->json(),
             ]);
         } catch (Exception $e) {
-            DB::rollBack();
-            return $this->sendError(["message" => $e->getMessage()]);
+            Log::warning("Savory HRIS memo API error.", [
+                "employee_number" => $employeeNumber,
+                "error" => $e->getMessage(),
+            ]);
+
+            return $this->sendError(["message" => "Unable to submit memo."], 502);
         }
     }
 }

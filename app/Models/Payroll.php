@@ -56,6 +56,8 @@ class Payroll extends Model
         "additional_working_hours_total",
         "working_hours_deduction_total",
         "remarks",
+        "is_maternity",
+        "is_hold",
     ];
 
     public function employee () {
@@ -75,7 +77,7 @@ class Payroll extends Model
     }
 
     public function timekeeping_branch() {
-        return $this->hasOne(Branch::class, "id", "branch_id");
+        return $this->hasOne(Branch::class, "id", "timekeeping_branch_id");
     }
 
     public function getActivitylogOptions(): LogOptions

@@ -123,10 +123,12 @@ class ATDController extends Controller
                 $deductions = $deductions->where('deduction_id', $request->deduction_id);
             }
 
-            if ($request->has(["date_created_from", "date_created_to"])) {
-                $deductions = $deductions->whereBetween('date_created', [$request->date_created_from, $request->date_created_to]);
+            if ($request->filled("created_at_from") && $request->filled("created_at_to")) {
+                $startDate = Carbon::parse($request->created_at_from)->startOfDay();
+                $endDate = Carbon::parse($request->created_at_to)->endOfDay();
+                $deductions = $deductions->whereBetween('created_at', [$startDate, $endDate]);
             }
-
+            
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
                 $keyword = $request->key_word;
@@ -204,13 +206,34 @@ class ATDController extends Controller
                 return $this->sendResponse(["transactions" => []]);
             }
 
-            $allowedDescriptions = Deduction::whereIn("id", $allowedDeductionIds)
+            $allowedDeductions = Deduction::whereIn("id", $allowedDeductionIds)
+                ->where("status", "active")
+                ->get(["id", "description"]);
+            $allowedDescriptions = $allowedDeductions
                 ->pluck("description")
                 ->map(fn ($desc) => strtolower(trim($desc)))
                 ->unique()
                 ->values()
                 ->all();
             $allowedDescriptionsMap = array_flip($allowedDescriptions);
+
+            if ($request->filled("deduction_id")) {
+                $deductionId = (int) $request->deduction_id;
+                $selectedDeduction = $allowedDeductions->firstWhere("id", $deductionId);
+                if (!$selectedDeduction) {
+                    return $this->sendError(["message" => "You are not allowed to access this deduction type."]);
+                }
+                $selectedDescription = strtolower(trim($selectedDeduction->description));
+                $allowedDescriptionsMap = [$selectedDescription => true];
+            }
+
+            if ($request->filled("deduction_type")) {
+                $deductionType = strtolower(trim($request->deduction_type));
+                if ($deductionType === "" || !isset($allowedDescriptionsMap[$deductionType])) {
+                    return $this->sendError(["message" => "You are not allowed to access this deduction type."]);
+                }
+                $allowedDescriptionsMap = [$deductionType => true];
+            }
 
             $transactionLink = env('CS_HUB_URL_LINK')."/get-posted-atds";
             $user = env('CS_HUB_ADMIN_EMAIL');
@@ -368,18 +391,19 @@ class ATDController extends Controller
 
                 $atdBranch = Branch::where("branch_number", $transaction["branch_number"])->first();
 
-                $employeeDeduction = EmployeeDeduction::create([
+                $employeeDeduction = EmployeeDeduction::updateOrCreate([
                     "employee_id" => $employee->id,
                     "deduction_id" => $deduction->id,
+                    "balance" => $transaction["amount"],
+                    "transaction_number" => $transaction["transaction_number"],
+                ],[
                     "months" => $terms,
                     "amount" => $transaction["amount"],
                     "source_of_fund" => "HO",
                     "start_date" => $dateStart,
                     "end_date" => $dateEnd,
                     "monthly_amortization" => $monthlyAmortization,
-                    "balance" => $transaction["amount"],
                     "remarks" => $remarks,
-                    "transaction_number" => $transaction["transaction_number"],
                     "debit_id" => $deduction->debit_id,
                     "credit_id" => $deduction->credit_id,
                     "branch_id" => $atdBranch->id,
@@ -404,7 +428,7 @@ class ATDController extends Controller
 
                 $entries = [];
 
-                if ($employeeDeduction->amount > 0) {
+                if ($employeeDeduction->wasRecentlyCreated && $employeeDeduction->amount > 0) {
                     $entryId = $this->generateEntryId($counterEntry);
                     $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
                     $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
@@ -423,7 +447,7 @@ class ATDController extends Controller
                             'acc_no'              => $debitId,
                             'description_per_acc' => $employeeDeduction->deduction->description,
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
+                            'is_block_payment'    => $deductionEntry->is_block_payment,
                         ],
                         [
                             'entry_id'            => $entryId,
@@ -439,7 +463,7 @@ class ATDController extends Controller
                             'acc_no'              => $creditId,
                             'description_per_acc' => $employeeDeduction->deduction->description,
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
+                            'is_block_payment'    => $deductionEntry->is_block_payment,
                         ]
                     ]);
                 }
@@ -450,6 +474,8 @@ class ATDController extends Controller
 
                 $groupedTransactions[$transactionNumber][] = $transaction["employee_number"];
             }
+
+            $successAll = true;
 
             foreach ($groupedTransactions as $transactionNumber => $employeeNumbers) {
                 $transactionLink = env('CS_HUB_URL_LINK')."/generate-atd/".$transactionNumber;
@@ -467,16 +493,18 @@ class ATDController extends Controller
                     "employee_numbers" => $employeeNumbers
                 ]);
 
-                if ($response->successful()) {
-
-                    DB::commit();
-                    return $this->sendResponse(["message" => "ATD successfully created"]);
+                if (!$response->successful()) {
+                    $successAll = false;
                 }
             }
 
-            Log::info($response);
+            if ($successAll) {
+                DB::commit();
+                return $this->sendResponse(["message" => "ATD successfully created"]);
+            }
+
             DB::rollBack();
-            return $this->sendError(["message" => "Something went wrong"]);
+            return $this->sendError(["message" => "Some ATD requests failed."]);
         } catch (Exception $e) {
             DB::rollBack();
             Log::info($e);
@@ -485,6 +513,10 @@ class ATDController extends Controller
     }
     private function createEntries($entries, $user)
     {
+        if (empty($entries)) {
+            return;
+        }
+
         foreach ($entries as $entry) {
 
             Entry::create([
@@ -533,15 +565,20 @@ class ATDController extends Controller
                 'ent_chk'           => 'No',
                 'date_added'        => now(),
             ]);
+        }
+
+        $groupedEntries = collect($entries)->groupBy('apsys_entry_id');
+        foreach ($groupedEntries as $mainId => $groupedEntry) {
+            $entry = $groupedEntry->first();
 
             ApsysEntryMain::create([
-                'ent_tran_no'       => $entry['apsys_entry_main_id'],
+                'ent_tran_no'       => $mainId,
                 'ven_no'            => $entry['ven_no'],
                 'ven_name'          => $entry['ven_name'],
                 'ent_doc_date'      => now(),
                 'branch_id'         => $entry['branch_number'],
                 'branch_name'       => $entry['branch_name'],
-                'ent_header'        => '',
+                'ent_header'        => $entry['document_no'],
                 'ent_trans_amt'     => $entry['amount'],
                 'ent_post_date'     => now(),
                 'ent_module_type'   => 'Single',
@@ -551,7 +588,7 @@ class ATDController extends Controller
                 'ent_doc_no'        => $entry['document_no'],
                 'ent_module'        => 'Payroll',
                 'ent_app_amt'       => $entry['amount'],
-                'ent_unapp_amt'     => $entry['amount'],
+                'ent_unapp_amt'     => 0,
                 'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
                 'ent_due_date'      => now(),
             ]);

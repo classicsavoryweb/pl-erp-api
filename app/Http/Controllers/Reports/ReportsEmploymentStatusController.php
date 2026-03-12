@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeeStatus;
+use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Station;
 use Illuminate\Http\Request;
 use Exception;
@@ -34,8 +35,19 @@ class ReportsEmploymentStatusController extends Controller
             if ($employees->count() > 0) {
                 $branchOIC = Employee::with(["current_position"])
                 ->where("employee_number", $branch->branch_head_employee_number)->first();
+
+                if (!$branchOIC) {
+                    $branchOIC = OtherEmployee::with(["current_position"])
+                    ->where("employee_number", $branch->branch_head_employee_number)->first();
+                }
+
                 $groupHead = Employee::with(["current_position"])
                 ->where("employee_number", $branch->group_head_employee_number)->first();
+
+                if (!$groupHead) {
+                    $groupHead = OtherEmployee::with(["current_position"])
+                    ->where("employee_number", $branch->group_head_employee_number)->first();
+                }
                 $groupedEmployees = $employees->groupBy("station_id");
                 $data = [];
 
@@ -51,6 +63,12 @@ class ReportsEmploymentStatusController extends Controller
                         $notedBy = Employee::with(["current_position"])
                         ->where("employee_number", "0007413")
                         ->first();
+
+                        if (!$notedBy) {
+                            $notedBy = OtherEmployee::with(["current_position"])
+                            ->where("employee_number", "0007413")
+                            ->first();
+                        }
                     }
                     if ($station === "front of the house") {
                         $recommendedBy = $groupHead;
@@ -58,9 +76,22 @@ class ReportsEmploymentStatusController extends Controller
                         $notedBy1 = Employee::with(["current_position"])
                         ->where("employee_number", "639")
                         ->first();
+
+                        if (!$notedBy1) {
+                            $notedBy1 = OtherEmployee::with(["current_position"])
+                            ->where("employee_number", "639")
+                            ->first();
+                        }
+
                         $notedBy = Employee::with(["current_position"])
                         ->where("employee_number", "M003")
                         ->first();
+
+                        if (!$notedBy) {
+                            $notedBy = OtherEmployee::with(["current_position"])
+                            ->where("employee_number", "M003")
+                            ->first();
+                        }
                     }
 
                     $data[] = [

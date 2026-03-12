@@ -31,7 +31,10 @@ class LastPayController extends Controller
                 "deductions",
                 "deductions.deduction",
                 "employee.government_deductions",
-                "employee.government_deductions.deduction"
+                "employee.government_deductions.deduction",
+                "activities" => function ($query) {
+                    $query->with("causer")->orderBy("id", "desc");
+                }
             ]);
 
             if ($request->has(["column_type", "key_word"])) {
@@ -104,6 +107,7 @@ class LastPayController extends Controller
             $employees = $employees->whereHas("payroll_list", function ($query) {
                 $query->where("is_hold", 1);
             })
+            ->where("type", "Direct")
             ->get()
             ->take(100);
 
@@ -153,26 +157,82 @@ class LastPayController extends Controller
                 ->get();
 
                 $sssLoans = collect();
+                $sssLoansSelected = "No";
 
                 if ($lastPayDetails && $lastPayDetails->deductions) {
                     $sssLoans = $lastPayDetails->deductions->filter(function ($item) {
                         return $item->deduction &&
                             $item->deduction->description === 'SSS Loans';
                     });
+                    $sssLoansSelected = $sssLoans->isNotEmpty() ? "Yes" : "No";
+                }
+
+                if ($sssLoans->isNotEmpty()) {
+                    $sssLoans = $sssLoans->map(function ($loan) use ($employee) {
+                        $employeeDeduction = EmployeeDeduction::where("employee_id", $employee->id)
+                            ->where("reference_doc", $loan->reference_doc)
+                            ->first();
+
+                        $loan->original_amount = $employeeDeduction?->amount;
+                        $loan->balance = $loan->amount;
+                        if (!is_null($loan->original_amount)) {
+                            $loan->amount = $loan->original_amount;
+                        }
+
+                        return $loan;
+                    });
+                }
+
+                if ($sssLoans->isNotEmpty()) {
+                    $existingSssRefs = $governmentDeductions
+                        ->filter(function ($deduction) {
+                            return $deduction->deduction && $deduction->deduction->description === 'SSS Loans';
+                        })
+                        ->pluck('reference_doc')
+                        ->filter()
+                        ->values()
+                        ->all();
+
+                    $sssForGovernment = $sssLoans->filter(function ($loan) use ($existingSssRefs) {
+                        return !in_array($loan->reference_doc, $existingSssRefs);
+                    });
+
+                    if ($sssForGovernment->isNotEmpty()) {
+                        $governmentDeductions = $governmentDeductions->concat($sssForGovernment);
+                    }
                 }
 
                 $companyDeductions = $companyDeductions->merge($sssLoans);
 
-                $yearHolded = Carbon::parse($employee->payroll_list->holded_at)->year;
-                $dateHolded = Carbon::parse($employee->payroll_list->holded_at)->format("Y-m-d");
+                $yearSourceDate = $employee->separation_date;
+                if (empty($yearSourceDate)) {
+                    return $this->sendError(["message" => "Employee has no separation date."]);
+                }
+                $cutOff = $this->getCutOffForDate($yearSourceDate);
+                $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
+                $payrollPayDate = $payroll?->pay_date;
+                $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
+                $yearHolded = (int) $source->year;
+                $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
+                if ($source->greaterThanOrEqualTo($dec11)) {
+                    $yearHolded += 1;
+                }
+                $thirteenthMonthStartDate = ($yearHolded - 1) . "-12-10";
+                $thirteenthMonthPeriodStart = Carbon::create($yearHolded - 1, 12, 11)->format("Y-m-d");
+                $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
+                $dateHolded = Carbon::parse($employee->separation_date)->format("Y-m-d");
 
-                $payrolls = Payroll::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$dateHolded)
-                ->get();
+                $payrolls = collect();
+                $incentivesPayroll = collect();
+                if ($payrollPayDate) {
+                    $payrolls = Payroll::where("employee_id", $employee->id)
+                        ->where("pay_date", ">=" ,$payrollPayDate)
+                        ->get();
 
-                $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$dateHolded)
-                ->get();
+                    $incentivesPayroll = Incentives::where("employee_id", $employee->id)
+                        ->where("pay_date", ">=" ,$payrollPayDate)
+                        ->get();
+                }
 
                 foreach ($payrolls as $payroll) {
                     $totalPayroll += $payroll->net_pay;
@@ -182,10 +242,11 @@ class LastPayController extends Controller
                     $incentives += $incentive->incentive_amount;
                 }
 
-                $allPayrolls = Payroll::whereYear("pay_date", $yearHolded)
-                ->where("employee_id", $employee->id)
+                $allPayrolls = Payroll::where("employee_id", $employee->id)
                 ->where("status", "final")
+                ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
                 ->get();
+                $payrollRowsOverride = $this->buildThirteenthMonthPayrollRows($allPayrolls, $yearHolded);
 
                 $annualSalary = 0;
                 $annualTaxableIncome = 0;
@@ -208,8 +269,12 @@ class LastPayController extends Controller
                 ->where("max_amount", ">=" , $annualTaxableIncome)
                 ->first();
 
-                $amountShouldBePaid = $annualTax->tax_lower_limit + (($annualTaxableIncome - $annualTax->minimum_amount) * (0.01 * $annualTax->percentage));
-                $taxRefund = $amountShouldBePaid < $totalWithholdingTax ? $totalWithholdingTax - $amountShouldBePaid : 0;
+                if ($annualTax) {
+                    $amountShouldBePaid = $annualTax->tax_lower_limit + (($annualTaxableIncome - $annualTax->minimum_amount) * (0.01 * $annualTax->percentage));
+                    $taxRefund = $amountShouldBePaid < $totalWithholdingTax ? $totalWithholdingTax - $amountShouldBePaid : 0;
+                } else {
+                    $taxRefund = 0;
+                }
 
                 if ($lastPayDetails) {
                     $totalPayroll = $lastPayDetails->payroll_hold;
@@ -236,7 +301,11 @@ class LastPayController extends Controller
                     "year" => $yearHolded,
                     "tax_refund" => $taxRefund,
                     "total_deductions" => $totalDeductions,
-                    "last_pay" => round($lastPayAmount, 2)
+                    "last_pay" => round($lastPayAmount, 2),
+                    "sss_loans" => $sssLoansSelected,
+                    "payrolls" => $payrolls,
+                    "payroll_rows_override" => $payrollRowsOverride,
+                    "date_holdeed" => $dateHolded
                 ]);
             }
 
@@ -245,6 +314,51 @@ class LastPayController extends Controller
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
+    }
+
+    private function buildThirteenthMonthPayrollRows($payrolls, int $yearHolded): array
+    {
+        $periods = [];
+        $current = Carbon::create($yearHolded - 1, 12, 11)->startOfDay();
+
+        for ($i = 0; $i < 24; $i++) {
+            $start = $current->copy();
+            if ($start->day === 11) {
+                $end = $start->copy()->day(25);
+                $current = $start->copy()->day(26);
+            } else {
+                $end = $start->copy()->addMonth()->day(10);
+                $current = $start->copy()->addMonth()->day(11);
+            }
+
+            $periods[] = [
+                "label" => $start->format("n/j") . " to " . $end->format("j"),
+            ];
+        }
+
+        $payrollMap = [];
+        foreach ($payrolls as $payroll) {
+            $startDate = $payroll->start_date ?? null;
+            $endDate = $payroll->end_date ?? null;
+            if (!$startDate || !$endDate) {
+                continue;
+            }
+
+            $label = Carbon::parse($startDate)->format("n/j") . " to " . Carbon::parse($endDate)->format("j");
+            $salary = $payroll->salary ?? $payroll->net_pay ?? 0;
+            $undertime = $payroll->undertime_amount ?? 0;
+            $tardiness = $payroll->tardiness_amount ?? 0;
+            $amount = $salary - ($undertime + $tardiness);
+            $payrollMap[$label] = ($payrollMap[$label] ?? 0) + $amount;
+        }
+
+        return array_map(function ($period) use ($payrollMap) {
+            $label = $period["label"];
+            return [
+                "label" => $label,
+                "amount" => round($payrollMap[$label] ?? 0, 2),
+            ];
+        }, $periods);
     }
 
     public function createLastPayRecord(Request $request, $employeeNumber) {
@@ -256,14 +370,20 @@ class LastPayController extends Controller
                 "sl_vl" => "required",
                 "tax_refund" => "required",
                 "sales" => "required",
-                "meal_allowance" => "required"
+                "meal_allowance" => "required",
+                "thirteenth_month" => "nullable|numeric|min:0"
             ]);
-
             $employee = Employee::with(["payroll_list"])
             ->where("employee_number", $employeeNumber)
             ->first();
 
             if ($employee) {
+                $existingLastPay = LastPay::where("employee_id", $employee->id)->exists();
+                if ($existingLastPay) {
+                    DB::rollBack();
+                    return $this->sendError(["message" => "Last pay record already exists"]);
+                }
+
                 $companyDeductions = EmployeeDeduction::with("deduction")
                 ->where("employee_id", $employee->id)
                 ->where("balance", ">=", 1)
@@ -291,28 +411,44 @@ class LastPayController extends Controller
                 $taxRefund = $request->tax_refund ?? 0;
                 $salesIncentives = $request->sales ?? 0;
 
-                $yearHolded = Carbon::parse($employee->payroll_list->holded_at)->year;
-                $dateHolded = Carbon::parse($employee->payroll_list->holded_at)->format("Y-m-d");
+                $yearSourceDate = $employee->separation_date;
+                $cutOff = $this->getCutOffForDate($yearSourceDate);
+                $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
+                $payrollPayDate = $payroll?->pay_date;
+                $source = $yearSourceDate ? Carbon::parse($yearSourceDate) : Carbon::now();
+                $yearHolded = (int) $source->year;
+                $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
+                if ($source->greaterThanOrEqualTo($dec11)) {
+                    $yearHolded += 1;
+                }
+                $thirteenthMonthStartDate = ($yearHolded - 1) . "-12-10";
+                $thirteenthMonthPeriodStart = Carbon::create($yearHolded - 1, 12, 11)->format("Y-m-d");
+                $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
 
-                $payrolls = Payroll::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$dateHolded)
-                ->get();
-
-                $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                ->where("pay_date", ">=" ,$dateHolded)
-                ->get();
+                $payrolls = collect();
+                if ($payrollPayDate) {
+                    $payrolls = Payroll::where("employee_id", $employee->id)
+                        ->where("pay_date", ">=" ,$payrollPayDate)
+                        ->get();
+                }
 
                 foreach ($payrolls as $payroll) {
                     $totalPayroll += $payroll->net_pay;
                 }
 
-                foreach ($incentivesPayroll as $incentive) {
-                    $incentives += $incentive->incentive_amount;
+                if ($request->incentives != 0 && $payrollPayDate) {
+                    $incentivesPayroll = Incentives::where("employee_id", $employee->id)
+                    ->where("pay_date", ">=" ,$payrollPayDate)
+                    ->get();
+                    
+                    foreach ($incentivesPayroll as $incentive) {
+                        $incentives += $incentive->incentive_amount;
+                    }
                 }
 
-                $allPayrolls = Payroll::whereYear("pay_date", $yearHolded)
-                ->where("employee_id", $employee->id)
+                $allPayrolls = Payroll::where("employee_id", $employee->id)
                 ->where("status", "final")
+                ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
                 ->get();
 
                 $annualSalary = 0;
@@ -337,6 +473,9 @@ class LastPayController extends Controller
                     $totalWithholdingTax += $payroll->withholding_tax;
                 }
                 $month13th = $annualSalary / 12;
+                if ($request->has("thirteenth_month")) {
+                    $month13th = (float) $request->thirteenth_month;
+                }
 
                 $annualTax = AnnualTax::where("minimum_amount", "<=" , $annualTaxableIncome)
                 ->where("max_amount", ">=" , $annualTaxableIncome)
@@ -359,7 +498,7 @@ class LastPayController extends Controller
                     "sales" => $salesIncentives,
                     "meal" => $meal_allowance,
                     "last_pay" => $lastPay,
-                    "status" => "Unposted"
+                    "status" => "Unposted",
                 ]);
 
                 foreach ($companyDeductions as $deduction) {
@@ -431,26 +570,32 @@ class LastPayController extends Controller
                 ->first();
 
             if ($deductionFromLastPay) {
-
                 $lastPay = LastPay::where('employee_id', $employee->id)->first();
 
                 $totalDeductions = $lastPay->total_deductions;
                 $totalDeductions -= $deductionFromLastPay->amount;
+                $lastPayAmount = ($lastPay->payroll_hold + $lastPay->thirteenth_month + $lastPay->incentives + $lastPay->sl_vl + $lastPay->meal + $lastPay->tax_refund + $lastPay->sales) - $totalDeductions;
 
                 $lastPay->update([
-                    "total_deductions" => $totalDeductions
+                    "total_deductions" => $totalDeductions,
+                    "last_pay" => $lastPayAmount
                 ]);
 
                 if ($deductionFromLastPay) {
+                    $deductionType = $deductionFromLastPay->deduction->description ?? null;
+                    if ($deductionType === "SSS Loans") {
+                        $employeeDeduction = EmployeeDeduction::where("employee_id", $employee->id)
+                            ->where("reference_doc", $deductionFromLastPay->reference_doc)
+                            ->first();
+
+                        if ($employeeDeduction) {
+                            $employeeDeduction->update([
+                                "balance" => $employeeDeduction->balance + $deductionFromLastPay->amount
+                            ]);
+                        }
+                    }
+
                     $deductionFromLastPay->delete();
-                }
-
-                $deductionFromEmployeeDeduction = EmployeeDeduction::where('reference_doc', $request->reference_doc)
-                ->where('employee_id', $employee->id)
-                ->first();
-
-                if ($deductionFromEmployeeDeduction) {
-                    $deductionFromEmployeeDeduction->delete();
                 }
 
                 DB::commit();
@@ -478,7 +623,6 @@ class LastPayController extends Controller
             $lastPayDeduction = LastPayDeduction::find($lastPayDeductionId);
 
             if ($lastPayDeduction) {
-
                 $lastPayDeduction->update([
                     "amount" => $request->amount
                 ]);
@@ -487,8 +631,10 @@ class LastPayController extends Controller
                     ->sum('amount');
 
                 $lastPay = LastPay::where('id', $lastPayDeduction->last_pay_id)->first();
+                $lastPayAmount = ($lastPay->payroll_hold + $lastPay->thirteenth_month + $lastPay->incentives + $lastPay->sl_vl + $lastPay->meal + $lastPay->tax_refund + $lastPay->sales) - $allLastPayDeduction;
                 $lastPay->update([
-                    "total_deductions" => $allLastPayDeduction
+                    "total_deductions" => $allLastPayDeduction,
+                    "last_pay" => $lastPayAmount
                 ]);
 
                 DB::commit();
@@ -514,7 +660,18 @@ class LastPayController extends Controller
 
                 GenerateLastPayEntry::dispatch($lastPay, Auth::user()->id);
 
-                $lastPay->update(["status" => "Posted"]);
+                $lastPay->disableLogging();
+                $lastPay->update([
+                    "status" => "Posted",
+                ]);
+                $lastPay->enableLogging();
+
+                activity()
+                    ->performedOn($lastPay)
+                    ->causedBy(Auth::user())
+                    ->useLog("Last Pay")
+                    ->event("posted")
+                    ->log("posted");
 
                 DB::commit();
                 return $this->sendResponse(["message" => "Last pay posted successfully"]);
@@ -535,10 +692,11 @@ class LastPayController extends Controller
                 "sl_vl" => "required",
                 "tax_refund" => "required",
                 "sales" => "required",
-                "meal_allowance" => "required"
+                "meal_allowance" => "required",
+                "thirteenth_month" => "nullable|numeric|min:0"
             ]);
 
-            $lastPay = LastPay::find($lastPayId);
+            $lastPay = LastPay::with(["deductions", "deductions.deduction"])->find($lastPayId);
 
             if ($lastPay) {
                 $totalPayroll = $lastPay->payroll_hold;
@@ -549,8 +707,59 @@ class LastPayController extends Controller
                 $meal_allowance = $request->meal_allowance ?? 0;
                 $taxRefund = $request->tax_refund ?? 0;
                 $salesIncentives = $request->sales ?? 0;
+                if ($request->has("thirteenth_month")) {
+                    $month13th = (float) $request->thirteenth_month;
+                }
 
-                $totalDeductions = $lastPay->total_deductions;
+                $includeSssLoans = $request->sss_loans === "Yes";
+                $currentDeductions = $lastPay->deductions ?? collect();
+                $sssDeductions = $currentDeductions->filter(function ($item) {
+                    return $item->deduction && $item->deduction->description === 'SSS Loans';
+                });
+
+                if ($includeSssLoans) {
+                    if ($sssDeductions->isEmpty()) {
+                        $employeeDeductions = EmployeeDeduction::with("deduction")
+                        ->where("employee_id", $lastPay->employee_id)
+                        ->where("balance", ">=", 1)
+                        ->where("end_loan_status", "!=", "Yes")
+                        ->whereHas("deduction", function ($query) {
+                            $query->where("description", "SSS Loans");
+                        })
+                        ->get();
+
+                        foreach ($employeeDeductions as $deduction) {
+                            $lastPay->deductions()->create([
+                                "employee_id" => $lastPay->employee_id,
+                                "reference_doc" => $deduction->reference_doc,
+                                "deduction_id" => $deduction->deduction_id,
+                                "amount" => $deduction->balance,
+                            ]);
+
+                            $deduction->update([
+                                "balance" => 0
+                            ]);
+                        }
+                    }
+                } else {
+                    if ($sssDeductions->isNotEmpty()) {
+                        foreach ($sssDeductions as $deduction) {
+                            $employeeDeduction = EmployeeDeduction::where("employee_id", $lastPay->employee_id)
+                                ->where("reference_doc", $deduction->reference_doc)
+                                ->first();
+
+                            if ($employeeDeduction) {
+                                $employeeDeduction->update([
+                                    "balance" => $employeeDeduction->balance + $deduction->amount
+                                ]);
+                            }
+
+                            $deduction->delete();
+                        }
+                    }
+                }
+
+                $totalDeductions = LastPayDeduction::where("last_pay_id", $lastPay->id)->sum("amount");
 
                 $lastPayAmount = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $salesIncentives)- $totalDeductions;
 
@@ -563,7 +772,7 @@ class LastPayController extends Controller
                     "total_deductions" => $totalDeductions,
                     "sales" => $salesIncentives,
                     "meal" => $meal_allowance,
-                    "last_pay" => $lastPayAmount,
+                    "last_pay" => $lastPayAmount
                 ]);
                 DB::commit();
                 return $this->sendResponse([
@@ -577,6 +786,7 @@ class LastPayController extends Controller
                     "year" => $lastPay->year,
                     "total_deductions" => $totalDeductions,
                     "last_pay" => round($lastPayAmount, 2),
+                    "sss_loans" => $includeSssLoans ? "Yes" : "No",
                     "message" => "Last pay updated successfully"
                 ]);
             }

@@ -41,6 +41,21 @@ class EmployeeContractControlller extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }   
     }
+    
+    public function voidEmployeeContract($id) {
+        try {
+        $contract = Contract::findOrFail($id);
+        $contract->status = 'voided';
+        $contract->save();
+
+        return $this->sendResponse([
+            "message" => "Contract voided successfully",
+            "contract_id" => $contract->id
+        ]);
+    } catch (\Exception $e) {
+        return $this->sendError(["message" => $e->getMessage()], 500);
+        }
+    }
 
     public function exportEmployeeContractHistory(Request $request, $employee_number) {
         $request["export"] = true;
@@ -58,11 +73,22 @@ class EmployeeContractControlller extends Controller
                 "status" => "required",
             ]);
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $count = $employee->contracts()->count();
-            $employee->contracts()->update(['status' => 'inactive']);
+            $count = $employee->contracts()->where('status', '!=', 'voided')->count();
+            $lastContract = $employee->contracts()->latest('id')->first();
+
+             if ($lastContract && $lastContract->status === 'voided') {
+                $request->merge([
+                'contract_start_date' => $lastContract->contract_end_date
+                ]);
+            }
+
+            if ($request->status === 'active') {
+                $employee->contracts()->where('status', 'active')->update(['status' => 'inactive']);
+            }
+
             $employee->contracts()->create([
                 "employee_number" => $employee->employee_number,
-                "contract_number" => $this->ordinal(++$count),
+                "contract_number" => $this->ordinal($count + 1),
                 ...$request->all()
             ]);
 
@@ -132,6 +158,21 @@ class EmployeeContractControlller extends Controller
             $date1 = Carbon::parse($contract->contract_start_date);
             $date2 = Carbon::parse($contract->contract_end_date);
             $duration = $date1->diffInMonths($date2);
+            $durationType = "months";
+
+            if ($duration == 0) {
+
+                $days = $date1->diffInDays($date2);
+                $weeks = intdiv($days, 7);
+                $remainderDays = $days % 7;
+
+                if ($remainderDays == 5 | 6) {
+                    $weeks += 1;
+                }
+
+                $duration = $weeks;
+                $durationType = "weeks";
+            }
 
             $salary_amount = 0.00;
             $salary = $position->salary()->first();
@@ -168,6 +209,7 @@ class EmployeeContractControlller extends Controller
                 "previous_contract_start_date" => $previousContract->contract_start_date ?? null,
                 "previous_contract_end_date" => $previousContract->contract_end_date ?? null,
                 "duration" => $duration,
+                "duration_type" => $durationType,
                 "proper_full_name" => $properFullName,
                 "position" => $position->description,
                 "branch" => $branch->name,

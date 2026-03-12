@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\EmployeeOffense;
 use App\Models\Offense;
 use App\Models\Tardiness;
+use App\Models\TardinessDisabler;
 use App\Models\TardinessMinutes;
 use App\Models\TardinessSanction;
 use Illuminate\Http\Request;
@@ -112,6 +113,7 @@ class ReportsTardinessController extends Controller
         try {
             DB::beginTransaction();
             $tardiness = Tardiness::find($id);
+            $this->guardNotDisabled($tardiness);
             $employee = Employee::find($tardiness->employee_id);
 
             if ($tardiness->status === "Pending") {
@@ -171,6 +173,7 @@ class ReportsTardinessController extends Controller
 
             DB::beginTransaction();
             $tardiness = Tardiness::find($id);
+            $this->guardNotDisabled($tardiness);
 
             if ($tardiness->status === "Voided") {
                 return $this->sendError(["message" => "Tardiness cant be voided"]);
@@ -244,6 +247,7 @@ class ReportsTardinessController extends Controller
 
             foreach($request->tardiness_id as $tardy) {
                 $tardiness = Tardiness::find($tardy);
+                $this->guardNotDisabled($tardiness);
                 $employee = Employee::find($tardiness->employee_id);
 
                 if ($tardiness->status === "Pending") {
@@ -313,6 +317,7 @@ class ReportsTardinessController extends Controller
                 ]);
             }
             $tardiness = Tardiness::find($request->id);
+            $this->guardNotDisabled($tardiness);
             $tardiness->update([
                 "total_minutes" => $totalMins
             ]);
@@ -508,11 +513,27 @@ class ReportsTardinessController extends Controller
 
         $subject = $memoType === "Notice to Explain"
             ? "Tardiness - Notice to Explain"
-            : "Tardiness - Notice of Disciplinary Action";
+            : "Tardiness - Notice of Decision";
+
+        $message = $memoType === "Notice to Explain"
+            ? "Good day Ma'am/Sir,<br><br>"
+                . "Attached in this memo is your Notice to Explain (Tardiness). Kindly read the contents carefully and acknowledge your <strong>Notice to Explain (NTE)</strong> memo.<br><br>"
+                . "You are hereby directed to submit a written explanation within <strong><span style=\"color: #0000ff;\">five (5) calendar days</span></strong> from receipt of this notice, stating why no disciplinary action should be imposed against you. Failure to submit a written explanation within the prescribed period shall be deemed a waiver of your right to rebut the charges.<br><br>"
+                . "Should you have any questions or require clarification, please do not hesitate to contact us.<br><br>"
+                . "Please reply to this memo to confirm receipt.<br><br>"
+                . "Thank you, and stay safe."
+            : "Good day Ma'am/Sir,<br><br>"
+                . "Attached in this memo is your Notice of Decision (Tardiness). Kindly read the contents carefully and acknowledge your <strong>Notice of Decision (NOD)</strong> memo.<br><br>"
+                . "You are hereby directed to submit a written explanation within <strong><span style=\"color: #0000ff;\">five (5) calendar days</span></strong> from receipt of this notice, stating why no disciplinary action should be imposed against you. Failure to submit a written explanation within the prescribed period shall be deemed a waiver of your right to rebut the charges.<br><br>"
+                . "Should you have any questions or require clarification, please do not hesitate to contact us.<br><br>"
+                . "Please reply to this memo to confirm receipt.<br><br>"
+                . "Thank you, and stay safe.";
 
         $baseUrl = rtrim($baseUrl, "/");
         $endpoint = $baseUrl . (Str::endsWith($baseUrl, "/api") ? "" : "/api") . "/tardiness-memo";
-
+        $sender = env('COMPANY_NAME') == "SFI" 
+            ? "Human Resources Department"
+            : "Human Resources Department 2";
         try {
             $response = Http::withBasicAuth($user, $password)
                 ->timeout(60)
@@ -521,8 +542,8 @@ class ReportsTardinessController extends Controller
                     "employee_number" => $employeeNumber,
                     "type" => $memoType,
                     "subject" => $subject,
-                    "message" => "Memo for tardiness.",
-                    "sender_name" => "Auditing Department",
+                    "message" => $message,
+                    "sender_name" => $sender,
                 ]);
 
             if (!$response->successful()) {
@@ -537,6 +558,18 @@ class ReportsTardinessController extends Controller
                 "employee_number" => $employeeNumber,
                 "error" => $e->getMessage(),
             ]);
+        }
+    }
+
+    private function guardNotDisabled(Tardiness $tardiness): void
+    {
+        if (!$tardiness) {
+            throw new Exception("Tardiness not found.");
+        }
+
+        if (TardinessDisabler::isDisabled((int) $tardiness->month, (int) $tardiness->year)) {
+            $label = Carbon::create($tardiness->year, $tardiness->month, 1)->format('F Y');
+            throw new Exception("Tardiness disabled for {$label}.");
         }
     }
 

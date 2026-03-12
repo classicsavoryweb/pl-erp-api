@@ -42,4 +42,8 @@ class TimeKeepingSummary extends Model
     public function branch() {
         return $this->hasOne(Branch::class, "id", "branch_id");
     }
+
+    public function payroll() {
+        return $this->belongsTo(Payroll::class, "id", "timekeeping_summary_id");
+    }
 }

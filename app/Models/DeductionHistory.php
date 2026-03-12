@@ -27,6 +27,11 @@ class DeductionHistory extends Model
         return $this->hasMany(EmployeeDeduction::class, 'reference_doc', 'reference_doc');
     }
 
+    public function actual_deduction()
+    {
+        return $this->hasOne(EmployeeDeduction::class, 'reference_doc', 'reference_doc');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
