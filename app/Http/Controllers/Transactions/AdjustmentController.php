@@ -200,6 +200,13 @@ class AdjustmentController extends Controller
                     "taxable adjustment"
                 );
 
+                $holidayIsPaid = $this->timeKeepingService->determinePaidHoliday(
+                    $request->date,
+                    $employee,
+                    $request->branch_id
+                );
+                $adjustmentTimeKeeping->paid_holiday = $holidayIsPaid ? "Yes" : "No";
+
                 $adjustmentPayment = $this->timeKeepingService->computePayment(
                     $adjustmentTimeKeeping, 
                     true,
@@ -388,6 +395,13 @@ class AdjustmentController extends Controller
                     ...$timeKeeping->toArray(),
                     "approved_overtime" => $overtimeHours
                 ]);
+
+                $holidayIsPaid = $this->timeKeepingService->determinePaidHoliday(
+                    $timeKeeping->date,
+                    $employee,
+                    $timeKeeping->branch_id
+                );
+                $adjustedTimeKeeping->paid_holiday = $holidayIsPaid ? "Yes" : "No";
 
                 $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                     $adjustedTimeKeeping,
