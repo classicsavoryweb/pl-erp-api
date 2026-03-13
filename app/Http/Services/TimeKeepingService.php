@@ -875,11 +875,6 @@ class TimeKeepingService
         $special_holiday = $isHolidayPaid ? $timeKeeping->special_holiday_hours * ($paymentPerHour * .3) : 0;
         $night_differential = $timeKeeping->night_diff_hours >= 1 ? $timeKeeping->night_diff_hours * ($paymentPerHour * .1) : 0;
 
-        $timeKeeping->regular_overtime = floor($timeKeeping->regular_overtime);
-        $timeKeeping->legal_holiday_overtime = floor($timeKeeping->legal_holiday_overtime);
-        $timeKeeping->special_holiday_overtime = floor($timeKeeping->special_holiday_overtime);
-        $timeKeeping->night_diff_overtime = floor($timeKeeping->night_diff_overtime);
-
         if (!$isHolidayPaid) {
             if ($timeKeeping->legal_holiday_overtime > 0) {
                 $timeKeeping->regular_overtime = $timeKeeping->legal_holiday_overtime;
@@ -928,6 +923,9 @@ class TimeKeepingService
                 $cancelled_off = $timeKeeping->approved_overtime * ($paymentPerHour * 1.69);
             }
         }
+        Log::info("PPD: ". $paymentPerDay);
+        Log::info("PPH: ". $paymentPerHour);
+        Log::info("OT: ". $regular_overtime);
 
         $totalAmount = (
             $paymentPerDay + 
