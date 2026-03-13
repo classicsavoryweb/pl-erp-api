@@ -135,10 +135,6 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
             return "-";
         }
 
-        if (ctype_digit($id) && strlen($id) < 7) {
-            $id = str_pad($id, 7, "0", STR_PAD_LEFT);
-        }
-
         return $id;
     }
 
