@@ -562,7 +562,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     "tardiness" => $tardiness,
                     "branch_id" => $timeKeepings[0]->branch_id,
                     "adjustment_amount" => $adjustment_amount,
-                    "remarks" => $remarks
+                    "remarks" => $remarks,
+                    "position_id" => $employee->position_id
                 ]);
 
                 // $this->payrollService->computePayroll($timeKeepingSummary);

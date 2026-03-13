@@ -28,7 +28,8 @@ class TimeKeepingSummary extends Model
         "adjustment_amount",
         "remarks",
         "tardiness",
-        "branch_id"
+        "branch_id",
+        "position_id",
     ];
 
     public function lates() {

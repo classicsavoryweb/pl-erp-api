@@ -451,7 +451,8 @@ class PayrollService {
                 "status" => "initial",
                 "is_maternity" => $payrollList->is_on_maternity_leave,
                 "is_hold" => $payrollList->is_hold,
-                "remarks" => $remarks
+                "remarks" => $remarks,
+                "position_id" => $employee->position_id
             ]);
             
             // if ($cutOff->part == 1) {
@@ -638,7 +639,8 @@ class PayrollService {
                 "additional_working_hours_total" => $additionalWorkingHoursTotal,
                 "working_hours_deduction_total" => $workingHoursDeductionTotal,
                 "status" => "initial",
-                "remarks" => $remarks
+                "remarks" => $remarks,
+                "position_id" => $employee->position_id
             ]);
 
             $this->computeIncentives($cutOff, $employee, $employee->current_branch);
