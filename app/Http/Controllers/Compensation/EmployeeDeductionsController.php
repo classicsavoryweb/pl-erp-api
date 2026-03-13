@@ -711,7 +711,6 @@ class EmployeeDeductionsController extends Controller
             $vendorName = $vendor->ven_name;
 
             $user = Auth::user();
-            $user = $user->employee;
 
             $entries = [];
 
