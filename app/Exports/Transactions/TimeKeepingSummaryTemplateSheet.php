@@ -5,10 +5,13 @@ namespace App\Exports\Transactions;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
+class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, WithCustomStartCell, WithTitle, WithStrictNullComparison
 {
     private const LATE_SLOT_COUNT = 9;
     private const TOTAL_COLUMNS = 36; 
@@ -30,7 +33,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
     {
         $rows = $this->timekeeping_summary->values()->map(function ($summary, $index) {
             $employee = $summary->employee;
-            $branchName = $summary->branch?->short_name ?: ($summary->branch?->name ?: "-");
+            $branchName = $summary->branch?->name ?: "-";
 
             $row = [
                 $index + 1,
@@ -66,7 +69,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
                         $row[] = $this->formatMetric($late->late_minutes);
                     } else {
                         $row[] = $this->endDateLabel;
-                        $row[] = "-";
+                        $row[] = 0.0;
                     }
                     continue;
                 }
@@ -76,7 +79,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
                     $row[] = $this->formatMetric($lateOverflowMinutes);
                 } else {
                     $row[] = $this->endDateLabel;
-                    $row[] = "-";
+                    $row[] = 0.0;
                 }
             }
 
@@ -86,16 +89,30 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
             return $row;
         });
 
-        return collect($this->headerRows())->merge($rows);
+        $spacerRow = array_fill(0, self::TOTAL_COLUMNS, "");
+
+        return collect($this->headerRows())
+            ->push($spacerRow)
+            ->merge($rows);
     }
 
-    private function formatMetric($value): string
+    public function startCell(): string
     {
-        if ($value === null || $value === '' || (float) $value == 0.0) {
-            return "-";
+        return "A3";
+    }
+
+    public function title(): string
+    {
+        return "Sheet1";
+    }
+
+    private function formatMetric($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
         }
 
-        return number_format((float) $value, 1, ".", "");
+        return round((float) $value, 2);
     }
 
     private function formatDate($value): string
@@ -142,7 +159,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
     private function headerRows(): array
     {
         $firstHeaderRow = [
-            "", "", "", "Employee Name",
+            "No.", "ID NO.", "Branch", "Employee Name",
             "Regular Days", "Taxable Adjustment", "Special Leave", "Cancelled Off",
             "Special Holiday", "Legal Holiday", "OT REG.", "Night Diff. Regular",
             "Night Diff. OT", "Legal Holiday OT", "Special Holiday OT", "Undertime",
@@ -157,7 +174,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
         $firstHeaderRow[] = "Remarks Column";
 
         $secondHeaderRow = [
-            "No.", "ID NO.", "Branch", "",
+            "", "", "", "",
             "Days", "Amount", "Days", "Hours",
             "Hours", "Hours", "Hours", "Hours",
             "Hours", "Hours", "Hours", "Mins.",
@@ -187,26 +204,28 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
     public function styles(Worksheet $sheet)
     {
         $lastColumnLetter = $this->getExcelColumnLetter(self::TOTAL_COLUMNS - 1); // AJ
-        $dataStartRow = 3;
+        $headerStartRow = 3;
+        $headerEndRow = 4;
+        $dataStartRow = 6;
         $lastRow = $dataStartRow + max($this->timekeeping_summary->count() - 1, 0);
 
-        $sheet->mergeCells("A1:A2");
-        $sheet->mergeCells("B1:B2");
-        $sheet->mergeCells("C1:C2");
-        $sheet->mergeCells("D1:D2");
-        $sheet->mergeCells("AI1:AI2");
-        $sheet->mergeCells("AJ1:AJ2");
+        $sheet->mergeCells("A{$headerStartRow}:A{$headerEndRow}");
+        $sheet->mergeCells("B{$headerStartRow}:B{$headerEndRow}");
+        $sheet->mergeCells("C{$headerStartRow}:C{$headerEndRow}");
+        $sheet->mergeCells("D{$headerStartRow}:D{$headerEndRow}");
+        $sheet->mergeCells("AI{$headerStartRow}:AI{$headerEndRow}");
+        $sheet->mergeCells("AJ{$headerStartRow}:AJ{$headerEndRow}");
 
         $lateGroupStartIndex = 16; 
         for ($i = 0; $i < self::LATE_SLOT_COUNT; $i++) {
             $start = $this->getExcelColumnLetter($lateGroupStartIndex + ($i * 2));
             $end = $this->getExcelColumnLetter($lateGroupStartIndex + ($i * 2) + 1);
-            $sheet->mergeCells("{$start}1:{$end}1");
+            $sheet->mergeCells("{$start}{$headerStartRow}:{$end}{$headerStartRow}");
         }
 
-        $sheet->freezePane("A3");
+        $sheet->freezePane("A6");
 
-        $sheet->getStyle("A1:{$lastColumnLetter}2")->applyFromArray([
+        $sheet->getStyle("A{$headerStartRow}:{$lastColumnLetter}{$headerEndRow}")->applyFromArray([
             "font" => [
                 "bold" => true,
                 "name" => "Aptos Narrow",
@@ -224,7 +243,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
         ]);
 
         if ($this->timekeeping_summary->count() > 0) {
-            $sheet->getStyle("A3:{$lastColumnLetter}{$lastRow}")->applyFromArray([
+            $sheet->getStyle("A{$dataStartRow}:{$lastColumnLetter}{$lastRow}")->applyFromArray([
                 "font" => [
                     "name" => "Aptos Narrow",
                     "size" => 11,
@@ -237,7 +256,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
             ]);
         }
 
-        $sheet->getStyle("A1:{$lastColumnLetter}{$lastRow}")->applyFromArray([
+        $sheet->getStyle("A{$headerStartRow}:{$lastColumnLetter}{$lastRow}")->applyFromArray([
             "borders" => [
                 "allBorders" => [
                     "borderStyle" => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -247,17 +266,25 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
         ]);
 
         if ($this->timekeeping_summary->count() > 0) {
-            $sheet->getStyle("B3:B{$lastRow}")
+            $sheet->getStyle("B{$dataStartRow}:B{$lastRow}")
                 ->getNumberFormat()
                 ->setFormatCode("@");
 
-            $sheet->getStyle("D3:D{$lastRow}")->getAlignment()->setHorizontal(
+            $accountingFormat = '#,##0.00;(#,##0.00);"-";@';
+            $numericColumns = ["E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "R", "T", "V", "X", "Z", "AB", "AD", "AF", "AH", "AI"];
+            foreach ($numericColumns as $col) {
+                $sheet->getStyle("{$col}{$dataStartRow}:{$col}{$lastRow}")
+                    ->getNumberFormat()
+                    ->setFormatCode($accountingFormat);
+            }
+
+            $sheet->getStyle("D{$dataStartRow}:D{$lastRow}")->getAlignment()->setHorizontal(
                 \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT
             );
-            $sheet->getStyle("AJ3:AJ{$lastRow}")->getAlignment()->setHorizontal(
+            $sheet->getStyle("AJ{$dataStartRow}:AJ{$lastRow}")->getAlignment()->setHorizontal(
                 \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT
             );
-            $sheet->getStyle("AJ3:AJ{$lastRow}")->getAlignment()->setWrapText(false);
+            $sheet->getStyle("AJ{$dataStartRow}:AJ{$lastRow}")->getAlignment()->setWrapText(false);
         }
 
         for ($i = 0; $i < self::TOTAL_COLUMNS; $i++) {
@@ -276,15 +303,15 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
             $sheet->getColumnDimension($minsCol)->setWidth(8);
         }
 
-        if ($lastRow >= 3) {
-            $sheet->getStyle("A3:{$lastColumnLetter}{$lastRow}")->applyFromArray([
+        if ($lastRow >= $dataStartRow) {
+            $sheet->getStyle("A{$dataStartRow}:{$lastColumnLetter}{$lastRow}")->applyFromArray([
                 "alignment" => [
                     "horizontal" => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
                     "vertical" => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                 ],
             ]);
 
-            for ($row = 3; $row <= $lastRow; $row++) {
+            for ($row = $dataStartRow; $row <= $lastRow; $row++) {
                 $sheet->getRowDimension($row)->setRowHeight(20);
             }
         }
