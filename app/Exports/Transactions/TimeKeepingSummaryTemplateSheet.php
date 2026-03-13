@@ -11,7 +11,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
 {
     private const LATE_SLOT_COUNT = 9;
-    private const TOTAL_COLUMNS = 36; // A..AJ
+    private const TOTAL_COLUMNS = 36; 
 
     protected Collection $timekeeping_summary;
     protected $start_date;
@@ -59,7 +59,6 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
             });
 
             for ($i = 0; $i < self::LATE_SLOT_COUNT; $i++) {
-                // Keep Late 1..Late 8 as-is. Late 9 includes overflow minutes (10th, 11th, ...).
                 if ($i < $lateOverflowStartIndex) {
                     $late = $lates->get($i);
                     if ($late) {
@@ -191,7 +190,6 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
         $dataStartRow = 3;
         $lastRow = $dataStartRow + max($this->timekeeping_summary->count() - 1, 0);
 
-        // Vertical merges.
         $sheet->mergeCells("A1:A2");
         $sheet->mergeCells("B1:B2");
         $sheet->mergeCells("C1:C2");
@@ -199,8 +197,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
         $sheet->mergeCells("AI1:AI2");
         $sheet->mergeCells("AJ1:AJ2");
 
-        // Late group merges (Q:R ... AG:AH).
-        $lateGroupStartIndex = 16; // Q
+        $lateGroupStartIndex = 16; 
         for ($i = 0; $i < self::LATE_SLOT_COUNT; $i++) {
             $start = $this->getExcelColumnLetter($lateGroupStartIndex + ($i * 2));
             $end = $this->getExcelColumnLetter($lateGroupStartIndex + ($i * 2) + 1);
@@ -250,12 +247,10 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
         ]);
 
         if ($this->timekeeping_summary->count() > 0) {
-            // Keep employee IDs as text to preserve leading zeros.
             $sheet->getStyle("B3:B{$lastRow}")
                 ->getNumberFormat()
                 ->setFormatCode("@");
 
-            // Left align employee name and remarks.
             $sheet->getStyle("D3:D{$lastRow}")->getAlignment()->setHorizontal(
                 \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT
             );
@@ -270,7 +265,6 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
             $sheet->getColumnDimension($colLetter)->setAutoSize(true);
         }
 
-        // Practical fixed widths for long text/date columns.
         $sheet->getColumnDimension("D")->setWidth(38);
         $sheet->getColumnDimension("AJ")->setWidth(70);
 
@@ -290,7 +284,6 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles
                 ],
             ]);
 
-            // Keep data rows compact even with long remarks.
             for ($row = 3; $row <= $lastRow; $row++) {
                 $sheet->getRowDimension($row)->setRowHeight(20);
             }
