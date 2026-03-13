@@ -686,12 +686,10 @@ class PayrollService {
                 $incentivesAmount = $bracket->amount;
             }
             
-            if (Carbon::parse($employee->date_hired)->greaterThanOrEqualTo(Carbon::now()->subYears(2))) {
-                $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $employee->id)->first();
+            $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $employee->id)->first();
 
-                if ($rankAndFileIncentive) {
-                    $incentivesAmount = $rankAndFileIncentive->max_amount;
-                }
+            if ($rankAndFileIncentive) {
+                $incentivesAmount = $rankAndFileIncentive->max_amount;
             }
         } else {
             $managementIncentives = IncentivesManagement::where("employee_id", $employee->id)->first();
