@@ -37,7 +37,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
 
             $row = [
                 $index + 1,
-                $this->formatEmployeeId($employee?->biometric_number ?? $employee?->employee_number),
+                $this->formatEmployeeId($employee?->employee_number ?? $employee?->biometric_number),
                 $branchName,
                 $employee?->full_name ?? "-",
                 $this->formatMetric($summary->regular_days),
