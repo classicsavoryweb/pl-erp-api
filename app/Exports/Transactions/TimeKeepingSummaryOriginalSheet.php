@@ -9,10 +9,11 @@ use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TimeKeepingSummaryOriginalSheet implements FromCollection, WithHeadings, WithStyles, WithColumnFormatting, WithCustomStartCell
+class TimeKeepingSummaryOriginalSheet implements FromCollection, WithHeadings, WithStyles, WithColumnFormatting, WithCustomStartCell, WithTitle
 {
     protected Collection $timekeeping_summary;
     protected $start_date;
@@ -28,6 +29,11 @@ class TimeKeepingSummaryOriginalSheet implements FromCollection, WithHeadings, W
     public function startCell(): string
     {
         return 'A3';
+    }
+
+    public function title(): string
+    {
+        return "Worksheet";
     }
 
     public function collection()
