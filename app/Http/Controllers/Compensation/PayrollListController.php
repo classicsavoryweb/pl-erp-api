@@ -209,6 +209,7 @@ class PayrollListController extends Controller
                 "is_hold" => $request->is_hold,
                 "holded_at" => $request->is_hold ? now() : null,
                 "remarks" => $request->remarks,
+                "bank_details_id" => $request->bank_details_id ?? null,
                 "salary_amount" => $request->salary_amount ?? 0
             ]);
 
