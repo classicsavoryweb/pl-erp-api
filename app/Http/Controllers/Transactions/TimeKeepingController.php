@@ -319,7 +319,7 @@ class TimeKeepingController extends Controller
                     $timeKeepingSummaryQuery,
                     $start_time,
                     $end_time
-                ), "time_keeping_summary.xls");
+                ), "time_keeping_summary.xlsx", \Maatwebsite\Excel\Excel::XLSX);
             }
 
             $timeKeepingSummary = $timeKeepingSummaryQuery->paginate($perPage);
