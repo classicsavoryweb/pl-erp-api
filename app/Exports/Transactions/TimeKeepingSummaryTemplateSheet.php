@@ -33,13 +33,13 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
     {
         $rows = $this->timekeeping_summary->values()->map(function ($summary, $index) {
             $employee = $summary->employee;
-            $branchName = $summary->branch?->name ?: "-";
+            $branchName = $summary->branch?->name ?: "";
 
             $row = [
                 $index + 1,
                 $this->formatEmployeeId($employee?->employee_number ?? $employee?->biometric_number),
                 $branchName,
-                $employee?->full_name ?? "-",
+                $employee?->full_name ?? "",
                 $this->formatMetric($summary->regular_days),
                 $this->formatMetric($summary->adjustment_amount),
                 $this->formatMetric($summary->special_leave),
@@ -69,7 +69,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
                         $row[] = $this->formatMetric($late->late_minutes);
                     } else {
                         $row[] = $this->endDateLabel;
-                        $row[] = 0.0;
+                        $row[] = null;
                     }
                     continue;
                 }
@@ -79,7 +79,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
                     $row[] = $this->formatMetric($lateOverflowMinutes);
                 } else {
                     $row[] = $this->endDateLabel;
-                    $row[] = 0.0;
+                    $row[] = null;
                 }
             }
 
@@ -106,10 +106,10 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
         return "Sheet1";
     }
 
-    private function formatMetric($value): float
+    private function formatMetric($value): ?float
     {
         if ($value === null || $value === '') {
-            return 0.0;
+            return null;
         }
 
         return round((float) $value, 2);
@@ -118,7 +118,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
     private function formatDate($value): string
     {
         if (!$value) {
-            return "-";
+            return "";
         }
 
         try {
@@ -132,7 +132,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
     {
         $id = trim((string) $value);
         if ($id === "") {
-            return "-";
+            return "";
         }
 
         return $id;
@@ -142,7 +142,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
     {
         $remarks = trim((string) $value);
         if ($remarks === "") {
-            return "-";
+            return "";
         }
 
         $remarks = str_replace(["\r\n", "\r", "\n"], " ", $remarks);
@@ -266,7 +266,7 @@ class TimeKeepingSummaryTemplateSheet implements FromCollection, WithStyles, Wit
                 ->getNumberFormat()
                 ->setFormatCode("@");
 
-            $accountingFormat = '#,##0.00;(#,##0.00);"-";@';
+            $accountingFormat = '#,##0.00;(#,##0.00);;@';
             $numericColumns = ["E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "R", "T", "V", "X", "Z", "AB", "AD", "AF", "AH", "AI"];
             foreach ($numericColumns as $col) {
                 $sheet->getStyle("{$col}{$dataStartRow}:{$col}{$lastRow}")
