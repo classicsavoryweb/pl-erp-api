@@ -49,7 +49,7 @@ class PayrollProofListController extends Controller
             "employee.latest_bank_details.bank_account_type", 
             ]);
 
-            $proofList = $proofList->with(["employee"])
+            $proofList = $proofList->with(["employee", "employee.payroll_list"])
             ->where("pay_date", $cutOff->pay_date);
 
             if ($request->type === "INCENTIVES") {
@@ -63,6 +63,11 @@ class PayrollProofListController extends Controller
                     "first_cut_off_worked_days",
                     "second_cut_off_worked_days",
                 ])->where("incentive_amount", ">", 0)
+                ->whereHas("payroll_list", function ($query) {
+                    $query->where("is_included", 1)
+                    ->where("is_bank", 1)
+                    ->where("is_hold", 0);
+                })
                 ->orderBy(
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "incentives.employee_id")
