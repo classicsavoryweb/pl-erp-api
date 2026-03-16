@@ -544,6 +544,7 @@ class ReportsTardinessController extends Controller
                     "subject" => $subject,
                     "message" => $message,
                     "sender_name" => $sender,
+                    "company" => env('COMPANY_NAME')
                 ]);
 
             if (!$response->successful()) {
