@@ -268,6 +268,7 @@ class GenerateEntry implements ShouldQueue
             $vendorHONo = $vendor->ven_no ?? null;
             $vendorHOName = $vendor->ven_name ?? null;
         } else {
+            $vendorHONo = "HO";
             $vendorHOName = "HO";
         }
 
@@ -314,9 +315,33 @@ class GenerateEntry implements ShouldQueue
 
         $start_date = $this->start_date;
         $end_date = $this->end_date;
+        $cutoffDocumentToken = $start_date . '-' . $end_date;
+
+        // Prevent duplicate entries when the same cutoff is generated multiple times.
+        $deletedRows = Entry::where('pay_date', $this->pay_date)
+            ->where(function ($query) use ($cutoffDocumentToken) {
+                $query->where('document_no', 'like', "%{$cutoffDocumentToken}%")
+                    ->orWhere('document_no', $cutoffDocumentToken)
+                    ->orWhere(function ($incentiveQuery) {
+                        $incentiveQuery->where('document_no', 'Additional Income')
+                            ->where('description', 'Payroll Incentive');
+                    });
+            })
+            ->delete();
+
+        if ($deletedRows > 0) {
+            Log::info('Existing entries removed before regeneration.', [
+                'pay_date' => $this->pay_date,
+                'cutoff_start' => $start_date,
+                'cutoff_end' => $end_date,
+                'deleted_rows' => $deletedRows,
+            ]);
+        }
 
         $payrollBranchIds = Payroll::distinct()
             ->where('pay_date', $this->pay_date)
+            ->where('start_date', $start_date)
+            ->where('end_date', $end_date)
             ->pluck('timekeeping_branch_id');
 
         $hasError = false;
@@ -449,8 +474,8 @@ class GenerateEntry implements ShouldQueue
             )
                 ->where('timekeeping_branch_id', $branchId)
                 ->where('pay_date', $this->pay_date)
-                // ->where('start_date', $this->start_date)
-                // ->where('end_date', $this->end_date)
+                ->where('start_date', $this->start_date)
+                ->where('end_date', $this->end_date)
                 ->whereIn('employee_id', function($query) {
                     $query->select('employee_id')
                         ->from('payroll_list')
@@ -471,8 +496,8 @@ class GenerateEntry implements ShouldQueue
             ];
 
             $payrollEmployeeCash = $payrollEmployeeCashQuery->first();
-            $payrollEmployeeCashVenName = null;
-            $payrollEmployeeCashVendorNo = null;
+            $payrollEmployeeCashVenName = $vendorHOName;
+            $payrollEmployeeCashVendorNo = $vendorHONo;
             if ($this->apsysAvailable && $payrollEmployeeCash && $payrollEmployeeCash->employee) {
                 $payrollEmployeeCashVenName = $payrollEmployeeCash->employee->vendor->ven_name ?? null;
                 $payrollEmployeeCashVendorNo = $payrollEmployeeCash->employee->vendor->ven_no ?? null;
@@ -1187,7 +1212,7 @@ class GenerateEntry implements ShouldQueue
                     $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
                     $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
 
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);    
                     $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $entries = array_merge($entries, [
                         [
@@ -1303,7 +1328,7 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //head office - incentives amount (bank)
-                if ($bankIncentiveSums > 0) {
+                if ($bankAdditionalAndIncentiveSums > 0) {
                     $firstEntry = $this->generateEntryId($this->counterEntry);
                     $secondEntry = $this->generateEntryId($this->counterEntry);
 
@@ -3218,7 +3243,7 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //branch - incentives amount (bank)
-                if ($bankIncentiveSums > 0) {
+                if ($bankAdditionalAndIncentiveSums > 0) {
                     $firstEntry = $this->generateEntryId($this->counterEntry);
                     $secondEntry = $this->generateEntryId($this->counterEntry);
 
