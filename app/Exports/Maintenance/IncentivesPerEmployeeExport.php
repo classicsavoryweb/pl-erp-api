@@ -23,7 +23,8 @@ class IncentivesPerEmployeeExport implements FromCollection, WithHeadings
                 $unique_incentives_per_employee->employee->employee_number,
                 $unique_incentives_per_employee->employee->current_position->description,
                 $unique_incentives_per_employee->amount,
-                $unique_incentives_per_employee->max_amount
+                $unique_incentives_per_employee->max_amount,
+                $unique_incentives_per_employee->employee->status,
             ];
         });
     }
@@ -36,6 +37,7 @@ class IncentivesPerEmployeeExport implements FromCollection, WithHeadings
             'Current Position',
             'Amount',
             'Max Amount',
+            'Status'
         ];
     }
 }
