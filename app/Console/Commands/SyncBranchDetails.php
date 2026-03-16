@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Carbon\Carbon;
 use Throwable;
 
 class SyncBranchDetails extends Command
@@ -35,17 +34,17 @@ class SyncBranchDetails extends Command
     public function handle()
     {
         $this->info('Starting branch sync to savory_temp_db.branchdetails');
-        $lastSynced = Cache::get('sync_branch_details.last_synced_at', now()->subDay()->startOfDay());
-        $date = Carbon::parse($lastSynced)->format('Y-m-d H:i:s');
+        $syncFailed = false;
+        $otherCompanyUnavailable = false;
 
         $targetColumns = Schema::connection('savory_temp_db')->getColumnListing('branchdetails');
         $targetColumnKeys = array_flip($targetColumns);
 
         $keyColumn = null;
-        if (isset($targetColumnKeys['branchID'])) {
-            $keyColumn = 'branchID';
-        } elseif (isset($targetColumnKeys['branch_id'])) {
+        if (isset($targetColumnKeys['branch_id'])) {
             $keyColumn = 'branch_id';
+        } elseif (isset($targetColumnKeys['branchID'])) {
+            $keyColumn = 'branchID';
         }
 
         if (!$keyColumn) {
@@ -55,7 +54,7 @@ class SyncBranchDetails extends Command
 
         $batchSize = 200;
 
-        Branch::orderBy('id')->chunkById($batchSize, function ($branches) use ($targetColumnKeys, $keyColumn) {
+        Branch::orderBy('id')->chunkById($batchSize, function ($branches) use ($targetColumnKeys, $keyColumn, &$syncFailed, &$otherCompanyUnavailable) {
                 $payload = [];
                 $roleEmployeeNumbers = $branches
                     ->flatMap(function ($branch) {
@@ -78,10 +77,18 @@ class SyncBranchDetails extends Command
                         ->whereIn('employee_number', $roleEmployeeNumbers)
                         ->get();
 
-                    $otherEmployees = OtherEmployee::query()
-                        ->select(['employee_number', 'branch_id', 'home_branch_id'])
-                        ->whereIn('employee_number', $roleEmployeeNumbers)
-                        ->get();
+                    try {
+                        $otherEmployees = OtherEmployee::query()
+                            ->select(['employee_number', 'branch_id', 'home_branch_id'])
+                            ->whereIn('employee_number', $roleEmployeeNumbers)
+                            ->get();
+                    } catch (Throwable $th) {
+                        $otherCompanyUnavailable = true;
+                        Log::warning('other_company_db unavailable while syncing branch details; continuing with local employees only', [
+                            'message' => $th->getMessage(),
+                        ]);
+                        $otherEmployees = collect();
+                    }
 
                     $branchIds = $employees->pluck('home_branch_id')
                         ->merge($employees->pluck('branch_id'))
@@ -194,13 +201,22 @@ class SyncBranchDetails extends Command
                         }
                     }
                 } catch (Throwable $th) {
+                    $syncFailed = true;
                     Log::error('Failed to sync branches to savory_temp_db.branchdetails', [
                         'message' => $th->getMessage(),
                     ]);
                 }
             });
 
+        if ($syncFailed) {
+            $this->error('Branch sync finished with errors. Check logs for details.');
+            return Command::FAILURE;
+        }
+
         Cache::put('sync_branch_details.last_synced_at', now());
+        if ($otherCompanyUnavailable) {
+            $this->warn('Branch sync completed, but other_company_db lookup was skipped.');
+        }
         $this->info('Branch sync completed.');
 
         return Command::SUCCESS;
