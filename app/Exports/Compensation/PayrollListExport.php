@@ -49,8 +49,8 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
     public function collection()
     {
         return $this->payrollList->map(function ($list) {
-             
-            $bank = $list->employee->latest_bank_details;
+
+            $bank = $list->current_bank_details;
             $position = $list->employee->current_position?->description ?? null;
             $isOic = ($list->employee->oic_status ?? null) === "OIC";
             $latestOic = ($list->employee->latest_position?->oic_assignment ?? null) === "Yes";
@@ -67,17 +67,21 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
             $bankNumber = $this->normalizeValue($bankNumber);
             $scheduleName = $list->employee->schedule?->schedule_type?->name ?? null;
             $scheduleType = null;
+
+            $divisor = 26;
             if ($scheduleName) {
                 if (stripos($scheduleName, "compressed") !== false) {
                     $scheduleType = "Compressed";
+                    $divisor = 22;
                 } elseif (stripos($scheduleName, "normal") !== false) {
                     $scheduleType = "Normal";
                 } else {
                     $scheduleType = $scheduleName;
                 }
             }
+
+            $dailyRate = $list->salary_amount / $divisor;
             $scheduleType = $this->normalizeValue($scheduleType);
-            $dailyRate = number_format((float) $this->computeDailySalary($list->employee), 2);
             $region = $list->employee->current_branch?->location ?? $list->employee->current_branch?->region ?? null;
             $region = $this->normalizeValue($region);
             $separationDate = $this->normalizeValue($list->employee->separation_date ?? null);
@@ -96,73 +100,13 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
                 $list->holded_at ?? null,
                 $bank?->bank_account_type?->description ?? null,
                 $bankNumber,
-                number_format((float) $this->computeMonthlySalary($list->employee), 2),
+                number_format($list->salary_amount, 2),
                 $scheduleType,
-                $dailyRate,
+                number_format($dailyRate, 2),
                 $region,
                 $separationDate
             ];
         });
-    }
-
-    private function computeMonthlySalary($employee): float
-    {
-        $salaryPosition = $employee?->current_position?->salary;
-        if (!$salaryPosition) {
-            return 0;
-        }
-
-        if (strtoupper((string) $salaryPosition->rate_category) === "MINIMUM") {
-            $rateCode = $employee?->home_branch?->rate_code;
-            if (!$rateCode) {
-                return 0;
-            }
-            $minimum = $this->rateMap[$rateCode] ?? null;
-            if ($minimum === null) {
-                return 0;
-            }
-
-            return (float) $minimum * 26;
-        }
-
-        return (float) ($salaryPosition->basic_salary ?? 0);
-    }
-
-    private function computeDailySalary($employee): float
-    {
-        $salaryPosition = $employee?->current_position?->salary;
-        if (!$salaryPosition) {
-            return 0;
-        }
-
-        $scheduleType = $employee?->schedule?->schedule_type?->name ?? null;
-        $rateCategory = strtoupper((string) $salaryPosition->rate_category);
-        $rateCode = $employee?->home_branch?->rate_code;
-        $minimum = $rateCode ? ($this->rateMap[$rateCode] ?? null) : null;
-
-        if ($scheduleType === "Compressed Schedule") {
-            if ($rateCategory === "MINIMUM") {
-                if ($minimum === null) {
-                    return 0;
-                }
-                return ((float) $minimum * 26) / 22;
-            }
-
-            return ((float) ($salaryPosition->basic_salary ?? 0)) / 22;
-        }
-
-        if ($scheduleType === "Normal Schedule") {
-            if ($rateCategory === "MINIMUM") {
-                if ($minimum === null) {
-                    return 0;
-                }
-                return (float) $minimum;
-            }
-
-            return ((float) ($salaryPosition->basic_salary ?? 0)) / 26;
-        }
-
-        return 0;
     }
 
     private function normalizeValue($value)
