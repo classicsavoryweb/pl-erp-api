@@ -131,7 +131,7 @@ class PayrollService {
                 $tardinessAmount;
 
             //clarify if $grossPayAmount will be used
-            if ($employee->hasCompleteStatutories()) {
+            if ($payrollList->has_complete_documents == 1) {
                 $philHealth = PhilhealthPercentageBase::first();
 
                 $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
