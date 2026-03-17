@@ -141,6 +141,7 @@ class PayrollListController extends Controller
 
                 $bank_details_id = $employee->latest_bank_details->id;
             }
+
             PayrollList::create([
                 "employee_id" => $request->employee_id,
                 "salary_amount" => round((float) $employee?->monthlySalary(), 2),

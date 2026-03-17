@@ -12,6 +12,7 @@ use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
+use App\Models\Rate;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -487,6 +488,31 @@ class ActingCapacityController extends Controller
                     "date_started" => $actingCapacity->effectivity_date,
                     "remarks" => "promotion confirmed from acting capacity"
                 ]);
+
+                $position = Position::find($actingCapacity->recommended_position_id);
+                $salary = $position->salary;
+                $payrollList = $actingCapacity->employee->payroll_list;
+
+                $monthlyRate = 0;
+                $minimum = 0;
+                $multiplier = 26;
+                if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                    $multiplier = 22;
+                }
+
+                if ($salary->rate_category === "MINIMUM") {
+                    $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
+                    $minimum = $rate->minimum ?? 0;
+                    $monthlyRate = $minimum * $multiplier;
+                } else {
+                    $monthlyRate = $salary->basic_salary;
+                }
+
+                if ($payrollList) {
+                    $payrollList->update([
+                        "salary_amount" => $monthlyRate
+                    ]);
+                }
 
                 $storage = Storage::disk("hr_system_folder");
                 if ($request->has("attachments")) {

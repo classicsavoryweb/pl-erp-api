@@ -8,6 +8,7 @@ use App\Models\Position;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
+use App\Models\Rate;
 use Exception;
 use DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -59,6 +60,30 @@ class EmployeePositionControlller extends Controller
             $employee->positions()->attach($request->position_id, [
                 ...$request->all()
             ]);
+
+            $salary = $position->salary;
+            $payrollList = $employee->payroll_list;
+
+            $monthlyRate = 0;
+            $minimum = 0;
+            $multiplier = 26;
+            if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                $multiplier = 22;
+            }
+
+            if ($salary->rate_category === "MINIMUM") {
+                $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
+                $minimum = $rate->minimum ?? 0;
+                $monthlyRate = $minimum * $multiplier;
+            } else {
+                $monthlyRate = $salary->basic_salary;
+            }
+
+            if ($payrollList) {
+                $payrollList->update([
+                    "salary_amount" => $monthlyRate
+                ]);
+            }
 
             DB::commit();
             return $this->sendResponse(["message" => "Position added successfully"]);

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class PayrollList extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = "payroll_list";
 
@@ -49,5 +51,14 @@ class PayrollList extends Model
 
     public function isOnMaternityLeave() {
         return $this->is_on_maternity_leave === 1;
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Payroll List')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
