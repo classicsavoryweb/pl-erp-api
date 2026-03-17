@@ -172,7 +172,7 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
                         ]
                     ];
                 }
-                // $this->createEntries($entries, $user);
+                $this->createEntries($entries, $user);
             }
 
             $this->notifyJobFinished();
@@ -232,16 +232,22 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
                 'ent_chk'           => 'No',
                 'date_added'        => now(),
             ]);
+        }
+
+        $groupedEntries = collect($entries)->groupBy('apsys_entry_id');
+
+        foreach ($groupedEntries as $mainId => $groupedEntry) {
+            $entry = $groupedEntry->first();
 
             ApsysEntryMain::create([
-                'ent_tran_no'       => $entry['apsys_entry_main_id'],
+                'ent_tran_no'       => $mainId,
                 'ven_no'            => $entry['ven_no'],
                 'ven_name'          => $entry['ven_name'],
                 'ent_doc_date'      => now(),
                 'branch_id'         => $entry['branch_number'],
-                'branch_name'       => $entry['branch_name'],
-                'ent_header'        => '',
-                'ent_trans_amt'     => $entry['total_amount'],
+                'branch_name'         => $entry['branch_name'],
+                'ent_header'        => $entry['document_no'],
+                'ent_trans_amt'     => $entry['amount'],
                 'ent_post_date'     => now(),
                 'ent_module_type'   => 'Single',
                 'ent_status'        => 'Unapplied',
@@ -249,8 +255,8 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
                 'ent_crf_no'        => '',
                 'ent_doc_no'        => $entry['document_no'],
                 'ent_module'        => 'Payroll',
-                'ent_app_amt'       => 0,
-                'ent_unapp_amt'     => $entry['amount'],
+                'ent_app_amt'       => $entry['amount'],
+                'ent_unapp_amt'     => 0,
                 'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
                 'ent_due_date'      => now(),
             ]);
