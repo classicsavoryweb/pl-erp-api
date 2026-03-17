@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Illuminate\Database\Eloquent\Collection;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class EntryExport implements FromCollection, WithHeadings, WithStyles
+class EntryExport implements FromCollection, WithHeadings, WithStyles, WithColumnFormatting
 {
     protected Collection $entry;
     protected array $vendorNames = [];
@@ -75,7 +77,7 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
                 $header->pay_date,
                 $branchName,
                 $header->document_no,
-                number_format($header->amount, 2),
+                (float) $header->amount,
                 "Single",
                 $header->status
             ]);
@@ -88,8 +90,8 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
                     $accountNo,
                     $acctName,
                     "",
-                    number_format($debit->amount, 2),
-                    0,
+                    (float) $debit->amount,
+                    0.0,
                     "",
                     ""
                 ]);
@@ -103,8 +105,8 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
                     $accountNo,
                     $acctName,
                     "",
-                    0,
-                    number_format($credit->amount, 2),
+                    0.0,
+                    (float) $credit->amount,
                     "",
                     ""
                 ]);
@@ -256,5 +258,15 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
         }
 
         return [];
+    }
+
+    public function columnFormats(): array
+    {
+        $accountingFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)';
+
+        return [
+            'E' => $accountingFormat,
+            'F' => $accountingFormat,
+        ];
     }
 }
