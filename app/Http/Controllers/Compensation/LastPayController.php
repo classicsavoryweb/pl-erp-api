@@ -21,6 +21,15 @@ use Log;
 
 class LastPayController extends Controller
 {
+    private function numeric($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+
+        return (float) str_replace(',', '', (string) $value);
+    }
+
     public function getAllLastPay(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -235,11 +244,11 @@ class LastPayController extends Controller
                 }
 
                 foreach ($payrolls as $payroll) {
-                    $totalPayroll += $payroll->net_pay;
+                    $totalPayroll += $this->numeric($payroll->net_pay);
                 }
 
                 foreach ($incentivesPayroll as $incentive) {
-                    $incentives += $incentive->incentive_amount;
+                    $incentives += $this->numeric($incentive->incentive_amount);
                 }
 
                 $allPayrolls = Payroll::where("employee_id", $employee->id)
@@ -254,14 +263,14 @@ class LastPayController extends Controller
                 $totalDeductions = 0;
 
                 foreach ($companyDeductions as $deduction) {
-                    $totalDeductions += $deduction->balance;
+                    $totalDeductions += $this->numeric($deduction->balance);
                 }
 
                 foreach ($allPayrolls as $payroll) {
-                    $salary = $payroll->salary - ($payroll->undertime_amount + $payroll->tardiness_amount);
-                    $annualTaxableIncome += $payroll->taxable_income;
+                    $salary = $this->numeric($payroll->salary) - ($this->numeric($payroll->undertime_amount) + $this->numeric($payroll->tardiness_amount));
+                    $annualTaxableIncome += $this->numeric($payroll->taxable_income);
                     $annualSalary += $salary;
-                    $totalWithholdingTax += $payroll->withholding_tax;
+                    $totalWithholdingTax += $this->numeric($payroll->withholding_tax);
                 }
                 $month13th = $annualSalary / 12;
 
@@ -277,14 +286,14 @@ class LastPayController extends Controller
                 }
 
                 if ($lastPayDetails) {
-                    $totalPayroll = $lastPayDetails->payroll_hold;
-                    $month13th = $lastPayDetails->thirteenth_month;
-                    $incentives = $lastPayDetails->incentives; 
-                    $sl_vl = $lastPayDetails->sl_vl;
-                    $meal_allowance = $lastPayDetails->meal;
-                    $taxRefund = $lastPayDetails->tax_refund;
-                    $sales = $lastPayDetails->sales;
-                    $totalDeductions = $lastPayDetails->total_deductions;
+                    $totalPayroll = $this->numeric($lastPayDetails->payroll_hold);
+                    $month13th = $this->numeric($lastPayDetails->thirteenth_month);
+                    $incentives = $this->numeric($lastPayDetails->incentives);
+                    $sl_vl = $this->numeric($lastPayDetails->sl_vl);
+                    $meal_allowance = $this->numeric($lastPayDetails->meal);
+                    $taxRefund = $this->numeric($lastPayDetails->tax_refund);
+                    $sales = $this->numeric($lastPayDetails->sales);
+                    $totalDeductions = $this->numeric($lastPayDetails->total_deductions);
                 }
 
                 $lastPayAmount = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $sales)- $totalDeductions;
@@ -345,9 +354,9 @@ class LastPayController extends Controller
             }
 
             $label = Carbon::parse($startDate)->format("n/j") . " to " . Carbon::parse($endDate)->format("j");
-            $salary = $payroll->salary ?? $payroll->net_pay ?? 0;
-            $undertime = $payroll->undertime_amount ?? 0;
-            $tardiness = $payroll->tardiness_amount ?? 0;
+            $salary = $this->numeric($payroll->salary ?? $payroll->net_pay);
+            $undertime = $this->numeric($payroll->undertime_amount);
+            $tardiness = $this->numeric($payroll->tardiness_amount);
             $amount = $salary - ($undertime + $tardiness);
             $payrollMap[$label] = ($payrollMap[$label] ?? 0) + $amount;
         }
@@ -405,11 +414,11 @@ class LastPayController extends Controller
                 $totalPayroll = 0;
                 $month13th = 0;
 
-                $incentives = $request->incentives ?? 0;
-                $sl_vl = $request->sl_vl ?? 0;
-                $meal_allowance = $request->meal_allowance ?? 0;
-                $taxRefund = $request->tax_refund ?? 0;
-                $salesIncentives = $request->sales ?? 0;
+                $incentives = $this->numeric($request->incentives);
+                $sl_vl = $this->numeric($request->sl_vl);
+                $meal_allowance = $this->numeric($request->meal_allowance);
+                $taxRefund = $this->numeric($request->tax_refund);
+                $salesIncentives = $this->numeric($request->sales);
 
                 $yearSourceDate = $employee->separation_date;
                 $cutOff = $this->getCutOffForDate($yearSourceDate);
@@ -433,16 +442,16 @@ class LastPayController extends Controller
                 }
 
                 foreach ($payrolls as $payroll) {
-                    $totalPayroll += $payroll->net_pay;
+                    $totalPayroll += $this->numeric($payroll->net_pay);
                 }
 
-                if ($request->incentives != 0 && $payrollPayDate) {
+                if ($this->numeric($request->incentives) != 0 && $payrollPayDate) {
                     $incentivesPayroll = Incentives::where("employee_id", $employee->id)
                     ->where("pay_date", ">=" ,$payrollPayDate)
                     ->get();
                     
                     foreach ($incentivesPayroll as $incentive) {
-                        $incentives += $incentive->incentive_amount;
+                        $incentives += $this->numeric($incentive->incentive_amount);
                     }
                 }
 
@@ -457,32 +466,36 @@ class LastPayController extends Controller
                 $totalDeductions = 0;
 
                 foreach ($companyDeductions as $deduction) {
-                    $totalDeductions += $deduction->balance;
+                    $totalDeductions += $this->numeric($deduction->balance);
                 }
 
                 foreach ($governmentDeductions as $deduction) {
                     if ($deduction->deduction->description === 'SSS Loans' && $request->sss_loans === 'Yes') {
-                        $totalDeductions += $deduction->balance;
+                        $totalDeductions += $this->numeric($deduction->balance);
                     }
                 }
 
                 foreach ($allPayrolls as $payroll) {
-                    $salary = $payroll->salary - ($payroll->undertime_amount + $payroll->tardiness_amount);
-                    $annualTaxableIncome += $payroll->taxable_income;
+                    $salary = $this->numeric($payroll->salary) - ($this->numeric($payroll->undertime_amount) + $this->numeric($payroll->tardiness_amount));
+                    $annualTaxableIncome += $this->numeric($payroll->taxable_income);
                     $annualSalary += $salary;
-                    $totalWithholdingTax += $payroll->withholding_tax;
+                    $totalWithholdingTax += $this->numeric($payroll->withholding_tax);
                 }
                 $month13th = $annualSalary / 12;
                 if ($request->has("thirteenth_month")) {
-                    $month13th = (float) $request->thirteenth_month;
+                    $month13th = $this->numeric($request->thirteenth_month);
                 }
 
                 $annualTax = AnnualTax::where("minimum_amount", "<=" , $annualTaxableIncome)
                 ->where("max_amount", ">=" , $annualTaxableIncome)
                 ->first();
 
-                $amountShouldBePaid = $annualTax->tax_lower_limit + (($annualTaxableIncome - $annualTax->minimum_amount) * (0.01 * $annualTax->percentage));
-                $taxRefund = $amountShouldBePaid < $totalWithholdingTax ? $totalWithholdingTax - $amountShouldBePaid : 0;
+                if ($annualTax) {
+                    $amountShouldBePaid = $this->numeric($annualTax->tax_lower_limit) + (($annualTaxableIncome - $this->numeric($annualTax->minimum_amount)) * (0.01 * $this->numeric($annualTax->percentage)));
+                    $taxRefund = $amountShouldBePaid < $totalWithholdingTax ? $totalWithholdingTax - $amountShouldBePaid : 0;
+                } else {
+                    $taxRefund = 0;
+                }
 
                 $lastPay = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $salesIncentives)- $totalDeductions;
 
@@ -506,7 +519,7 @@ class LastPayController extends Controller
                         "employee_id" => $employee->id,
                         "reference_doc" => $deduction->reference_doc,
                         "deduction_id" => $deduction->deduction_id,
-                        "amount" => $deduction->balance,
+                        "amount" => $this->numeric($deduction->balance),
                     ]);
                 }
 
@@ -516,7 +529,7 @@ class LastPayController extends Controller
                             "employee_id" => $employee->id,
                             "reference_doc" => $deduction->reference_doc,
                             "deduction_id" => $deduction->deduction_id,
-                            "amount" => $deduction->balance,
+                            "amount" => $this->numeric($deduction->balance),
                         ]);
                     }
                 }
@@ -572,9 +585,9 @@ class LastPayController extends Controller
             if ($deductionFromLastPay) {
                 $lastPay = LastPay::where('employee_id', $employee->id)->first();
 
-                $totalDeductions = $lastPay->total_deductions;
-                $totalDeductions -= $deductionFromLastPay->amount;
-                $lastPayAmount = ($lastPay->payroll_hold + $lastPay->thirteenth_month + $lastPay->incentives + $lastPay->sl_vl + $lastPay->meal + $lastPay->tax_refund + $lastPay->sales) - $totalDeductions;
+                $totalDeductions = $this->numeric($lastPay->total_deductions);
+                $totalDeductions -= $this->numeric($deductionFromLastPay->amount);
+                $lastPayAmount = ($this->numeric($lastPay->payroll_hold) + $this->numeric($lastPay->thirteenth_month) + $this->numeric($lastPay->incentives) + $this->numeric($lastPay->sl_vl) + $this->numeric($lastPay->meal) + $this->numeric($lastPay->tax_refund) + $this->numeric($lastPay->sales)) - $totalDeductions;
 
                 $lastPay->update([
                     "total_deductions" => $totalDeductions,
@@ -590,7 +603,7 @@ class LastPayController extends Controller
 
                         if ($employeeDeduction) {
                             $employeeDeduction->update([
-                                "balance" => $employeeDeduction->balance + $deductionFromLastPay->amount
+                                "balance" => $this->numeric($employeeDeduction->balance) + $this->numeric($deductionFromLastPay->amount)
                             ]);
                         }
                     }
@@ -631,9 +644,9 @@ class LastPayController extends Controller
                     ->sum('amount');
 
                 $lastPay = LastPay::where('id', $lastPayDeduction->last_pay_id)->first();
-                $lastPayAmount = ($lastPay->payroll_hold + $lastPay->thirteenth_month + $lastPay->incentives + $lastPay->sl_vl + $lastPay->meal + $lastPay->tax_refund + $lastPay->sales) - $allLastPayDeduction;
+                $lastPayAmount = ($this->numeric($lastPay->payroll_hold) + $this->numeric($lastPay->thirteenth_month) + $this->numeric($lastPay->incentives) + $this->numeric($lastPay->sl_vl) + $this->numeric($lastPay->meal) + $this->numeric($lastPay->tax_refund) + $this->numeric($lastPay->sales)) - $this->numeric($allLastPayDeduction);
                 $lastPay->update([
-                    "total_deductions" => $allLastPayDeduction,
+                    "total_deductions" => $this->numeric($allLastPayDeduction),
                     "last_pay" => $lastPayAmount
                 ]);
 
@@ -699,16 +712,16 @@ class LastPayController extends Controller
             $lastPay = LastPay::with(["deductions", "deductions.deduction"])->find($lastPayId);
 
             if ($lastPay) {
-                $totalPayroll = $lastPay->payroll_hold;
-                $month13th = $lastPay->thirteenth_month;
+                $totalPayroll = $this->numeric($lastPay->payroll_hold);
+                $month13th = $this->numeric($lastPay->thirteenth_month);
 
-                $incentives = $request->incentives ?? 0;
-                $sl_vl = $request->sl_vl ?? 0;
-                $meal_allowance = $request->meal_allowance ?? 0;
-                $taxRefund = $request->tax_refund ?? 0;
-                $salesIncentives = $request->sales ?? 0;
+                $incentives = $this->numeric($request->incentives);
+                $sl_vl = $this->numeric($request->sl_vl);
+                $meal_allowance = $this->numeric($request->meal_allowance);
+                $taxRefund = $this->numeric($request->tax_refund);
+                $salesIncentives = $this->numeric($request->sales);
                 if ($request->has("thirteenth_month")) {
-                    $month13th = (float) $request->thirteenth_month;
+                    $month13th = $this->numeric($request->thirteenth_month);
                 }
 
                 $includeSssLoans = $request->sss_loans === "Yes";
@@ -733,7 +746,7 @@ class LastPayController extends Controller
                                 "employee_id" => $lastPay->employee_id,
                                 "reference_doc" => $deduction->reference_doc,
                                 "deduction_id" => $deduction->deduction_id,
-                                "amount" => $deduction->balance,
+                                "amount" => $this->numeric($deduction->balance),
                             ]);
 
                             $deduction->update([
@@ -750,7 +763,7 @@ class LastPayController extends Controller
 
                             if ($employeeDeduction) {
                                 $employeeDeduction->update([
-                                    "balance" => $employeeDeduction->balance + $deduction->amount
+                                    "balance" => $this->numeric($employeeDeduction->balance) + $this->numeric($deduction->amount)
                                 ]);
                             }
 
@@ -759,7 +772,7 @@ class LastPayController extends Controller
                     }
                 }
 
-                $totalDeductions = LastPayDeduction::where("last_pay_id", $lastPay->id)->sum("amount");
+                $totalDeductions = $this->numeric(LastPayDeduction::where("last_pay_id", $lastPay->id)->sum("amount"));
 
                 $lastPayAmount = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $salesIncentives)- $totalDeductions;
 
