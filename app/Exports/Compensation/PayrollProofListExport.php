@@ -21,9 +21,95 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
     public function collection()
     {
         $rows = $this->proofList;
+        if ($this->type === "PAYROLL") {
+            $rows = $rows->unique("employee_id")->values();
+        }
 
         return $rows->map(function ($transaction) {
             if ($this->type === "PAYROLL") {
+                $employee = $transaction->employee;
+                $scheduleName = $employee?->schedule?->schedule_type?->name ?? '';
+                $days = $scheduleName === "Compressed Schedule" ? 11 : 13;
+
+                $regular_days = $transaction->regular_days ?? $transaction->timekeeping_summary?->regular_days ?? "";
+                $list = $employee?->payroll_list;
+                $isMaternity = $list?->isOnMaternityLeave() ?? false;
+                $hasPayroll = !empty($transaction->payroll_id);
+                $salaryAmount = (float) ($transaction->salary_amount ?? $list?->salary_amount ?? 0);
+                $salaryValue = $transaction->salary ?? null;
+                $grossPayValue = $transaction->gross_pay ?? null;
+                $taxableIncomeValue = $transaction->taxable_income ?? null;
+                $netPayValue = $transaction->amount ?? null;
+
+                if ($hasPayroll && $salaryAmount > 0) {
+                    if ($salaryValue === null || $salaryValue == 0) {
+                        $salaryValue = $salaryAmount;
+                    }
+                    if ($grossPayValue === null || $grossPayValue == 0) {
+                        $grossPayValue = $salaryAmount;
+                    }
+                    if ($taxableIncomeValue === null || $taxableIncomeValue == 0) {
+                        $taxableIncomeValue = $salaryAmount;
+                    }
+                    if ($netPayValue === null || $netPayValue == 0) {
+                        $netPayValue = $salaryAmount;
+                    }
+                }
+
+                if ($list && ($list->isMancom() || $isMaternity)) {
+                    $regular_days = $days;
+                }
+
+                if ($isMaternity) {
+                    $dailyRate = $transaction->daily_rate ?? null;
+                    if (!$dailyRate || $dailyRate == 0) {
+                        if ($salaryAmount > 0) {
+                            $divisor = $scheduleName === "Compressed Schedule" ? 22 : 26;
+                            $dailyRate = round($salaryAmount / $divisor, 2);
+                        } else {
+                            $dailyRate = $employee?->dailySalary() ?? 0;
+                        }
+                    }
+
+                    $fullSalary = $dailyRate ? round($dailyRate * $days, 2) : 0;
+                    if ($fullSalary == 0) {
+                        $fullSalary = $salaryAmount > 0 ? round($salaryAmount / 2, 2) : ($employee?->cutOffBaseSalary() ?? 0);
+                    }
+
+                    // For maternity, always show per-cutoff amounts in export.
+                    $salaryValue = $fullSalary;
+                    $grossPayValue = $fullSalary;
+                    $taxableIncomeValue = $fullSalary;
+                    $netPayValue = $fullSalary;
+                }
+
+                $eeSss = (float) ($transaction->employee_sss ?? 0);
+                $eePhilhealth = (float) ($transaction->employee_philhealth ?? 0);
+                $eePagibig = (float) ($transaction->employee_pagibig ?? 0);
+                $taxableIncomeValue = max(
+                    0,
+                    (float) ($taxableIncomeValue ?? 0) - ($eeSss + $eePhilhealth + $eePagibig)
+                );
+                if ($isMaternity) {
+                    $netPayValue = $taxableIncomeValue;
+                }
+
+                $branchName = $transaction->timekeeping_branch_name
+                    ?? $transaction->timekeeping_branch?->name
+                    ?? $employee?->current_branch?->name
+                    ?? $employee?->home_branch?->name
+                    ?? '';
+
+                $branchCode = $transaction->timekeeping_branch_code
+                    ?? $transaction->timekeeping_branch?->short_name
+                    ?? $transaction->timekeeping_branch?->branch_number
+                    ?? $employee?->current_branch?->short_name
+                    ?? $employee?->current_branch?->branch_number
+                    ?? $employee?->home_branch?->short_name
+                    ?? $employee?->home_branch?->branch_number
+                    ?? '';
+
+                $bankType = $employee?->latest_bank_details?->bank_account_type?->description ?? '';
 
                 $fmt = static function ($value) {
                     if ($value === null || $value === '') {
@@ -34,7 +120,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
 
                 return [
                     $transaction->employee_number ?? '',
-                    trim(($transaction->last_name ?? '') . ", " . ($transaction->first_name ?? '') . " " . ($transaction->middle_name ?? '')),
+                    $transaction->last_name .", ".$transaction->first_name ?? '',
                     $transaction->branch_name ?? '',
                     $transaction->short_name ?? '',
                     $transaction->current_bank_details->bank_account_type->description ?? '',
@@ -43,7 +129,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                     $fmt($transaction->hourly_rate ?? null),
                     $transaction->tax_status ?? '',
                     $fmt($regular_days ?? null),
-                    $fmt($transaction->salary_amount),
+                    $fmt($salaryValue),
                     $fmt($transaction->cancelled_off_hours ?? $transaction->timekeeping_summary?->cancelled_off_hours ?? null),
                     $fmt($transaction->cancelled_off ?? null),
                     $fmt($transaction->special_holiday ?? $transaction->timekeeping_summary?->special_holiday ?? null),
@@ -66,21 +152,21 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                     $fmt($transaction->undertime_amount ?? null),
                     $fmt($transaction->taxable_adjustment ?? null),
                     $fmt($transaction->non_taxable_adjustment ?? null),
-                    $fmt($transaction->gross_pay ?? null),
+                    $fmt($grossPayValue),
                     $fmt($transaction->employer_sss ?? null),
                     $fmt($transaction->employer_philhealth ?? null),
                     $fmt($transaction->employer_pagibig ?? null),
                     $fmt($transaction->employee_sss ?? null),
                     $fmt($transaction->employee_philhealth ?? null),
                     $fmt($transaction->employee_pagibig ?? null),
-                    $fmt($transaction->taxable_income ?? null),
+                    $fmt($taxableIncomeValue),
                     $fmt($transaction->withholding_tax ?? null),
                     $fmt($transaction->total_deductions ?? null),
-                    $fmt($transaction->net_pay ?? null)
+                    $fmt($netPayValue)
                 ];
             } else {
                 return [
-                    trim(($transaction->last_name ?? '') . ", " . ($transaction->first_name ?? '') . " " . ($transaction->middle_name ?? '')),
+                    $transaction->last_name .", ".$transaction->first_name ?? '',
                     $transaction->employee_number ?? '',
                     $transaction->adjustment_percent,
                     $transaction->additional_incentive,
