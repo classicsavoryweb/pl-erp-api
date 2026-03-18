@@ -332,10 +332,9 @@ class PayrollService {
                     $netPayNoDeductions -= $deduction['deducted_amount'];
 
                     if ($netPayNoDeductions < 0) {
-                        $netPayNoDeductions += $deduction['deducted_amount'];
                         $totalDeductions -= $deduction['deducted_amount'];
+                        $netPayNoDeductions += $deduction['deducted_amount'];
                         $removedDeductions[] = $deduction['deduction_id'];
-                        break;
                     }
                 }
 
@@ -343,10 +342,9 @@ class PayrollService {
                     $netPayNoDeductions -= $deduction['deducted_amount'];
 
                     if ($netPayNoDeductions < 0) {
-                        $netPayNoDeductions += $deduction['deducted_amount'];
                         $totalDeductions -= $deduction['deducted_amount'];
+                        $netPayNoDeductions += $deduction['deducted_amount'];
                         $removedDeductions[] = $deduction['deduction_id'];
-                        break;
                     }
                 }
             }
@@ -409,14 +407,6 @@ class PayrollService {
                 "remarks" => $remarks,
                 "position_id" => $employee->position_id
             ]);
-            
-            // if ($cutOff->part == 1) {
-            //     $this->computeIncentives(
-            //         $cutOff,
-            //         $employee,
-            //         $timeKeepingSummary->branch
-            //     );
-            // }
 
             DB::commit();
             return [
