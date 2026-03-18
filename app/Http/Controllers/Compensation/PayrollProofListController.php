@@ -75,6 +75,7 @@ class PayrollProofListController extends Controller
                     'incentives.*',
                     'employees.last_name',
                     'employees.first_name',
+                    'employees.middle_name',
                     'employees.employee_number'
                 );
 
@@ -88,6 +89,7 @@ class PayrollProofListController extends Controller
                     'ts.*',
                     'employees.last_name',
                     'employees.first_name',
+                    'employees.middle_name',
                     'employees.employee_number',
                     'b.name as branch_name',
                     'b.short_name'
@@ -203,7 +205,7 @@ class PayrollProofListController extends Controller
             $rowIndex = 7;
             $writtenRows = 0;
             foreach ($proofLists as $transaction) {
-                $fullName = $transaction->last_name . ", " . $transaction->first_name ?? "";
+                $fullName = trim(($transaction->last_name ?? '') . ", " . ($transaction->first_name ?? '') . " " . ($transaction->middle_name ?? ''));
                 $bankNumber = $transaction->current_bank_details->bank_number;
                 $bankNumber = str_replace(' ', '', $bankNumber);
 
