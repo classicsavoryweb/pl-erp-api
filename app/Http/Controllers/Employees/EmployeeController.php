@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
@@ -489,7 +490,16 @@ class EmployeeController extends Controller
             $employee = Employee::where("employee_number", $employee_number)->first();
 
             $request->merge(['email' => $request->email ? trim($request->email) : null]);
-            $request->validate(["email" => ["nullable","email:rfc,dns","unique:employees,email,".$employee->id,"regex:/^\S+$/"]]);
+            $request->validate([
+                "email" => [
+                    "nullable",
+                    "string",
+                    "email",
+                    "max:255",
+                    "regex:/^\S+$/",
+                    Rule::unique("employees", "email")->ignore($employee->id),
+                ]
+            ]);
 
             $educationData = collect($request->education)
             ->except(["created_at", "updated_at"])
