@@ -8,15 +8,21 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Illuminate\Database\Eloquent\Collection;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class EntryExport implements FromCollection, WithHeadings, WithStyles
+class EntryExport implements FromCollection, WithHeadings, WithStyles, WithColumnFormatting
 {
     protected Collection $entry;
     protected array $vendorNames = [];
     protected array $accountNames = [];
+    private const TEMP_ACCOUNT_A_NO = '4600003';
+    private const TEMP_ACCOUNT_B_NO = '4600004';
+    private const TEMP_ACCOUNT_A_NAME = 'Temporary Account A';
+    private const TEMP_ACCOUNT_B_NAME = 'Temporary Account B';
 
     public function __construct(Collection $entry)
     {
@@ -57,11 +63,11 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
 
         foreach ($grouped as $entryId => $rows) {
 
-            $header = $rows->first();
+            $header = $rows->first(fn ($row) => !empty($row->vendor_no)) ?? $rows->first();
             $debit  = $rows->where('balance_type', 'Debit')->first();
             $credit = $rows->where('balance_type', 'Credit')->first();
 
-            $vendorName = $this->vendorNames[$header->vendor_no] ?? '';
+            $vendorName = $this->resolveVendorName($header->vendor_no ?? null);
 
             $branchName = $header->branch?->name ?? '';
 
@@ -71,36 +77,36 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
                 $header->pay_date,
                 $branchName,
                 $header->document_no,
-                number_format($header->amount, 2),
+                (float) $header->amount,
                 "Single",
                 $header->status
             ]);
 
             if ($debit) {
-                $acctName = $this->accountNames[$debit->account_no] ?? '';
+                [$accountNo, $acctName] = $this->resolveAccountDisplay($debit, $header);
 
                 $exportRows->push([
                     "",
-                    $debit->account_no,
+                    $accountNo,
                     $acctName,
                     "",
-                    number_format($debit->amount, 2),
-                    0,
+                    (float) $debit->amount,
+                    0.0,
                     "",
                     ""
                 ]);
             }
 
             if ($credit) {
-                $acctName = $this->accountNames[$credit->account_no] ?? '';
+                [$accountNo, $acctName] = $this->resolveAccountDisplay($credit, $header);
 
                 $exportRows->push([
                     "",
-                    $credit->account_no,
+                    $accountNo,
                     $acctName,
                     "",
-                    0,
-                    number_format($credit->amount, 2),
+                    0.0,
+                    (float) $credit->amount,
                     "",
                     ""
                 ]);
@@ -108,6 +114,56 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
         }
 
         return $exportRows;
+    }
+
+    private function resolveVendorName(?string $vendorNo): string
+    {
+        if (!$vendorNo) {
+            return 'HO';
+        }
+
+        return $this->vendorNames[$vendorNo] ?? $vendorNo;
+    }
+
+    private function resolveAccountDisplay(object $row, object $header): array
+    {
+        $accountNo = $row->account_no ?? '';
+        $accountName = $this->resolveAccountName($row->account_no ?? null, $row->description ?? null);
+
+        if ($accountNo) {
+            return [$accountNo, $accountName];
+        }
+
+        if (($row->balance_type ?? null) === 'Credit') {
+            return [self::TEMP_ACCOUNT_B_NO, self::TEMP_ACCOUNT_B_NAME];
+        }
+
+        if (($row->balance_type ?? null) === 'Debit') {
+            return [self::TEMP_ACCOUNT_A_NO, self::TEMP_ACCOUNT_A_NAME];
+        }
+
+        return ['', $accountName];
+    }
+
+    private function resolveAccountName(?string $accountNo, ?string $fallbackDescription): string
+    {
+        if ($accountNo && isset($this->accountNames[$accountNo])) {
+            return $this->accountNames[$accountNo];
+        }
+
+        if ($accountNo === self::TEMP_ACCOUNT_A_NO) {
+            return self::TEMP_ACCOUNT_A_NAME;
+        }
+
+        if ($accountNo === self::TEMP_ACCOUNT_B_NO) {
+            return self::TEMP_ACCOUNT_B_NAME;
+        }
+
+        if (!empty($fallbackDescription)) {
+            return $fallbackDescription;
+        }
+
+        return '';
     }
 
     public function headings(): array
@@ -202,5 +258,15 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles
         }
 
         return [];
+    }
+
+    public function columnFormats(): array
+    {
+        $accountingFormat = '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)';
+
+        return [
+            'E' => $accountingFormat,
+            'F' => $accountingFormat,
+        ];
     }
 }

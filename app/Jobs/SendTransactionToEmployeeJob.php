@@ -144,14 +144,14 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             $hoCredit = $transaction->transaction_type->ho_credit;
             $branchDebit = $transaction->transaction_type->branch_debit;
             $branchCredit = $transaction->transaction_type->branch_credit;
-            $advancesDebit = $transaction->transaction_type->advance_debit;
+            $advancesDebit = $transaction->transaction_type->advances_debit;
             $branchNumber = $transaction->branch->branch_number;
             $branchShortName = $transaction->branch->short_name;
             $branchName = $transaction->branch->name;
             $branchId = $transaction->branch_id;
 
             //HO Entry Setup
-            if ($hoDebit) {
+            if ($hoDebit || $advancesDebit == 'Yes') {
 
                 $accountHODebitId = null;
 
@@ -200,13 +200,17 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 }
             }
 
+            $entryId2 = $this->generateEntryId($counterEntry);
+            $apsysEntryId2 = $this->generateApsysEntryId($counterApsysEntry);
+            $apsysEntryMainId2 = $this->generateApsysEntryMainId($counterApsysEntryMain);
+
             //Branch Entry Setup
             if ($branchDebit) {
                 $branchEntries = [
                     [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
+                        'entry_id'            => $entryId2,
+                        'apsys_entry_id'      => $apsysEntryId2,
+                        'apsys_entry_main_id' => $apsysEntryMainId2,
                         'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchName,
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
@@ -220,9 +224,9 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'is_block_payment'    => $isBlockPayment,
                     ],
                     [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
+                        'entry_id'            => $entryId2,
+                        'apsys_entry_id'      => $apsysEntryId2,
+                        'apsys_entry_main_id' => $apsysEntryMainId2,
                         'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchName,
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
@@ -242,48 +246,48 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 }
             }
 
-            Mail::mailer("WEEKLY_PAYROLL_MAILER")->to($employee->email)
-            ->send(new SendTransactionToEmployeeMail($transaction));
+            // Mail::mailer("WEEKLY_PAYROLL_MAILER")->to($employee->email)
+            // ->send(new SendTransactionToEmployeeMail($transaction));
 
-            if ($transaction->transaction_type->isDeduction()) {
-                $monthlyAmortization = $transaction->amount / $transaction->terms;
-                $deduction = $transaction->transaction_type->deduction;
+            // if ($transaction->transaction_type->isDeduction()) {
+            //     $monthlyAmortization = $transaction->amount / $transaction->terms;
+            //     $deduction = $transaction->transaction_type->deduction;
 
-                $deduction_count = EmployeeDeduction::where("employee_id", $employee->id)
-                    ->whereNotNull("deduction_ref")
-                    ->where("deduction_ref", "!=", '')
-                    ->count();
+            //     $deduction_count = EmployeeDeduction::where("employee_id", $employee->id)
+            //         ->whereNotNull("deduction_ref")
+            //         ->where("deduction_ref", "!=", '')
+            //         ->count();
 
-                $base_reference = $employee->first_initial . $employee->middle_initial . $employee->last_initial . $employee->employee_number;
-                $deductionId = str_pad(8, 8, '0', STR_PAD_LEFT);
-                $deduction_reference = $base_reference . $deductionId . "|" . ($deduction_count + 1);
+            //     $base_reference = $employee->first_initial . $employee->middle_initial . $employee->last_initial . $employee->employee_number;
+            //     $deductionId = str_pad(8, 8, '0', STR_PAD_LEFT);
+            //     $deduction_reference = $base_reference . $deductionId . "|" . ($deduction_count + 1);
 
-                $user = User::find($userId);
+            //     $user = User::find($userId);
 
-                EmployeeDeduction::create([
-                    "employee_id" => $employee->id,
-                    "deduction_id" => $transaction->transaction_type->deduction_id,
-                    "months" => $transaction->terms,
-                    "amount" => $transaction->amount,
-                    "source_of_fund" => "HO",
-                    "start_date" => now()->format("Y-m-d"),
-                    "end_date" => now()->addMonths($transaction->terms)->format("Y-m-d"),
-                    "monthly_amortization" => round($monthlyAmortization, 2),
-                    "balance" => $transaction->amount,
-                    "remarks" => $transaction->remarks,
-                    "debit_id" => $deduction->debit_id,
-                    "credit_id" => $deduction->credit_id,
-                    "branch_id" => $employee->current_branch->id,
-                    "block_payment" => "Yes",
-                    "approved_by" => $batch->generated_by,
-                    "approved_date" => $batch->generated_at,
-                    "approved_status" => "Yes",
-                    "end_loan_status" => "No",
-                    "deduction_ref" => $deduction_reference,
-                    "created_by" => $user ? $user->full_name : null,
-                    "date_created" => $transaction->created_at->format("Y-m-d"),
-                ]);
-            }            
+            //     EmployeeDeduction::create([
+            //         "employee_id" => $employee->id,
+            //         "deduction_id" => $transaction->transaction_type->deduction_id,
+            //         "months" => $transaction->terms,
+            //         "amount" => $transaction->amount,
+            //         "source_of_fund" => "HO",
+            //         "start_date" => now()->format("Y-m-d"),
+            //         "end_date" => now()->addMonths($transaction->terms)->format("Y-m-d"),
+            //         "monthly_amortization" => round($monthlyAmortization, 2),
+            //         "balance" => $transaction->amount,
+            //         "remarks" => $transaction->remarks,
+            //         "debit_id" => $deduction->debit_id,
+            //         "credit_id" => $deduction->credit_id,
+            //         "branch_id" => $employee->current_branch->id,
+            //         "block_payment" => "Yes",
+            //         "approved_by" => $batch->generated_by,
+            //         "approved_date" => $batch->generated_at,
+            //         "approved_status" => "Yes",
+            //         "end_loan_status" => "No",
+            //         "deduction_ref" => $deduction_reference,
+            //         "created_by" => $user ? $user->full_name : null,
+            //         "date_created" => $transaction->created_at->format("Y-m-d"),
+            //     ]);
+            // }            
         }
 
         $this->notifyJobFinished();

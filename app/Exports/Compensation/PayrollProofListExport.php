@@ -119,11 +119,11 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                 };
 
                 return [
-                    $employee?->employee_number ?? '',
-                    $employee?->full_name ?? '',
-                    $branchName,
-                    $branchCode,
-                    $bankType,
+                    $transaction->employee_number ?? '',
+                    $transaction->last_name .", ".$transaction->first_name ?? '',
+                    $transaction->branch_name ?? '',
+                    $transaction->short_name ?? '',
+                    $transaction->current_bank_details->bank_account_type->description ?? '',
                     $transaction->cut_off ?? '',
                     $fmt($transaction->daily_rate ?? null),
                     $fmt($transaction->hourly_rate ?? null),
@@ -166,8 +166,8 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                 ];
             } else {
                 return [
-                    $transaction->employee->full_name,
-                    $transaction->employee->employee_number,
+                    $transaction->last_name .", ".$transaction->first_name ?? '',
+                    $transaction->employee_number ?? '',
                     $transaction->adjustment_percent,
                     $transaction->additional_incentive,
                     $transaction->first_cut_off_worked_days,

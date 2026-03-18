@@ -690,7 +690,8 @@ class EmployeeDeductionsController extends Controller
 
             EmployeeDeduction::where("id", $id)->update([
                 "end_loan_reason" => $request->end_loan_reason,
-                "end_loan_status" => "Yes"
+                "end_loan_status" => "Yes",
+                "balance" => 0
             ]);
 
             $employeeDeduction = EmployeeDeduction::find($id);
@@ -711,7 +712,6 @@ class EmployeeDeductionsController extends Controller
             $vendorName = $vendor->ven_name;
 
             $user = Auth::user();
-            $user = $user->employee;
 
             $entries = [];
 

@@ -153,7 +153,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         true,
                         "force adjustment"
                     );
-                    $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday;
+                    $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday ?? null;
                     $adjustedTimeKeeping->save();
 
                     $holidayIsPaid = $this->timeKeepingService->determinePaidHoliday(
@@ -464,16 +464,30 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ) {
                         $absentToBeAdded = $restDays->count() - 2;
 
-                        foreach ($restDays as $rd) {
-                            $weekDateRange = $this->getCustomWeekRange($rd->date, $cutOff, $employee);
-                            $rdSched = ScheduleTime::where("employee_id", $employee->id)
-                            ->whereBetween("date", $weekDateRange)
-                            ->where("timetable", "REST DAY")
-                            ->get();
+                        // foreach ($restDays as $rd) {
+                        //     $weekDateRange = $this->getCustomWeekRange($rd->date, $cutOff, $employee);
+                        //     $rdSched = ScheduleTime::where("employee_id", $employee->id)
+                        //     ->whereBetween("date", $weekDateRange)
+                        //     ->where("timetable", "REST DAY")
+                        //     ->get();
                             
-                            if ($rdSched->count() == 2) {
-                                $absent += 1;
-                                break;
+                        //     if ($rdSched->count() == 2) {
+                        //         $absent += 1;
+                        //         break;
+                        //     }
+                        // }
+
+                        $rdSched = ScheduleTime::where("employee_id", $employee->id)
+                        ->whereBetween("date", [$cutOff['start_time'], $cutOff['end_time']])
+                        ->where("timetable", "REST DAY")
+                        ->get()
+                        ->groupBy(function ($item) use ($cutOff, $employee) {
+                            return implode('-', $this->getCustomWeekRange($item->date, $cutOff, $employee));
+                        });
+
+                        foreach ($rdSched as $week => $records) {
+                            if ($records->count() >= 2) {
+                                $absent += $records->count() - 1;
                             }
                         }
                     }
@@ -569,7 +583,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     "tardiness" => $tardiness,
                     "branch_id" => $timeKeepings[0]->branch_id,
                     "adjustment_amount" => $adjustment_amount,
-                    "remarks" => $remarks
+                    "remarks" => $remarks,
+                    "position_id" => $employee->position_id
                 ]);
 
                 // $this->payrollService->computePayroll($timeKeepingSummary);

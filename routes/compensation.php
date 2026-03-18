@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum')->group( function () {
     //entries
     Route::get("/get-all-entries", [EntryController::class, "getAllEntries"]);
     Route::middleware(["permission:perform_compensation_entries"])->post("/generate-entries", [EntryController::class, "generateEntries"]);
+    Route::middleware(["permission:perform_compensation_entries"])->post("/generate-entries-for-review", [EntryController::class, "generateEntriesForReview"]);
     Route::middleware(["permission:export_all_compensation_entries"])->get("/export-all-entries", [EntryController::class, "exportAllEntries"]);
 
     //last pay

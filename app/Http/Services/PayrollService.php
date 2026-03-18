@@ -131,7 +131,7 @@ class PayrollService {
                 $tardinessAmount;
 
             //clarify if $grossPayAmount will be used
-            if ($employee->hasCompleteStatutories()) {
+            if ($payrollList->has_complete_documents == 1) {
                 $philHealth = PhilhealthPercentageBase::first();
 
                 $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
@@ -451,7 +451,8 @@ class PayrollService {
                 "status" => "initial",
                 "is_maternity" => $payrollList->is_on_maternity_leave,
                 "is_hold" => $payrollList->is_hold,
-                "remarks" => $remarks
+                "remarks" => $remarks,
+                "position_id" => $employee->position_id
             ]);
             
             // if ($cutOff->part == 1) {
@@ -638,7 +639,8 @@ class PayrollService {
                 "additional_working_hours_total" => $additionalWorkingHoursTotal,
                 "working_hours_deduction_total" => $workingHoursDeductionTotal,
                 "status" => "initial",
-                "remarks" => $remarks
+                "remarks" => $remarks,
+                "position_id" => $employee->position_id
             ]);
 
             $this->computeIncentives($cutOff, $employee, $employee->current_branch);
@@ -677,19 +679,17 @@ class PayrollService {
                 ->whereHas('positions', function ($query) use ($employee) {
                     $query->where('positions.id', $employee->position_id);
                 })
-                ->orderBy("month", "DESC")
+                ->orderByRaw('CAST(month AS UNSIGNED) DESC')
                 ->first();
 
             if ($bracket) {
                 $incentivesAmount = $bracket->amount;
             }
             
-            if (Carbon::parse($employee->date_hired)->greaterThanOrEqualTo(Carbon::now()->subYears(2))) {
-                $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $employee->id)->first();
+            $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $employee->id)->first();
 
-                if ($rankAndFileIncentive) {
-                    $incentivesAmount = $rankAndFileIncentive->max_amount;
-                }
+            if ($rankAndFileIncentive) {
+                $incentivesAmount = $rankAndFileIncentive->max_amount;
             }
         } else {
             $managementIncentives = IncentivesManagement::where("employee_id", $employee->id)->first();
@@ -735,9 +735,6 @@ class PayrollService {
         $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
 
         $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
-
-        $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
-        $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
         
         $firstCutOffAdjustments = Adjustment::where("employee_id", $employee->id)
         ->whereBetween("created_at", [$firstCutOff['start_time']." 00:00:00", $firstCutOff['end_time']." 23:59:59"])
@@ -751,11 +748,11 @@ class PayrollService {
         ->whereIn("status", ["Approved", "Adjusted"])
         ->get();
 
-        $adjustmentDays = ($days > $firstCutOffWorkDays ? $days - $firstCutOffWorkDays : 0) +
-            ($days > $secondCutOffWorkDays ? $days - $secondCutOffWorkDays : 0);
+        $adjustmentDays = ($days > $firstCutOffDays ? $days - $firstCutOffDays : 0) +
+            ($days > $secondCutOffDays ? $days - $secondCutOffDays : 0);
 
         if ($adjustmentDays) {
-            $remarks = "With ".$adjustmentDays. " absents";
+            $remarks = "ABSENTS: ".$adjustmentDays. " | ";
         }
 
         foreach ($firstCutOffAdjustments as $adjustment) {
@@ -843,9 +840,9 @@ class PayrollService {
                     $incentiveAmount -= $deductionAmount;
 
                     if (!empty($remarks)) {
-                        $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                        $remarks .= $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     } else {
-                        $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                        $remarks = $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     }
                 }
             }       
@@ -864,9 +861,9 @@ class PayrollService {
                     $incentiveAmount -= $deductionAmount;
 
                     if (!empty($remarks)) {
-                        $remarks .= " and ".$totalUndertimeForMonth." minutes of undertime";
+                        $remarks .= $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     } else {
-                        $remarks = "With ".$totalUndertimeForMonth." minutes of undertime";
+                        $remarks = $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     }
                 }
             }

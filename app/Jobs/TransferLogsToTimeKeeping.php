@@ -88,7 +88,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                 ->where("employee_id", $employee->id)
                 ->first();
 
-                if (isset($log)) {
+                if (isset($log) && $actualSchedule->timetable != "LEAVE") {
                     $bioTimePunches = $log->punches;
                     $this->timeKeepingService->computeTimeKeeping(
                         $this->branchId,

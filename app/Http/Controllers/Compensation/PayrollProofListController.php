@@ -25,7 +25,8 @@ class PayrollProofListController extends Controller
                 "cutoff" => "required|array",
                 "year" => "required",
                 "type" => "required",
-                "bank_account_type_id" => "required"
+                "bank_account_type_id" => "required",
+                "branch_id" => "nullable"
             ]);
 
             $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
@@ -49,7 +50,7 @@ class PayrollProofListController extends Controller
             "employee.latest_bank_details.bank_account_type", 
             ]);
 
-            $proofList = $proofList->with(["employee"])
+            $proofList = $proofList->with(["employee", "employee.payroll_list"])
             ->where("pay_date", $cutOff->pay_date);
 
             if ($request->type === "INCENTIVES") {
@@ -63,10 +64,19 @@ class PayrollProofListController extends Controller
                     "first_cut_off_worked_days",
                     "second_cut_off_worked_days",
                 ])->where("incentive_amount", ">", 0)
+                ->whereHas("payroll_list", function ($query) {
+                    $query->where("is_included", 1)
+                    ->where("is_bank", 1)
+                    ->where("is_hold", 0);
+                })
                 ->orderBy(
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "incentives.employee_id")
                 );
+
+                if ($request->filled("branch_id")) {
+                    $proofList = $proofList->where("branch_id", $request->branch_id);
+                }
             } else if ($request->type === "PAYROLL" && !$request->export) {
                 $proofList = PayrollList::query()
                 ->with(["employee"])
@@ -86,6 +96,18 @@ class PayrollProofListController extends Controller
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "payroll_list.employee_id")
                 );
+
+                if ($request->filled("branch_id")) {
+                    $proofList = $proofList->where(function ($query) use ($request) {
+                        $query->where("p.timekeeping_branch_id", $request->branch_id)
+                            ->orWhere(function ($subQuery) use ($request) {
+                                $subQuery->whereNull("p.id")
+                                    ->whereHas("employee", function ($employeeQuery) use ($request) {
+                                        $employeeQuery->where("branch_id", $request->branch_id);
+                                    });
+                            });
+                    });
+                }
             } else if ($request->type === "PAYROLL" && $request->export && !$request->converter) {
                 $proofList = PayrollList::query()
                 ->with([
@@ -156,6 +178,18 @@ class PayrollProofListController extends Controller
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "payroll_list.employee_id")
                 );
+
+                if ($request->filled("branch_id")) {
+                    $proofList = $proofList->where(function ($query) use ($request) {
+                        $query->where("p.timekeeping_branch_id", $request->branch_id)
+                            ->orWhere(function ($subQuery) use ($request) {
+                                $subQuery->whereNull("p.id")
+                                    ->whereHas("employee", function ($employeeQuery) use ($request) {
+                                        $employeeQuery->where("branch_id", $request->branch_id);
+                                    });
+                            });
+                    });
+                }
             } else if ($request->type === "PAYROLL" && $request->export && $request->converter) {
                 $proofList = $proofList->select([
                     "status",
@@ -170,6 +204,10 @@ class PayrollProofListController extends Controller
                     Employee::select("last_name")
                         ->whereColumn("employees.id", "payroll.employee_id")
                 );
+
+                if ($request->filled("branch_id")) {
+                    $proofList = $proofList->where("timekeeping_branch_id", $request->branch_id);
+                }
             }
 
             if ($request->bank_account_type_id !== '0' && $request->bank_account_type_id !== 'ALL') {
@@ -250,10 +288,25 @@ class PayrollProofListController extends Controller
             $request["converter"] = true;
             $proofLists = $this->getProofList($request);
 
+            if ($proofLists instanceof \Illuminate\Http\JsonResponse) {
+                return $proofLists;
+            }
+
+            if (!($proofLists instanceof \Illuminate\Support\Collection)) {
+                return $this->sendError(["message" => "Unable to build prooflist data for converter export."]);
+            }
+
             $converterToUse = $request->bank_account_type_id == 1 ? "CASH_CARD_CONVERTER" : "SAVINGS_CONVERTER";
             $templatePath = public_path('converter/'.$converterToUse.'.xlsm');
             $tempCopyPath = storage_path('app/public/'.$request->type.'-'.now()->format("Y-m-d").'.xlsm');
-            copy($templatePath, $tempCopyPath);
+
+            if (!file_exists($templatePath)) {
+                return $this->sendError(["message" => "Converter template file not found."]);
+            }
+
+            if (!copy($templatePath, $tempCopyPath)) {
+                return $this->sendError(["message" => "Failed to prepare converter export file."]);
+            }
 
             
             $company = env('COMPANY_FULL_NAME');
@@ -263,47 +316,80 @@ class PayrollProofListController extends Controller
             $creditingDate = now()->format("Y-m-d");
 
             $zip = new ZipArchive;
-            if ($zip->open($tempCopyPath) === TRUE) {
-                $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
-
-                $dom = new DOMDocument('1.0', 'UTF-8');
-                $dom->loadXML($sheetXml);
-                $sheetData = $dom->getElementsByTagName('sheetData')->item(0);
-
-                $this->writeCell($dom, $sheetData, 'A1', (string)$company);
-                if ($request->bank_account_type_id == 1) {
-                    $this->writeCell($dom, $sheetData, 'B2', (string)$filePrefix);
-                    $this->writeCell($dom, $sheetData, 'B3', (string)$virtualAccount);
-                    $this->writeCell($dom, $sheetData, 'B4', (string)$creditingDate);
-                } else {
-                    $this->writeCell($dom, $sheetData, 'B2', (string)$creditingDate);
-                    $this->writeCell($dom, $sheetData, 'B3', (string)$companyCode);
+            $openResult = $zip->open($tempCopyPath);
+            if ($openResult !== TRUE) {
+                if (file_exists($tempCopyPath)) {
+                    @unlink($tempCopyPath);
                 }
 
-                $rowIndex = 7;
-                foreach ($proofLists as $transaction) {
-                    if (str_replace(' ', '', $transaction->employee->latest_bank_details->bank_number) == "") {
-                        continue;
-                    }
-
-                    $colA = "A".$rowIndex;
-                    $colB = "B".$rowIndex;
-                    $colC = "C".$rowIndex;
-
-                    $this->writeCell($dom, $sheetData, $colA, (string)str_replace(' ', '', $transaction->employee->latest_bank_details->bank_number));
-                    $this->writeCell($dom, $sheetData, $colB, (string)round($transaction->amount, 2));
-                    $this->writeCell($dom, $sheetData, $colC, (string)$transaction->employee->full_name);
-
-                    $rowIndex++;
-                }
-
-                $newXml = $dom->saveXML();
-                $zip->addFromString('xl/worksheets/sheet1.xml', $newXml);
-                $zip->close();
+                return $this->sendError(["message" => "Failed to open converter export file."]);
             }
 
+            $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+            if ($sheetXml === false) {
+                $zip->close();
+                @unlink($tempCopyPath);
+                return $this->sendError(["message" => "Invalid converter template: missing Sheet1."]);
+            }
+
+            $dom = new DOMDocument('1.0', 'UTF-8');
+            $dom->loadXML($sheetXml);
+            $sheetData = $dom->getElementsByTagName('sheetData')->item(0);
+            if (!$sheetData) {
+                $zip->close();
+                @unlink($tempCopyPath);
+                return $this->sendError(["message" => "Invalid converter template: missing sheet data."]);
+            }
+
+            $this->writeCell($dom, $sheetData, 'A1', (string)$company);
+            if ($request->bank_account_type_id == 1) {
+                $this->writeCell($dom, $sheetData, 'B2', (string)$filePrefix);
+                $this->writeCell($dom, $sheetData, 'B3', (string)$virtualAccount);
+                $this->writeCell($dom, $sheetData, 'B4', (string)$creditingDate);
+            } else {
+                $this->writeCell($dom, $sheetData, 'B2', (string)$creditingDate);
+                $this->writeCell($dom, $sheetData, 'B3', (string)$companyCode);
+            }
+
+            $rowIndex = 7;
+            $writtenRows = 0;
+            foreach ($proofLists as $transaction) {
+                $bankNumber = (string) data_get($transaction, 'employee.latest_bank_details.bank_number', '');
+                $bankNumber = str_replace(' ', '', $bankNumber);
+
+                if ($bankNumber === '') {
+                    continue;
+                }
+
+                $fullName = (string) data_get($transaction, 'employee.full_name', '');
+                if ($fullName === '') {
+                    continue;
+                }
+
+                $colA = "A".$rowIndex;
+                $colB = "B".$rowIndex;
+                $colC = "C".$rowIndex;
+
+                $this->writeCell($dom, $sheetData, $colA, $bankNumber);
+                $this->writeCell($dom, $sheetData, $colB, (string) round((float) data_get($transaction, 'amount', 0), 2));
+                $this->writeCell($dom, $sheetData, $colC, $fullName);
+
+                $rowIndex++;
+                $writtenRows++;
+            }
+
+            if ($writtenRows === 0) {
+                $zip->close();
+                @unlink($tempCopyPath);
+                return $this->sendError(["message" => "No valid prooflist rows with bank account numbers found for converter export."]);
+            }
+
+            $newXml = $dom->saveXML();
+            $zip->addFromString('xl/worksheets/sheet1.xml', $newXml);
+            $zip->close();
+
             return response()->download($tempCopyPath, $request->type."-".now()->format("Y-m-d").'.xlsm')->deleteFileAfterSend(true);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::info($e);
             return $this->sendError($e->getMessage());
         }

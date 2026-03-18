@@ -531,7 +531,7 @@ class TimeKeepingService
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
 
             if ($totalWorkedHours < $hours) {
-                $undertime = ($totalWorkedHours - $hours) * 60;
+                $undertime = ($hours - $totalWorkedHours) * 60;
             }
 
             if ($totalWorkedHours < $totalDurationHOurs && $totalWorkedHours >= $hours ) {
@@ -862,17 +862,6 @@ class TimeKeepingService
         ) {
             $paymentPerDay = $employee->dailySalary() / 2;
         } 
-
-        $hoursPerDay = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
-        $isHalfDay = $timeKeeping->final_worked_hours == ($hoursPerDay / 2);
-        if ($isHalfDay) {
-            $timeKeeping->regular_overtime = 0;
-            $timeKeeping->legal_holiday_overtime = 0;
-            $timeKeeping->special_holiday_overtime = 0;
-            $timeKeeping->night_diff_overtime = 0;
-            $timeKeeping->approved_overtime = 0;
-        }
-        
         if (
             in_array($schedule, ["REST DAY", "NO SCHEDULE"]) ||
             $timeKeeping->final_worked_hours <= 1
@@ -885,11 +874,6 @@ class TimeKeepingService
         $legal_holiday =  $isHolidayPaid ? $timeKeeping->legal_holiday_hours * $paymentPerHour : 0;
         $special_holiday = $isHolidayPaid ? $timeKeeping->special_holiday_hours * ($paymentPerHour * .3) : 0;
         $night_differential = $timeKeeping->night_diff_hours >= 1 ? $timeKeeping->night_diff_hours * ($paymentPerHour * .1) : 0;
-
-        $timeKeeping->regular_overtime = floor($timeKeeping->regular_overtime);
-        $timeKeeping->legal_holiday_overtime = floor($timeKeeping->legal_holiday_overtime);
-        $timeKeeping->special_holiday_overtime = floor($timeKeeping->special_holiday_overtime);
-        $timeKeeping->night_diff_overtime = floor($timeKeeping->night_diff_overtime);
 
         if (!$isHolidayPaid) {
             if ($timeKeeping->legal_holiday_overtime > 0) {
@@ -939,6 +923,9 @@ class TimeKeepingService
                 $cancelled_off = $timeKeeping->approved_overtime * ($paymentPerHour * 1.69);
             }
         }
+        Log::info("PPD: ". $paymentPerDay);
+        Log::info("PPH: ". $paymentPerHour);
+        Log::info("OT: ". $regular_overtime);
 
         $totalAmount = (
             $paymentPerDay + 

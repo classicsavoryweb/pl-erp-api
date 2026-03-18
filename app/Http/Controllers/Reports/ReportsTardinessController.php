@@ -364,7 +364,7 @@ class ReportsTardinessController extends Controller
                     explode(';', $branch->branch_email)
                 );
 
-                $ccEmails = [...$ccEmails, "sfiemployeerelations@classicsavory.com"];
+                $ccEmails = [...$ccEmails, env('COMPANY_RELATIONS_EMAIL')];
 
                 Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($ccEmails)
@@ -467,7 +467,7 @@ class ReportsTardinessController extends Controller
                     explode(';', $branch->branch_email)
                 );
 
-                $ccEmails = [...$ccEmails, "sfiemployeerelations@classicsavory.com"];
+                $ccEmails = [...$ccEmails, env('COMPANY_RELATIONS_EMAIL')];
 
                 Mail::mailer("HR_MAILER")->to($employee->email)
                 ->cc($ccEmails)
@@ -544,6 +544,7 @@ class ReportsTardinessController extends Controller
                     "subject" => $subject,
                     "message" => $message,
                     "sender_name" => $sender,
+                    "company" => env('COMPANY_NAME')
                 ]);
 
             if (!$response->successful()) {
