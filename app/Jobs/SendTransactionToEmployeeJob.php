@@ -144,14 +144,14 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             $hoCredit = $transaction->transaction_type->ho_credit;
             $branchDebit = $transaction->transaction_type->branch_debit;
             $branchCredit = $transaction->transaction_type->branch_credit;
-            $advancesDebit = $transaction->transaction_type->advance_debit;
+            $advancesDebit = $transaction->transaction_type->advances_debit;
             $branchNumber = $transaction->branch->branch_number;
             $branchShortName = $transaction->branch->short_name;
             $branchName = $transaction->branch->name;
             $branchId = $transaction->branch_id;
 
             //HO Entry Setup
-            if ($hoDebit) {
+            if ($hoDebit || $advancesDebit == 'Yes') {
 
                 $accountHODebitId = null;
 
@@ -200,13 +200,17 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 }
             }
 
+            $entryId2 = $this->generateEntryId($counterEntry);
+            $apsysEntryId2 = $this->generateApsysEntryId($counterApsysEntry);
+            $apsysEntryMainId2 = $this->generateApsysEntryMainId($counterApsysEntryMain);
+
             //Branch Entry Setup
             if ($branchDebit) {
                 $branchEntries = [
                     [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
+                        'entry_id'            => $entryId2,
+                        'apsys_entry_id'      => $apsysEntryId2,
+                        'apsys_entry_main_id' => $apsysEntryMainId2,
                         'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchName,
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
@@ -220,9 +224,9 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'is_block_payment'    => $isBlockPayment,
                     ],
                     [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
+                        'entry_id'            => $entryId2,
+                        'apsys_entry_id'      => $apsysEntryId2,
+                        'apsys_entry_main_id' => $apsysEntryMainId2,
                         'document_no'         => $batchNumber . ' | ' . $employeeNumber . ' | ' . $branchName,
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
