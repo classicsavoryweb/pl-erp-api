@@ -315,85 +315,38 @@ class PayrollService {
             $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
             $netPayAmount = $taxable - $taxAmount;
 
-            $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
-
             $removedDeductions = [];
-
             $newDeductions = [];
 
-            if ($netPayAmount < 1000) {
+            $netPayCheck = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
+            $companyLoans = collect($deductions)->filter(fn($deduct) => !in_array($deduct['type'], ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]))
+            ->sortBy('deducted_amount');
+            $governmentLoans = collect($deductions)->filter(fn($deduct) => in_array($deduct['type'], ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]))
+            ->sortBy('deducted_amount');
+            $netPayNoDeductions = $netPayAmount + $nonTaxableAmount;
+            $companyLoans = $companyLoans->values()->toArray();
+            $governmentLoans = $governmentLoans->values()->toArray();
 
-                $employeeDeductions = EmployeeDeduction::with(["deduction"])
-                    ->where("employee_id", $employee->id)
-                    ->where("balance", ">", 1)
-                    ->where("date_created", "<=", $cutOff->pay_date)
-                    ->where("end_loan_status", '!=', 'Yes')
-                    ->where("approved_status", "Yes")
-                    ->get();
-
-                $companyLoans = $employeeDeductions->filter(fn($deduct) => !in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
-
-                $governmentLoans = $employeeDeductions->filter(fn($deduct) => in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
-
-                $companyLoans = $companyLoans->sortBy('monthly_amortization');
-                $governmentLoans = $governmentLoans->sortBy('monthly_amortization');
-
+            if ($netPayCheck < 0) {
                 foreach ($companyLoans as $deduction) {
-                    $amountToDeduct = $deduction->monthly_amortization / 2;
-                    if ($amountToDeduct > $deduction->balance) {
-                        $amountToDeduct = $deduction->balance;
-                    }
+                    $netPayNoDeductions -= $deduction['deducted_amount'];
 
-                    $computedNetPay = $netPayAmount + $amountToDeduct;
-
-                    if ($computedNetPay >= 1000) {
-                        $totalDeductions -= $amountToDeduct;
-                        $netPayAmount = $computedNetPay;
-
-                        $removedDeductions[] = $deduction->deduction->id;
-
-                        // $deduction->delete();
+                    if ($netPayNoDeductions < 0) {
+                        $netPayNoDeductions += $deduction['deducted_amount'];
+                        $totalDeductions -= $deduction['deducted_amount'];
+                        $removedDeductions[] = $deduction['deduction_id'];
                         break;
-                    } else {
-                        $totalDeductions -= $amountToDeduct;
-                        $netPayAmount += $amountToDeduct;
-    
-                        $removedDeductions[] = $deduction->deduction->id;
-    
-                        // $deduction->delete();
                     }
                 }
 
-                if ($netPayAmount < 1000) {
-                    $amountToDeduct = 0;
-                    foreach ($governmentLoans as $deduction) {
-                        $amountToDeduct = $deduction->monthly_amortization;
-                        if ($deduction->months > 0) {
-                            $amountToDeduct = $deduction->monthly_amortization / 2;
-                        }
+                foreach ($governmentLoans as $deduction) {
+                    $netPayNoDeductions -= $deduction['deducted_amount'];
 
-                        if ($amountToDeduct > $deduction->balance) {
-                            $amountToDeduct = $deduction->balance;
-                        }
-
-                        $computedNetPay = $netPayAmount + $amountToDeduct;
-
-                        if ($computedNetPay >= 1000) {
-                            $totalDeductions -= $amountToDeduct;
-                            $netPayAmount = $computedNetPay;
-
-                            $removedDeductions[] = $deduction->deduction->id;
-
-                            // $deduction->delete();
-                            break;
-                        } else {
-                            $totalDeductions -= $amountToDeduct;
-                            $netPayAmount += $amountToDeduct;
-        
-                            $removedDeductions[] = $deduction->deduction->id;
-        
-                            // $deduction->delete();
-                        }
+                    if ($netPayNoDeductions < 0) {
+                        $netPayNoDeductions += $deduction['deducted_amount'];
+                        $totalDeductions -= $deduction['deducted_amount'];
+                        $removedDeductions[] = $deduction['deduction_id'];
+                        break;
                     }
                 }
             }
@@ -403,6 +356,8 @@ class PayrollService {
                     $newDeductions[] = $deduction;
                 }
             }
+
+            $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
 
             $payroll = Payroll::updateOrCreate(
                 [
