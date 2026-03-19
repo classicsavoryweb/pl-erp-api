@@ -359,7 +359,6 @@ class TimeKeepingController extends Controller
                     new TransferLogsToTimeKeeping($branch_id, $cutOff, Auth::id(), true),
                     new GenerateTimekeepingSummary($branch_id, $cutOff, Auth::id(), 0, $branchName)
                 ])
-                ->delay(now()->addSeconds(5))
                 ->dispatch();
 
                 $user = Auth::user();
