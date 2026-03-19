@@ -2,6 +2,7 @@
 
 namespace App\Exports\Compensation;
 
+use App\Models\Employee;
 use App\Models\Accounting\Vendor;
 use App\Models\Accounting\Account;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,35 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles, WithColum
     protected Collection $entry;
     protected array $vendorNames = [];
     protected array $accountNames = [];
+    protected array $employeeNames = [];
+    private const FALLBACK_VENDOR_NAMES = [
+        'HO' => 'HO',
+        'GOV0000000001' => 'Home Development Mutual Fund',
+        'GOV0000000002' => 'Social Security System',
+        'GOV0000000003' => 'Home Development Mutual Fund',
+        'GOV0000000004' => 'Philippine Health Insurance Corporation',
+        'GOV0000000005' => 'Social Security System',
+        'INC0000000003' => 'CBS Handy Salary Loan',
+        'INC0000000004' => 'Tony Ting Food Concepts Inc.',
+        'INB0000000008' => 'HO',
+        'PRO0000000005' => 'Chua, Chua & Company',
+    ];
+    private const FALLBACK_ACCOUNT_NAMES = [
+        '3000001' => 'CASH ADVANCES - PENALTIES, SHORT, BREAKAGES',
+        '3000003' => 'HDMF LOAN PAYABLE',
+        '3000004' => 'PAG-IBIG PAYABLE',
+        '3000005' => 'PHIC PAYABLE',
+        '3000006' => 'SSS LOAN PAYABLE',
+        '3000007' => 'SSS PAYABLE',
+        '3000008' => 'SSS, PHIC, PAG-IBIG CONTRIBUTION',
+        '4000000' => 'Accounts Payable',
+        '4500009' => 'Advances - HO',
+        '4500012' => 'Advances - MAT',
+        '4600001' => 'BANK SALARY LOAN PAYABLE',
+        '4600009' => 'WITHHOLDING TAX PAYABLE',
+        '7000011' => 'SALARIES & WAGES - STORE',
+        '7000020' => 'COMMISSION & INCENTIVE - STORE',
+    ];
     private const TEMP_ACCOUNT_A_NO = '4600003';
     private const TEMP_ACCOUNT_B_NO = '4600004';
     private const TEMP_ACCOUNT_A_NAME = 'Temporary Account A';
@@ -32,6 +62,17 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles, WithColum
 
     private function primeApsysLookups(): void
     {
+        $vendorNos = $this->entry->pluck('vendor_no')->filter()->unique()->values();
+        if ($vendorNos->isNotEmpty()) {
+            $this->employeeNames = Employee::query()
+                ->whereIn('employee_number', $vendorNos)
+                ->get(['employee_number', 'first_name', 'middle_name', 'last_name'])
+                ->mapWithKeys(function (Employee $employee) {
+                    return [$employee->employee_number => $employee->full_name];
+                })
+                ->all();
+        }
+
         try {
             DB::connection('apsys')->getPdo();
         } catch (\Throwable $e) {
@@ -41,7 +82,6 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles, WithColum
             return;
         }
 
-        $vendorNos = $this->entry->pluck('vendor_no')->filter()->unique()->values();
         if ($vendorNos->isNotEmpty()) {
             $this->vendorNames = Vendor::whereIn('ven_no', $vendorNos)
                 ->pluck('ven_name', 'ven_no')
@@ -122,7 +162,10 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles, WithColum
             return 'HO';
         }
 
-        return $this->vendorNames[$vendorNo] ?? $vendorNo;
+        return $this->vendorNames[$vendorNo]
+            ?? $this->employeeNames[$vendorNo]
+            ?? self::FALLBACK_VENDOR_NAMES[$vendorNo]
+            ?? $vendorNo;
     }
 
     private function resolveAccountDisplay(object $row, object $header): array
@@ -149,6 +192,10 @@ class EntryExport implements FromCollection, WithHeadings, WithStyles, WithColum
     {
         if ($accountNo && isset($this->accountNames[$accountNo])) {
             return $this->accountNames[$accountNo];
+        }
+
+        if ($accountNo && isset(self::FALLBACK_ACCOUNT_NAMES[$accountNo])) {
+            return self::FALLBACK_ACCOUNT_NAMES[$accountNo];
         }
 
         if ($accountNo === self::TEMP_ACCOUNT_A_NO) {

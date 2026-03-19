@@ -206,6 +206,171 @@ class GenerateEntry implements ShouldQueue
             ->first();
     }
 
+    private function normalizeDeductionCategory(?string $category): string
+    {
+        $normalized = trim((string) $category);
+        if ($normalized === '') {
+            return 'uncategorized';
+        }
+
+        $normalized = strtolower($normalized);
+
+        if ($normalized === 'pagibig') {
+            return 'pag-ibig';
+        }
+
+        return $normalized;
+    }
+
+    private function getDeductionEntryLabel(Deduction $deduction): string
+    {
+        return match ($this->normalizeDeductionCategory($deduction->category ?? null)) {
+            'company' => 'Company Deductions',
+            'sss' => 'SSS Loan',
+            'pag-ibig' => 'PAG-IBIG Loan',
+            'bank salary loan' => 'Bank Salary Loan',
+            'company loan' => 'Company Loan',
+            default => $deduction->description ?: 'Deduction',
+        };
+    }
+
+    private function buildDeductionGroupKey(Deduction $deduction): string
+    {
+        return implode('|', [
+            $this->normalizeDeductionCategory($deduction->category ?? null),
+            (string) ($deduction->amortization_vendor_id ?? ''),
+            (string) ($deduction->amortization_debit_id ?? ''),
+            (string) ($deduction->amortization_credit_id ?? ''),
+        ]);
+    }
+
+    private function accumulateDeductionGroup(array &$groups, Deduction $deduction, float $amount, ?string $vendorName): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+
+        $groupKey = $this->buildDeductionGroupKey($deduction);
+
+        if (!isset($groups[$groupKey])) {
+            $groups[$groupKey] = [
+                'deduction' => $deduction,
+                'ven_name' => $vendorName,
+                'amount' => 0.0,
+                'label' => $this->getDeductionEntryLabel($deduction),
+            ];
+        }
+
+        $groups[$groupKey]['amount'] += $amount;
+
+        if (empty($groups[$groupKey]['ven_name']) && !empty($vendorName)) {
+            $groups[$groupKey]['ven_name'] = $vendorName;
+        }
+    }
+
+    private function buildAmortizationEntries(
+        array $deductionGroups,
+        string $documentNo,
+        int $branchId,
+        string $branchName,
+        string $branchNumber,
+        ?string $sourceVendorNo,
+        ?string $sourceVendorName,
+        ?string $temporaryAccountA,
+        ?string $temporaryAccountB
+    ): array {
+        $entries = [];
+
+        foreach ($deductionGroups as $group) {
+            $deduction = $group['deduction'] ?? null;
+            $amount = (float) ($group['amount'] ?? 0);
+
+            if (!$deduction || $amount <= 0) {
+                continue;
+            }
+
+            $label = $group['label'] ?? 'Deduction';
+
+            $firstEntry = $this->generateEntryId($this->counterEntry);
+            $secondEntry = $this->generateEntryId($this->counterEntry);
+
+            $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+            $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+            $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+            $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+
+            $entries = array_merge($entries, [
+                [
+                    'entry_id'            => $firstEntry,
+                    'apsys_entry_id'      => $firstApsysEntry,
+                    'apsys_entry_main_id' => $firstApsysEntryMain,
+                    'document_no'         => $documentNo,
+                    'branch_id'           => $branchId,
+                    'branch_name'         => $branchName,
+                    'branch_number'       => $branchNumber,
+                    'ven_no'              => $sourceVendorNo,
+                    'ven_name'            => $sourceVendorName,
+                    'amount'              => $amount,
+                    'acc_no'              => $this->getAmortizationDebitAccNo($deduction),
+                    'description_per_acc' => $label,
+                    'balance_type'        => 'Debit',
+                    'is_block_payment'    => 0,
+                ],
+                [
+                    'entry_id'            => $firstEntry,
+                    'apsys_entry_id'      => $firstApsysEntry,
+                    'apsys_entry_main_id' => $firstApsysEntryMain,
+                    'document_no'         => $documentNo,
+                    'branch_id'           => $branchId,
+                    'branch_name'         => $branchName,
+                    'branch_number'       => $branchNumber,
+                    'ven_no'              => $sourceVendorNo,
+                    'ven_name'            => $sourceVendorName,
+                    'amount'              => $amount,
+                    'acc_no'              => $temporaryAccountB,
+                    'description_per_acc' => $label,
+                    'balance_type'        => 'Credit',
+                    'is_block_payment'    => 0,
+                ],
+                [
+                    'entry_id'            => $secondEntry,
+                    'apsys_entry_id'      => $secondApsysEntry,
+                    'apsys_entry_main_id' => $secondApsysEntryMain,
+                    'document_no'         => $documentNo,
+                    'branch_id'           => $branchId,
+                    'branch_name'         => $branchName,
+                    'branch_number'       => $branchNumber,
+                    'ven_no'              => $deduction->amortization_vendor_id,
+                    'ven_name'            => $group['ven_name'] ?? null,
+                    'amount'              => $amount,
+                    'acc_no'              => $temporaryAccountA,
+                    'description_per_acc' => $label,
+                    'balance_type'        => 'Debit',
+                    'is_block_payment'    => 0,
+                ],
+                [
+                    'entry_id'            => $secondEntry,
+                    'apsys_entry_id'      => $secondApsysEntry,
+                    'apsys_entry_main_id' => $secondApsysEntryMain,
+                    'document_no'         => $documentNo,
+                    'branch_id'           => $branchId,
+                    'branch_name'         => $branchName,
+                    'branch_number'       => $branchNumber,
+                    'ven_no'              => $deduction->amortization_vendor_id,
+                    'ven_name'            => $group['ven_name'] ?? null,
+                    'amount'              => $amount,
+                    'acc_no'              => $this->getAmortizationCreditAccNo($deduction),
+                    'description_per_acc' => $label,
+                    'balance_type'        => 'Credit',
+                    'is_block_payment'    => 0,
+                ],
+            ]);
+        }
+
+        return $entries;
+    }
+
     public function handle(): void
     {
         $this->apsysAvailable = $this->sendToApsys && $this->isApsysAvailable();
@@ -459,8 +624,7 @@ class GenerateEntry implements ShouldQueue
                 $payrollEmployeeBankSums['netTaxableAdjustment'] += floatval(str_replace(',', '', $payrollBank->non_taxable_adjustment));
             }
 
-            $bankDeductionSum = collect();
-            $bankTotalMonthlyAmortization = 0;
+            $bankDeductionGroups = [];
 
             foreach ($payrollEmployeeBankQuery as $payrollBankDeduction) {
                 if ($payrollBankDeduction->total_deductions > 0) {
@@ -469,10 +633,7 @@ class GenerateEntry implements ShouldQueue
 
                     foreach ($bankDeductions as $bankDeductionJson) {
 
-                        $employeeId = $payrollBankDeduction->employee_id;
-                        $bankDeductionId = $bankDeductionJson['deduction_id'] ?? null;
                         $deductionAmount = $this->getDeductionAmountFromJson($bankDeductionJson);
-                        $bankTotalMonthlyAmortization += $deductionAmount;
 
                         $deductionRelations = $this->apsysAvailable
                             ? ['amortization_debit', 'amortization_credit', 'amortization_vendor']
@@ -488,18 +649,17 @@ class GenerateEntry implements ShouldQueue
                             $bankDeductionSumsVenName = $vendor->ven_name ?? null;
                         }
 
-                        $bankDeductionSum->push((object)[
-                            'employee_id' => $employeeId,
-                            'deduction_id' => $bankDeductionId,
-                            'deduction' => $bankDeductionModel,
-                            'ven_name' => $bankDeductionSumsVenName,
-                        ]);
+                        $this->accumulateDeductionGroup(
+                            $bankDeductionGroups,
+                            $bankDeductionModel,
+                            $deductionAmount,
+                            $bankDeductionSumsVenName
+                        );
                     }
                 }
             }
 
-            $bankDeductionSums = $bankDeductionSum->first();
-            $bankTotalAmortization = $bankTotalMonthlyAmortization;
+            $bankDeductionGroups = array_values($bankDeductionGroups);
 
             $bankEmployeeIds = $payrollEmployeeBankQuery->pluck('employee_id');
             $bankIncentiveSums = Incentives::whereIn('employee_id', $bankEmployeeIds)
@@ -557,6 +717,13 @@ class GenerateEntry implements ShouldQueue
                 $payrollEmployeeCashVendorNo = $payrollEmployeeCash->employee->vendor->ven_no ?? null;
             }
 
+            $cashPayrollVendorName = $vendorHOName;
+            $cashPayrollVendorNo = $vendorHONo;
+            if ($payrollEmployeeCash && $payrollEmployeeCash->employee) {
+                $cashPayrollVendorName = $payrollEmployeeCash->employee->full_name ?? $vendorHOName;
+                $cashPayrollVendorNo = $payrollEmployeeCash->employee->employee_number ?? $vendorHONo;
+            }
+
             foreach ($payrollEmployeeCashQuery as $payrollCash) {
                 $payrollEmployeeCashSums['grosspay'] += floatval(str_replace(',', '', $payrollCash->gross_pay));
                 $payrollEmployeeCashSums['eeSSS'] += floatval(str_replace(',', '', $payrollCash->employee_sss));
@@ -569,8 +736,7 @@ class GenerateEntry implements ShouldQueue
                 $payrollEmployeeCashSums['netTaxableAdjustment'] += floatval(str_replace(',', '', $payrollCash->non_taxable_adjustment));
             }
 
-            $cashDeductionSum = collect();
-            $cashTotalMonthlyAmortization = 0;
+            $cashDeductionGroups = [];
 
             foreach ($payrollEmployeeCashQuery as $payrollCashDeduction) {
                 if ($payrollCashDeduction->total_deductions > 0) {
@@ -579,10 +745,7 @@ class GenerateEntry implements ShouldQueue
 
                     foreach ($cashDeductions as $cashDeductionJson) {
 
-                        $employeeId = $payrollCashDeduction->employee_id;
-                        $cashDeductionId = $cashDeductionJson['deduction_id'] ?? null;
                         $deductionAmount = $this->getDeductionAmountFromJson($cashDeductionJson);
-                        $cashTotalMonthlyAmortization += $deductionAmount;
 
                         $deductionRelations = $this->apsysAvailable
                             ? ['amortization_debit', 'amortization_credit', 'amortization_vendor']
@@ -598,18 +761,17 @@ class GenerateEntry implements ShouldQueue
                             $cashDeductionSumsVenName = $vendor->ven_name ?? null;
                         }
 
-                        $cashDeductionSum->push((object)[
-                            'employee_id' => $employeeId,
-                            'deduction_id' => $cashDeductionId,
-                            'deduction' => $cashDeductionModel,
-                            'ven_name' => $cashDeductionSumsVenName,
-                        ]);
+                        $this->accumulateDeductionGroup(
+                            $cashDeductionGroups,
+                            $cashDeductionModel,
+                            $deductionAmount,
+                            $cashDeductionSumsVenName
+                        );
                     }
                 }
             }
 
-            $cashDeductionSums = $cashDeductionSum->first();
-            $cashTotalAmortization = $cashTotalMonthlyAmortization;
+            $cashDeductionGroups = array_values($cashDeductionGroups);
 
             $cashEmployeeIds = $payrollEmployeeCashQuery->pluck('employee_id');
             $cashIncentiveSums = Incentives::whereIn('employee_id', $cashEmployeeIds)
@@ -934,82 +1096,21 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //head office - deductions (bank)
-                if ($bankTotalAmortization > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $vendorHONo,
-                            'ven_name'            => $vendorHOName,
-                            'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $this->getAmortizationDebitAccNo($bankDeductionSums->deduction),
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $vendorHONo,
-                            'ven_name'            => $vendorHOName,
-                            'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $temporaryAccountB,
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $bankDeductionSums->deduction->amortization_vendor_id,
-                            'ven_name'            => $bankDeductionSums->ven_name,
-                            'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $temporaryAccountA,
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $bankDeductionSums->deduction->amortization_vendor_id,
-                            'ven_name'            => $bankDeductionSums->ven_name,
-                            'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $this->getAmortizationCreditAccNo($bankDeductionSums->deduction),
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
+                if (!empty($bankDeductionGroups)) {
+                    $entries = array_merge(
+                        $entries,
+                        $this->buildAmortizationEntries(
+                            $bankDeductionGroups,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $temporaryAccountA,
+                            $temporaryAccountB
+                        )
+                    );
                 }
 
                 //head office - with_holding_tax (bank)
@@ -1477,8 +1578,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['grosspay'],
                             'acc_no'              => $payrollBranch->advance_debit,
                             'description_per_acc' => 'Grosspay',
@@ -1494,8 +1595,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['grosspay'],
                             'acc_no'              => $payrollBranch->advance_credit,
                             'description_per_acc' => 'Grosspay',
@@ -1559,8 +1660,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['eeSSS'],
                             'acc_no'              => $eeSSSDebit,
                             'description_per_acc' => 'Employee SSS Contribution',
@@ -1575,8 +1676,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['eeSSS'],
                             'acc_no'              => $temporaryAccountB,
                             'description_per_acc' => 'Employee SSS Contribution',
@@ -1776,82 +1877,21 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //head office - deduction (cash)
-                if ($cashTotalAmortization > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
-                            'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $this->getAmortizationDebitAccNo($cashDeductionSums->deduction),
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
-                            'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $temporaryAccountB,
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $cashDeductionSums->deduction->amortization_vendor_id,
-                            'ven_name'            => $cashDeductionSums->ven_name,
-                            'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $temporaryAccountA,
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $cashDeductionSums->deduction->amortization_vendor_id,
-                            'ven_name'            => $cashDeductionSums->ven_name,
-                            'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $this->getAmortizationCreditAccNo($cashDeductionSums->deduction),
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
+                if (!empty($cashDeductionGroups)) {
+                    $entries = array_merge(
+                        $entries,
+                        $this->buildAmortizationEntries(
+                            $cashDeductionGroups,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $payrollEmployeeCashVendorNo,
+                            $payrollEmployeeCashVenName,
+                            $temporaryAccountA,
+                            $temporaryAccountB
+                        )
+                    );
                 }
 
                 //head office - with_holding_tax (cash)
@@ -2471,8 +2511,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $cashIncentiveSums,
                             'acc_no'              => $payrollBranch->advance_debit,
                             'description_per_acc' => 'Payroll Incentive',
@@ -2488,8 +2528,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $cashIncentiveSums,
                             'acc_no'              => $creditStoreId,
                             'description_per_acc' => 'Payroll Incentive',
@@ -2851,82 +2891,21 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //branch - deductions (bank)
-                if ($bankTotalAmortization > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $vendorHONo,
-                            'ven_name'            => $vendorHOName,
-                            'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $this->getAmortizationDebitAccNo($bankDeductionSums->deduction),
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $vendorHONo,
-                            'ven_name'            => $vendorHOName,
-                            'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $temporaryAccountB,
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $bankDeductionSums->deduction->amortization_vendor_id,
-                            'ven_name'            => $bankDeductionSums->ven_name,
-                            'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $temporaryAccountA,
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $bankDeductionSums->deduction->amortization_vendor_id,
-                            'ven_name'            => $bankDeductionSums->ven_name,
-                            'amount'              => $bankTotalAmortization,
-                            'acc_no'              => $this->getAmortizationCreditAccNo($bankDeductionSums->deduction),
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
+                if (!empty($bankDeductionGroups)) {
+                    $entries = array_merge(
+                        $entries,
+                        $this->buildAmortizationEntries(
+                            $bankDeductionGroups,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $temporaryAccountA,
+                            $temporaryAccountB
+                        )
+                    );
                 }
 
                 //branch - with_holding_tax (bank)
@@ -3387,8 +3366,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['grosspay'],
                             'acc_no'              => $payrollBranch->advance_debit,
                             'description_per_acc' => 'Grosspay',
@@ -3403,8 +3382,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['grosspay'],
                             'acc_no'              => $payrollBranch->advance_credit,
                             'description_per_acc' => 'Grosspay',
@@ -3466,8 +3445,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['eeSSS'],
                             'acc_no'              => $eeSSSDebit,
                             'description_per_acc' => 'Employee SSS Contribution',
@@ -3482,8 +3461,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['eeSSS'],
                             'acc_no'              => $temporaryAccountB,
                             'description_per_acc' => 'Employee SSS Contribution',
@@ -3544,8 +3523,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['eePh'],
                             'acc_no'              => $eePhilHealthDebit,
                             'description_per_acc' => 'Employee Philhealth Contribution',
@@ -3560,8 +3539,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $payrollEmployeeCashSums['eePh'],
                             'acc_no'              => $temporaryAccountB,
                             'description_per_acc' => 'Employee Philhealth Contribution',
@@ -3683,82 +3662,21 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //branch - deduction (cash)
-                if ($cashTotalAmortization > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
-                            'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $this->getAmortizationDebitAccNo($cashDeductionSums->deduction),
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
-                            'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $temporaryAccountB,
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $cashDeductionSums->deduction->amortization_vendor_id,
-                            'ven_name'            => $cashDeductionSums->ven_name,
-                            'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $temporaryAccountA,
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $cashDeductionSums->deduction->amortization_vendor_id,
-                            'ven_name'            => $cashDeductionSums->ven_name,
-                            'amount'              => $cashTotalAmortization,
-                            'acc_no'              => $this->getAmortizationCreditAccNo($cashDeductionSums->deduction),
-                            'description_per_acc' => 'Deduction',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
+                if (!empty($cashDeductionGroups)) {
+                    $entries = array_merge(
+                        $entries,
+                        $this->buildAmortizationEntries(
+                            $cashDeductionGroups,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $payrollEmployeeCashVendorNo,
+                            $payrollEmployeeCashVenName,
+                            $temporaryAccountA,
+                            $temporaryAccountB
+                        )
+                    );
                 }
 
                 //branch - with_holding_tax (cash)
@@ -4154,8 +4072,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $cashIncentiveSums,
                             'acc_no'              => $payrollBranch->advance_debit,
                             'description_per_acc' => 'Payroll Incentive',
@@ -4171,8 +4089,8 @@ class GenerateEntry implements ShouldQueue
                             'branch_id'           => $branchHOId,
                             'branch_name'         => $branchHOName,
                             'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
+                            'ven_no'              => $cashPayrollVendorNo,
+                            'ven_name'            => $cashPayrollVendorName,
                             'amount'              => $cashIncentiveSums,
                             'acc_no'              => $creditStoreId,
                             'description_per_acc' => 'Payroll Incentive',
