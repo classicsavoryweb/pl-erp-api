@@ -37,216 +37,68 @@ class PayrollProofListController extends Controller
             ->where("end_date", $end_time)
             ->first();
 
+            $model = 'payroll';
+            if ($request->type === "INCENTIVES") {
+                $model = 'incentives';
+            }
+
             if (!$cutOff) {
                 return $this->sendError(["message" => "Cutoff not yet initialized"]);
             }
 
-            $proofList = Payroll::query();
+            $proofList = PayrollList::where("is_included", 1)
+            ->with([
+                'current_bank_details.bank_account_type',
+            ])
+            ->leftJoin($model, function ($join) use ($model, $cutOff) {
+                $join->on('payroll_list.employee_id', '=', "$model.employee_id")
+                ->where("$model.pay_date", $cutOff->pay_date);
+            })
+            ->leftJoin('employees', 'payroll_list.employee_id', '=', 'employees.id');
 
-            if ($request->type === "INCENTIVES") {
-                $proofList = Incentives::query();
-            }
-            $proofList = $proofList->with([
-            "employee.latest_bank_details.bank_account_type", 
-            ]);
-
-            $proofList = $proofList->with(["employee", "employee.payroll_list"])
-            ->where("pay_date", $cutOff->pay_date);
-
-            if ($request->type === "INCENTIVES") {
-                $proofList = $proofList->select([
-                    "status",
-                    "id",
-                    "employee_id",
-                    "adjustment_percent",
-                    "additional_incentive",
-                    "incentive_amount as amount",
-                    "first_cut_off_worked_days",
-                    "second_cut_off_worked_days",
-                ])->where("incentive_amount", ">", 0)
-                ->whereHas("payroll_list", function ($query) {
-                    $query->where("is_included", 1)
-                    ->where("is_bank", 1)
-                    ->where("is_hold", 0);
-                })
-                ->orderBy(
-                    Employee::select("last_name")
-                        ->whereColumn("employees.id", "incentives.employee_id")
-                );
-
-                if ($request->filled("branch_id")) {
-                    $proofList = $proofList->where("branch_id", $request->branch_id);
-                }
-            } else if ($request->type === "PAYROLL" && !$request->export) {
-                $proofList = PayrollList::query()
-                ->with(["employee"])
-                ->where("is_included", 1)
-                ->leftJoin("payroll as p", function ($join) use ($cutOff) {
-                    $join->on("p.employee_id", "=", "payroll_list.employee_id")
-                        ->where("p.pay_date", "=", $cutOff->pay_date);
-                })
-                ->select([
-                    "payroll_list.*",
-                    DB::raw("p.id as payroll_id"),
-                    DB::raw("COALESCE(p.status, 'no-payroll') as status"),
-                    DB::raw("COALESCE(p.net_pay, 0) as amount"),
-                    DB::raw("p.cut_off as cut_off"),
-                ])
-                ->orderBy(
-                    Employee::select("last_name")
-                        ->whereColumn("employees.id", "payroll_list.employee_id")
-                );
-
-                if ($request->filled("branch_id")) {
-                    $proofList = $proofList->where(function ($query) use ($request) {
-                        $query->where("p.timekeeping_branch_id", $request->branch_id)
-                            ->orWhere(function ($subQuery) use ($request) {
-                                $subQuery->whereNull("p.id")
-                                    ->whereHas("employee", function ($employeeQuery) use ($request) {
-                                        $employeeQuery->where("branch_id", $request->branch_id);
-                                    });
-                            });
-                    });
-                }
-            } else if ($request->type === "PAYROLL" && $request->export && !$request->converter) {
-                $proofList = PayrollList::query()
-                ->with([
-                    "employee",
-                    "employee.current_branch",
-                    "employee.home_branch",
-                    "employee.latest_bank_details.bank_account_type",
-                    "employee.schedule.schedule_type",
-                    "employee.payroll_list"
-                ])
-                ->where("is_included", 1)
-                ->leftJoin("payroll as p", function ($join) use ($cutOff) {
-                    $join->on("p.employee_id", "=", "payroll_list.employee_id")
-                        ->where("p.pay_date", "=", $cutOff->pay_date);
-                })
-                ->leftJoin("timekeeping_summary as ts", function ($join) {
-                    $join->on("ts.employee_id", "=", "payroll_list.employee_id")
-                        ->on("ts.cut_off", "=", "p.cut_off");
-                })
-                ->leftJoin("branches as tb", "tb.id", "=", "p.timekeeping_branch_id")
-                ->select([
-                    "payroll_list.*",
-                    DB::raw("p.id as payroll_id"),
-                    DB::raw("COALESCE(p.status, 'no-payroll') as status"),
-                    DB::raw("COALESCE(p.net_pay, 0) as amount"),
-                    DB::raw("p.cut_off as cut_off"),
-                    DB::raw("p.daily_rate as daily_rate"),
-                    DB::raw("p.hourly_rate as hourly_rate"),
-                    DB::raw("p.tax_status as tax_status"),
-                    DB::raw("p.salary as salary"),
-                    DB::raw("p.cancelled_off as cancelled_off"),
-                    DB::raw("p.special_holiday_amount as special_holiday_amount"),
-                    DB::raw("p.legal_holiday_amount as legal_holiday_amount"),
-                    DB::raw("p.overtime_amount as overtime_amount"),
-                    DB::raw("p.legal_holiday_overtime_amount as legal_holiday_overtime_amount"),
-                    DB::raw("p.special_holiday_overtime_amount as special_holiday_overtime_amount"),
-                    DB::raw("p.night_differential_amount as night_differential_amount"),
-                    DB::raw("p.night_differential_overtime_amount as night_differential_overtime_amount"),
-                    DB::raw("p.tardiness_amount as tardiness_amount"),
-                    DB::raw("p.undertime_amount as undertime_amount"),
-                    DB::raw("p.taxable_adjustment as taxable_adjustment"),
-                    DB::raw("p.non_taxable_adjustment as non_taxable_adjustment"),
-                    DB::raw("p.gross_pay as gross_pay"),
-                    DB::raw("p.employer_sss as employer_sss"),
-                    DB::raw("p.employer_philhealth as employer_philhealth"),
-                    DB::raw("p.employer_pagibig as employer_pagibig"),
-                    DB::raw("p.employee_sss as employee_sss"),
-                    DB::raw("p.employee_philhealth as employee_philhealth"),
-                    DB::raw("p.employee_pagibig as employee_pagibig"),
-                    DB::raw("p.taxable_income as taxable_income"),
-                    DB::raw("p.withholding_tax as withholding_tax"),
-                    DB::raw("p.total_deductions as total_deductions"),
-                    DB::raw("tb.name as timekeeping_branch_name"),
-                    DB::raw("COALESCE(tb.short_name, tb.branch_number) as timekeeping_branch_code"),
-                    DB::raw("ts.regular_days as regular_days"),
-                    DB::raw("ts.cancelled_off as cancelled_off_hours"),
-                    DB::raw("ts.special_holiday as special_holiday"),
-                    DB::raw("ts.legal_holiday as legal_holiday"),
-                    DB::raw("ts.regular_overtime as regular_overtime"),
-                    DB::raw("ts.legal_holiday_overtime as legal_holiday_overtime"),
-                    DB::raw("ts.special_holiday_overtime as special_holiday_overtime"),
-                    DB::raw("ts.night_differential as night_differential"),
-                    DB::raw("ts.night_differential_overtime as night_differential_overtime"),
-                    DB::raw("ts.tardiness as tardiness"),
-                    DB::raw("ts.undertime as undertime"),
-                ])
-                ->orderBy(
-                    Employee::select("last_name")
-                        ->whereColumn("employees.id", "payroll_list.employee_id")
-                );
-
-                if ($request->filled("branch_id")) {
-                    $proofList = $proofList->where(function ($query) use ($request) {
-                        $query->where("p.timekeeping_branch_id", $request->branch_id)
-                            ->orWhere(function ($subQuery) use ($request) {
-                                $subQuery->whereNull("p.id")
-                                    ->whereHas("employee", function ($employeeQuery) use ($request) {
-                                        $employeeQuery->where("branch_id", $request->branch_id);
-                                    });
-                            });
-                    });
-                }
-            } else if ($request->type === "PAYROLL" && $request->export && $request->converter) {
-                $proofList = $proofList->select([
-                    "status",
-                    "id",
-                    "employee_id",
-                    "net_pay as amount",
-                    "cut_off", 
-                ])->where("net_pay", ">", 0)
-                ->whereHas("payroll_list", function ($query) {
-                    $query->where("is_hold", false);
-                })->orderBy(
-                    Employee::select("last_name")
-                        ->whereColumn("employees.id", "payroll.employee_id")
-                );
-
-                if ($request->filled("branch_id")) {
-                    $proofList = $proofList->where("timekeeping_branch_id", $request->branch_id);
-                }
+            if ($request->bank_account_type_id == '0') {
+                $proofList = $proofList->where("is_bank", 0);
             }
 
-            if ($request->bank_account_type_id !== '0' && $request->bank_account_type_id !== 'ALL') {
-                $proofList = $proofList->whereHas("employee", function ($query) use ($request) {
-                    $query->whereHas("latest_bank_details", function ($q) use ($request) {
-                        $q->where("bank_account_type_id", $request->bank_account_type_id);
-                    })->whereHas("payroll_list", function ($query) {
-                        $query->where("is_bank", true);
-                    });
+            if (in_array($request->bank_account_type_id, ['1', '2'])) {
+                $proofList = $proofList->whereHas("current_bank_details", function ($query) use($request) {
+                    if (in_array($request->bank_account_type_id, ['1', '2'])) {
+                        $query->where("bank_account_type_id", $request->bank_account_type_id);
+                    }
                 });
-            
-            } else if ($request->bank_account_type_id == '0' && $request->bank_account_type_id !== 'ALL') {
-                if ($request->type === "PAYROLL") {
-                    $proofList = $proofList->where("is_bank", false)
-                    ->where("is_hold", false);
-                } else {
-                    $proofList = $proofList->whereHas("payroll_list", function ($query) {
-                        $query->where("is_bank", false);
-                    });
-                }
-            } 
+            }
+
+            if ($request->type === "INCENTIVES") {
+                $proofList = $proofList->addSelect(
+                    'payroll_list.*',
+                    DB::raw('incentives.incentive_amount as amount'), 
+                    'incentives.*',
+                    'employees.last_name',
+                    'employees.first_name',
+                    'employees.middle_name',
+                    'employees.employee_number'
+                );
+
+            } else {
+                $proofList = $proofList->leftJoin('timekeeping_summary as ts', 'payroll.timekeeping_summary_id', '=', 'ts.id',)
+                ->leftJoin('branches as b', 'payroll.timekeeping_branch_id', '=', 'b.id',)
+                ->addSelect(
+                    'payroll_list.*',
+                    DB::raw('payroll.net_pay as amount'),
+                    'payroll.*',
+                    'ts.*',
+                    'employees.last_name',
+                    'employees.first_name',
+                    'employees.middle_name',
+                    'employees.employee_number',
+                    'b.name as branch_name',
+                    'b.short_name'
+                );
+
+                // $proofList = $proofList->addSelect('payroll_list.*', DB::raw('payroll.net_pay as amount'), 'payroll.*');
+            }
 
             if ($request->export === true) {
-                // if ($request->bank_account_type_id === 'ALL') {
-                //     return $proofList->get();
-                // }
-                // if ($request->type !== "INCENTIVES") {
-                //     $proofList = $proofList->select(['*'])
-                //     ->addSelect("net_pay as amount")
-                //     ->with([
-                //         "timekeeping_branch",
-                //         "employee",
-                //         "timekeeping_summary"
-                //     ]);
-                // }
-                // $proofList = $proofList->whereHas("payroll_list", function ($query) {
-                //     $query->where("is_hold", false);
-                // })->get();
-
                 return $proofList->get();
             }
 
@@ -285,7 +137,6 @@ class PayrollProofListController extends Controller
             // }
 
             $request["export"] = true;
-            $request["converter"] = true;
             $proofLists = $this->getProofList($request);
 
             if ($proofLists instanceof \Illuminate\Http\JsonResponse) {
@@ -326,20 +177,20 @@ class PayrollProofListController extends Controller
             }
 
             $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
-            if ($sheetXml === false) {
-                $zip->close();
-                @unlink($tempCopyPath);
-                return $this->sendError(["message" => "Invalid converter template: missing Sheet1."]);
-            }
+            // if ($sheetXml === false) {
+            //     $zip->close();
+            //     @unlink($tempCopyPath);
+            //     return $this->sendError(["message" => "Invalid converter template: missing Sheet1."]);
+            // }
 
             $dom = new DOMDocument('1.0', 'UTF-8');
             $dom->loadXML($sheetXml);
             $sheetData = $dom->getElementsByTagName('sheetData')->item(0);
-            if (!$sheetData) {
-                $zip->close();
-                @unlink($tempCopyPath);
-                return $this->sendError(["message" => "Invalid converter template: missing sheet data."]);
-            }
+            // if (!$sheetData) {
+            //     $zip->close();
+            //     @unlink($tempCopyPath);
+            //     return $this->sendError(["message" => "Invalid converter template: missing sheet data."]);
+            // }
 
             $this->writeCell($dom, $sheetData, 'A1', (string)$company);
             if ($request->bank_account_type_id == 1) {
@@ -354,15 +205,18 @@ class PayrollProofListController extends Controller
             $rowIndex = 7;
             $writtenRows = 0;
             foreach ($proofLists as $transaction) {
-                $bankNumber = (string) data_get($transaction, 'employee.latest_bank_details.bank_number', '');
+                $fullName = trim(($transaction->last_name ?? '') . ", " . ($transaction->first_name ?? '') . " " . ($transaction->middle_name ?? ''));
+                $bankNumber = $transaction->current_bank_details->bank_number;
                 $bankNumber = str_replace(' ', '', $bankNumber);
 
-                if ($bankNumber === '') {
-                    continue;
-                }
-
-                $fullName = (string) data_get($transaction, 'employee.full_name', '');
-                if ($fullName === '') {
+                if (
+                    $transaction->is_hold == 1 ||
+                    $bankNumber === '' ||
+                    $fullName === '' ||
+                    $transaction->is_bank == 0 ||
+                    $transaction->amount <= 0 ||
+                    $transaction->is_on_maternity_leave == 1 
+                ) {
                     continue;
                 }
 
@@ -371,18 +225,18 @@ class PayrollProofListController extends Controller
                 $colC = "C".$rowIndex;
 
                 $this->writeCell($dom, $sheetData, $colA, $bankNumber);
-                $this->writeCell($dom, $sheetData, $colB, (string) round((float) data_get($transaction, 'amount', 0), 2));
+                $this->writeCell($dom, $sheetData, $colB, (string)round($transaction->amount ?? 0, 2));
                 $this->writeCell($dom, $sheetData, $colC, $fullName);
 
                 $rowIndex++;
                 $writtenRows++;
             }
 
-            if ($writtenRows === 0) {
-                $zip->close();
-                @unlink($tempCopyPath);
-                return $this->sendError(["message" => "No valid prooflist rows with bank account numbers found for converter export."]);
-            }
+            // if ($writtenRows === 0) {
+            //     $zip->close();
+            //     @unlink($tempCopyPath);
+            //     return $this->sendError(["message" => "No valid prooflist rows with bank account numbers found for converter export."]);
+            // }
 
             $newXml = $dom->saveXML();
             $zip->addFromString('xl/worksheets/sheet1.xml', $newXml);
