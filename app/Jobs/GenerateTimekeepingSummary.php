@@ -29,6 +29,8 @@ use Illuminate\Support\Collection;
 use App\Support\NotifiesJobStatus;
 use Carbon\CarbonInterface;
 use Log;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
+
 class GenerateTimekeepingSummary implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -61,6 +63,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $this->notificationContext = $notificationContext;
         $this->suppressNotification = $suppressNotification;
         $this->payrollService = new PayrollService();
+    }
+
+    public function middleware() {
+        return [
+            new WithoutOverlapping("timekeeping_branch_{$this->branchId}")
+        ];
     }
 
     public function handle(): void

@@ -16,6 +16,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Support\NotifiesJobStatus;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Carbon\Carbon;
 use Log;
 use Exception;
@@ -49,6 +50,12 @@ class TransferLogsToTimeKeeping implements ShouldQueue
         $this->suppressNotification = $suppressNotification;
         $this->employeeId = $employeeId;
         $this->dates = $dates;
+    }
+
+    public function middleware() {
+        return [
+            new WithoutOverlapping("timekeeping_branch_{$this->branchId}")
+        ];
     }
 
     public function handle(): void

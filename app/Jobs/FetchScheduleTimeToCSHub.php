@@ -16,6 +16,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Support\NotifiesJobStatus;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 
 class FetchScheduleTimeToCSHub implements ShouldQueue
 {
@@ -42,6 +43,11 @@ class FetchScheduleTimeToCSHub implements ShouldQueue
         $this->notificationContext = $notificationContext;
     }
 
+    public function middleware() {
+        return [
+            new WithoutOverlapping("cshub_schedule_time{$this->timeKeepingBranch->id}")
+        ];
+    }
     /**
      * Execute the job.
      */

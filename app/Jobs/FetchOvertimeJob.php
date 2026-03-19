@@ -17,6 +17,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use App\Support\NotifiesJobStatus;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 
 class FetchOvertimeJob implements ShouldQueue
 {
@@ -33,6 +34,13 @@ class FetchOvertimeJob implements ShouldQueue
         $this->userId = $userId;
         $this->notificationContext = $notificationContext;
     }
+
+    public function middleware() {
+        return [
+            new WithoutOverlapping("cshub_overtime{$this->branchId}")
+        ];
+    }
+
     public function handle(): void
     {
         try {

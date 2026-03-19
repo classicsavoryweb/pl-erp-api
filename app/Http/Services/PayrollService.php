@@ -315,85 +315,36 @@ class PayrollService {
             $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
             $netPayAmount = $taxable - $taxAmount;
 
-            $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
-
             $removedDeductions = [];
-
             $newDeductions = [];
 
-            if ($netPayAmount < 1000) {
+            $netPayCheck = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
+            $companyLoans = collect($deductions)->filter(fn($deduct) => !in_array($deduct['type'], ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]))
+            ->sortBy('deducted_amount');
+            $governmentLoans = collect($deductions)->filter(fn($deduct) => in_array($deduct['type'], ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]))
+            ->sortBy('deducted_amount');
+            $netPayNoDeductions = $netPayAmount + $nonTaxableAmount;
+            $companyLoans = $companyLoans->values()->toArray();
+            $governmentLoans = $governmentLoans->values()->toArray();
 
-                $employeeDeductions = EmployeeDeduction::with(["deduction"])
-                    ->where("employee_id", $employee->id)
-                    ->where("balance", ">", 1)
-                    ->where("date_created", "<=", $cutOff->pay_date)
-                    ->where("end_loan_status", '!=', 'Yes')
-                    ->where("approved_status", "Yes")
-                    ->get();
-
-                $companyLoans = $employeeDeductions->filter(fn($deduct) => !in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
-
-                $governmentLoans = $employeeDeductions->filter(fn($deduct) => in_array($deduct->deduction->description, ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]));
-
-                $companyLoans = $companyLoans->sortBy('monthly_amortization');
-                $governmentLoans = $governmentLoans->sortBy('monthly_amortization');
-
+            if ($netPayCheck < 0) {
                 foreach ($companyLoans as $deduction) {
-                    $amountToDeduct = $deduction->monthly_amortization / 2;
-                    if ($amountToDeduct > $deduction->balance) {
-                        $amountToDeduct = $deduction->balance;
-                    }
+                    $netPayNoDeductions -= $deduction['deducted_amount'];
 
-                    $computedNetPay = $netPayAmount + $amountToDeduct;
-
-                    if ($computedNetPay >= 1000) {
-                        $totalDeductions -= $amountToDeduct;
-                        $netPayAmount = $computedNetPay;
-
-                        $removedDeductions[] = $deduction->deduction->id;
-
-                        // $deduction->delete();
-                        break;
-                    } else {
-                        $totalDeductions -= $amountToDeduct;
-                        $netPayAmount += $amountToDeduct;
-    
-                        $removedDeductions[] = $deduction->deduction->id;
-    
-                        // $deduction->delete();
+                    if ($netPayNoDeductions < 0) {
+                        $totalDeductions -= $deduction['deducted_amount'];
+                        $netPayNoDeductions += $deduction['deducted_amount'];
+                        $removedDeductions[] = $deduction['deduction_id'];
                     }
                 }
 
-                if ($netPayAmount < 1000) {
-                    $amountToDeduct = 0;
-                    foreach ($governmentLoans as $deduction) {
-                        $amountToDeduct = $deduction->monthly_amortization;
-                        if ($deduction->months > 0) {
-                            $amountToDeduct = $deduction->monthly_amortization / 2;
-                        }
+                foreach ($governmentLoans as $deduction) {
+                    $netPayNoDeductions -= $deduction['deducted_amount'];
 
-                        if ($amountToDeduct > $deduction->balance) {
-                            $amountToDeduct = $deduction->balance;
-                        }
-
-                        $computedNetPay = $netPayAmount + $amountToDeduct;
-
-                        if ($computedNetPay >= 1000) {
-                            $totalDeductions -= $amountToDeduct;
-                            $netPayAmount = $computedNetPay;
-
-                            $removedDeductions[] = $deduction->deduction->id;
-
-                            // $deduction->delete();
-                            break;
-                        } else {
-                            $totalDeductions -= $amountToDeduct;
-                            $netPayAmount += $amountToDeduct;
-        
-                            $removedDeductions[] = $deduction->deduction->id;
-        
-                            // $deduction->delete();
-                        }
+                    if ($netPayNoDeductions < 0) {
+                        $totalDeductions -= $deduction['deducted_amount'];
+                        $netPayNoDeductions += $deduction['deducted_amount'];
+                        $removedDeductions[] = $deduction['deduction_id'];
                     }
                 }
             }
@@ -403,6 +354,8 @@ class PayrollService {
                     $newDeductions[] = $deduction;
                 }
             }
+
+            $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
 
             $payroll = Payroll::updateOrCreate(
                 [
@@ -454,14 +407,6 @@ class PayrollService {
                 "remarks" => $remarks,
                 "position_id" => $employee->position_id
             ]);
-            
-            // if ($cutOff->part == 1) {
-            //     $this->computeIncentives(
-            //         $cutOff,
-            //         $employee,
-            //         $timeKeepingSummary->branch
-            //     );
-            // }
 
             DB::commit();
             return [
@@ -477,6 +422,243 @@ class PayrollService {
                 "payroll" => $payroll
             ];
         }
+    }
+
+    public function conditionalPayroll (Employee $employee, Cutoff $cutOff, $isOnMaternity = false) {
+        $payroll = null;
+        try {
+            DB::beginTransaction();
+            $employee->loadMissing(["payroll_list", "schedule.schedule_type"]);
+            $scheduleName = $employee->schedule?->schedule_type?->name ?? "Normal Schedule";
+            $payrollList = $employee->payroll_list;
+            $divisor = $scheduleName === "Compressed Schedule" ? 22 : 26;
+            $daily_rate = $payrollList->salary_amount / $divisor;
+            $hourly_rate = $scheduleName === "Compressed Schedule" 
+                ? round($daily_rate / 9.5, 2)
+                : round($daily_rate / 8, 2);
+
+            $salary = 0;
+            $tardinessAmount = 0;
+            $undertimeAmount = 0;
+            $overtimeAmount = 0;
+            $legalHolidayAmount = 0;
+            $legalHolidayOvertimeAmount = 0;
+            $specialHolidayAmount = 0;
+            $specialHolidayOvertimeAmount = 0;
+            $nightDifferentialAmount = 0;
+            $nightDifferentialOvertimeAmount = 0;
+            $cancelledOffAmount = 0;
+            $nonTaxableAmount = 0;
+            $taxableAdustmentAmount = 0;
+            $philHealthAmount = 0;
+            $pagibigEmployee = 0;
+            $pagibigEmployer = 0;
+            $sssEmployeeAmount = 0;
+            $sssEmployerAmount = 0;
+            $taxAmount = 0;
+            $grossPayAmount = 0;
+            $netPayAmount = 0;
+            $totalDeductions = 0;
+            $manualDeductions = 0;
+            $remarks = null;
+
+            $contributionTotal = 0;
+            $additionalWorkingHoursTotal = 0;
+            $workingHoursDeductionTotal = 0;
+
+            $salary = $daily_rate * ($divisor / 2);
+            $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
+        
+            $grossPayAmount = ( $salary +
+                $overtimeAmount +
+                $legalHolidayAmount +
+                $legalHolidayOvertimeAmount + 
+                $specialHolidayAmount +
+                $specialHolidayOvertimeAmount +
+                $nightDifferentialAmount +
+                $nightDifferentialOvertimeAmount +
+                $cancelledOffAmount +
+                $taxableAdustmentAmount) -
+                $undertimeAmount -
+                $tardinessAmount;
+
+            if ($payrollList->has_complete_documents == 1) {
+                $philHealth = PhilhealthPercentageBase::first();
+
+                $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
+                
+                if ($basicSalary <= $philHealth->philhealth_cap) {
+                    $philHealthAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)) / 2 , 2);
+                }
+
+                if ($cutOff->part == 2) {
+                    $latestPayroll = Payroll::where("employee_id", $employee->id)
+                        ->whereNot("start_date", $cutOff->start_date)
+                        ->orderBy("start_date", "DESC")
+                        ->first();
+
+                    if ($latestPayroll) {
+                        $latestBasic = $latestPayroll->salary - ($latestPayroll->undertime_amount + $latestPayroll->tardiness_amount);
+                        $totalSalary = $basicSalary + $latestBasic;
+                        $amount = round(($totalSalary * ($philHealth->percentage * 0.01)) , 2);
+
+                        if ($amount > $philHealth->philhealth_max) {
+                            $amount = $philHealth->philhealth_max;
+                        }
+
+                        $philHealthAmount = round(($amount - ($latestPayroll->employee_philhealth + $latestPayroll->employee_philhealth)) / 2, 2);
+                    }
+                }
+
+                if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
+                    $philHealthAmount = $philHealth->philhealth_max / 2;
+                }
+                $sss = SSS::where('salary_range_min', '<=', $grossPayAmount)
+                ->where('salary_range_max', '>=', $grossPayAmount)
+                ->first();
+    
+                $pagibig = Pagibig::where('min_amount', '<=', $grossPayAmount)
+                    ->where('max_amount', '>=', $grossPayAmount)
+                    ->first();
+    
+                if ($cutOff->part == 1) {
+                    $sssEmployeeAmount = round($sss->employee_ss, 2);
+                    $sssEmployerAmount = round($sss->employer_ss + ($sss->employer_cc / 2), 2);   
+    
+                    $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
+                    $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
+                    $pagibigEmployee = round($pagibigAmount / 2, 2);
+                    $pagibigEmployer = round($pagibigAmount / 2, 2);
+                } else {
+                    $latestPayroll = Payroll::where("employee_id", $employee->id)
+                    ->whereNot("start_date", $cutOff->start_date)
+                    ->orderBy("start_date", "DESC")
+                    ->first();
+    
+                    if ($latestPayroll) {
+                        $totalSalary = $grossPayAmount + $latestPayroll->gross_pay;
+    
+                        $sss = SSS::where('salary_range_min', '<=', $totalSalary)
+                        ->where('salary_range_max', '>=', $totalSalary)
+                        ->first();
+                        
+                        $pagibig = Pagibig::where('min_amount', '<=', $totalSalary)
+                        ->where('max_amount', '>=', $totalSalary)
+                        ->first();
+    
+                        $pagibigShares = $totalSalary * (0.01 * $pagibig->percentage);
+
+                        if ($pagibigShares > $pagibig->max_deduction) {
+                            $pagibigShares = $pagibig->max_deduction;
+                        }
+                        $latestSSS = SSS::where('salary_range_min', '<=', $latestPayroll->gross_pay)
+                        ->where('salary_range_max', '>=', $latestPayroll->gross_pay)
+                        ->first();
+
+                        if ($latestSSS) {
+                            $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
+                            $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
+    
+                            $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
+                            $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
+                            $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestPayroll->employer_sss, 2);
+                        }
+                    } else {
+                        $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
+                        $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
+                        $pagibigEmployee = round($pagibigAmount / 2, 2);
+                        $pagibigEmployer = round($pagibigAmount / 2, 2);
+    
+                        $sssEmployeeAmount = round($sss->employee_ss, 2);
+                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
+                    }
+                }
+            }
+
+            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
+            $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
+
+            if (!$isOnMaternity) {
+                $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
+                ->where("range_max", '>=',round($taxableIncome, 2))
+                ->first();
+
+                $salaryBase = $tax->salary_base ?? 0;
+                $exemption = $tax->exemption ?? 0;
+                $percentage = $tax->percentage ?? 0;
+
+                $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                    ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                    : 0;
+            }
+
+            $netPayAmount = $taxableIncome - $taxAmount;
+
+            $payroll = Payroll::updateOrCreate(
+                [
+                "employee_id" => $employee->id,
+                "cut_off" => $cutOff->cut_off,
+                "start_date" => $cutOff->start_date,
+                "end_date" => $cutOff->end_date,
+                ],
+                [
+                "timekeeping_summary_id" => 0,
+                "timekeeping_branch_id" => 0, //HO
+                "pay_date" => $cutOff->pay_date,
+                "daily_rate" => $daily_rate,
+                "hourly_rate" => $hourly_rate,
+                "pay_type" => "",
+                "tax_status" => $employee->tax_type,
+                "salary" => round($salary,2),
+                "tardiness_amount" => round($tardinessAmount,2),
+                "undertime_amount" => round($undertimeAmount,2),
+                "overtime_amount" => round($overtimeAmount,2),
+                "legal_holiday_amount" => round($legalHolidayAmount,2),
+                "legal_holiday_overtime_amount" => round($legalHolidayOvertimeAmount,2),
+                "special_holiday_amount" => round($specialHolidayAmount,2),
+                "special_holiday_overtime_amount" => round($specialHolidayOvertimeAmount,2),
+                "night_differential_amount" => round($nightDifferentialAmount,2),
+                "night_differential_overtime_amount" => round($nightDifferentialOvertimeAmount,2),
+                "taxable_adjustment" => round($taxableAdustmentAmount,2),
+                "non_taxable_adjustment" => round($nonTaxableAmount,2),
+                "gross_pay" => round($grossPayAmount,2),
+                "employee_sss" => $sssEmployeeAmount,
+                "employer_sss" => $sssEmployerAmount,
+                "employee_pagibig" => $pagibigEmployee,
+                "employer_pagibig" => $pagibigEmployer,
+                "employee_philhealth" => $philHealthAmount,
+                "employer_philhealth" => $philHealthAmount,
+                "withholding_tax" => round($taxAmount,2),
+                "deductions" => json_encode([]),
+                "total_deductions" => round($totalDeductions,2),
+                "manual_deductions" => $manualDeductions,
+                "cancelled_off" => round($cancelledOffAmount,2),
+                "net_pay" => round($netPayAmount, 2),
+                "taxable_income" => round($taxableIncome, 2),
+                "contribution_total" => round($contributionTotal,2),
+                "additional_working_hours_total" => round($additionalWorkingHoursTotal, 2),
+                "working_hours_deduction_total" => round($workingHoursDeductionTotal, 2),
+                "status" => "initial",
+                "is_maternity" => $payrollList->is_on_maternity_leave,
+                "is_hold" => $payrollList->is_hold,
+                "remarks" => $remarks,
+                "position_id" => $employee->position_id
+            ]);
+
+            DB::commit();
+            return [
+                "error" => false,
+                "payroll" => $payroll
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("ERROR COMPUTING PAYROLL EMPLOYEE: " .$employee->full_name. " ERROR: ". $e->getMessage());
+            
+            return [
+                "error" => true,
+                "payroll" => $payroll
+            ];
+        }     
     }
 
     public function computeStatutoryOnly (Employee $employee, $cutOff) {
