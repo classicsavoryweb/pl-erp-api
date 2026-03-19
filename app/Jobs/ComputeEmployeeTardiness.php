@@ -91,7 +91,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
                     }
                 }
 
-                if ($totalTardy >= 60) {
+                if ($totalTardy > 60) {
                     $latestTransgression = Tardiness::with(["tardiness_sanction"])
                     ->where("employee_id", $employee->id)
                     ->where("status", "Approved")
