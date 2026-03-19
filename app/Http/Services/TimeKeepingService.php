@@ -615,29 +615,6 @@ class TimeKeepingService
                     "payment_type" => $paymentType,
                     "status" => $remainingHours >= 1 ? "Partialy Paid" : "Paid"
                 ]);
-
-                // if (!empty($overtimeApplied->cshub_overtime_id)) {
-                //     $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtimeApplied->cshub_overtime_id;
-                //     $user = env('CS_HUB_ADMIN_EMAIL');
-                //     $password = env('CS_HUB_ADMIN_PASSWORD');
-
-                //     try {
-                //         Http::withBasicAuth($user, $password)
-                //         ->withHeaders([
-                //             "Accept" => "application/json",
-                //             "Content-Type" => "application/json"
-                //         ])->timeout(60)
-                //         ->retry(50, 1000, function ($exception, $attempt) {
-                //             return str_contains($exception->getMessage(), 'cURL error 60');
-                //         })
-                //         ->post($overtimeLink,[
-                //             "status_payroll" => $payrollStatus,
-                //             "status" => "approved",
-                //         ]);
-                //     } catch (Exception $e) {
-                //         // Log::info("CSHub overtime api error encountered: ".$e->getMessage());
-                //     }
-                // }
             }
 
             $isExisting = $model->where("employee_id", $employee->id)
@@ -666,9 +643,6 @@ class TimeKeepingService
                 }
             }
 
-            // Log::info("UNPROCESSED: ".$finalWorkHours);
-            // Log::info("WORKED HOURS: ".$workHours);
-            // Log::info("SHOULD BE HALFDAY: ".$shouldBeHalfDay);
             if (
                 ($workHours >= $schedule->total_hours - 3.5 && $undertime < 240 ) &&
                 !$isCancelledOff &&
@@ -700,9 +674,17 @@ class TimeKeepingService
                 $finalWorkHours = $hours / 2;
                 // Log::info("CONDITION 4");
             }
+            
+            $halfDayBasis = $hours == 9.5 ? 285 : 240;
+            if ($finalWorkHours == $hours / 2) {
+                if ($undertime >= $halfDayBasis) {
+                    $undertime = $undertime - $halfDayBasis;
+                }
 
-
-            // Log::info("PROCESSED: ".$finalWorkHours);
+                if ($tardiness >= $halfDayBasis) {
+                    $tardiness = $tardiness - $halfDayBasis;
+                }
+            }
 
             if ($holiday) {
                 if ($legalHoliday === "Yes") {
@@ -923,9 +905,6 @@ class TimeKeepingService
                 $cancelled_off = $timeKeeping->approved_overtime * ($paymentPerHour * 1.69);
             }
         }
-        Log::info("PPD: ". $paymentPerDay);
-        Log::info("PPH: ". $paymentPerHour);
-        Log::info("OT: ". $regular_overtime);
 
         $totalAmount = (
             $paymentPerDay + 
