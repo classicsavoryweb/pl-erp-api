@@ -334,7 +334,7 @@ class PayrollController extends Controller
                     }
                 }
 
-                if ($totalDeductions > $payroll->net_pay) {
+                if ($payroll->net_pay < 0) {
                     return $this->sendError(["message" => "Net pay cannot be a negative amount."]);
                 }
 
