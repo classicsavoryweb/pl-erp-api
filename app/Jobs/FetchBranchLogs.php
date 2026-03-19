@@ -16,6 +16,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use App\Support\NotifiesJobStatus;
 use Log;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 
 class FetchBranchLogs implements ShouldQueue
 {
@@ -32,6 +33,11 @@ class FetchBranchLogs implements ShouldQueue
         $this->notificationContext = $notificationContext;
     }
 
+    public function middleware() {
+        return [
+            new WithoutOverlapping("biotime_logs_{$this->branchId}")
+        ];
+    }
     /**
      * Execute the job.
      */
