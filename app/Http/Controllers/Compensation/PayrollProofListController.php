@@ -94,6 +94,8 @@ class PayrollProofListController extends Controller
                     'employees.employee_number',
                     'b.name as branch_name',
                     'b.short_name',
+                    'ts.cancelled_off as cancelled_off_hours',
+                    'payroll.cancelled_off as cancelled_off_amount',
                     'p.description as position'
                 );
 

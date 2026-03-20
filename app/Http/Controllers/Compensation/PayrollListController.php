@@ -157,26 +157,27 @@ class PayrollListController extends Controller
                 "remarks" => $request->remarks,
             ]);
 
-            Vendor::create([
-                `vend_type_id` => 1,
-                `ven_no` => $employee->employee_number,
-                `ven_name`=> $employee->full_name,
-                `ven_chk_name`=> $employee->full_name,
-                `ven_address` => $employee->address,
-                `ven_tel_no` => $employee->contact_number,
-                `ven_fax_no` => "",
-                `ven_tin_no` => "",
-                `term_id` => "00008",
-                `deb_acc_no` => "None",
-                `cre_acc_no` => "4000000",
-                `vat` => "N/A",
-                `ewt_acc_no` => "EWT005",
-                `ven_stat` => "Active",
-                `ven_fields_input` => "OPTIONAL",
-                `ven_particular` => "Employee Vendor Account",
-                `related_id` => $employee->employee_number,
-                `email` => $employee->email,
-                `pay_type` => "Check",
+            Vendor::updateOrCreate([
+                "ven_no" => $employee->employee_number,
+                "ven_name"=> trim($employee->full_name),
+            ], [
+                "vend_type_id" => 1,
+                "ven_chk_name"=> trim($employee->full_name),
+                "ven_address" => $employee->address,
+                "ven_tel_no" => $employee->contact_number,
+                "ven_fax_no" => "",
+                "ven_tin_no" => "",
+                "term_id" => "00008",
+                "deb_acc_no" => "None",
+                "cre_acc_no" => "4000000",
+                "vat" => "N/A",
+                "ewt_acc_no" => "EWT005",
+                "ven_stat" => "Active",
+                "ven_fields_input" => "OPTIONAL",
+                "ven_particular" => "Employee Vendor Account",
+                "related_id" => $employee->employee_number,
+                "email" => $employee->email,
+                "pay_type" => "Check",
             ]);
             
             DB::commit();
