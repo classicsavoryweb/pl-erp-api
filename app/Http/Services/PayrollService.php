@@ -1096,7 +1096,7 @@ class PayrollService {
             return false;
         }
 
-        $branchLocation = $employee->current_branch?->location ?? $employee->home_branch?->location ?? '';
+        $branchLocation = $employee->home_branch?->location ?? '';
         $branchLocation = strtoupper(trim((string) $branchLocation));
         if ($branchLocation === '') {
             return false;
