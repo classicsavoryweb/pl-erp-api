@@ -73,6 +73,10 @@ class Payroll extends Model
         return $this->hasOne(TimeKeepingSummary::class, "id", "timekeeping_summary_id");
     }
 
+    public function position() {
+        return $this->hasOne(Position::class, "id", "position_id");
+    }
+
     public function lates() {
         return $this->hasMany(LateTimeKeepingSummary::class, "timekeeping_summary_id", "timekeeping_summary_id");
     }

@@ -35,6 +35,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                 return [
                     $transaction->employee_number ?? '',
                     trim(($transaction->last_name ?? '') . ", " . ($transaction->first_name ?? '') . " " . ($transaction->middle_name ?? '')),
+                    $transaction->position ?? '',
                     $transaction->branch_name ?? '',
                     $transaction->short_name ?? '',
                     $transaction->current_bank_details->bank_account_type->description ?? '',
@@ -99,6 +100,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
             return [
                 "Employee Number",
                 "Full Name",
+                "Position",
                 "Branch",
                 "Branch Code",
                 "Card Type", 
