@@ -600,6 +600,7 @@ class GenerateEntry implements ShouldQueue
 
             $payrollEmployeeBankSums = [
                 'grosspay' => 0,
+                'netpay' => 0,
                 'eeSSS' => 0,
                 'erSSS' => 0,
                 'eePh' => 0,
@@ -614,6 +615,7 @@ class GenerateEntry implements ShouldQueue
 
             foreach ($payrollEmployeeBankQuery as $payrollBank) {
                 $payrollEmployeeBankSums['grosspay'] += floatval(str_replace(',', '', $payrollBank->gross_pay));
+                $payrollEmployeeBankSums['netpay'] += floatval(str_replace(',', '', $payrollBank->net_pay));
                 $payrollEmployeeBankSums['eeSSS'] += floatval(str_replace(',', '', $payrollBank->employee_sss));
                 $payrollEmployeeBankSums['erSSS'] += floatval(str_replace(',', '', $payrollBank->employer_sss));
                 $payrollEmployeeBankSums['eePh'] += floatval(str_replace(',', '', $payrollBank->employee_philhealth));
@@ -699,6 +701,7 @@ class GenerateEntry implements ShouldQueue
 
             $payrollEmployeeCashSums = [
                 'grosspay' => 0,
+                'netpay' => 0,
                 'eeSSS' => 0,
                 'erSSS' => 0,
                 'eePh' => 0,
@@ -726,6 +729,7 @@ class GenerateEntry implements ShouldQueue
 
             foreach ($payrollEmployeeCashQuery as $payrollCash) {
                 $payrollEmployeeCashSums['grosspay'] += floatval(str_replace(',', '', $payrollCash->gross_pay));
+                $payrollEmployeeCashSums['netpay'] += floatval(str_replace(',', '', $payrollCash->net_pay));
                 $payrollEmployeeCashSums['eeSSS'] += floatval(str_replace(',', '', $payrollCash->employee_sss));
                 $payrollEmployeeCashSums['erSSS'] += floatval(str_replace(',', '', $payrollCash->employer_sss));
                 $payrollEmployeeCashSums['eePh'] += floatval(str_replace(',', '', $payrollCash->employee_philhealth));
@@ -781,8 +785,8 @@ class GenerateEntry implements ShouldQueue
             $entries = [];
 
             if ($payrollBranch->type === "Head Office") {
-                //head office - grosspay (cash and bank)
-                if ($payrollEmployeeBankSums['grosspay'] > 0 && $payrollBranch->branch_number != "SFI00001") {
+                //head office - payroll payable (bank)
+                if ($payrollEmployeeBankSums['netpay'] > 0 && $payrollBranch->branch_number != "SFI00001") {
                     $firstEntry = $this->generateEntryId($this->counterEntry);
                     $secondEntry = $this->generateEntryId($this->counterEntry);
 
@@ -803,7 +807,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchHONumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeBankSums['grosspay'],
+                            'amount'              => $payrollEmployeeBankSums['netpay'],
                             'acc_no'              => $payrollBranch->advance_debit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Debit',
@@ -819,7 +823,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchHONumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeBankSums['grosspay'],
+                            'amount'              => $payrollEmployeeBankSums['netpay'],
                             'acc_no'              => $payrollBranch->advance_credit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Credit',
@@ -835,7 +839,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchNumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeBankSums['grosspay'],
+                            'amount'              => $payrollEmployeeBankSums['netpay'],
                             'acc_no'              => $payrollBranch->expense_debit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Debit',
@@ -851,7 +855,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchNumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeBankSums['grosspay'],
+                            'amount'              => $payrollEmployeeBankSums['netpay'],
                             'acc_no'              => $payrollBranch->expense_credit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Credit',
@@ -1556,8 +1560,8 @@ class GenerateEntry implements ShouldQueue
                     ]);
                 }
 
-                //head office - grosspay (cash)
-                if ($payrollEmployeeCashSums['grosspay'] > 0) {
+                //head office - payroll payable (cash)
+                if ($payrollEmployeeCashSums['netpay'] > 0) {
                     $firstEntry = $this->generateEntryId($this->counterEntry);
                     $secondEntry = $this->generateEntryId($this->counterEntry);
 
@@ -1580,7 +1584,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchHONumber,
                             'ven_no'              => $cashPayrollVendorNo,
                             'ven_name'            => $cashPayrollVendorName,
-                            'amount'              => $payrollEmployeeCashSums['grosspay'],
+                            'amount'              => $payrollEmployeeCashSums['netpay'],
                             'acc_no'              => $payrollBranch->advance_debit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Debit',
@@ -1597,7 +1601,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchHONumber,
                             'ven_no'              => $cashPayrollVendorNo,
                             'ven_name'            => $cashPayrollVendorName,
-                            'amount'              => $payrollEmployeeCashSums['grosspay'],
+                            'amount'              => $payrollEmployeeCashSums['netpay'],
                             'acc_no'              => $payrollBranch->advance_credit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Credit',
@@ -1615,7 +1619,7 @@ class GenerateEntry implements ShouldQueue
                         'branch_number'       => $branchNumber,
                         'ven_no'              => $vendorHONo,
                         'ven_name'            => $vendorHOName,
-                        'amount'              => $payrollEmployeeCashSums['grosspay'],
+                        'amount'              => $payrollEmployeeCashSums['netpay'],
                         'acc_no'              => $payrollBranch->expense_debit,
                         'description_per_acc' => 'Grosspay',
                         'balance_type'        => 'Debit',
@@ -1631,7 +1635,7 @@ class GenerateEntry implements ShouldQueue
                         'branch_number'       => $branchNumber,
                         'ven_no'              => $vendorHONo,
                         'ven_name'            => $vendorHOName,
-                        'amount'              => $payrollEmployeeCashSums['grosspay'],
+                        'amount'              => $payrollEmployeeCashSums['netpay'],
                         'acc_no'              => $payrollBranch->expense_credit,
                         'description_per_acc' => 'Grosspay',
                         'balance_type'        => 'Credit',
@@ -2576,8 +2580,8 @@ class GenerateEntry implements ShouldQueue
                 }
             } else { 
 
-                //branch - grosspay (bank)
-                if ($payrollEmployeeBankSums['grosspay'] > 0) {
+                //branch - payroll payable (bank)
+                if ($payrollEmployeeBankSums['netpay'] > 0) {
                     $firstEntry = $this->generateEntryId($this->counterEntry);
                     $secondEntry = $this->generateEntryId($this->counterEntry);
 
@@ -2597,7 +2601,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchHONumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeBankSums['grosspay'],
+                            'amount'              => $payrollEmployeeBankSums['netpay'],
                             'acc_no'              => $payrollBranch->advance_debit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Debit',
@@ -2613,7 +2617,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchHONumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeBankSums['grosspay'],
+                            'amount'              => $payrollEmployeeBankSums['netpay'],
                             'acc_no'              => $payrollBranch->advance_credit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Credit',
@@ -2630,7 +2634,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchNumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeBankSums['grosspay'],
+                            'amount'              => $payrollEmployeeBankSums['netpay'],
                             'acc_no'              => $payrollBranch->expense_debit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Debit',
@@ -2646,7 +2650,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchNumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeBankSums['grosspay'],
+                            'amount'              => $payrollEmployeeBankSums['netpay'],
                             'acc_no'              => $payrollBranch->expense_credit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Credit',
@@ -3347,8 +3351,8 @@ class GenerateEntry implements ShouldQueue
                     ]);
                 }
 
-                //branch - grosspay (cash)
-                if ($payrollEmployeeCashSums['grosspay'] > 0) {
+                //branch - payroll payable (cash)
+                if ($payrollEmployeeCashSums['netpay'] > 0) {
                     $firstEntry = $this->generateEntryId($this->counterEntry);
                     $secondEntry = $this->generateEntryId($this->counterEntry);
 
@@ -3368,7 +3372,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchHONumber,
                             'ven_no'              => $cashPayrollVendorNo,
                             'ven_name'            => $cashPayrollVendorName,
-                            'amount'              => $payrollEmployeeCashSums['grosspay'],
+                            'amount'              => $payrollEmployeeCashSums['netpay'],
                             'acc_no'              => $payrollBranch->advance_debit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Debit',
@@ -3384,7 +3388,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchHONumber,
                             'ven_no'              => $cashPayrollVendorNo,
                             'ven_name'            => $cashPayrollVendorName,
-                            'amount'              => $payrollEmployeeCashSums['grosspay'],
+                            'amount'              => $payrollEmployeeCashSums['netpay'],
                             'acc_no'              => $payrollBranch->advance_credit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Credit',
@@ -3401,7 +3405,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchNumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeCashSums['grosspay'],
+                            'amount'              => $payrollEmployeeCashSums['netpay'],
                             'acc_no'              => $payrollBranch->expense_debit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Debit',
@@ -3417,7 +3421,7 @@ class GenerateEntry implements ShouldQueue
                             'branch_number'       => $branchNumber,
                             'ven_no'              => $vendorHONo,
                             'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeCashSums['grosspay'],
+                            'amount'              => $payrollEmployeeCashSums['netpay'],
                             'acc_no'              => $payrollBranch->expense_credit,
                             'description_per_acc' => 'Grosspay',
                             'balance_type'        => 'Credit',
