@@ -375,6 +375,7 @@ class LastPayController extends Controller
             DB::beginTransaction();
 
             $request->validate([
+                "payroll_hold" => "nullable|numeric|min:0",
                 "incentives" => "required",
                 "sl_vl" => "required",
                 "tax_refund" => "required",
@@ -443,6 +444,10 @@ class LastPayController extends Controller
 
                 foreach ($payrolls as $payroll) {
                     $totalPayroll += $this->numeric($payroll->net_pay);
+                }
+
+                if ($request->has("payroll_hold")) {
+                    $totalPayroll = $this->numeric($request->payroll_hold);
                 }
 
                 if ($this->numeric($request->incentives) != 0 && $payrollPayDate) {
@@ -701,6 +706,7 @@ class LastPayController extends Controller
         try {
             DB::beginTransaction();
             $request->validate([
+                "payroll_hold" => "nullable|numeric|min:0",
                 "incentives" => "required",
                 "sl_vl" => "required",
                 "tax_refund" => "required",
@@ -714,6 +720,10 @@ class LastPayController extends Controller
             if ($lastPay) {
                 $totalPayroll = $this->numeric($lastPay->payroll_hold);
                 $month13th = $this->numeric($lastPay->thirteenth_month);
+
+                if ($request->has("payroll_hold")) {
+                    $totalPayroll = $this->numeric($request->payroll_hold);
+                }
 
                 $incentives = $this->numeric($request->incentives);
                 $sl_vl = $this->numeric($request->sl_vl);
