@@ -268,8 +268,14 @@ class PayrollService {
                     $totalDeductions += $amountToDeduct;
                 }
             } else {
-                $totalDeductions = $existingPayroll->total_deductions;
+                // $totalDeductions = $existingPayroll->total_deductions;
+                $totalDeductions = 0;
                 $deductions = json_decode($existingPayroll->deductions, true);
+
+                foreach ($deductions as $ded) {
+                    $totalDeductions += $ded["deducted_amount"];
+                }
+
                 $manualDeductions = $existingPayroll->manual_deductions;
                 $nonTaxableAmount = $existingPayroll->non_taxable_adjustment;
                 $remarks = $existingPayroll->remarks;

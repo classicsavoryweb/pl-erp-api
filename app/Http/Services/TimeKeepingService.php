@@ -722,6 +722,10 @@ class TimeKeepingService
                 $cancelled_off_hours = 0;
             }
 
+            if ($tardiness > ($hours * 60)) {
+                return $timeKeeping;
+            }
+
             $timeKeeping = $model->create([
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
