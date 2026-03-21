@@ -39,7 +39,7 @@ class PayrollService {
             DB::beginTransaction();
 
             $employee = $timeKeepingSummary->employee;
-            $employee->loadMissing(["payroll_list", "schedule.schedule_type"]);
+            // $employee->loadMissing(["payroll_list", "schedule.schedule_type"]);
             $scheduleName = $employee->schedule?->schedule_type?->name ?? "Normal Schedule";
             $payrollList = $employee->payroll_list;
             $salaryAmount = (float) ($payrollList?->salary_amount ?? 0);
@@ -116,121 +116,10 @@ class PayrollService {
             $nightDifferentialOvertimeAmount = $timeKeepingSummary->night_differential_overtime * ($hourly_rate * .125);
             $cancelledOffAmount = $timeKeepingSummary->cancelled_off * ($hourly_rate * 1.3);
             $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
-        
-            $grossPayAmount = ( $salary +
-                $overtimeAmount +
-                $legalHolidayAmount +
-                $legalHolidayOvertimeAmount + 
-                $specialHolidayAmount +
-                $specialHolidayOvertimeAmount +
-                $nightDifferentialAmount +
-                $nightDifferentialOvertimeAmount +
-                $cancelledOffAmount +
-                $taxableAdustmentAmount) -
-                $undertimeAmount -
-                $tardinessAmount;
-
-            //clarify if $grossPayAmount will be used
-            if ($payrollList->has_complete_documents == 1) {
-                $philHealth = PhilhealthPercentageBase::first();
-
-                $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
-                
-                if ($basicSalary <= $philHealth->philhealth_cap) {
-                    $philHealthAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)) / 2 , 2);
-                }
-
-                if ($cutOff->part == 2) {
-                    $latestPayroll = Payroll::where("employee_id", $employee->id)
-                        ->whereNot("start_date", $cutOff->start_date)
-                        ->orderBy("start_date", "DESC")
-                        ->first();
-
-                    if ($latestPayroll) {
-                        $latestBasic = $latestPayroll->salary - ($latestPayroll->undertime_amount + $latestPayroll->tardiness_amount);
-                        $totalSalary = $basicSalary + $latestBasic;
-                        $amount = round(($totalSalary * ($philHealth->percentage * 0.01)) , 2);
-
-                        if ($amount > $philHealth->philhealth_max) {
-                            $amount = $philHealth->philhealth_max;
-                        }
-
-                        $philHealthAmount = round(($amount - ($latestPayroll->employee_philhealth + $latestPayroll->employee_philhealth)) / 2, 2);
-                    }
-                }
-
-                if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
-                    $philHealthAmount = $philHealth->philhealth_max / 2;
-                }
-                $sss = SSS::where('salary_range_min', '<=', $grossPayAmount)
-                ->where('salary_range_max', '>=', $grossPayAmount)
-                ->first();
-    
-                $pagibig = Pagibig::where('min_amount', '<=', $grossPayAmount)
-                    ->where('max_amount', '>=', $grossPayAmount)
-                    ->first();
-    
-                if ($cutOff->part == 1) {
-                    $sssEmployeeAmount = round($sss->employee_ss, 2);
-                    $sssEmployerAmount = round($sss->employer_ss + ($sss->employer_cc / 2), 2);   
-    
-                    $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
-                    $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
-                    $pagibigEmployee = round($pagibigAmount / 2, 2);
-                    $pagibigEmployer = round($pagibigAmount / 2, 2);
-                } else {
-                    $latestPayroll = Payroll::where("employee_id", $employee->id)
-                    ->whereNot("start_date", $cutOff->start_date)
-                    ->orderBy("start_date", "DESC")
-                    ->first();
-    
-                    if ($latestPayroll) {
-                        $totalSalary = $grossPayAmount + $latestPayroll->gross_pay;
-    
-                        $sss = SSS::where('salary_range_min', '<=', $totalSalary)
-                        ->where('salary_range_max', '>=', $totalSalary)
-                        ->first();
-                        
-                        $pagibig = Pagibig::where('min_amount', '<=', $totalSalary)
-                        ->where('max_amount', '>=', $totalSalary)
-                        ->first();
-    
-                        $pagibigShares = $totalSalary * (0.01 * $pagibig->percentage);
-
-                        if ($pagibigShares > $pagibig->max_deduction) {
-                            $pagibigShares = $pagibig->max_deduction;
-                        }
-                        $latestSSS = SSS::where('salary_range_min', '<=', $latestPayroll->gross_pay)
-                        ->where('salary_range_max', '>=', $latestPayroll->gross_pay)
-                        ->first();
-
-                        if ($latestSSS) {
-                            $pagibigEmployee = round($pagibigShares - $latestPayroll->employee_pagibig, 2);
-                            $pagibigEmployer = round($pagibigShares - $latestPayroll->employer_pagibig, 2);
-    
-                            $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
-                            $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                            $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestPayroll->employer_sss, 2);
-                        }
-                    } else {
-                        $pagibigShares = $grossPayAmount * (0.01 * $pagibig->percentage);
-                        $pagibigAmount = $pagibigShares > $pagibig->max_deduction ? $pagibig->max_deduction : $pagibigShares;
-                        $pagibigEmployee = round($pagibigAmount / 2, 2);
-                        $pagibigEmployer = round($pagibigAmount / 2, 2);
-    
-                        $sssEmployeeAmount = round($sss->employee_ss, 2);
-                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
-                    }
-
-                }
-            }     
 
             $deductions = [];
             $totalDeductions = 0;
-
-            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-            $taxable = $taxableIncome;
-
+        
             $existingPayroll = Payroll::where("employee_id", $employee->id)
             ->where("cut_off", $cutOff->cut_off)
             ->where("start_date", $cutOff->start_date)
@@ -268,7 +157,6 @@ class PayrollService {
                     $totalDeductions += $amountToDeduct;
                 }
             } else {
-                // $totalDeductions = $existingPayroll->total_deductions;
                 $totalDeductions = 0;
                 $deductions = json_decode($existingPayroll->deductions, true);
 
@@ -281,24 +169,113 @@ class PayrollService {
                 $remarks = $existingPayroll->remarks;
                 if (!$edit) {
                     $taxableAdustmentAmount = $existingPayroll->taxable_adjustment;
-
-                    $grossPayAmount = ( $salary +
-                        $overtimeAmount +
-                        $legalHolidayAmount +
-                        $legalHolidayOvertimeAmount + 
-                        $specialHolidayAmount +
-                        $specialHolidayOvertimeAmount +
-                        $nightDifferentialAmount +
-                        $nightDifferentialOvertimeAmount +
-                        $cancelledOffAmount +
-                        $taxableAdustmentAmount ) -
-                        $undertimeAmount -
-                        $tardinessAmount;
-
-                    $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-                    $taxable = $taxableIncome;
                 }
             }
+
+            $grossPayAmount = ( $salary +
+                $overtimeAmount +
+                $legalHolidayAmount +
+                $legalHolidayOvertimeAmount + 
+                $specialHolidayAmount +
+                $specialHolidayOvertimeAmount +
+                $nightDifferentialAmount +
+                $nightDifferentialOvertimeAmount +
+                $cancelledOffAmount +
+                $taxableAdustmentAmount) -
+                $undertimeAmount -
+                $tardinessAmount;
+
+            $lastCutOffStartDate = Carbon::parse($cutOff->start_date)
+                ->subMonths(1)
+                ->day(26)
+                ->format("Y-m-d");
+
+            $latestPayroll = Payroll::where("employee_id", $employee->id)
+                ->where("start_date", $lastCutOffStartDate)
+                ->first();
+
+            //clarify if $grossPayAmount will be used
+            if ($payrollList->has_complete_documents == 1) {
+                $philHealth = PhilhealthPercentageBase::first();
+
+                $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
+                
+                if ($basicSalary <= $philHealth->philhealth_cap) {
+                    $philHealthAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)) / 2 , 2);
+                }
+
+                if ($cutOff->part == 2) {
+                    if ($latestPayroll) {
+                        $latestBasic = $latestPayroll->salary - ($latestPayroll->undertime_amount + $latestPayroll->tardiness_amount);
+                        $totalSalary = $basicSalary + $latestBasic;
+                        $amount = round(($totalSalary * ($philHealth->percentage * 0.01)) , 2);
+
+                        if ($amount > $philHealth->philhealth_max) {
+                            $amount = $philHealth->philhealth_max;
+                        }
+
+                        $philHealthAmount = round(($amount - ($latestPayroll->employee_philhealth + $latestPayroll->employee_philhealth)) / 2, 2);
+                    }
+                }
+
+                if ($philHealthAmount * 2 > $philHealth->philhealth_max) {
+                    $philHealthAmount = $philHealth->philhealth_max / 2;
+                }
+
+                $sss = SSS::where('salary_range_min', '<=', $grossPayAmount)
+                ->where('salary_range_max', '>=', $grossPayAmount)
+                ->first();
+    
+                $pagibig = Pagibig::where('min_amount', '<=', $basicSalary)
+                    ->where('max_amount', '>=', $basicSalary)
+                    ->first();
+    
+                if ($cutOff->part == 1) {
+                    $sssEmployeeAmount = round($sss->employee_ss, 2);
+                    $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
+    
+                    $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+                    $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+
+                    $pagibigEmployee = round($pagibigAmount, 2);
+                    $pagibigEmployer = round($pagibigAmount, 2);
+                } else {    
+                    if ($latestPayroll) {
+                        $totalSalary = $grossPayAmount + $latestPayroll->gross_pay;
+                        $sss = SSS::where('salary_range_min', '<=', $totalSalary)
+                        ->where('salary_range_max', '>=', $totalSalary)
+                        ->first();
+
+                        $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+                        $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+
+                        $pagibigEmployee = round($pagibigAmount, 2);
+                        $pagibigEmployer = round($pagibigAmount, 2);
+
+                        $latestSSS = SSS::where('salary_range_min', '<=', $latestPayroll->gross_pay)
+                        ->where('salary_range_max', '>=', $latestPayroll->gross_pay)
+                        ->first();
+
+                        if ($latestSSS) {    
+                            $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
+                            $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
+                            $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestPayroll->employer_sss, 2);
+                        }
+                    } else {
+                        $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+                        $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+
+                        $pagibigEmployee = round($pagibigAmount, 2);
+                        $pagibigEmployer = round($pagibigAmount, 2);
+    
+                        $sssEmployeeAmount = round($sss->employee_ss, 2);
+                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
+                    }
+                }
+            }
+
+            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
+            $taxable = $taxableIncome;
 
             if ($this->isNcrMinimum($employee)) {
                 $taxAmount = 0;
@@ -363,14 +340,12 @@ class PayrollService {
 
             $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
 
-            $payroll = Payroll::updateOrCreate(
-                [
+            $payroll = Payroll::updateOrCreate([
                 "employee_id" => $employee->id,
                 "cut_off" => $cutOff->cut_off,
                 "start_date" => $cutOff->start_date,
                 "end_date" => $cutOff->end_date,
-                ],
-                [
+            ], [
                 "timekeeping_summary_id" => $timeKeepingSummary->id,
                 "timekeeping_branch_id" => $timeKeepingSummary->branch_id,
                 "pay_date" => $cutOff->pay_date,
@@ -1102,7 +1077,7 @@ class PayrollService {
             return false;
         }
 
-        $branchLocation = $employee->home_branch?->location ?? '';
+        $branchLocation = $employee->current_branch?->location ?? $employee->home_branch?->location ?? '';
         $branchLocation = strtoupper(trim((string) $branchLocation));
         if ($branchLocation === '') {
             return false;

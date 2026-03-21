@@ -45,7 +45,10 @@ class ComputeEmployeeTardiness implements ShouldQueue
             $employees = Employee::where("status", "active")->get();
 
             foreach ($employees as $employee) {
-                $timeKeepings = TimeKeeping::whereBetween("date", [$startDate, $endDate])
+                $timeKeepings = TimeKeeping::with([
+                    "biotime_log",
+                    "biotime_log.punches"
+                ])->whereBetween("date", [$startDate, $endDate])
                 ->where("employee_id", $employee->id)
                 ->where("tardiness", ">", 0)
                 ->get();
@@ -54,7 +57,12 @@ class ComputeEmployeeTardiness implements ShouldQueue
                 $unExcusedTimeKeepings = $timeKeepings;
 
                 foreach ($timeKeepings as $timeKeeping) {
-                    $totalTardy += $timeKeeping->tardiness;
+                    if (
+                        $timeKeeping->biotime_log &&
+                        $timeKeeping->biotime_log->punches->count() >= 4
+                    ) {
+                        $totalTardy += $timeKeeping->tardiness;
+                    }
                 }
 
                 if ($totalTardy >= 60) {
