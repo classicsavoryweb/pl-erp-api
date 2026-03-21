@@ -27,6 +27,7 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
         return [
             "Full Name",
             "Position",
+            "Tax Type",
             "Home Branch",
             "Current Branch",
             "Employee Number",
@@ -89,6 +90,7 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
             return [
                 $list->employee->full_name,
                 $position,
+                $list->employee->tax_type,
                 $homeBranch,
                 $currentBranch,
                 $list->employee->employee_number,
