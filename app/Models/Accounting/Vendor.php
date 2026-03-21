@@ -15,6 +15,7 @@ class Vendor extends Model
     protected $connection="apsys";
     protected $table="tbl_vendor";
     public $timestamps = false;
+    protected $primaryKey = 'ven_id';
     protected $fillable = [
         'vend_type_id',
         'ven_no',
