@@ -922,12 +922,7 @@ class TimeKeepingService
             $cancelled_off
         ) - ($tardinessDeduction + $undertimeDeduction);
 
-        $idToUse = $isAdjustment ? "adjustment_timekeeping_id" : "timekeeping_id";
-        $timeKeepingPayment = TimeKeepingPayment::updateOrCreate(
-            [
-                $idToUse => $timeKeeping->id,
-            ],
-        [
+        $timeKeepingPayment = [
             "base_amount" => round($paymentPerDay, 2),
             "tardiness_deduction" => round($tardinessDeduction, 2),
             "undertime_deduction" => round($undertimeDeduction, 2),
@@ -941,9 +936,9 @@ class TimeKeepingService
             "cancelled_off" => round($cancelled_off, 2),
             "total_amount" => round($totalAmount, 2),
             "type" => $isAdjustment ? "adjustment_timekeeping" : "timekeeping"
-        ]);
+        ];
 
-        return $timeKeepingPayment;
+        return (object) $timeKeepingPayment;
     }
 
     public function getCutOff($date){
