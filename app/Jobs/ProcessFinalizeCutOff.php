@@ -73,7 +73,6 @@ class ProcessFinalizeCutOff implements ShouldQueue
 
                 foreach ($deductions as $deduction) {
                     $employeeDeduction = EmployeeDeduction::find($deduction["deduction_id"]);
-
                     if (!$employeeDeduction){
                         continue;
                     }
@@ -84,16 +83,16 @@ class ProcessFinalizeCutOff implements ShouldQueue
                             "balance" => $newBalance,
                             // "end_loan_status" => $newBalance == 0 ? "Yes" : "No"
                         ]);
-        
-                        DeductionHistory::create([
-                            "employee_id" => $employeeDeduction->employee_id,
-                            "deduction_id" => $employeeDeduction->deduction_id,
-                            "reference_doc" => $employeeDeduction->reference_doc,
-                            "amount" => $deduction["deducted_amount"],
-                            "pay_date" => $payroll->pay_date,
-                            "date_time" => now()
-                        ]);
                     }
+
+                    DeductionHistory::create([
+                        "employee_id" => $employeeDeduction->employee_id,
+                        "deduction_id" => $employeeDeduction->deduction_id,
+                        "reference_doc" => $employeeDeduction->reference_doc,
+                        "amount" => $deduction["deducted_amount"],
+                        "pay_date" => $payroll->pay_date,
+                        "date_time" => now()
+                    ]);
                 }
             }
 
