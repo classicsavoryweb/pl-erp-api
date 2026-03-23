@@ -35,6 +35,11 @@ class TransferUniformDeductions extends Command
                 DB::beginTransaction();
                 $employee = Employee::where("employee_number", $uniform->employeeid)->first();
 
+                if (!$employee) {
+                    Log::info("EMPLOYEE NOT FOUND: ".$uniform->employeeid);
+                    continue;
+                }
+
                 $first_initial = strtoupper(substr($employee->first_name, 0, 1));
                 $middle_initial = strtoupper(substr($employee->middle_name ?? '', 0, 1));
                 $last_initial = strtoupper(substr($employee->last_name, 0, 1));
