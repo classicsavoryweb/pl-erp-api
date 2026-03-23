@@ -49,6 +49,9 @@ class ComputeEmployeeTardiness implements ShouldQueue
                     "biotime_log",
                     "biotime_log.punches"
                 ])->whereBetween("date", [$startDate, $endDate])
+                ->whereHas("biotime_log", function ($query) {
+                    $query->whereNot("status", "INCOMPLETE");
+                })
                 ->where("employee_id", $employee->id)
                 ->where("tardiness", ">", 0)
                 ->get();
@@ -57,12 +60,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
                 $unExcusedTimeKeepings = $timeKeepings;
 
                 foreach ($timeKeepings as $timeKeeping) {
-                    if (
-                        $timeKeeping->biotime_log &&
-                        $timeKeeping->biotime_log->punches->count() >= 4
-                    ) {
-                        $totalTardy += $timeKeeping->tardiness;
-                    }
+                    $totalTardy += $timeKeeping->tardiness;
                 }
 
                 if ($totalTardy >= 60) {
