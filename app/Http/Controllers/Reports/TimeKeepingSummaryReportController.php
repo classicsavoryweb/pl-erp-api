@@ -45,19 +45,6 @@ class TimeKeepingSummaryReportController extends Controller
             ->leftJoin("branches as cb", "cb.id", "=", "employees.branch_id")
             ->leftJoin("branches as tk", "tk.id", "=", "timekeeping_summary.branch_id")
             ->where("payroll_list.is_included", 1)
-            ->addSelect([
-                'has_schedule' => DB::table('schedule_time')
-                    ->selectRaw('COUNT(*)')
-                    ->whereColumn('schedule_time.employee_id', 'timekeeping_summary.employee_id')
-                    ->whereBetween('date', [$cutOff->start_date, $cutOff->end_date])
-                    ->limit(1),
-
-                'has_biotime' => DB::table('biotime_logs')
-                    ->selectRaw('COUNT(*)')
-                    ->whereColumn('biotime_logs.employee_id', 'timekeeping_summary.employee_id')
-                    ->whereBetween('date', [$cutOff->start_date, $cutOff->end_date])
-                    ->limit(1),
-            ])
             ->get();
 
             return Excel::download(new TimeKeepingSummaryReportExport($timeKeepingSummaries), "timekeeping_summary.xlsx", \Maatwebsite\Excel\Excel::XLSX);

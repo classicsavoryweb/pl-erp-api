@@ -27,8 +27,6 @@ class TimeKeepingSummaryReportExport implements FromCollection, WithHeadings
                 $tk->is_hold == 1 ? "YES" : "NO",
                 $tk->has_complete_documents == 1 ? "YES" : "NO",
                 $tk->current_branch_name,
-                $tk->has_schedule == 1 ? "YES" : "NO",
-                $tk->has_biotime == 1 ? "YES" : "NO",
                 $tk->timekeeping_branch_name,
                 $tk->regular_days
             ];
@@ -46,8 +44,6 @@ class TimeKeepingSummaryReportExport implements FromCollection, WithHeadings
             "On Hold",
             "Complete Documents",
             "Current Branch",
-            "Has Encoded Schedule",
-            "Has Biotime Logs",
             "Timekeeping Branch",
             "Regular Days"
         ];
