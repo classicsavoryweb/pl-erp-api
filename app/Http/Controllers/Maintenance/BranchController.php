@@ -118,9 +118,10 @@ class BranchController extends Controller
                 "date_open" => "required",
                 "branch_email" => "required",
                 "rate_code" => "required",
-                'branch_head_employee_number' => "required",
-                "group_head_employee_number" => "required",
-                "mancom_employee_number" => "required",
+                'branch_head_employee_number' => "nullable|string",
+                "group_head_employee_number" => "nullable|string",
+                "kitchen_oic_employee_number" => "nullable|string",
+                "mancom_employee_number" => "nullable|string",
                 // "expense_debit" => "required",
                 // "expense_credit" => "required",
                 // "advance_debit" => "required",
@@ -141,21 +142,18 @@ class BranchController extends Controller
             $bhEmployee = $this->resolveEmployeeByNumber($request->branch_head_employee_number);
             $ghEmployee = $this->resolveEmployeeByNumber($request->group_head_employee_number);
             $mancom = $this->resolveEmployeeByNumber($request->mancom_employee_number);
+            $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
 
-            $kitchenOIC = "";
-            if ($request->has('kitchen_oic_employee_number')) {
-                $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
-            }
-            if (!$bhEmployee) {
+            if ($request->filled('branch_head_employee_number') && !$bhEmployee) {
                 return $this->sendError(["message" => "Branch head employee number not found."]);
             }
-            if (!$ghEmployee) {
+            if ($request->filled('group_head_employee_number') && !$ghEmployee) {
                 return $this->sendError(["message" => "Group head employee number not found."]);
             }
-            if (!$mancom) {
+            if ($request->filled('mancom_employee_number') && !$mancom) {
                 return $this->sendError(["message" => "Mancom employee number not found."]);
             }
-            if ($request->has('kitchen_oic_employee_number') && !$kitchenOIC) {
+            if ($request->filled('kitchen_oic_employee_number') && !$kitchenOIC) {
                 return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
 
@@ -173,12 +171,12 @@ class BranchController extends Controller
                 "company" => $request->company,
                 "rate_code" => $request->rate_code,
                 "branch_email" => $request->branch_email,
-                'branch_head_employee_number' => $bhEmployee['employee_number'],
-                "group_head_employee_number" => $ghEmployee['employee_number'],
-                'branch_head' => $bhEmployee['full_name'],
-                "group_head" => $ghEmployee['full_name'],
-                "mancom_employee_number" => $mancom['employee_number'],
-                "mancom" => $mancom['full_name'],
+                'branch_head_employee_number' => $bhEmployee['employee_number'] ?? null,
+                "group_head_employee_number" => $ghEmployee['employee_number'] ?? null,
+                'branch_head' => $bhEmployee['full_name'] ?? null,
+                "group_head" => $ghEmployee['full_name'] ?? null,
+                "mancom_employee_number" => $mancom['employee_number'] ?? null,
+                "mancom" => $mancom['full_name'] ?? null,
                 "kitchen_oic_employee_number" => $kitchenOIC['employee_number'] ?? null,
                 "kitchen_oic" => $kitchenOIC['full_name'] ?? null, 
                 "expense_debit" => $request->expense_debit ?? null, 
@@ -218,9 +216,10 @@ class BranchController extends Controller
                 "date_open" => "required",
                 "branch_email" => "required",
                 "rate_code" => "required",
-                'branch_head_employee_number' => "required",
-                "group_head_employee_number" => "required",
-                "mancom_employee_number" => "required",
+                'branch_head_employee_number' => "nullable|string",
+                "group_head_employee_number" => "nullable|string",
+                "kitchen_oic_employee_number" => "nullable|string",
+                "mancom_employee_number" => "nullable|string",
                 // "expense_debit" => "required",
                 // "expense_credit" => "required",
                 // "advance_debit" => "required",
@@ -238,21 +237,18 @@ class BranchController extends Controller
             $bhEmployee = $this->resolveEmployeeByNumber($request->branch_head_employee_number);
             $ghEmployee = $this->resolveEmployeeByNumber($request->group_head_employee_number);
             $mancom = $this->resolveEmployeeByNumber($request->mancom_employee_number);
+            $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
 
-            $kitchenOIC = "";
-            if ($request->has('kitchen_oic_employee_number')) {
-                $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
-            }
-            if (!$bhEmployee) {
+            if ($request->filled('branch_head_employee_number') && !$bhEmployee) {
                 return $this->sendError(["message" => "Branch head employee number not found."]);
             }
-            if (!$ghEmployee) {
+            if ($request->filled('group_head_employee_number') && !$ghEmployee) {
                 return $this->sendError(["message" => "Group head employee number not found."]);
             }
-            if (!$mancom) {
+            if ($request->filled('mancom_employee_number') && !$mancom) {
                 return $this->sendError(["message" => "Mancom employee number not found."]);
             }
-            if ($request->has('kitchen_oic_employee_number') && !$kitchenOIC) {
+            if ($request->filled('kitchen_oic_employee_number') && !$kitchenOIC) {
                 return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
             Branch::where("id", $id)->update([
@@ -269,12 +265,12 @@ class BranchController extends Controller
                 "company" => $request->company,
                 "rate_code" => $request->rate_code,
                 "branch_email" => $request->branch_email,
-                'branch_head_employee_number' => $bhEmployee['employee_number'],
-                "group_head_employee_number" => $ghEmployee['employee_number'],
-                'branch_head' => $bhEmployee['full_name'],
-                "group_head" => $ghEmployee['full_name'],
-                "mancom_employee_number" => $mancom['employee_number'],
-                "mancom" => $mancom['full_name'],
+                'branch_head_employee_number' => $bhEmployee['employee_number'] ?? null,
+                "group_head_employee_number" => $ghEmployee['employee_number'] ?? null,
+                'branch_head' => $bhEmployee['full_name'] ?? null,
+                "group_head" => $ghEmployee['full_name'] ?? null,
+                "mancom_employee_number" => $mancom['employee_number'] ?? null,
+                "mancom" => $mancom['full_name'] ?? null,
                 "kitchen_oic_employee_number" => $kitchenOIC['employee_number'] ?? null,
                 "kitchen_oic" => $kitchenOIC['full_name'] ?? null,
                 "expense_debit" => $request->expense_debit ?? null, 
