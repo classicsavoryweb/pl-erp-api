@@ -10,6 +10,7 @@ use App\Http\Controllers\Reports\ReportsBDOCashCardController;
 use App\Http\Controllers\Reports\ReportsDeductionController;
 use App\Http\Controllers\Reports\ReportsIncentiveAttendanceController;
 use App\Http\Controllers\Reports\ReportsPayrollStatutoryController;
+use App\Http\Controllers\Reports\TimeKeepingSummaryReportController;
 use Illuminate\Support\Facades\Route;
 
 // REPORTS MODULE
@@ -62,4 +63,7 @@ Route::middleware('auth:sanctum')->group(function() {
     //incentive attendance report
     Route::middleware(["permission:perform_reports_incentive_attendance"])->get('/export-incentive-attendance', [ReportsIncentiveAttendanceController::class, 'exportIncentiveAttendance']);
     Route::middleware(["permission:perform_reports_incentive_report"])->get('/export-incentive-report', [IncentiveReportController::class, 'exportIncentiveReport']);
+
+    //timekeeping summary look up to payroll list
+    Route::middleware(["permission:perform_reports_timekeeping_summary_report"])->get('/export-timekeeping-summary-report', [TimeKeepingSummaryReportController::class, 'exportTimeKeepingSummaryReport']);
 });
