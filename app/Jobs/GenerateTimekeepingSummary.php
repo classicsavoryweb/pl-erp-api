@@ -118,19 +118,23 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $adjustmentOvertimes = Overtime::where("employee_id", $employee->id)
             ->whereNotBetween("overtime_date", $cutOff)
             ->whereBetween("date_filed", $cutOff)
+            ->where("status", "Unpaid")
             ->get();
 
             foreach ($adjustmentOvertimes as $overtime) {
-
                 $timeKeeping = TimeKeeping::with(["schedule"])
                 ->where("employee_id", $employee->id)
                 ->where("date", $overtime->overtime_date)
                 ->first();
 
-                $isExisting = Adjustment::where("type","Overtime Force Adjustments")
+                $isExisting = Adjustment::whereIn("type", ["Overtime Adjustments", "Overtime Force Adjustments"])
                 ->where("employee_id", $employee->id)
                 ->where("date", $overtime->overtime_date)
                 ->first();
+
+                if ($isExisting) {
+                    continue;
+                }
                 
                 if ($timeKeeping) {
                     $schedule = $timeKeeping->schedule;
@@ -145,10 +149,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         !$schedule->timetable
                     ) {
                         continue;
-                    }
-
-                    if ($isExisting) {
-                        $isExisting->delete();
                     }
 
                     $adjustedTimeKeeping = $this->timeKeepingService->computeTimeKeeping(
@@ -178,6 +178,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     $taxable_amount = $adjustedTimeKeepingPayment->total_amount - ($oldtimeKeepingPayment->total_amount ?? 0);
                     $amount_paid = $oldtimeKeepingPayment->total_amount ?? 0;
+
+                    if ($taxable_amount == 0) {
+                        continue;
+                    }
+
                     $adjustment = Adjustment::create([
                         "employee_id" => $employee->id,
                         "biometric_number" => $employee->biometric_number,
@@ -472,19 +477,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ) {
                         $absentToBeAdded = $restDays->count() - 2;
 
-                        // foreach ($restDays as $rd) {
-                        //     $weekDateRange = $this->getCustomWeekRange($rd->date, $cutOff, $employee);
-                        //     $rdSched = ScheduleTime::where("employee_id", $employee->id)
-                        //     ->whereBetween("date", $weekDateRange)
-                        //     ->where("timetable", "REST DAY")
-                        //     ->get();
-                            
-                        //     if ($rdSched->count() == 2) {
-                        //         $absent += 1;
-                        //         break;
-                        //     }
-                        // }
-
                         $rdSched = ScheduleTime::where("employee_id", $employee->id)
                         ->whereBetween("date", [$cutOff['start_time'], $cutOff['end_time']])
                         ->where("timetable", "REST DAY")
@@ -536,7 +528,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 $adjustments_cancelled_off = 0;
 
                 $deductions = $this->timeKeepingService->deductPreviousPaidHoliday($cutOff, $employee);
-                $remarks = null;
+                $remarks = "";
                 if (
                     $deductions['special_holiday_hours_deduction'] > 0 ||
                     $deductions['special_holiday_overtime_deduction'] > 0 ||
@@ -573,6 +565,32 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $regular_days = $overRideAttendance;
                 }
 
+                $adjustmentRemarks = $remarks;
+                $adjustments = Adjustment::where("employee_id", $employee->id)
+                ->where("is_timekeeping_locked", 0)
+                ->whereIn("status", ["Approved", "Adjusted"])
+                ->get();
+
+                foreach($adjustments as $adjustment) {                      
+                    if ($adjustment->taxable_amount !== 0) {
+                        $adjustment_amount += $adjustment->taxable_amount;
+                        $adjustment->update([
+                            "status" => "Adjusted",
+                            "timekeeping_summary_id" => $timeKeepingSummary->id
+                        ]);
+    
+                        $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
+
+                        if ($adjustment->status == "Manual Taxable Adjustment") {
+                            $adjustment_amount = $adjustment->taxable_amount;
+                            $adjustmentRemarks = $remarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
+                            break;
+                        }
+                    }
+                }
+
+                $remarks = $adjustmentRemarks;
+
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut_off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
@@ -594,93 +612,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     "remarks" => $remarks,
                     "position_id" => $employee->position_id
                 ]);
-
-                // $this->payrollService->computePayroll($timeKeepingSummary);
-
-                $previousCutOff = $this->getPreviousCutOff($cutOff["start_time"]);
-
-                $adjustments = Adjustment::where("employee_id", $employee->id)
-                ->where("is_timekeeping_locked", 0)
-                ->whereNot("type", "Overtime Force Adjustments")
-                ->whereIn("status", ["Approved", "Adjusted"])
-                ->get();
-
-                $anotherAdjustments = Adjustment::where("date","<" ,$cutOff["start_time"])
-                ->where("employee_id", $employee->id)
-                ->where("type", "Overtime Force Adjustments")
-                ->where("is_timekeeping_locked", 0)
-                ->whereIn("status", ["Approved", "Adjusted"])
-                ->get();
-
-                $withAdjustments = false;
-                foreach($adjustments as $adjustment) {                      
-                    if ($adjustment->taxable_amount !== 0) {
-                        $adjustment_amount += $adjustment->taxable_amount;
-                        $adjustment->update([
-                            "status" => "Adjusted",
-                            "timekeeping_summary_id" => $timeKeepingSummary->id
-                        ]);
-    
-                        $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-                        $withAdjustments = true;
-                    }
-
-                }
-
-                foreach($anotherAdjustments as $adjustment) {
-
-                    if ($adjustment->taxable_amount !== 0) {
-                        $adjustment_amount += $adjustment->taxable_amount;
-                    }
-
-                    $adjustment->update([
-                        "status" => "Adjusted",
-                        "timekeeping_summary_id" => $timeKeepingSummary->id
-                    ]);
-
-                    $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-                    $withAdjustments = true;
-                }
-
-                $manualAdjustments = Adjustment::whereBetween("date", [$cutOff["start_time"], $cutOff["end_time"]])
-                ->where("employee_id", $employee->id)
-                ->where("type", "Manual Taxable Adjustment")
-                ->where("is_timekeeping_locked", 0)
-                ->orderBy("created_at", "DESC")
-                ->get();
-
-                if ($manualAdjustments->count() > 0) {
-                    $latestManual = $manualAdjustments->first(function ($adjustment) {
-                        return in_array($adjustment->status, ["Approved", "Adjusted"], true);
-                    });
-
-                    if ($latestManual) {
-                        $adjustment_amount = $latestManual->taxable_amount ?? 0;
-                        $adjustmentRemarks = $adjustmentRemarks . $latestManual->date ." ".$latestManual->type." - ".$latestManual->taxable_amount." | ";
-                        $withAdjustments = true;
-                    }
-
-                    foreach ($manualAdjustments as $adjustment) {
-                        $updatePayload = [
-                            "timekeeping_summary_id" => $timeKeepingSummary->id
-                        ];
-
-                        if (in_array($adjustment->status, ["Approved", "Adjusted"], true)) {
-                            $updatePayload["status"] = "Adjusted";
-                        }
-
-                        $adjustment->update($updatePayload);
-                    }
-                }
-
-                $cancelled_off += round($adjustments_cancelled_off, 2);
-
-                if ($withAdjustments) {
-                    $timeKeepingSummary->update([
-                        "adjustment_amount" => $adjustment_amount,
-                        "remarks" => $adjustmentRemarks
-                    ]);
-                }
 
                 if (count($lateDate) > 0) {
                     foreach($lateDate as $late) {

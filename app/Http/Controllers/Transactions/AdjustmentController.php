@@ -243,6 +243,10 @@ class AdjustmentController extends Controller
                 $taxable_amount = $adjustmentPayment->total_amount - ($originalPayment->total_amount ?? 0);
                 $amount_paid = $originalPayment->total_amount ?? 0;
 
+                if ($taxable_amount == 0) {
+                    return $this->sendError(["message" => "Taxable adjustment computed id 0.00"]);
+                }
+
                 $adjustment->update([
                     "days" => $days,
                     "cancelled_rd" => $cancelled_off,
