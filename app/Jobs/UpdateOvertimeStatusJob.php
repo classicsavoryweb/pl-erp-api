@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Log;
 
 class UpdateOvertimeStatusJob implements ShouldQueue
 {
@@ -48,12 +49,13 @@ class UpdateOvertimeStatusJob implements ShouldQueue
                     "Accept" => "application/json",
                     "Content-Type" => "application/json"
                 ])->timeout(60)
+                ->retry(3)
                 ->post($overtimeLink,[
                     "status_payroll" => $payrollStatus,
                     "status" => "approved",
                 ]);
             } catch (Exception $e) {
-                // Log::info("CSHub overtime api error encountered: ".$e->getMessage());
+                Log::info("CSHUB API ERROR: ".$e->getMessage());
             }
 
             sleep(1);
