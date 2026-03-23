@@ -25,7 +25,7 @@ class EmployeeDeductionsReportExport implements FromCollection, WithHeadings
                 $deduction->employee->employee_number,
                 $deduction->employee->full_name,
                 $deduction->amount,
-                $deduction->actual_deduction,
+                $deduction->actual_deduction->balance,
                 $deduction->actual_deduction->remarks
             ];
         });
