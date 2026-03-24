@@ -98,7 +98,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             $employees = $employees->get();
             $activeCutOff = Cutoff::where("status", "active")->first();
-            $endDateBasis = Carbon::parse($activeCutOff->end_date)
+            $startDateBasis = Carbon::parse($activeCutOff->end_date)
             ->subMonths(1)
             ->day(1)
             ->format("Y-m-d");
@@ -113,7 +113,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $adjustmentOvertimes = Overtime::where("employee_id", $employee->id)
             ->whereNotBetween("overtime_date", [$activeCutOff->start_date, $activeCutOff->end_date])
             ->where("status", "Unpaid")
-            ->where("overtime_date", ">=", $endDateBasis)
+            ->where("overtime_date", ">=", $startDateBasis)
             ->get();
 
             foreach ($adjustmentOvertimes as $overtime) {

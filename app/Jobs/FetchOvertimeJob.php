@@ -94,6 +94,11 @@ class FetchOvertimeJob implements ShouldQueue
                 $start_date = $date;
             }
 
+            $start_date = Carbon::parse($activeCutOff->end_date)
+            ->subMonths(1)
+            ->day(1)
+            ->format("Y-m-d");
+
             $response = Http::withBasicAuth($user, $password)
             ->withHeaders([
                 "Accept" => "application/json",
