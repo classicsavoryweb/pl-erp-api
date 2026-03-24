@@ -13,6 +13,37 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class BranchController extends Controller
 {
+    private function syncEmployeeOicStatuses(array $employeeNumbers): void
+    {
+        $employeeNumbers = array_values(array_unique(array_filter($employeeNumbers)));
+
+        if (empty($employeeNumbers)) {
+            return;
+        }
+
+        foreach ($employeeNumbers as $employeeNumber) {
+            $employee = Employee::where("employee_number", $employeeNumber)->first();
+
+            if (!$employee) {
+                continue;
+            }
+
+            $hasBranchOicAssignment = Branch::where(function ($query) use ($employeeNumber) {
+                $query->where("branch_head_employee_number", $employeeNumber)
+                    ->orWhere("kitchen_oic_employee_number", $employeeNumber);
+            })->exists();
+
+            $hasPositionOicAssignment = ($employee->latest_position?->oic_assignment ?? null) === "Yes";
+            $newOicStatus = ($hasBranchOicAssignment || $hasPositionOicAssignment) ? "OIC" : null;
+
+            if ($employee->oic_status !== $newOicStatus) {
+                $employee->update([
+                    "oic_status" => $newOicStatus,
+                ]);
+            }
+        }
+    }
+
     private function resolveEmployeeByNumber(?string $employeeNumber): ?array
     {
         if (!$employeeNumber) {
@@ -157,7 +188,7 @@ class BranchController extends Controller
                 return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
 
-            Branch::create([
+            $branch = Branch::create([
                 "name" => $request->name,
                 "branch_number" => $branchNumber,
                 "status" => $request->status,
@@ -191,6 +222,11 @@ class BranchController extends Controller
                 "branch_ho_13th_credit" => $request->branch_ho_13th_credit ?? null,
                 "branch_ho_stat_debit" => $request->branch_ho_stat_debit ?? null,
                 "branch_ho_stat_credit" => $request->branch_ho_stat_credit ?? null,
+            ]);
+
+            $this->syncEmployeeOicStatuses([
+                $branch->branch_head_employee_number,
+                $branch->kitchen_oic_employee_number,
             ]);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);
@@ -251,7 +287,15 @@ class BranchController extends Controller
             if ($request->filled('kitchen_oic_employee_number') && !$kitchenOIC) {
                 return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
-            Branch::where("id", $id)->update([
+            $branch = Branch::findOrFail($id);
+            $affectedEmployeeNumbers = [
+                $branch->branch_head_employee_number,
+                $branch->kitchen_oic_employee_number,
+                $bhEmployee['employee_number'] ?? null,
+                $kitchenOIC['employee_number'] ?? null,
+            ];
+
+            $branch->update([
                 "name" => $request->name,
                 "status" => $request->status,
                 "travel_time" => $request->travel_time,
@@ -286,6 +330,8 @@ class BranchController extends Controller
                 "branch_ho_stat_debit" => $request->branch_ho_stat_debit ?? null,
                 "branch_ho_stat_credit" => $request->branch_ho_stat_credit ?? null,
             ]);
+
+            $this->syncEmployeeOicStatuses($affectedEmployeeNumbers);
 
             return $this->sendResponse(["message" => "Branch updated successfully"]);
         } catch(Exception $e) {
