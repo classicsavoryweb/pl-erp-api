@@ -178,7 +178,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "amount_paid" => round($amount_paid, 2),
                         "correct_amount_paid" => round($adjustedTimeKeepingPayment->total_amount, 2),
                         "actual_schedule" => $schedule->timetable,
-                        "type" => "Overtime Force Adjustments",
+                        "type" => "Overtime Adjustments",
                         "status" => "Approved",
                         "added_by" => $this->userId,
                         "added_at" => now(),
