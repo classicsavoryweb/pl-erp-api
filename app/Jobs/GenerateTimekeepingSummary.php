@@ -97,16 +97,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
             }
 
             $employees = $employees->get();
-
             $activeCutOff = Cutoff::where("status", "active")->first();
-
-            $start_date = Carbon::parse($activeCutOff->start_date)->subMonth()->day(26)->format("Y-m-d");
-            $end_date = Carbon::parse($start_date)->addMonth()->day(10)->format("Y-m-d");
-
-            if ($activeCutOff->part == 1) {
-                $start_date = Carbon::parse($activeCutOff->start_date)->day(11)->format("Y-m-d");
-                $end_date = Carbon::parse($activeCutOff->start_date)->day(25)->format("Y-m-d");
-            }
+            $endDateBasis = Carbon::parse($activeCutOff->end_date)
+            ->subMonths(1)
+            ->day(1)
+            ->format("Y-m-d");
 
             foreach ($employees as $employee) {
             $adjustmentRemarks = "";
@@ -116,9 +111,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
             }
 
             $adjustmentOvertimes = Overtime::where("employee_id", $employee->id)
-            ->whereNotBetween("overtime_date", $cutOff)
-            ->whereBetween("date_filed", $cutOff)
+            ->whereNotBetween("overtime_date", [$activeCutOff->start_date, $activeCutOff->end_date])
             ->where("status", "Unpaid")
+            ->where("overtime_date", ">=", $endDateBasis)
             ->get();
 
             foreach ($adjustmentOvertimes as $overtime) {
@@ -135,7 +130,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 if ($isExisting) {
                     continue;
                 }
-                
+
                 if ($timeKeeping) {
                     $schedule = $timeKeeping->schedule;
                     $oldtimeKeepingPayment = $this->timeKeepingService->computePayment($timeKeeping);
@@ -143,11 +138,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ->where("date", $timeKeeping->date)
                     ->first();
 
-                    if (
-                        !$schedule || 
-                        !property_exists($schedule, 'timetable') ||
-                        !$schedule->timetable
-                    ) {
+                    if (!$schedule) {
                         continue;
                     }
 
@@ -161,15 +152,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         true,
                         "force adjustment"
                     );
+
                     $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday ?? null;
                     $adjustedTimeKeeping->save();
-
-                    $holidayIsPaid = $this->timeKeepingService->determinePaidHoliday(
-                        $timeKeeping->date,
-                        $employee,
-                        $timeKeeping->branch_id
-                    );
-                    $adjustedTimeKeeping->paid_holiday = $holidayIsPaid ? "Yes" : "No";
 
                     $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                         $adjustedTimeKeeping,
@@ -565,32 +550,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $regular_days = $overRideAttendance;
                 }
 
-                $adjustmentRemarks = $remarks;
-                $adjustments = Adjustment::where("employee_id", $employee->id)
-                ->where("is_timekeeping_locked", 0)
-                ->whereIn("status", ["Approved", "Adjusted"])
-                ->get();
-
-                foreach($adjustments as $adjustment) {                      
-                    if ($adjustment->taxable_amount !== 0) {
-                        $adjustment_amount += $adjustment->taxable_amount;
-                        $adjustment->update([
-                            "status" => "Adjusted",
-                            "timekeeping_summary_id" => $timeKeepingSummary->id
-                        ]);
-    
-                        $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-
-                        if ($adjustment->status == "Manual Taxable Adjustment") {
-                            $adjustment_amount = $adjustment->taxable_amount;
-                            $adjustmentRemarks = $remarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-                            break;
-                        }
-                    }
-                }
-
-                $remarks = $adjustmentRemarks;
-
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut_off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
@@ -612,6 +571,41 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     "remarks" => $remarks,
                     "position_id" => $employee->position_id
                 ]);
+
+                $adjustmentRemarks = $remarks;
+                $withAdjustments = false;
+                $adjustments = Adjustment::where("employee_id", $employee->id)
+                ->where("is_timekeeping_locked", 0)
+                ->whereIn("status", ["Approved", "Adjusted"])
+                ->get();
+
+                foreach($adjustments as $adjustment) {                      
+                    if ($adjustment->taxable_amount != 0) {
+                        $adjustment_amount += $adjustment->taxable_amount;
+                        $adjustment->update([
+                            "status" => "Adjusted",
+                            "timekeeping_summary_id" => $timeKeepingSummary->id
+                        ]);
+    
+                        $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
+
+                        if ($adjustment->status == "Manual Taxable Adjustment") {
+                            $adjustment_amount = $adjustment->taxable_amount;
+                            $adjustmentRemarks = $remarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
+                            break;
+                        }
+
+                        $withAdjustments = true;
+                    }
+                }
+
+                if ($withAdjustments) {
+                    $remarks = $adjustmentRemarks;
+                    $timeKeepingSummary->update([
+                        "adjustment_amount" => $adjustment_amount,
+                        "remarks" => $remarks,
+                    ]);
+                }
 
                 if (count($lateDate) > 0) {
                     foreach($lateDate as $late) {
