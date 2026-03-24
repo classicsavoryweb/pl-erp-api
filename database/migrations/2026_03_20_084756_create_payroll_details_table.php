@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('payroll_details', function (Blueprint $table) {
             $table->id();
             $table->string("employee_id");
-            $table->string("payroll_id");
+            $table->string("payroll_id")->nullable();
             $table->string("pay_date");
             $table->string("home_branch_id");
             $table->string("position_id");

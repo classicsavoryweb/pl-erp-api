@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class PayrollDetail extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = "payroll_details";
 
@@ -17,6 +19,10 @@ class PayrollDetail extends Model
         "pay_date",
         "home_branch_id",
         "position_id",
+        "is_hold",
+        "is_on_maternity_leave",
+        "is_mancom",
+        "is_complete_documents",
         "daily_rate",
         "hourly_rate",
         "minute_rate",
@@ -44,5 +50,14 @@ class PayrollDetail extends Model
 
     public function payroll() {
         return $this->belongsTo(Payroll::class, "payroll_id", "id");
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Payroll Detail')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

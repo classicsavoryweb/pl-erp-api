@@ -4,6 +4,8 @@ namespace App\Jobs;
 
 use App\Http\Services\PayrollService;
 use App\Models\Cutoff;
+use App\Models\Payroll;
+use App\Models\PayrollDetail;
 use App\Models\PayrollList;
 use App\Models\TimeKeepingSummary;
 use Illuminate\Bus\Queueable;
@@ -39,40 +41,48 @@ class ProcessInitializeCutOff implements ShouldQueue
     public function handle(): void
     {
         try {
-        $includedEmployees = PayrollList::with(["employee"])
+        $cutOff = $this->cutOff;
+
+        $includedEmployees = PayrollList::with([
+            "employee",
+            "employee.schedule",
+            "employee.schedule.schedule_type"
+        ])
         ->where("is_included", 1)
-        ->where(function ($query) {
-            $query->where("is_on_maternity_leave", 1)
-            ->orWhere("is_mancom", 1);
-        })
         ->get();
 
-        foreach ($includedEmployees as $includedEmployee) {
-            $employee = $includedEmployee->employee;
-            $timeKeepingSummary = TimeKeepingSummary::with([
-                "employee",
-                "employee.current_position",
-                "employee.schedule",
-                "employee.schedule.schedule_type"
-            ])
-            ->where("cut_off", $this->cutOff->start_date."-".$this->cutOff->end_date)
-            ->where("employee_id",  $employee->id)
-            ->first();
+        foreach ($includedEmployees as $payrollList) {
+            $divisor = 13;
+            $dayDivisor = 8;
+            $salaryBaseAmount = $payrollList->salary_amount ?? 0;
+            $employee = $payrollList->employee;
+            $scheduleName = $payrollList->employee->schedule?->schedule_type?->name ?? "Normal Schedule";
 
-            if ($employee->type === "Agency") {
-                continue;
+            if ($scheduleName == "Compressed Schedule") {
+                $divisor = 11;
+                $dayDivisor = 9.5;
             }
 
-            if  ($includedEmployee->isOnMaternityLeave() && $timeKeepingSummary) {
-                continue;
-            }
+            $dailyRate = $salaryBaseAmount / ($divisor * 2);
+            $hourlyRate = $dailyRate / $dayDivisor;
+            $minuteRate = $hourlyRate / 60; 
 
-            if ($includedEmployee->isOnMaternityLeave() || $includedEmployee->isMancom()) {
-                $this->payrollService->conditionalPayroll($employee, $this->cutOff, $includedEmployee->isOnMaternityLeave());
-            } else if ($timeKeepingSummary && !$includedEmployee->isOnMaternityLeave() && !$includedEmployee->isMancom()) {
-                $this->payrollService->computePayroll($timeKeepingSummary);
-            }
+            PayrollDetail::updateOrCreate([
+                "employee_id" => $employee->id,
+                "pay_date" => $cutOff->pay_date,
+            ], [
+                "home_branch_id" => $employee->home_branch_id,
+                "position_id" => $employee->position_id,
+                "is_hold" => $payrollList->is_hold,
+                "is_on_maternity_leave" => $payrollList->is_on_maternity_leave,
+                "is_mancom" => $payrollList->is_mancom,
+                "is_complete_documents" => $payrollList->has_complete_documents,
+                "daily_rate" => $dailyRate,
+                "hourly_rate" => $hourlyRate,
+                "minute_rate" => $minuteRate,
+            ]);
         }
+
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
             $this->notifyJobFailed();
