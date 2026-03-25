@@ -67,7 +67,7 @@ class GenerateBranchPayroll implements ShouldQueue
     
                 foreach ($timeKeepings as $timekeep) {
                     if ($timekeep->tardiness > 0) {
-                        $undertimeMinutes[] = [
+                        $tardinessMinutes[] = [
                             "date" => $timekeep->date,
                             "minutes" => $timekeep->tardiness,
                         ];
