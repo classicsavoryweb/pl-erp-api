@@ -52,9 +52,10 @@ class GenerateBranchPayroll implements ShouldQueue
                 ->first();
     
                 $timeKeepings = TimeKeeping::whereBetween("date", [$activeCutOff->start_date, $activeCutOff->end_date])
+                ->where("employee_id", $tkSummary->employee_id)
                 ->where(function ($query) {
-                    $query->where("tardiness", ">", 1)
-                    ->orWhere("undertime", ">", 1);
+                    $query->where("tardiness", ">", 0)
+                    ->orWhere("undertime", ">", 0);
                 })->get();
     
                 if (!$payrollDetails) {
