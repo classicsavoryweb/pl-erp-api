@@ -605,7 +605,10 @@ class PayrollService {
                         if ($latestSSS) {    
                             $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
                             $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                            $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestPayroll->employer_sss, 2);
+                            $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestSSS->employer_ss, 2);
+                        } else {
+                            $sssEmployeeAmount = round($sss->employee_ss, 2);
+                            $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
                         }
                     } else {
                         $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
