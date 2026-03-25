@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware("permission:perform_compensation_cutoff_setup")->post("/edit-cut-off/{id}", [CutOffController::class, "editCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->get("/initialize-cut-off/{id}", [CutOffController::class, "initializeCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->get("/finalize-cut-off/{id}", [CutOffController::class, "finalizeCutOff"]);
+    Route::middleware(["permission:perform_compensation_cutoff_setup"])->post("/generate-payroll", [PayrollController::class, "generateBranchPayroll"]);
 
     //employee deductions
     Route::get("/get-all-employee-deductions", [EmployeeDeductionsController::class, "getAllEmployeeDeductions"]);
@@ -106,4 +107,5 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_additional_income"])->post("/save-branch-additional-income", [BranchAdditionalIncomeController::class, "updateOrCreateIncome"]);
     Route::middleware(["permission:perform_compensation_additional_income"])->post("/import-branch-additional-income", [BranchAdditionalIncomeController::class, "importBranchAdditionalIncome"]);
     Route::middleware(["permission:perform_compensation_additional_income"])->get("/export-branch-additional-income", [BranchAdditionalIncomeController::class, "exportBranchAdditionalIncome"]);
+
 });

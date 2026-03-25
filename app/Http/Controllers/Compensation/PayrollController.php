@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
 use App\Http\Services\PayrollService;
+use App\Jobs\GenerateBranchPayroll;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\Tardiness;
@@ -14,6 +15,7 @@ use App\Models\Branch;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Str;
 use Log;
@@ -599,6 +601,32 @@ class PayrollController extends Controller
             return $this->sendError(["message" => "Payroll not found"]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function generateBranchPayroll(Request $request) {
+        try {
+
+            $request->validate([
+                "branch_id" => "required|array"
+            ]);
+
+            $branches = Branch::get()
+            ->pluck('name', 'id')
+            ->toArray();
+
+            foreach ($request->branch_id as $branch_id) {
+                $branch = $branches[$branch_id];
+                $context = $branch ?? "Unknown Branch";
+
+                GenerateBranchPayroll::dispatch($branch_id, Auth::id(), $context);
+            }
+
+            return $this->sendResponse([
+                "message" => "Payroll is generating."
+            ]);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }

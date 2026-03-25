@@ -23,6 +23,7 @@ class PayrollDetail extends Model
         "is_on_maternity_leave",
         "is_mancom",
         "is_complete_documents",
+        "schedule_type",
         "daily_rate",
         "hourly_rate",
         "minute_rate",
@@ -48,6 +49,9 @@ class PayrollDetail extends Model
         "remarks",
     ];
 
+    public function employee() {
+        return $this->belongsTo(Employee::class, "employee_id", "id");
+    }
     public function payroll() {
         return $this->belongsTo(Payroll::class, "payroll_id", "id");
     }

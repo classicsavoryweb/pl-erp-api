@@ -59,6 +59,7 @@ class Payroll extends Model
         "is_maternity",
         "is_hold",
         "position_id",
+        "special_leave"
     ];
 
     public function employee () {
