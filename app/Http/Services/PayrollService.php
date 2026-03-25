@@ -541,7 +541,7 @@ class PayrollService {
                 ->first();
 
             //clarify if $grossPayAmount will be used
-            if ($payrollDetails->has_complete_documents == 1) {
+            if ($payrollDetails->is_complete_documents == 1) {
                 $philHealth = PhilhealthPercentageBase::first();
 
                 $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);

@@ -26,27 +26,16 @@ class PayrollController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
             $currentCutOff = $this->getCurrentCutoff();
-            $year = $request->year ?? Carbon::now()->year;
-
-            // $start_time = isset($request->cutoff["start_time"]) && $request->cutoff["start_time"]
-            //     ? $year . '-' . $request->cutoff["start_time"]
-            //     : $currentCutOff['start_time'];
-
-            // $end_time = isset($request->cutoff["end_time"]) && $request->cutoff["end_time"]
-            //     ? $year . '-' . $request->cutoff["end_time"]
-            //     : $currentCutOff['end_time'];
 
             $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
             $start_time = $dates["start_date"] ?? $currentCutOff['start_time'];
             $end_time = $dates["end_date"] ?? $currentCutOff['end_time'];
 
-            $payroll = Payroll::with(["employee","employee.current_branch", "employee.current_position", "timekeeping_summary",])
+            $payroll = Payroll::with(["employee", "position", "details", "timekeeping_branch"])
             ->where("cut_off", $start_time."-".$end_time);
 
             if ($request->has(["branch_id"])) {
-                $payroll = $payroll->whereHas("employee", function ($query) use ($request) {
-                    return $query->where("branch_id", $request->branch_id);
-                });
+                $payroll = $payroll->where("timekeeping_branch_id", $request->branch_id);
             }
 
             if ($request->has(["column_type", "key_word"])) {
@@ -95,57 +84,16 @@ class PayrollController extends Controller
         try {
             $payroll = Payroll::with([
                 "employee",
-                "employee.current_branch",
-                "employee.current_position",
-                "employee.latest_bank_details",
-                "employee.payroll_list",
                 "timekeeping_branch",
-                "timekeeping_summary",
+                "details",
+                "position",
+                "payroll_list.current_bank_details"
             ])->find($id);
 
             if ($payroll) {
-                $employee = $payroll->employee;
-
-                $startDate = Carbon::parse($payroll->start_date)->subMonths(1)->day(26)->format("Y-m-d");
-                $endDate = Carbon::parse($payroll->start_date)->day(25)->format("Y-m-d");
-
-                $firstCutOff = $this->getCutOffForDate($startDate);
-                $secondCutOff = $this->getCutOffForDate($endDate);
-
-                $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-                ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
-                ->first();
-
-                $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-                ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
-                ->first();
-
-                $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
-                $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
-
-                $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13;
-
-                $firstCutOffWorkDays = $employee->getCutOffWorkDays($firstCutOff);
-                $secondCutOffWorkDays = $employee->getCutOffWorkDays($secondCutOff);
-
-                $monthShouldBeWorkDays = ($firstCutOffWorkDays > 0 ? $firstCutOffWorkDays : $days)
-                + ($secondCutOffWorkDays > 0 ? $secondCutOffWorkDays : $days);
-
-                $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
-
+                $payroll->details->undertime_minutes = json_decode($payroll->details->undertime_minutes) ?? [];
+                $payroll->details->tardiness_minutes = json_decode($payroll->details->tardiness_minutes) ?? [];
                 $year = Carbon::parse($payroll->pay_date)->year;
-
-                $tardiness = TimeKeeping::with(["payment"])
-                ->where("employee_id", $payroll->employee_id)
-                ->whereBetween("date", [$payroll->start_date, $payroll->end_date])
-                ->where("tardiness", ">" ,0)
-                ->get();
-
-                $undertime = TimeKeeping::with(["payment"])
-                ->where("employee_id", $payroll->employee_id)
-                ->whereBetween("date", [$payroll->start_date, $payroll->end_date])
-                ->where("undertime", ">", 0)
-                ->get();
 
                 $incentives = Incentives::where("employee_id", $payroll->employee_id)
                 ->where("pay_date", $payroll->pay_date)
@@ -156,15 +104,11 @@ class PayrollController extends Controller
                 ->where("status", "Approved")
                 ->whereIn("year", [$year - 1, $year])
                 ->orderBy("id", "DESC")
+                ->limit(5)
                 ->get();
 
-                $payroll["tardiness_list"] = $tardiness;
-                $payroll["undertime_list"] = $undertime;
                 $payroll["incentives"] = $incentives;
                 $payroll["tardiness_offenses"] = $tardinessOffenses;
-                $payroll["worked_days"] = $monthWorkedDays;
-                $payroll["days"] = $monthShouldBeWorkDays;
-
                 return $this->sendResponse($payroll);
             }
 
