@@ -20,6 +20,7 @@ class EmployeeDeductionExport implements FromCollection, WithHeadings
         return $this->deductions->map(function ($unique_deductions) {
             return [
                 $unique_deductions->employee->full_name ?? "",
+                $unique_deductions->employee->employee_number ?? "",
                 $unique_deductions->deduction->description ?? "",
                 $unique_deductions->reference_doc,
                 $unique_deductions->months,
@@ -51,6 +52,7 @@ class EmployeeDeductionExport implements FromCollection, WithHeadings
     {
         return [
             'Employee Name',
+            'Employee Number',
             'Description',
             'Reference Doc',
             'Month(s)',
