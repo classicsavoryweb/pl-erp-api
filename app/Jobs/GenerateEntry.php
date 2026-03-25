@@ -853,6 +853,7 @@ class GenerateEntry implements ShouldQueue
                 ->where('pay_date', $this->pay_date)
                 ->where('start_date', $this->start_date)
                 ->where('end_date', $this->end_date)
+                ->where('is_maternity', 0)
                 ->whereIn('employee_id', function($query) {
                     $query->select('employee_id')
                         ->from('payroll_list')
@@ -954,10 +955,13 @@ class GenerateEntry implements ShouldQueue
                 ->where('pay_date', $this->pay_date)
                 ->where('start_date', $this->start_date)
                 ->where('end_date', $this->end_date)
-                ->whereIn('employee_id', function($query) {
-                    $query->select('employee_id')
-                        ->from('payroll_list')
-                        ->where('is_bank', 0);
+                ->where(function ($query) {
+                    $query->whereIn('employee_id', function($subQuery) {
+                        $subQuery->select('employee_id')
+                            ->from('payroll_list')
+                            ->where('is_bank', 0);
+                    })
+                    ->orWhere('is_maternity', 1);
                 })
                 ->get();
 
@@ -1039,7 +1043,9 @@ class GenerateEntry implements ShouldQueue
 
             $cashDeductionGroups = array_values($cashDeductionGroups);
 
-            $cashEmployeeIds = $payrollEmployeeCashQuery->pluck('employee_id');
+            $cashEmployeeIds = $payrollEmployeeCashQuery
+                ->where('is_maternity', 0)
+                ->pluck('employee_id');
             $cashIncentiveSums = Incentives::whereIn('employee_id', $cashEmployeeIds)
                 ->where('pay_date', $this->pay_date) 
                 ->sum('incentive_amount');
@@ -1824,6 +1830,10 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - payroll payable (cash)
                 foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    if ($payrollCash->is_maternity) {
+                        continue;
+                    }
+
                     $this->appendCashPayrollPayableEntries(
                         $entries,
                         $payrollCash,
@@ -1905,6 +1915,10 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - deduction (cash)
                 foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    if ($payrollCash->is_maternity) {
+                        continue;
+                    }
+
                     $cashEmployeeDeductionGroups = $this->buildCashDeductionGroupsForPayroll($payrollCash);
                     if (!empty($cashEmployeeDeductionGroups)) {
                         [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
@@ -1931,6 +1945,10 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - with_holding_tax (cash)
                 foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    if ($payrollCash->is_maternity) {
+                        continue;
+                    }
+
                     $this->appendCashContributionEntries(
                         $entries,
                         $payrollCash,
@@ -3327,6 +3345,10 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - payroll payable (cash)
                 foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    if ($payrollCash->is_maternity) {
+                        continue;
+                    }
+
                     $this->appendCashPayrollPayableEntries(
                         $entries,
                         $payrollCash,
@@ -3407,6 +3429,10 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - deduction (cash)
                 foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    if ($payrollCash->is_maternity) {
+                        continue;
+                    }
+
                     $cashEmployeeDeductionGroups = $this->buildCashDeductionGroupsForPayroll($payrollCash);
                     if (!empty($cashEmployeeDeductionGroups)) {
                         [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
@@ -3433,6 +3459,10 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - with_holding_tax (cash)
                 foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    if ($payrollCash->is_maternity) {
+                        continue;
+                    }
+
                     $this->appendCashContributionEntries(
                         $entries,
                         $payrollCash,
