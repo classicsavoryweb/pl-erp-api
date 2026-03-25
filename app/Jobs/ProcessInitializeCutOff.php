@@ -72,6 +72,12 @@ class ProcessInitializeCutOff implements ShouldQueue
             $salaryBaseAmount = $payrollList->salary_amount ?? 0;
             $employee = $payrollList->employee;
             $scheduleName = $payrollList->employee->schedule?->schedule_type?->name ?? "Normal Schedule";
+            $branchIdToUse = $employee->branch_id;
+
+            if ($payrollList->is_on_maternity_leave == 1) {
+                $hoBranch = Branch::where("short_name", "HO")->first();
+                $branchIdToUse = $hoBranch->id;
+            }
 
             $days = 13;
 
@@ -102,20 +108,14 @@ class ProcessInitializeCutOff implements ShouldQueue
             ]);
 
             if (
-                $payrollDetails->is_mancom == 1 ||
-                $payrollDetails->is_on_maternity_leave == 1
+                $payrollList->is_mancom == 1 ||
+                $payrollList->is_on_maternity_leave == 1
             ) {
                 $payrollDetails->update([
                     "regular_days" => $days,
                 ]);
 
                 $comp = $this->payrollService->computePayrollV2($payrollDetails ,$cutOff);
-                $branchIdToUse = $employee->branch_id;
-
-                if ($payrollDetails->is_on_maternity_leave == 1) {
-                    $hoBranch = Branch::where("short_name", "HO")->first();
-                    $branchIdToUse = $hoBranch->id;
-                }
 
                 if ($comp) {
                     $payroll = Payroll::updateOrCreate([
@@ -144,6 +144,61 @@ class ProcessInitializeCutOff implements ShouldQueue
                         "payroll_id" => $payroll->id
                     ]);
                 }
+            } else {
+                $payroll = Payroll::updateOrCreate([
+                    "employee_id" => $employee->id,
+                    "cut_off" => $cutOff->cut_off,
+                    "start_date" => $cutOff->start_date,
+                    "end_date" => $cutOff->end_date,
+                    
+                ], [
+                    "tax_status" => $employee->tax_type,
+                    "pay_type" => $employee->current_position->timekeeping_type,
+                    "pay_date" => $cutOff->pay_date,
+                    "daily_rate" => $payrollDetails->daily_rate,
+                    "hourly_rate" => $payrollDetails->hourly_rate,
+                    "timekeeping_branch_id" => $branchIdToUse,
+                    "position_id" => $payrollDetails->position_id,
+                    "timekeeping_summary_id" => 0,
+                    "salary" => 0,
+                    "tardiness_amount" => 0,
+                    "undertime_amount" => 0,
+                    "overtime_amount" => 0,
+                    "legal_holiday_amount" => 0,
+                    "legal_holiday_overtime_amount" => 0,
+                    "special_holiday_amount" => 0,
+                    "special_holiday_overtime_amount" => 0,
+                    "night_differential_amount" => 0,
+                    "night_differential_overtime_amount" => 0,
+                    "taxable_adjustment" => 0,
+                    "non_taxable_adjustment" => 0,
+                    "gross_pay" => 0,
+                    "employee_sss" => 0,
+                    "employer_sss" => 0,
+                    "employee_pagibig" => 0,
+                    "employer_pagibig" => 0,
+                    "employee_philhealth" => 0,
+                    "employer_philhealth" => 0,
+                    "withholding_tax" => 0,
+                    "deductions" => json_encode([]),
+                    "total_deductions" => 0,
+                    "manual_deductions" => 0,
+                    "cancelled_off" => 0,
+                    "net_pay" => 0,
+                    "taxable_income" => 0,
+                    "contribution_total" => 0,
+                    "additional_working_hours_total" => 0,
+                    "working_hours_deduction_total" => 0,
+                    "status" => "initial",
+                    "is_maternity" => $payrollDetails->is_on_maternity_leave,
+                    "is_hold" => $payrollDetails->is_hold,
+                    "remarks" => "",
+                    "special_leave" => 0
+                ]);
+
+                $payrollDetails->update([
+                    "payroll_id" => $payroll->id
+                ]);
             }
         }
 
