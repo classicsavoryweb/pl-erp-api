@@ -156,6 +156,36 @@ class EmployeeDeductionsController extends Controller
         return null;
     }
 
+    private function buildDuplicateCrfKey(int $employeeId, int $deductionId, string $transactionNumber): string
+    {
+        return $employeeId . '|' . $deductionId . '|' . Str::lower(trim($transactionNumber));
+    }
+
+    private function addDuplicateCrfRow(array &$duplicateRows, array $preparedRow, string $source): void
+    {
+        $duplicateKey = $preparedRow["row_number"] . '|' . $this->buildDuplicateCrfKey(
+            $preparedRow["employee"]->id,
+            $preparedRow["deduction"]->id,
+            $preparedRow["transaction_number"]
+        );
+
+        if (!isset($duplicateRows[$duplicateKey])) {
+            $duplicateRows[$duplicateKey] = [
+                "row_number" => $preparedRow["row_number"],
+                "crf_num" => $preparedRow["transaction_number"],
+                "employee_number" => $preparedRow["employee"]->employee_number,
+                "employee_name" => $preparedRow["employee"]->full_name,
+                "deduction_id" => $preparedRow["deduction"]->id,
+                "deduction_description" => $preparedRow["deduction"]->description,
+                "duplicate_in" => [],
+            ];
+        }
+
+        $duplicateRows[$duplicateKey]["duplicate_in"][$source] = $source === "file"
+            ? "Uploaded file"
+            : "Existing data";
+    }
+
     public function getAllEmployeeDeductions(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -268,6 +298,7 @@ class EmployeeDeductionsController extends Controller
             $updated = 0;
             $skipped = 0;
             $errors = [];
+            $preparedRows = [];
 
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 2;
@@ -376,46 +407,139 @@ class EmployeeDeductionsController extends Controller
                     continue;
                 }
 
+                $preparedRows[] = [
+                    "row_number" => $rowNumber,
+                    "employee" => $employee,
+                    "deduction" => $deduction,
+                    "months" => $months,
+                    "amount" => $amount,
+                    "start_date" => $startDate,
+                    "end_date" => $endDate,
+                    "monthly_amortization" => $monthlyAmortization,
+                    "balance" => $balance,
+                    "remarks" => $remarks,
+                    "transaction_number" => $transactionNumber,
+                    "branch_id" => $branchId,
+                ];
+            }
+
+            $duplicateCrfRows = [];
+            $fileCrfRows = [];
+
+            foreach ($preparedRows as $preparedRow) {
+                if (!$preparedRow["transaction_number"]) {
+                    continue;
+                }
+
+                $duplicateKey = $this->buildDuplicateCrfKey(
+                    $preparedRow["employee"]->id,
+                    $preparedRow["deduction"]->id,
+                    $preparedRow["transaction_number"]
+                );
+
+                $fileCrfRows[$duplicateKey][] = $preparedRow;
+            }
+
+            foreach ($fileCrfRows as $rowsWithSameCrf) {
+                if (count($rowsWithSameCrf) <= 1) {
+                    continue;
+                }
+
+                foreach ($rowsWithSameCrf as $preparedRow) {
+                    $this->addDuplicateCrfRow($duplicateCrfRows, $preparedRow, "file");
+                }
+            }
+
+            $preparedRowsWithCrf = array_values(array_filter($preparedRows, fn ($preparedRow) => !empty($preparedRow["transaction_number"])));
+
+            if (!empty($preparedRowsWithCrf)) {
+                $existingCrfLookup = [];
+
+                $existingCrfRows = EmployeeDeduction::query()
+                    ->select("employee_id", "deduction_id", "transaction_number")
+                    ->whereIn("employee_id", array_values(array_unique(array_map(fn ($preparedRow) => $preparedRow["employee"]->id, $preparedRowsWithCrf))))
+                    ->whereIn("deduction_id", array_values(array_unique(array_map(fn ($preparedRow) => $preparedRow["deduction"]->id, $preparedRowsWithCrf))))
+                    ->whereIn("transaction_number", array_values(array_unique(array_map(fn ($preparedRow) => $preparedRow["transaction_number"], $preparedRowsWithCrf))))
+                    ->get();
+
+                foreach ($existingCrfRows as $existingCrfRow) {
+                    $existingCrfLookup[$this->buildDuplicateCrfKey(
+                        $existingCrfRow->employee_id,
+                        $existingCrfRow->deduction_id,
+                        $existingCrfRow->transaction_number
+                    )] = true;
+                }
+
+                foreach ($preparedRowsWithCrf as $preparedRow) {
+                    $duplicateKey = $this->buildDuplicateCrfKey(
+                        $preparedRow["employee"]->id,
+                        $preparedRow["deduction"]->id,
+                        $preparedRow["transaction_number"]
+                    );
+
+                    if (isset($existingCrfLookup[$duplicateKey])) {
+                        $this->addDuplicateCrfRow($duplicateCrfRows, $preparedRow, "system");
+                    }
+                }
+            }
+
+            if (!empty($duplicateCrfRows)) {
+                $duplicateCrfRows = array_values(array_map(function ($duplicateCrfRow) {
+                    $duplicateCrfRow["duplicate_in"] = array_values($duplicateCrfRow["duplicate_in"]);
+                    return $duplicateCrfRow;
+                }, $duplicateCrfRows));
+
+                usort($duplicateCrfRows, fn ($firstRow, $secondRow) => $firstRow["row_number"] <=> $secondRow["row_number"]);
+
+                $duplicateLineNumbers = array_values(array_unique(array_map(
+                    fn ($duplicateCrfRow) => $duplicateCrfRow["row_number"],
+                    $duplicateCrfRows
+                )));
+                $lineLabel = count($duplicateLineNumbers) === 1 ? "line" : "lines";
+                $duplicateMessage = "Error: Duplicated CRF is detected on excel {$lineLabel} " . implode(", ", $duplicateLineNumbers);
+
+                return $this->sendError([
+                    "message" => $duplicateMessage,
+                    "type" => "duplicate_crf",
+                    "duplicates" => $duplicateCrfRows,
+                    "errors" => $errors,
+                ], 422);
+            }
+
+            $counterEntry = null;
+            $counterApsysEntry = null;
+            $counterApsysEntryMain = null;
+
+            DB::beginTransaction();
+
+            foreach ($preparedRows as $preparedRow) {
+                $employee = $preparedRow["employee"];
+                $deduction = $preparedRow["deduction"];
+                $months = $preparedRow["months"];
+                $amount = $preparedRow["amount"];
+                $startDate = $preparedRow["start_date"];
+                $endDate = $preparedRow["end_date"];
+                $monthlyAmortization = $preparedRow["monthly_amortization"];
+                $balance = $preparedRow["balance"];
+                $remarks = $preparedRow["remarks"];
+                $transactionNumber = $preparedRow["transaction_number"];
+                $branchId = $preparedRow["branch_id"];
+
                 $first_initial = strtoupper(substr($employee->first_name, 0, 1));
                 $middle_initial = strtoupper(substr($employee->middle_name ?? '', 0, 1));
                 $last_initial = strtoupper(substr($employee->last_name, 0, 1));
                 $employee_number = $employee->employee_number;
                 $base_reference = $first_initial . $middle_initial . $last_initial . $employee_number;
 
-                $existingQuery = EmployeeDeduction::where("employee_id", $employee->id)
-                    ->where("deduction_id", $deduction->id);
+                $deduction_count = EmployeeDeduction::where("employee_id", $employee->id)
+                    ->whereNotNull("deduction_ref")
+                    ->where("deduction_ref", "!=", '')
+                    ->count();
 
-                if ($transactionNumber) {
-                    $existingQuery->where("transaction_number", $transactionNumber);
-                } else {
-                    $existingQuery->where("start_date", $startDate);
-                }
+                $deductionIdPadded = str_pad($deduction->id, 8, '0', STR_PAD_LEFT);
+                $deduction_reference = $base_reference . $deductionIdPadded . "|" . ($deduction_count + 1);
 
-                $existing = $existingQuery->first();
-                $deduction_reference = $existing?->deduction_ref;
-
-                if (!$deduction_reference) {
-                    $deduction_count = EmployeeDeduction::where("employee_id", $employee->id)
-                        ->whereNotNull("deduction_ref")
-                        ->where("deduction_ref", "!=", '')
-                        ->count();
-
-                    $deductionIdPadded = str_pad($deduction->id, 8, '0', STR_PAD_LEFT);
-                    $deduction_reference = $base_reference . $deductionIdPadded . "|" . ($deduction_count + 1);
-                }
-
-                $match = [
-                    "employee_id" => $employee->id,
-                    "deduction_id" => $deduction->id,
-                ];
-
-                if ($transactionNumber) {
-                    $match["transaction_number"] = $transactionNumber;
-                } else {
-                    $match["start_date"] = $startDate;
-                }
-
-                $employeeDeduction = EmployeeDeduction::updateOrCreate($match, [
+                $payload = [
                     "months" => $months,
                     "amount" => $amount,
                     "source_of_fund" => $branchHO?->short_name,
@@ -438,13 +562,14 @@ class EmployeeDeductionsController extends Controller
                     "end_loan_status" => "No",
                     "source" => "MANUAL",
                     "transaction_number" => $transactionNumber,
-                ]);
+                ];
 
-                if ($employeeDeduction->wasRecentlyCreated) {
-                    $created++;
-                } else {
-                    $updated++;
-                }
+                $employeeDeduction = EmployeeDeduction::create(array_merge($payload, [
+                    "employee_id" => $employee->id,
+                    "deduction_id" => $deduction->id,
+                ]));
+
+                $created++;
 
                 if ($employeeDeduction->wasRecentlyCreated && $employeeDeduction->amount > 0 && $branchHO) {
                     $branchHOId = $branchHO->id;
@@ -495,6 +620,8 @@ class EmployeeDeductionsController extends Controller
                 }
             }
 
+            DB::commit();
+
             return $this->sendResponse([
                 "message" => "Import completed. Created {$created}, updated {$updated}, skipped {$skipped}, errors " . count($errors) . ".",
                 "created" => $created,
@@ -503,6 +630,9 @@ class EmployeeDeductionsController extends Controller
                 "errors" => $errors,
             ]);
         } catch (Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
@@ -683,6 +813,10 @@ class EmployeeDeductionsController extends Controller
     public function endLoanTransaction(Request $request, $id)
     {
         try {
+            $request->validate([
+                "end_loan_reason" => "required|string"
+            ]);
+
             $amount = floatval(str_replace(',', '', $request->amount));
             $balance = floatval(str_replace(',', '', $request->balance));
 
