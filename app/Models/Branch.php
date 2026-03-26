@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Models\Accounting\Account;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Branch extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
     protected $table = "branches";
     protected $fillable = [
         "name",
@@ -106,5 +108,14 @@ class Branch extends Model
         ->using(BranchHoliday::class)
         ->withPivot("branch_id", "holiday_id",)
         ->withTimestamps();
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Branch')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
