@@ -95,8 +95,8 @@ class GenerateBranchPayroll implements ShouldQueue
                     "tardiness" => $tkSummary->tardiness,
                     "travel_time" => $tkSummary->travel_time,
                     "adjustment_amount" => $tkSummary->adjustment_amount,
-                    "undertime_minutes" => $undertimeMinutes,
-                    "tardiness_minutes" => $tardinessMinutes,
+                    "undertime_minutes" => json_encode($undertimeMinutes),
+                    "tardiness_minutes" => json_encode($tardinessMinutes),
                     "remarks" => $tkSummary->remarks
                 ]);
     
