@@ -387,6 +387,42 @@ class GenerateEntry implements ShouldQueue
         return [$vendorNo, $vendorName];
     }
 
+    private function resolveHeadOfficeBranch(): Branch
+    {
+        $headOfficeBranch = Branch::query()
+            ->where(function ($query) {
+                $query->where('short_name', 'HO')
+                    ->orWhere('name', 'Head Office');
+            })
+            ->orderByRaw("CASE WHEN short_name = 'HO' THEN 0 ELSE 1 END")
+            ->first();
+
+        if (!$headOfficeBranch) {
+            throw new \RuntimeException(
+                'Unable to generate entries. Head Office branch record is missing.'
+            );
+        }
+
+        return $headOfficeBranch;
+    }
+
+    private function scopePayrollToEffectiveBranch($query, int $branchId, int $branchHOId)
+    {
+        return $query->where(function ($branchQuery) use ($branchId, $branchHOId) {
+            if ($branchId === $branchHOId) {
+                $branchQuery->where(function ($headOfficeQuery) use ($branchId) {
+                    $headOfficeQuery->where('timekeeping_branch_id', $branchId)
+                        ->where('is_maternity', 0);
+                })->orWhere('is_maternity', 1);
+
+                return;
+            }
+
+            $branchQuery->where('timekeeping_branch_id', $branchId)
+                ->where('is_maternity', 0);
+        });
+    }
+
     private function appendCashPayrollPayableEntries(
         array &$entries,
         Payroll $payroll,
@@ -799,8 +835,7 @@ class GenerateEntry implements ShouldQueue
         $user = User::find($userId);
         $employee_id = $user->id;
 
-        $branchHO = Branch::where('short_name', 'HO')
-            ->first();
+        $branchHO = $this->resolveHeadOfficeBranch();
         $branchHOId = $branchHO->id;
         $branchHOName = $branchHO->name;
         $branchHOShortName = $branchHO->short_name;
@@ -830,11 +865,71 @@ class GenerateEntry implements ShouldQueue
             ]);
         }
 
-        $payrollBranchIds = Payroll::distinct()
+        $payrollBranchBaseQuery = Payroll::query()
             ->where('pay_date', $this->pay_date)
             ->where('start_date', $start_date)
-            ->where('end_date', $end_date)
+            ->where('end_date', $end_date);
+
+        $payrollIdsWithoutBranch = (clone $payrollBranchBaseQuery)
+            ->where('is_maternity', 0)
+            ->where(function ($query) {
+                $query->whereNull('timekeeping_branch_id')
+                    ->orWhere('timekeeping_branch_id', 0);
+            })
+            ->pluck('id');
+
+        if ($payrollIdsWithoutBranch->isNotEmpty()) {
+            throw new \RuntimeException(
+                'Unable to generate entries. Payroll record(s) missing timekeeping branch: ' .
+                $payrollIdsWithoutBranch->implode(', ')
+            );
+        }
+
+        $maternityPayrollIdsWithoutBranch = (clone $payrollBranchBaseQuery)
+            ->where('is_maternity', 1)
+            ->where(function ($query) {
+                $query->whereNull('timekeeping_branch_id')
+                    ->orWhere('timekeeping_branch_id', 0);
+            })
+            ->pluck('id');
+
+        $payrollBranchIds = (clone $payrollBranchBaseQuery)
+            ->where('is_maternity', 0)
+            ->whereNotNull('timekeeping_branch_id')
+            ->where('timekeeping_branch_id', '!=', 0)
+            ->distinct()
             ->pluck('timekeeping_branch_id');
+
+        $hasMaternityPayroll = (clone $payrollBranchBaseQuery)
+            ->where('is_maternity', 1)
+            ->exists();
+
+        if ($hasMaternityPayroll) {
+            $payrollBranchIds->push($branchHOId);
+
+            Log::info('Maternity payroll rows are mapped to Head Office for entry generation.', [
+                'pay_date' => $this->pay_date,
+                'cutoff_start' => $start_date,
+                'cutoff_end' => $end_date,
+                'payroll_ids_without_branch' => $maternityPayrollIdsWithoutBranch->values()->all(),
+                'head_office_branch_id' => $branchHOId,
+            ]);
+        }
+
+        $payrollBranchIds = $payrollBranchIds->unique()->values();
+
+        $existingBranchIds = Branch::query()
+            ->whereIn('id', $payrollBranchIds)
+            ->pluck('id');
+
+        $missingBranchIds = $payrollBranchIds->diff($existingBranchIds);
+
+        if ($missingBranchIds->isNotEmpty()) {
+            throw new \RuntimeException(
+                'Unable to generate entries. Missing branch record(s) for timekeeping_branch_id: ' .
+                $missingBranchIds->implode(', ')
+            );
+        }
 
         $hasError = false;
 
@@ -849,7 +944,9 @@ class GenerateEntry implements ShouldQueue
             $branchShortName = $payrollBranch->short_name;
             $branchNumber = $payrollBranch->branch_number;
 
-            $payrollEmployeeBankQuery = Payroll::where('timekeeping_branch_id', $branchId)
+            $payrollEmployeeBankQuery = Payroll::query();
+            $this->scopePayrollToEffectiveBranch($payrollEmployeeBankQuery, $branchId, $branchHOId);
+            $payrollEmployeeBankQuery = $payrollEmployeeBankQuery
                 ->where('pay_date', $this->pay_date)
                 ->where('start_date', $this->start_date)
                 ->where('end_date', $this->end_date)
@@ -937,7 +1034,9 @@ class GenerateEntry implements ShouldQueue
 
             $bankAdditionalAndIncentiveSums = $bankIncentiveSums + $bankAdditionalIncomeSums;
 
-            $isPayrollEmployeeCashOnHold = Payroll::where('timekeeping_branch_id', $branchId)
+            $isPayrollEmployeeCashOnHoldQuery = Payroll::query();
+            $this->scopePayrollToEffectiveBranch($isPayrollEmployeeCashOnHoldQuery, $branchId, $branchHOId);
+            $isPayrollEmployeeCashOnHold = $isPayrollEmployeeCashOnHoldQuery
                 ->whereIn('employee_id', function($query) {
                     $query->select('employee_id')
                         ->from('payroll_list')
@@ -950,8 +1049,9 @@ class GenerateEntry implements ShouldQueue
                 $this->apsysAvailable
                     ? ['employee.vendor:ven_no,ven_name', 'employee', 'timekeeping_branch']
                     : ['employee', 'timekeeping_branch']
-            )
-                ->where('timekeeping_branch_id', $branchId)
+            );
+            $this->scopePayrollToEffectiveBranch($payrollEmployeeCashQuery, $branchId, $branchHOId);
+            $payrollEmployeeCashQuery = $payrollEmployeeCashQuery
                 ->where('pay_date', $this->pay_date)
                 ->where('start_date', $this->start_date)
                 ->where('end_date', $this->end_date)
