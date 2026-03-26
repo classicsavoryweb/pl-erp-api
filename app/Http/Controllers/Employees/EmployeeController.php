@@ -552,37 +552,8 @@ class EmployeeController extends Controller
                 $pathName = $filePath;
             }
 
-            $company = env('COMPANY_NAME');
-            $rawEmployeeNumber = ltrim((string) $employee->employee_number, 'A');
-            $employeeNumberTwo = $company . "-" . str_pad($rawEmployeeNumber, 7, '0', STR_PAD_LEFT);
-            $biometricNumber = $employee->biometric_number;
-
-            if ($request->type === "Direct") {
-                $prefix = $company == "SFI" ? "10" : "30";
-                $biometricNumber = $prefix . $rawEmployeeNumber;
-            }
-
-            if ($request->type === "Agency" && $request->filled("agency_id")) {
-                $agency = Agency::find($request->agency_id);
-
-                if ($agency) {
-                    if ($agency->name === "MSC") {
-                        $biometricNumber = "50" . $rawEmployeeNumber;
-                    } else if ($agency->name === "GMI") {
-                        $biometricNumber = "70" . $rawEmployeeNumber;
-                    } else if ($agency->name === "CNT") {
-                        $biometricNumber = "11" . $rawEmployeeNumber;
-                    } else {
-                        $biometricNumber = "12" . $rawEmployeeNumber;
-                    }
-
-                    $employeeNumberTwo = $company . "-" . $agency->name . "-" . str_pad((string) $employee->employee_number, 7, '0', STR_PAD_LEFT);
-                }
-            }
-
             $employee->update([
                 "image" => $pathName,
-                "biometric_number" => $biometricNumber,
                 "first_name" => $request->first_name,
                 "middle_name" => $request->middle_name,
                 "last_name" => $request->last_name,
@@ -607,8 +578,6 @@ class EmployeeController extends Controller
                 "regularization_date" => $request->regularization_date,
                 "separation_date" => $request->separation_date,
                 "separation_reason" => $request->separation_reason,
-                "agency_id" => $request->type === "Agency" ? $request->agency_id : null,
-                "employee_number_2" => $employeeNumberTwo,
                 "emergency_contact_name" => $request->emergency_contact_name,
                 "emergency_contact_number" => $request->emergency_contact_number,
                 "emergency_contact_address" => $request->emergency_contact_address,
