@@ -813,6 +813,10 @@ class EmployeeDeductionsController extends Controller
     public function endLoanTransaction(Request $request, $id)
     {
         try {
+            $request->validate([
+                "end_loan_reason" => "required|string"
+            ]);
+
             $amount = floatval(str_replace(',', '', $request->amount));
             $balance = floatval(str_replace(',', '', $request->balance));
 
