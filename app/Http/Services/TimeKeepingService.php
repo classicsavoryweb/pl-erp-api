@@ -66,6 +66,10 @@ class TimeKeepingService
 
         $isCancelledOff = false;
 
+        if (!$schedule) {
+            return $timeKeeping;
+        }
+
         $scheduleStart = Carbon::parse($log->date. " " .$schedule->start_time)->seconds(0);
         $scheduleEnd = Carbon::parse($log->date. " " .$schedule->end_time)->seconds(0);
 
