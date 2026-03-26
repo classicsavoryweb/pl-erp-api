@@ -4,15 +4,32 @@ namespace App\Http\Controllers\Maintenance;
 
 use App\Exports\Maintenance\BranchExport;
 use App\Http\Controllers\Controller;
+use App\Models\Accounting\Account;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\OtherCompany\OtherEmployee;
 use Illuminate\Http\Request;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Activitylog\Models\Activity;
 
 class BranchController extends Controller
 {
+    private const ACCOUNT_ACTIVITY_FIELDS = [
+        'expense_debit',
+        'expense_credit',
+        'advance_debit',
+        'advance_credit',
+        'ho_13th_debit',
+        'ho_13th_debit_1',
+        'ho_13th_credit',
+        'branch_ho_13th_debit',
+        'branch_ho_13th_debit_1',
+        'branch_ho_13th_credit',
+        'branch_ho_stat_debit',
+        'branch_ho_stat_credit',
+    ];
+
     private function syncEmployeeOicStatuses(array $employeeNumbers): void
     {
         $employeeNumbers = array_values(array_unique(array_filter($employeeNumbers)));
@@ -131,6 +148,56 @@ class BranchController extends Controller
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getBranchActivities($id)
+    {
+        try {
+            $branch = Branch::findOrFail($id);
+
+            $activities = Activity::with('causer')
+                ->where('subject_type', Branch::class)
+                ->where('subject_id', $branch->id)
+                ->orderBy('created_at', 'DESC')
+                ->get();
+
+            $accountNumbers = $activities
+                ->flatMap(function ($activity) {
+                    $properties = collect([
+                        $activity->properties['attributes'] ?? [],
+                        $activity->properties['old'] ?? [],
+                    ]);
+
+                    return $properties
+                        ->flatMap(function ($propertySet) {
+                            return collect(self::ACCOUNT_ACTIVITY_FIELDS)
+                                ->map(fn ($field) => $propertySet[$field] ?? null);
+                        });
+                })
+                ->filter(fn ($value) => !is_null($value) && $value !== '')
+                ->map(fn ($value) => (string) $value)
+                ->unique()
+                ->values();
+
+            $accountNames = collect();
+            if ($accountNumbers->isNotEmpty()) {
+                try {
+                    $accountNames = Account::query()
+                        ->whereIn('acc_no', $accountNumbers)
+                        ->pluck('acc_name', 'acc_no');
+                } catch (Exception $exception) {
+                    $accountNames = collect();
+                }
+            }
+
+            return $this->sendResponse([
+                'branch' => $branch,
+                'activities' => $activities,
+                'account_names' => $accountNames,
+            ]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
         }
     }
 
