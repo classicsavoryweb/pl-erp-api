@@ -138,7 +138,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     ->where("date", $timeKeeping->date)
                     ->first();
 
-                    if (!$schedule) {
+                    if (!$schedule || !$log) {
                         continue;
                     }
 
