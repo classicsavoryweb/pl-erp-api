@@ -27,8 +27,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:sync-employee-details')->dailyAt('11:00');
         $schedule->command('app:sync-employee-details')->dailyAt('18:00');
         $schedule->command('app:sync-branch-details')->dailyAt('23:00');
-        $schedule->command('app:transfer-uniform-deductions')->dailyAt('12:00');
-        $schedule->command('app:transfer-uniform-deductions')->dailyAt('18:00');
+        // REMOVE
+        // $schedule->command('app:transfer-uniform-deductions')->dailyAt('12:00');
+        // $schedule->command('app:transfer-uniform-deductions')->dailyAt('18:00');
         $schedule->command('app:auto-disable-tardiness-month')->monthlyOn(11, '05:00');
     }
 
