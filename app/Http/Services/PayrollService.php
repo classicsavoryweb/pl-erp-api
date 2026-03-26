@@ -602,10 +602,9 @@ class PayrollService {
                         ->where('salary_range_max', '>=', $latestPayroll->gross_pay)
                         ->first();
 
-                        if ($latestSSS) {    
-                            $erCC = $sss->employer_cc - $latestSSS->employer_cc ?? 0;
+                        if ($latestSSS) {
                             $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                            $sssEmployerAmount = round(($sss->employer_ss + $erCC) - $latestSSS->employer_ss, 2);
+                            $sssEmployerAmount = round(($sss->employer_ss + $sss->employer_cc) - $latestPayroll->employer_sss, 2);
                         } else {
                             $sssEmployeeAmount = round($sss->employee_ss, 2);
                             $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
