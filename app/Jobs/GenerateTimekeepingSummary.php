@@ -153,6 +153,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         "force adjustment"
                     );
 
+                    if (!$adjustedTimeKeeping) {
+                        continue;
+                    }
+
                     $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday ?? null;
                     $adjustedTimeKeeping->save();
 
