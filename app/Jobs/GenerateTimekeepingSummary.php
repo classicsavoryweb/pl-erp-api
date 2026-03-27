@@ -28,6 +28,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use App\Support\NotifiesJobStatus;
 use Carbon\CarbonInterface;
+use Exception;
 use Log;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 
@@ -627,9 +628,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
         }
 
             $this->notifyJobFinished();
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
+            Log::info($e->getMessage());
             $this->notifyJobFailed();
-            throw $e;
         }
     }
 
