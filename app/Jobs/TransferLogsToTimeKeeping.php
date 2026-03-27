@@ -66,7 +66,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
             $schedulesQuery = ScheduleTime::with([
                 "employee",
                 "employee.schedule",
-                "employee.schedule.schedule_type"
+                "employee.schedule.schedule_type",
+                "employee.current_position"
             ])
             ->where("branch_id", $this->branchId)
             ->whereBetween("date", $this->cutOff);
@@ -82,6 +83,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
 
             foreach($schedules as $actualSchedule) {
                 $employee = $actualSchedule->employee;
+                $timekeepingType = $employee->current_position->timekeeping_type;
 
                 if ($employee->type === "Agency") {
                     continue;
@@ -228,6 +230,15 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                     $sched = ["NO SCHEDULE","SUSPENSION", "REST DAY", "LEAVE", "INCENTIVE LEAVE"];
 
                     if (!in_array($actualSchedule->timetable ,$sched)) {
+                        $hours = 0;
+
+                        if (
+                            $isHoliday &&
+                            $timekeepingType == "Daily"
+                        ) {
+                            $hours = $holidayHours;
+                        }
+
                         TimeKeeping::create([
                             "employee_id" => $employee->id,
                             "biometric_number" => $employee->biometric_number,
@@ -241,9 +252,9 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                             "tardiness" => 0,
                             "night_diff_hours" => 0,
                             "night_diff_overtime" => 0,
-                            "legal_holiday_hours" => 0,
+                            "legal_holiday_hours" => $holidayType == "LH" ? $hours : 0,
                             "legal_holiday_overtime" => 0,
-                            "special_holiday_hours" => 0,
+                            "special_holiday_hours" => $holidayType == "SH" ? $hours : 0,
                             "special_holiday_overtime" => 0,
                             "undertime" => 0,
                             "is_cancelled_off" => false,
