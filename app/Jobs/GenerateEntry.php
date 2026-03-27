@@ -630,6 +630,105 @@ class GenerateEntry implements ShouldQueue
         ];
     }
 
+    private function appendCashDualContributionEntries(
+        array &$entries,
+        float $amount,
+        string $description,
+        ?string $firstVendorNo,
+        ?string $firstVendorName,
+        ?string $firstDebitAcc,
+        ?string $firstCreditAcc,
+        string $firstDocumentNo,
+        int $firstBranchId,
+        string $firstBranchName,
+        string $firstBranchNumber,
+        ?string $secondVendorNo,
+        ?string $secondVendorName,
+        ?string $secondDebitAcc,
+        ?string $secondCreditAcc,
+        string $secondDocumentNo,
+        int $secondBranchId,
+        string $secondBranchName,
+        string $secondBranchNumber,
+        int $secondIsBlockPayment = 0
+    ): void {
+        if ($amount <= 0) {
+            return;
+        }
+
+        $firstEntry = $this->generateEntryId($this->counterEntry);
+        $secondEntry = $this->generateEntryId($this->counterEntry);
+        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+
+        $entries[] = [
+            'entry_id'            => $firstEntry,
+            'apsys_entry_id'      => $firstApsysEntry,
+            'apsys_entry_main_id' => $firstApsysEntryMain,
+            'document_no'         => $firstDocumentNo,
+            'branch_id'           => $firstBranchId,
+            'branch_name'         => $firstBranchName,
+            'branch_number'       => $firstBranchNumber,
+            'ven_no'              => $firstVendorNo,
+            'ven_name'            => $firstVendorName,
+            'amount'              => $amount,
+            'acc_no'              => $firstDebitAcc,
+            'description_per_acc' => $description,
+            'balance_type'        => 'Debit',
+            'is_block_payment'    => 0,
+        ];
+        $entries[] = [
+            'entry_id'            => $firstEntry,
+            'apsys_entry_id'      => $firstApsysEntry,
+            'apsys_entry_main_id' => $firstApsysEntryMain,
+            'document_no'         => $firstDocumentNo,
+            'branch_id'           => $firstBranchId,
+            'branch_name'         => $firstBranchName,
+            'branch_number'       => $firstBranchNumber,
+            'ven_no'              => $firstVendorNo,
+            'ven_name'            => $firstVendorName,
+            'amount'              => $amount,
+            'acc_no'              => $firstCreditAcc,
+            'description_per_acc' => $description,
+            'balance_type'        => 'Credit',
+            'is_block_payment'    => 0,
+        ];
+        $entries[] = [
+            'entry_id'            => $secondEntry,
+            'apsys_entry_id'      => $secondApsysEntry,
+            'apsys_entry_main_id' => $secondApsysEntryMain,
+            'document_no'         => $secondDocumentNo,
+            'branch_id'           => $secondBranchId,
+            'branch_name'         => $secondBranchName,
+            'branch_number'       => $secondBranchNumber,
+            'ven_no'              => $secondVendorNo,
+            'ven_name'            => $secondVendorName,
+            'amount'              => $amount,
+            'acc_no'              => $secondDebitAcc,
+            'description_per_acc' => $description,
+            'balance_type'        => 'Debit',
+            'is_block_payment'    => $secondIsBlockPayment,
+        ];
+        $entries[] = [
+            'entry_id'            => $secondEntry,
+            'apsys_entry_id'      => $secondApsysEntry,
+            'apsys_entry_main_id' => $secondApsysEntryMain,
+            'document_no'         => $secondDocumentNo,
+            'branch_id'           => $secondBranchId,
+            'branch_name'         => $secondBranchName,
+            'branch_number'       => $secondBranchNumber,
+            'ven_no'              => $secondVendorNo,
+            'ven_name'            => $secondVendorName,
+            'amount'              => $amount,
+            'acc_no'              => $secondCreditAcc,
+            'description_per_acc' => $description,
+            'balance_type'        => 'Credit',
+            'is_block_payment'    => $secondIsBlockPayment,
+        ];
+    }
+
     private function buildCashDeductionGroupsForPayroll(Payroll $payroll): array
     {
         $groups = [];
@@ -2070,474 +2169,172 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //head office - employer statutories (cash)
-                if ($payrollEmployeeCashSums['erSSS'] > 0) {
+                foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
+                        $payrollCash,
+                        $cashPayrollVendorNo,
+                        $cashPayrollVendorName
+                    );
+
+                    $cashEmployerSss = $this->parseMoneyValue($payrollCash->employer_sss);
                     if ($payrollBranch->branch_number != "SFI00001") {
-                        $firstEntry = $this->generateEntryId($this->counterEntry);
-                        $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $entries = array_merge($entries, [
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                                'branch_id'           => $branchHOId,
-                                'branch_name'         => $branchHOName,
-                                'branch_number'       => $branchHONumber,
-                                'ven_no'              => $erSSSVendor,
-                                'ven_name'            => $erSSSVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erSSS'],
-                                'acc_no'              => $payrollBranch->advance_debit,
-                                'description_per_acc' => 'Employer SSS Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                                'branch_id'           => $branchHOId,
-                                'branch_name'         => $branchHOName,
-                                'branch_number'       => $branchHONumber,
-                                'ven_no'              => $erSSSVendor,
-                                'ven_name'            => $erSSSVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erSSS'],
-                                'acc_no'              => $erSSSCredit,
-                                'description_per_acc' => 'Employer SSS Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erSSS'],
-                                'acc_no'              => $erSSSDebit,
-                                'description_per_acc' => 'Employer SSS Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => $isPayrollEmployeeCashOnHold ? 1 : 0,
-                            ],
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erSSS'],
-                                'acc_no'              => $payrollBranch->expense_credit,
-                                'description_per_acc' => 'Employer SSS Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => $isPayrollEmployeeCashOnHold ? 1 : 0,
-                            ],
-                        ]);
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerSss,
+                            'Employer SSS Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $payrollBranch->advance_debit,
+                            $erSSSCredit,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erSSSDebit,
+                            $payrollBranch->expense_credit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $isPayrollEmployeeCashOnHold ? 1 : 0
+                        );
                     } else {
-                        $firstEntry = $this->generateEntryId($this->counterEntry);
-                        $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $entries = array_merge($entries, [
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erSSS'],
-                                'acc_no'              => $erSSSDebit,
-                                'description_per_acc' => 'Employer SSS Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erSSS'],
-                                'acc_no'              => $accountsPayable,
-                                'description_per_acc' => 'Employer SSS Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $erSSSVendor,
-                                'ven_name'            => $erSSSVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erSSS'],
-                                'acc_no'              => $erSSSDebit,
-                                'description_per_acc' => 'Employer SSS Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $erSSSVendor,
-                                'ven_name'            => $erSSSVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erSSS'],
-                                'acc_no'              => $erSSSCredit,
-                                'description_per_acc' => 'Employer SSS Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-                        ]);
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerSss,
+                            'Employer SSS Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $erSSSDebit,
+                            $accountsPayable,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erSSSDebit,
+                            $erSSSCredit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
                     }
                 }
 
-                if ($payrollEmployeeCashSums['erPh'] > 0) {
+                foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
+                        $payrollCash,
+                        $cashPayrollVendorNo,
+                        $cashPayrollVendorName
+                    );
+
+                    $cashEmployerPh = $this->parseMoneyValue($payrollCash->employer_philhealth);
                     if ($payrollBranch->branch_number != "SFI00001") {
-                        $firstEntry = $this->generateEntryId($this->counterEntry);
-                        $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $entries = array_merge($entries, [
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                                'branch_id'           => $branchHOId,
-                                'branch_name'         => $branchHOName,
-                                'branch_number'       => $branchHONumber,
-                                'ven_no'              => $erPhilHealthVendor,
-                                'ven_name'            => $erPhilHealthVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erPh'],
-                                'acc_no'              => $payrollBranch->advance_debit,
-                                'description_per_acc' => 'Employer Philhealth Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                                'branch_id'           => $branchHOId,
-                                'branch_name'         => $branchHOName,
-                                'branch_number'       => $branchHONumber,
-                                'ven_no'              => $erPhilHealthVendor,
-                                'ven_name'            => $erPhilHealthVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erPh'],
-                                'acc_no'              => $erPhilHealthCredit,
-                                'description_per_acc' => 'Employer Philhealth Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erPh'],
-                                'acc_no'              => $erPhilHealthDebit,
-                                'description_per_acc' => 'Employer Philhealth Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => $isPayrollEmployeeCashOnHold ? 1 : 0,
-                            ],
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erPh'],
-                                'acc_no'              => $payrollBranch->expense_credit,
-                                'description_per_acc' => 'Employer Philhealth Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => $isPayrollEmployeeCashOnHold ? 1 : 0,
-                            ],
-                        ]);
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerPh,
+                            'Employer Philhealth Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $payrollBranch->advance_debit,
+                            $erPhilHealthCredit,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erPhilHealthDebit,
+                            $payrollBranch->expense_credit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $isPayrollEmployeeCashOnHold ? 1 : 0
+                        );
                     } else {
-                        $firstEntry = $this->generateEntryId($this->counterEntry);
-                        $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $entries = array_merge($entries, [
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erPh'],
-                                'acc_no'              => $erPhilHealthDebit,
-                                'description_per_acc' => 'Employer Philhealth Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erPh'],
-                                'acc_no'              => $accountsPayable,
-                                'description_per_acc' => 'Employer Philhealth Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $erPhilHealthVendor,
-                                'ven_name'            => $erPhilHealthVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erPh'],
-                                'acc_no'              => $erPhilHealthDebit,
-                                'description_per_acc' => 'Employer Philhealth Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $erPhilHealthVendor,
-                                'ven_name'            => $erPhilHealthVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erPh'],
-                                'acc_no'              => $erPhilHealthCredit,
-                                'description_per_acc' => 'Employer Philhealth Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-                        ]);
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerPh,
+                            'Employer Philhealth Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $erPhilHealthDebit,
+                            $accountsPayable,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erPhilHealthDebit,
+                            $erPhilHealthCredit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
                     }
                 }
 
 
-                //dito ako natapos
-                if ($payrollEmployeeCashSums['erPagibig'] > 0) {
+                foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
+                        $payrollCash,
+                        $cashPayrollVendorNo,
+                        $cashPayrollVendorName
+                    );
+
+                    $cashEmployerPagibig = $this->parseMoneyValue($payrollCash->employer_pagibig);
                     if ($payrollBranch->branch_number != "SFI00001") {
-                        $firstEntry = $this->generateEntryId($this->counterEntry);
-                        $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $entries = array_merge($entries, [
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                                'branch_id'           => $branchHOId,
-                                'branch_name'         => $branchHOName,
-                                'branch_number'       => $branchHONumber,
-                                'ven_no'              => $erPagibigVendor,
-                                'ven_name'            => $erPagibigVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                                'acc_no'              => $payrollBranch->advance_debit,
-                                'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                                'branch_id'           => $branchHOId,
-                                'branch_name'         => $branchHOName,
-                                'branch_number'       => $branchHONumber,
-                                'ven_no'              => $erPagibigVendor,
-                                'ven_name'            => $erPagibigVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                                'acc_no'              => $erPagibigCredit,
-                                'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                                'acc_no'              => $erPagibigDebit,
-                                'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => $isPayrollEmployeeCashOnHold ? 1 : 0,
-                            ],
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                                'acc_no'              => $payrollBranch->expense_credit,
-                                'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => $isPayrollEmployeeCashOnHold ? 1 : 0,
-                            ],
-                        ]);
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerPagibig,
+                            'Employer Pag-Ibig Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $payrollBranch->advance_debit,
+                            $erPagibigCredit,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erPagibigDebit,
+                            $payrollBranch->expense_credit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $isPayrollEmployeeCashOnHold ? 1 : 0
+                        );
                     } else {
-                        $firstEntry = $this->generateEntryId($this->counterEntry);
-                        $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                        $entries = array_merge($entries, [
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                                'acc_no'              => $erPagibigDebit,
-                                'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-
-                            [
-                                'entry_id'            => $firstEntry,
-                                'apsys_entry_id'      => $firstApsysEntry,
-                                'apsys_entry_main_id' => $firstApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $vendorHONo,
-                                'ven_name'            => $vendorHOName,
-                                'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                                'acc_no'              => $accountsPayable,
-                                'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $erPagibigVendor,
-                                'ven_name'            => $erPagibigVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                                'acc_no'              => $erPagibigDebit,
-                                'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                                'balance_type'        => 'Debit',
-                                'is_block_payment'    => 0,
-                            ],
-                            [
-                                'entry_id'            => $secondEntry,
-                                'apsys_entry_id'      => $secondApsysEntry,
-                                'apsys_entry_main_id' => $secondApsysEntryMain,
-                                'document_no'         => $start_date . '-' . $end_date,
-                                'branch_id'           => $branchId,
-                                'branch_name'         => $branchName,
-                                'branch_number'       => $branchNumber,
-                                'ven_no'              => $erPagibigVendor,
-                                'ven_name'            => $erPagibigVendorName,
-                                'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                                'acc_no'              => $erPagibigCredit,
-                                'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                                'balance_type'        => 'Credit',
-                                'is_block_payment'    => 0,
-                            ],
-                        ]);
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerPagibig,
+                            'Employer Pag-Ibig Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $erPagibigDebit,
+                            $accountsPayable,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erPagibigDebit,
+                            $erPagibigCredit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
                     }
                 }
 
@@ -3584,251 +3381,169 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //branch - employer statutories (cash)
-                if ($payrollEmployeeCashSums['erSSS'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
+                foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
+                        $payrollCash,
+                        $cashPayrollVendorNo,
+                        $cashPayrollVendorName
+                    );
 
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $erSSSVendor,
-                            'ven_name'            => $erSSSVendorName,
-                            'amount'              => $payrollEmployeeCashSums['erSSS'],
-                            'acc_no'              => $payrollBranch->advance_debit,
-                            'description_per_acc' => 'Employer SSS Contribution',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $erSSSVendor,
-                            'ven_name'            => $erSSSVendorName,
-                            'amount'              => $payrollEmployeeCashSums['erSSS'],
-                            'acc_no'              => $erSSSCredit,
-                            'description_per_acc' => 'Employer SSS Contribution',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $start_date . '-' . $end_date,
-                            'branch_id'           => $branchId,
-                            'branch_name'         => $branchName,
-                            'branch_number'       => $branchNumber,
-                            'ven_no'              => $vendorHONo,
-                            'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeCashSums['erSSS'],
-                            'acc_no'              => $erSSSDebit,
-                            'description_per_acc' => 'Employer SSS Contribution',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-                        [
-                            'entry_id'            => $secondEntry,
-                            'apsys_entry_id'      => $secondApsysEntry,
-                            'apsys_entry_main_id' => $secondApsysEntryMain,
-                            'document_no'         => $start_date . '-' . $end_date,
-                            'branch_id'           => $branchId,
-                            'branch_name'         => $branchName,
-                            'branch_number'       => $branchNumber,
-                            'ven_no'              => $vendorHONo,
-                            'ven_name'            => $vendorHOName,
-                            'amount'              => $payrollEmployeeCashSums['erSSS'],
-                            'acc_no'              => $payrollBranch->expense_credit,
-                            'description_per_acc' => 'Employer SSS Contribution',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
+                    $cashEmployerSss = $this->parseMoneyValue($payrollCash->employer_sss);
+                    if ($payrollBranch->branch_number != "SFI00001") {
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerSss,
+                            'Employer SSS Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $payrollBranch->advance_debit,
+                            $erSSSCredit,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erSSSDebit,
+                            $payrollBranch->expense_credit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
+                    } else {
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerSss,
+                            'Employer SSS Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $erSSSDebit,
+                            $accountsPayable,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erSSSDebit,
+                            $erSSSCredit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
+                    }
                 }
 
-                if ($payrollEmployeeCashSums['erPh'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
+                foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
+                        $payrollCash,
+                        $cashPayrollVendorNo,
+                        $cashPayrollVendorName
+                    );
 
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $erPhEntries = [];
-
+                    $cashEmployerPh = $this->parseMoneyValue($payrollCash->employer_philhealth);
                     if ($payrollBranch->branch_number != "SFI00001") {
-                        $erPhEntries [] = [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $erPhilHealthVendor,
-                            'ven_name'            => $erPhilHealthVendorName,
-                            'amount'              => $payrollEmployeeCashSums['erPh'],
-                            'acc_no'              => $payrollBranch->advance_debit,
-                            'description_per_acc' => 'Employer Philhealth Contribution',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ];
-
-                        $erPhEntries [] = [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $erPhilHealthVendor,
-                            'ven_name'            => $erPhilHealthVendorName,
-                            'amount'              => $payrollEmployeeCashSums['erPh'],
-                            'acc_no'              => $erPhilHealthCredit,
-                            'description_per_acc' => 'Employer Philhealth Contribution',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ];
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerPh,
+                            'Employer Philhealth Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $payrollBranch->advance_debit,
+                            $erPhilHealthCredit,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erPhilHealthDebit,
+                            $payrollBranch->expense_credit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
+                    } else {
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerPh,
+                            'Employer Philhealth Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $erPhilHealthDebit,
+                            $accountsPayable,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erPhilHealthDebit,
+                            $erPhilHealthCredit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
                     }
-
-                    $erPhEntries [] = [
-                        'entry_id'            => $secondEntry,
-                        'apsys_entry_id'      => $secondApsysEntry,
-                        'apsys_entry_main_id' => $secondApsysEntryMain,
-                        'document_no'         => $start_date . '-' . $end_date,
-                        'branch_id'           => $branchId,
-                        'branch_name'         => $branchName,
-                        'branch_number'       => $branchNumber,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'amount'              => $payrollEmployeeCashSums['erPh'],
-                        'acc_no'              => $erPhilHealthDebit,
-                        'description_per_acc' => 'Employer Philhealth Contribution',
-                        'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
-                    ];
-
-                    $erPhEntries [] = [
-                        'entry_id'            => $secondEntry,
-                        'apsys_entry_id'      => $secondApsysEntry,
-                        'apsys_entry_main_id' => $secondApsysEntryMain,
-                        'document_no'         => $start_date . '-' . $end_date,
-                        'branch_id'           => $branchId,
-                        'branch_name'         => $branchName,
-                        'branch_number'       => $branchNumber,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'amount'              => $payrollEmployeeCashSums['erPh'],
-                        'acc_no'              => $payrollBranch->expense_credit,
-                        'description_per_acc' => 'Employer Philhealth Contribution',
-                        'balance_type'        => 'Credit',
-                        'is_block_payment'    => 0,
-                    ];
-                    
-                    $entries = array_merge($entries, $erPhEntries);
                 }
 
-                if ($payrollEmployeeCashSums['erPagibig'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
+                foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                    [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
+                        $payrollCash,
+                        $cashPayrollVendorNo,
+                        $cashPayrollVendorName
+                    );
 
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $erPagibigEntries = [];
-
+                    $cashEmployerPagibig = $this->parseMoneyValue($payrollCash->employer_pagibig);
                     if ($payrollBranch->branch_number != "SFI00001") {
-        
-                        $erPagibigEntries [] = [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $erPagibigVendor,
-                            'ven_name'            => $erPagibigVendorName,
-                            'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                            'acc_no'              => $payrollBranch->advance_debit,
-                            'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ];
-
-                        $erPagibigEntries [] = [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $erPagibigVendor,
-                            'ven_name'            => $erPagibigVendorName,
-                            'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                            'acc_no'              => $erPagibigCredit,
-                            'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ];
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerPagibig,
+                            'Employer Pag-Ibig Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $payrollBranch->advance_debit,
+                            $erPagibigCredit,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
+                            $branchHOId,
+                            $branchHOName,
+                            $branchHONumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erPagibigDebit,
+                            $payrollBranch->expense_credit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
+                    } else {
+                        $this->appendCashDualContributionEntries(
+                            $entries,
+                            $cashEmployerPagibig,
+                            'Employer Pag-Ibig Contribution',
+                            $sourceVendorNo,
+                            $sourceVendorName,
+                            $erPagibigDebit,
+                            $accountsPayable,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
+                            $vendorHONo,
+                            $vendorHOName,
+                            $erPagibigDebit,
+                            $erPagibigCredit,
+                            $start_date . '-' . $end_date,
+                            $branchId,
+                            $branchName,
+                            $branchNumber
+                        );
                     }
-
-                    $erPagibigEntries [] = [
-                        'entry_id'            => $secondEntry,
-                        'apsys_entry_id'      => $secondApsysEntry,
-                        'apsys_entry_main_id' => $secondApsysEntryMain,
-                        'document_no'         => $start_date . '-' . $end_date,
-                        'branch_id'           => $branchId,
-                        'branch_name'         => $branchName,
-                        'branch_number'       => $branchNumber,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                        'acc_no'              => $erPagibigDebit,
-                        'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                        'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
-                    ];
-
-                    $erPagibigEntries [] = [
-                        'entry_id'            => $secondEntry,
-                        'apsys_entry_id'      => $secondApsysEntry,
-                        'apsys_entry_main_id' => $secondApsysEntryMain,
-                        'document_no'         => $start_date . '-' . $end_date,
-                        'branch_id'           => $branchId,
-                        'branch_name'         => $branchName,
-                        'branch_number'       => $branchNumber,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'amount'              => $payrollEmployeeCashSums['erPagibig'],
-                        'acc_no'              => $payrollBranch->expense_credit,
-                        'description_per_acc' => 'Employer Pag-Ibig Contribution',
-                        'balance_type'        => 'Credit',
-                        'is_block_payment'    => 0,
-                    ];
-
-                    $entries = array_merge($entries, $erPagibigEntries);
                 }
 
                 //branch - net taxable adjustment (cash)
