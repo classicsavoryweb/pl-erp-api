@@ -1053,6 +1053,7 @@ class TimeKeepingService
             $previousDate = $holidayDate->copy()->subDay()->toDateString();
             $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
             $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+            $hasLogsOnHoliday = BiotimeLog::where("date", $holidayDate->toDateString())->where("employee_id", $employee->id)->first();
             $shouldPay = true;
 
             if ($holiday->holiday_type == "LH") {
@@ -1061,7 +1062,6 @@ class TimeKeepingService
                     $previousDate = $currentDate->copy()->subDay()->toDateString();
                     $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
                     $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
-    
                     if (!$hasLog) {
                         $shouldPay = false;
                     }
@@ -1073,6 +1073,9 @@ class TimeKeepingService
                 } else {
                     if (!$hasLog) {
                         $shouldPay = false;
+                    }
+                    if ($hasLogsOnHoliday && $employee->current_position->timekeeping_type === "Monthly") {
+                        $shouldPay = true;
                     }
                 }
             }
