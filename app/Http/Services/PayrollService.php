@@ -511,7 +511,6 @@ class PayrollService {
             }
 
             $grossPayAmount = ( $salary +
-                $specialLeave +
                 $overtimeAmount +
                 $legalHolidayAmount +
                 $legalHolidayOvertimeAmount + 
