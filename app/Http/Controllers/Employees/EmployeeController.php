@@ -401,6 +401,12 @@ class EmployeeController extends Controller
                 });
             }
 
+            if ($request->has("type")) {
+                if (in_array($request->type, ["Direct", "Agency"])) {
+                    $employees = $employees->where("type", $request->type);
+                }
+            }
+
             if ($request->has("status")) {
                 $status = $request->status;
                 switch ($status) {

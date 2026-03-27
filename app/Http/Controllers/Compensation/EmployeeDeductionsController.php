@@ -228,7 +228,10 @@ class EmployeeDeductionsController extends Controller
                 $deductions = $deductions->whereBetween('created_at', [$request->date_created_from ." 00:00:00", $request->date_created_to. " 23:59:59"]);
             }
 
-            $deductions = $deductions->with(["employee", "employee.current_branch", "branch", "deduction"]);
+            $deductions = $deductions->with(["employee", "employee.current_branch", "branch", "deduction"])
+            ->whereHas("employee", function ($query) {
+                $query->where("type", "Direct");
+            });
 
             if ($request->has(["export"]) && $request->export) {
                 $deductions = $deductions->get();
