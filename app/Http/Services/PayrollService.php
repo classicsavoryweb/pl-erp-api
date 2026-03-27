@@ -423,7 +423,7 @@ class PayrollService {
             $nightDifferentialAmount = 0;
             $nightDifferentialOvertimeAmount = 0;
             $cancelledOffAmount = 0;
-            $nonTaxableAmount = 0;
+            $nonTaxableAmount = $payrollDetails->non_taxable_adjustment ?? 0;
             $taxableAdustmentAmount = $payrollDetails->adjustment_amount ?? 0;
             $philHealthAmount = 0;
             $pagibigEmployee = 0;
@@ -442,8 +442,8 @@ class PayrollService {
             $additionalWorkingHoursTotal = 0;
             $workingHoursDeductionTotal = 0;
 
-            $salary = $daily_rate * $payrollDetails->regular_days;
             $specialLeave = $daily_rate * $payrollDetails->special_leave;
+            $salary = ($daily_rate * $payrollDetails->regular_days) + $specialLeave;
 
             $tardinessAmount = $payrollDetails->tardiness * $minute_rate;
             $undertimeAmount = $payrollDetails->undertime * $minute_rate;
@@ -455,7 +455,7 @@ class PayrollService {
             $nightDifferentialAmount = $payrollDetails->night_differential * ($hourly_rate * .1);
             $nightDifferentialOvertimeAmount = $payrollDetails->night_differential_overtime * ($hourly_rate * .125);
             $cancelledOffAmount = $payrollDetails->cancelled_off * ($hourly_rate * 1.3);
-            $basicSalary = $salary + $specialLeave - ($tardinessAmount + $undertimeAmount);
+            $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
 
             $deductions = [];
             $totalDeductions = 0;
@@ -506,13 +506,6 @@ class PayrollService {
     
                     foreach ($deductions as $ded) {
                         $totalDeductions += $ded["deducted_amount"];
-                    }
-    
-                    $manualDeductions = $existingPayroll->manual_deductions;
-                    $nonTaxableAmount = $existingPayroll->non_taxable_adjustment;
-                    $remarks = $existingPayroll->remarks;
-                    if (!$edit) {
-                        $taxableAdustmentAmount = $existingPayroll->taxable_adjustment;
                     }
                 }
             }

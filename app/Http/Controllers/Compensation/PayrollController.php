@@ -12,6 +12,8 @@ use App\Models\Tax;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
 use App\Models\Branch;
+use App\Models\Cutoff;
+use App\Models\PayrollDetail;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -196,6 +198,7 @@ class PayrollController extends Controller
                 "employee.latest_bank_details",
                 "timekeeping_branch",
                 "timekeeping_summary",
+                "details"
             ])->find($payrollId);
 
             if ($payroll) {
@@ -250,6 +253,7 @@ class PayrollController extends Controller
                 "employee.latest_bank_details",
                 "timekeeping_branch",
                 "timekeeping_summary",
+                "details"
             ])->find($payrollId);
 
             if ($payroll) {
@@ -570,6 +574,106 @@ class PayrollController extends Controller
             return $this->sendResponse([
                 "message" => "Payroll is generating."
             ]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function showPayrollComputation(Request $request, $payroll_id) {
+        try {
+            $payrollService = new PayrollService();
+            $payroll = Payroll::with([
+                "employee",
+                "timekeeping_branch",
+                "details",
+                "position",
+                "payroll_list.current_bank_details"
+            ])->find($payroll_id);
+
+            if ($payroll) {
+                $cutOff = Cutoff::where("pay_date", $payroll->pay_date)->first();
+                $details = $payroll->details;
+                $details->regular_days = $request->regular_days;
+                $details->special_leave = $request->special_leave;
+                $details->cancelled_off = $request->cancelled_off;
+                $details->special_holiday = $request->special_holiday;
+                $details->legal_holiday = $request->legal_holiday;
+                $details->regular_overtime = $request->regular_overtime;
+                $details->night_differential = $request->night_differential;
+                $details->night_differential_overtime = $request->night_differential_overtime;
+                $details->legal_holiday_overtime = $request->legal_holiday_overtime;
+                $details->special_holiday_overtime = $request->special_holiday_overtime;
+                $details->adjustment_amount = $request->adjustment_amount;
+                $details->non_taxable_adjustment = $request->non_taxable_adjustment;
+
+                $payrollComp = $payrollService->computePayrollV2($details, $cutOff);
+    
+                if ($payrollComp) {
+
+                    foreach ($payrollComp as $key => $value) {
+                        $payroll[$key] = $value;
+                    }
+
+                    $payroll->details = $details;
+                    $payroll->details->undertime_minutes = json_decode($payroll->details->undertime_minutes) ?? [];
+                    $payroll->details->tardiness_minutes = json_decode($payroll->details->tardiness_minutes) ?? [];
+                    
+                    if ($request->save_changes) {
+                        PayrollDetail::where("payroll_id", $payroll->id)
+                        ->update([
+                            "regular_days" => $request->regular_days,
+                            "special_leave" => $request->special_leave,
+                            "cancelled_off" => $request->cancelled_off,
+                            "special_holiday" => $request->special_holiday,
+                            "legal_holiday" => $request->legal_holiday,
+                            "regular_overtime" => $request->regular_overtime,
+                            "night_differential" => $request->night_differential,
+                            "night_differential_overtime" => $request->night_differential_overtime,
+                            "legal_holiday_overtime" => $request->legal_holiday_overtime,
+                            "special_holiday_overtime" => $request->special_holiday_overtime,
+                            "adjustment_amount" => $request->adjustment_amount,
+                        ]);
+
+                        Payroll::where("id", $payroll->id)
+                        ->update([
+                            "salary" => $payrollComp->salary,
+                            "tardiness_amount" => $payrollComp->tardiness_amount,
+                            "undertime_amount" => $payrollComp->undertime_amount,
+                            "overtime_amount" =>  $payrollComp->overtime_amount,
+                            "legal_holiday_amount" => $payrollComp->legal_holiday_amount,
+                            "legal_holiday_overtime_amount" => $payrollComp->legal_holiday_overtime_amount,
+                            "special_holiday_amount" => $payrollComp->special_holiday_amount,
+                            "special_holiday_overtime_amount" => $payrollComp->special_holiday_overtime_amount,
+                            "night_differential_amount" => $payrollComp->night_differential_amount,
+                            "night_differential_overtime_amount" => $payrollComp->night_differential_overtime_amount,
+                            "taxable_adjustment" => $payrollComp->taxable_adjustment,
+                            "non_taxable_adjustment" => $payrollComp->non_taxable_adjustment,
+                            "gross_pay" => $payrollComp->gross_pay,
+                            "employee_sss" => $payrollComp->employee_sss,
+                            "employer_sss" => $payrollComp->employer_sss,
+                            "employee_pagibig" => $payrollComp->employee_pagibig,
+                            "employer_pagibig" => $payrollComp->employer_pagibig,
+                            "employee_philhealth" => $payrollComp->employee_philhealth,
+                            "employer_philhealth" => $payrollComp->employer_philhealth,
+                            "withholding_tax" => $payrollComp->withholding_tax,
+                            "deductions" => $payrollComp->deductions,
+                            "total_deductions" => $payrollComp->total_deductions,
+                            "manual_deductions" => $payrollComp->manual_deductions,
+                            "cancelled_off" => $payrollComp->cancelled_off,
+                            "net_pay" => $payrollComp->net_pay,
+                            "taxable_income" => $payrollComp->taxable_income,
+                            "contribution_total" => $payrollComp->contribution_total,
+                            "additional_working_hours_total" => $payrollComp->additional_working_hours_total,
+                            "working_hours_deduction_total" => $payrollComp->working_hours_deduction_total,
+                            "status" => "initial",
+                            "special_leave" => $payrollComp->special_leave
+                        ]);
+                    }
+                    return $this->sendResponse($payroll);
+                }
+            }   
+
+            return $this->sendError(["message" => "Payroll not found"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }

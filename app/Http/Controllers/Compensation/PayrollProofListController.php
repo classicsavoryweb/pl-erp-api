@@ -8,6 +8,7 @@ use App\Models\Cutoff;
 use App\Models\Employee;
 use App\Models\Incentives;
 use App\Models\Payroll;
+use App\Models\PayrollDetail;
 use App\Models\PayrollList;
 use DOMDocument;
 use Exception;
@@ -46,15 +47,12 @@ class PayrollProofListController extends Controller
                 return $this->sendError(["message" => "Cutoff not yet initialized"]);
             }
 
-            $proofList = PayrollList::where("is_included", 1)
-            ->with([
-                'current_bank_details.bank_account_type',
-            ])
+            $proofList = PayrollDetail::where("is_included", 1)
             ->leftJoin($model, function ($join) use ($model, $cutOff) {
-                $join->on('payroll_list.employee_id', '=', "$model.employee_id")
+                $join->on('payroll_detail.employee_id', '=', "$model.employee_id")
                 ->where("$model.pay_date", $cutOff->pay_date);
             })
-            ->leftJoin('employees', 'payroll_list.employee_id', '=', 'employees.id');
+            ->leftJoin('employees', 'payroll_detail.employee_id', '=', 'employees.id');
 
             if ($request->bank_account_type_id == '0') {
                 $proofList = $proofList->where("is_bank", 0);
@@ -98,8 +96,6 @@ class PayrollProofListController extends Controller
                     'payroll.cancelled_off as cancelled_off_amount',
                     'p.description as position'
                 );
-
-                // $proofList = $proofList->addSelect('payroll_list.*', DB::raw('payroll.net_pay as amount'), 'payroll.*');
             }
 
             if ($request->export === true) {
