@@ -79,7 +79,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $employeeId = $this->employeeId;
 
             $inactiveDate = Carbon::parse($cutOff['start_time'])->subDays(10)->format("Y-m-d");
-            $employees = Employee::with(["schedule", "schedule.schedule_type"])
+            $employees = Employee::with(["schedule", "schedule.schedule_type", "current_position"])
             ->whereHas("timekeeping", function ($query) use ($branchId) {
                 $query->where("branch_id", $branchId);
             })->where(function ($q) use ($inactiveDate) {
@@ -109,6 +109,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
             if ($employee->type === "Agency") {
                 continue;
             }
+
+
+            $timeKeepingType = $employee->current_position->timekeeping_type;
 
             $adjustmentOvertimes = Overtime::where("employee_id", $employee->id)
             ->whereNotBetween("overtime_date", [$activeCutOff->start_date, $activeCutOff->end_date])
@@ -287,7 +290,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         ->where("final_worked_hours" ,'>', 0)
                         ->get();
 
-                        if ($holidayWeekTimeKeeping->count() < 5) {
+                        if ($holidayWeekTimeKeeping->count() < 5 && $timeKeepingType == "Monthly") {
                             $regular_days += 1;
                             $actualWorkedDays += 1;
                             $holidayConvertedToDays = true;

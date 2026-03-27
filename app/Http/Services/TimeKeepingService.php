@@ -647,8 +647,10 @@ class TimeKeepingService
                 }
             }
 
+            $halfDayBasis = $hours == 9.5 ? 285 : 240;
+
             if (
-                ($workHours >= $schedule->total_hours - 3.5 && $undertime < 240 ) &&
+                ($workHours >= $schedule->total_hours - 3.5 && $undertime < $halfDayBasis ) &&
                 !$isCancelledOff &&
                 !$shouldBeHalfDay
             ) {
@@ -656,7 +658,7 @@ class TimeKeepingService
                 // Log::info("CONDITION 1");
             } else if (
                 $workHours >= 4 &&
-                $undertime >= 240 &&
+                $undertime >= $halfDayBasis &&
                 !$isCancelledOff &&
                 $workHours > 0
             ) {
@@ -664,7 +666,7 @@ class TimeKeepingService
                 // Log::info("CONDITION 2");
             } else if (
                 $workHours >= $schedule->total_hours / 2 &&
-                $undertime <= 240 &&
+                $undertime <= $halfDayBasis &&
                 !$shouldBeHalfDay
             ) {
                 $finalWorkHours = $hours;
@@ -673,13 +675,12 @@ class TimeKeepingService
                 (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
                 !$isCancelledOff &&
                 $workHours > 0 &&
-                $undertime < 120
+                $undertime < ($halfDayBasis / 2)
             ) {
                 $finalWorkHours = $hours / 2;
                 // Log::info("CONDITION 4");
             }
             
-            $halfDayBasis = $hours == 9.5 ? 285 : 240;
             if ($finalWorkHours == $hours / 2) {
                 if ($undertime >= $halfDayBasis) {
                     $undertime = $undertime - $halfDayBasis;
