@@ -63,6 +63,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_employee_requirements"])->get("/get-requirements-attachments/{employee_number}", [RequirementsAttachmentController::class, "getAttachments"]);
     //trainings history
     Route::get("/get-employee-trainings/{employee_number}", [EmployeeTrainingController::class, "getEmployeeTrainings"]);
+    Route::get("/export-employee-trainings/{employee_number}", [EmployeeTrainingController::class, "exportEmployeeTrainings"]);
     Route::middleware(["permission:perform_employee_training_titles"])->post("/add-employee-training-title/{employee_number}", [EmployeeTrainingController::class, "addTrainingTitle"]);
     Route::middleware(["permission:perform_employee_training_titles"])->post("/edit-employee-training-title/{employee_number}", [EmployeeTrainingController::class, "editTrainingTitle"]);
     //vaccination

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Employees;
 
+use App\Exports\Employees\EmployeeTrainingsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\EmployeeTrainings;
 use Illuminate\Http\Request;
 use Exception;
 use DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeTrainingController extends Controller
 {
@@ -15,14 +17,27 @@ class EmployeeTrainingController extends Controller
         try {
             $perPage = $request->per_page ??10;
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $training = EmployeeTrainings::where("employee_id", $employee->id)
-                ->orderBy("date","DESC")
-                ->paginate($perPage);
+            $training = EmployeeTrainings::with("employee")
+                ->where("employee_id", $employee->id)
+                ->orderBy("date","DESC");
+
+            if($request->has(["export"]) && $request->export) {
+                $training = $training->get();
+                return Excel::download(new EmployeeTrainingsExport($training), "employee_trainings.xls");
+            }
+
+            $training = $training->paginate($perPage);
 
             return $this->sendResponse($training);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportEmployeeTrainings(Request $request, $employee_number) {
+        $request["export"] = true;
+
+        return $this->getEmployeeTrainings($request, $employee_number);
     }
 
      public function addTrainingTitle(Request $request, $employee_number) {
