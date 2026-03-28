@@ -532,114 +532,18 @@ class PayrollService {
                 ->where("start_date", $lastCutOffStartDate)
                 ->first();
 
-            //clarify if $grossPayAmount will be used
             if ($payrollDetails->is_complete_documents == 1) {
-                $philHealth = PhilhealthPercentageBase::first();
+                $sssComputation = $this->computeSSS($grossPayAmount, $cutOff->part, $latestPayroll);
+                $pagibigComputation = $this->computePAGIBIG($basicSalary, $cutOff->part, $latestPayroll);
+                $philHealthComputation = $this->computePHILHEALTH($basicSalary, $cutOff->part, $latestPayroll);
 
-                $philHealthAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
+                $sssEmployeeAmount = round($sssComputation['ee'], 2);
+                $sssEmployerAmount = round($sssComputation['er'], 2);   
 
-                $sss = SSS::where('salary_range_min', '<=', $grossPayAmount)
-                ->where('salary_range_max', '>=', $grossPayAmount)
-                ->first();
-    
-                $pagibig = Pagibig::where('min_amount', '<=', $basicSalary)
-                    ->where('max_amount', '>=', $basicSalary)
-                    ->first();
-    
-                if ($cutOff->part == 1) {
-                    $sssEmployeeAmount = round($sss->employee_ss, 2);
-                    $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);   
-    
-                    $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
-                    $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+                $pagibigEmployee = round($pagibigComputation['ee'], 2);
+                $pagibigEmployer = round($pagibigComputation['er'], 2);
 
-                    $pagibigEmployee = round($pagibigAmount, 2);
-                    $pagibigEmployer = round($pagibigAmount, 2);
-
-                    $philHealthBaseAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) , 2);
-
-                    if ($basicSalary <= $philHealth->philhealth_cap) {
-                        $philHealthAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)), 2);
-                    }
-
-                    if ($philHealthBaseAmount > $philHealth->philhealth_max) {
-                        $philHealthBaseAmount = $philHealth->philhealth_max;
-                    }
-
-                    $philHealthAmount = round(($philHealthBaseAmount / 2), 2);
-
-                    if ($philHealthAmount < 0) {
-                        $philHealthAmount = 0;
-                    }
-                } else {    
-                    if ($latestPayroll) {
-                        $latestBasic = $latestPayroll->salary - ($latestPayroll->undertime_amount + $latestPayroll->tardiness_amount);
-                        $totalBasic = $basicSalary + $latestBasic;
-
-                        $totalSalary = $grossPayAmount + $latestPayroll->gross_pay;
-                        $sss = SSS::where('salary_range_min', '<=', $totalSalary)
-                        ->where('salary_range_max', '>=', $totalSalary)
-                        ->first();
-
-                        $pagibigShares = $totalBasic * (0.01 * $pagibig->percentage);
-                        $pagibigAmount = $pagibigShares > 49.99
-                            ? $pagibig->max_deduction - $latestPayroll->employee_pagibig
-                            : $pagibigShares - $latestPayroll->employee_pagibig;
-
-                        $pagibigEmployee = round($pagibigAmount, 2);
-                        $pagibigEmployer = round($pagibigAmount, 2);
-
-                        $latestSSS = SSS::where('salary_range_min', '<=', $latestPayroll->gross_pay)
-                        ->where('salary_range_max', '>=', $latestPayroll->gross_pay)
-                        ->first();
-
-                        if ($latestSSS) {
-                            $sssEmployeeAmount = round($sss->employee_ss - $latestPayroll->employee_sss, 2);
-                            $sssEmployerAmount = round(($sss->employer_ss + $sss->employer_cc) - $latestPayroll->employer_sss, 2);
-                        } else {
-                            $sssEmployeeAmount = round($sss->employee_ss, 2);
-                            $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
-                        }
-
-                        $philHealthBaseAmount = round(($totalBasic * ($philHealth->percentage * 0.01)) , 2);
-
-                        if ($philHealthBaseAmount > $philHealth->philhealth_max) {
-                            $philHealthBaseAmount = $philHealth->philhealth_max;
-                        }
-
-                        $totalPhilhealthAmount = round(($philHealthBaseAmount - ($latestPayroll->employee_philhealth + $latestPayroll->employer_philhealth)), 2);
-                        $philHealthAmount = round(($totalPhilhealthAmount / 2), 2);
-
-                        if ($philHealthAmount < 0) {
-                            $philHealthAmount = 0;
-                        }
-                    } else {
-                        $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
-                        $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
-
-                        $pagibigEmployee = round($pagibigAmount, 2);
-                        $pagibigEmployer = round($pagibigAmount, 2);
-    
-                        $sssEmployeeAmount = round($sss->employee_ss, 2);
-                        $sssEmployerAmount = round($sss->employer_ss + $sss->employer_cc, 2);
-
-                        $philHealthBaseAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) , 2);
-
-                        if ($basicSalary <= $philHealth->philhealth_cap) {
-                            $philHealthBaseAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)), 2);
-                        }
-
-                        if ($philHealthBaseAmount > $philHealth->philhealth_max) {
-                            $philHealthBaseAmount = $philHealth->philhealth_max;
-                        }
-
-                        $philHealthAmount = round(($philHealthBaseAmount / 2), 2);
-
-                        if ($philHealthAmount < 0) {
-                            $philHealthAmount = 0;
-                        }
-                    }
-                }
+                $philHealthAmount = round($philHealthComputation, 2);
             }
 
             $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
@@ -751,6 +655,137 @@ class PayrollService {
             Log::error("ERROR COMPUTING PAYROLL EMPLOYEE: " .$employee->full_name. " ERROR: ". $e->getMessage());
             return $payroll;
         }
+    }
+
+    public function computeSSS ($grossPay = 0, $part = 1, $firstPayroll) {
+        $sss = SSS::where('salary_range_min', '<=', $grossPay)
+        ->where('salary_range_max', '>=', $grossPay)
+        ->first();
+
+        $shares = [
+            "er" => 0,
+            "ee" => 0
+        ];
+
+        if ($part == 1) {
+            $shares['ee'] = round($sss->employee_ss, 2);
+            $shares['er'] = round($sss->employer_ss + $sss->employer_cc, 2);
+        } else {
+            if ($firstPayroll) {
+                $totalGross = $grossPay + $firstPayroll->gross_pay;
+                $sss = SSS::where('salary_range_min', '<=', $totalGross)
+                ->where('salary_range_max', '>=', $totalGross)
+                ->first();
+                $shares['ee'] = round($sss->employee_ss - $firstPayroll->employee_sss, 2);
+                $shares['er'] = round(($sss->employer_ss + $sss->employer_cc) - $firstPayroll->employer_sss, 2);
+            } else {
+                $shares['ee'] = round($sss->employee_ss, 2);
+                $shares['er'] = round($sss->employer_ss + $sss->employer_cc, 2);
+            }
+        }
+
+        return $shares;
+    }
+
+    public function computePAGIBIG ($basicSalary = 0, $part = 1, $firstPayroll) {
+        $pagibig = Pagibig::where('min_amount', '<=', $basicSalary)
+        ->where('max_amount', '>=', $basicSalary)
+        ->first();
+
+        $shares = [
+            "er" => 0,
+            "ee" => 0
+        ];
+
+        if ($part == 1) {
+            $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+            $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+
+            $shares['ee'] = round($pagibigAmount, 2);
+            $shares['er'] = round($pagibigAmount, 2);
+        } else {
+            if ($firstPayroll) {
+                $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount);
+
+                $pagibigShares = $totalBasic * (0.01 * $pagibig->percentage);
+                $pagibigAmount = $pagibigShares > 49.99
+                    ? $pagibig->max_deduction - $firstPayroll->employee_pagibig
+                    : $pagibigShares - $firstPayroll->employee_pagibig;
+
+                $shares['ee'] = round($pagibigAmount, 2);
+                $shares['er'] = round($pagibigAmount, 2);
+            } else {
+                $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+                $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+
+                $shares['ee'] = round($pagibigAmount, 2);
+                $shares['er'] = round($pagibigAmount, 2);
+            }
+        }
+
+        return $shares;
+    }
+
+    public function computePHILHEALTH ($basicSalary = 0, $part = 1, $firstPayroll) {
+        $philHealth = PhilhealthPercentageBase::first();
+
+        $amount = 0;
+
+        $philHealthBaseAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
+
+        if ($part == 1) {
+            if ($basicSalary <= $philHealth->philhealth_cap) {
+                $philHealthBaseAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)), 2);
+            }
+
+            if ($philHealthBaseAmount > $philHealth->philhealth_max) {
+                $philHealthBaseAmount = $philHealth->philhealth_max;
+            }
+
+            $philHealthAmount = round(($philHealthBaseAmount / 2), 2);
+
+            if ($philHealthAmount < 0) {
+                $philHealthAmount = 0;
+            }
+
+            $amount = $philHealthAmount;
+        } else {
+            if ($firstPayroll) {
+                $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount);
+                $philHealthBaseAmount = round(($totalBasic * ($philHealth->percentage * 0.01)) , 2);
+
+                if ($philHealthBaseAmount > $philHealth->philhealth_max) {
+                    $philHealthBaseAmount = $philHealth->philhealth_max;
+                }
+
+                $totalPhilhealthAmount = round(($philHealthBaseAmount - ($firstPayroll->employee_philhealth + $firstPayroll->employer_philhealth)), 2);
+                $philHealthAmount = round(($totalPhilhealthAmount / 2), 2);
+
+                if ($philHealthAmount < 0) {
+                    $philHealthAmount = 0;
+                }
+
+                $amount = $philHealthAmount;
+            } else {
+                if ($basicSalary <= $philHealth->philhealth_cap) {
+                    $philHealthBaseAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)), 2);
+                }
+
+                if ($philHealthBaseAmount > $philHealth->philhealth_max) {
+                    $philHealthBaseAmount = $philHealth->philhealth_max;
+                }
+
+                $philHealthAmount = round(($philHealthBaseAmount / 2), 2);
+
+                if ($philHealthAmount < 0) {
+                    $philHealthAmount = 0;
+                }
+
+                $amount = $philHealthAmount;
+            }
+        }
+        
+        return $amount;
     }
 
     public function computeIncentives(Cutoff $cutOff, Employee $employee, Branch $branch) {
