@@ -474,7 +474,7 @@ class PayrollService {
                     $employeeDeductions = EmployeeDeduction::with(["deduction"])
                     ->where("employee_id", $employee->id)
                     ->where("balance", ">", 0.01)
-                    ->where("date_created", "<=", $cutOff->pay_date)
+                    ->where("start_date", "<=", $cutOff->end_date)
                     ->where("end_loan_status", '!=', 'Yes')
                     ->where("approved_status", "Yes")
                     ->get();
