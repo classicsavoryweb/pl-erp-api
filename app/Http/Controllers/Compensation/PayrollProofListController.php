@@ -38,28 +38,31 @@ class PayrollProofListController extends Controller
             ->where("end_date", $end_time)
             ->first();
 
-            $model = 'payroll';
+            $model = new Payroll();
+            $table = "payroll";
             if ($request->type === "INCENTIVES") {
-                $model = 'incentives';
+                $model = new Incentives();
+                $table = "incentives";
             }
 
             if (!$cutOff) {
                 return $this->sendError(["message" => "Cutoff not yet initialized"]);
             }
 
-            $proofList = PayrollDetail::where("is_included", 1)
-            ->leftJoin($model, function ($join) use ($model, $cutOff) {
-                $join->on('payroll_detail.employee_id', '=', "$model.employee_id")
-                ->where("$model.pay_date", $cutOff->pay_date);
-            })
-            ->leftJoin('employees', 'payroll_detail.employee_id', '=', 'employees.id');
+            $proofList = $model::where("$table.pay_date",$cutOff->pay_date)
+            ->leftJoin("employees", "employees.id", "=", "$table.employee_id")
+            ->leftJoin("payroll_list", "payroll_list.employee_id", "=", "$table.employee_id")
+            ->leftJoin("payroll_details", function ($query) use($table, $cutOff) {
+                $query->on("payroll_details.employee_id", "=", "$table.employee_id")
+                ->where("payroll_details.pay_date", $cutOff->pay_date);
+            });
 
             if ($request->bank_account_type_id == '0') {
                 $proofList = $proofList->where("is_bank", 0);
             }
 
             if (in_array($request->bank_account_type_id, ['1', '2'])) {
-                $proofList = $proofList->whereHas("current_bank_details", function ($query) use($request) {
+                $proofList = $proofList->whereHas("employee.payroll_list.current_bank_details", function ($query) use($request) {
                     if (in_array($request->bank_account_type_id, ['1', '2'])) {
                         $query->where("bank_account_type_id", $request->bank_account_type_id);
                     }
@@ -78,21 +81,20 @@ class PayrollProofListController extends Controller
                 );
 
             } else {
-                $proofList = $proofList->leftJoin('timekeeping_summary as ts', 'payroll.timekeeping_summary_id', '=', 'ts.id',)
-                ->leftJoin('branches as b', 'payroll.timekeeping_branch_id', '=', 'b.id',)
+                $proofList = $proofList->leftJoin('branches as b', 'payroll.timekeeping_branch_id', '=', 'b.id',)
                 ->leftJoin('positions as p', 'payroll.position_id', '=', 'p.id')
                 ->addSelect(
                     'payroll_list.*',
                     DB::raw('payroll.net_pay as amount'),
                     'payroll.*',
-                    'ts.*',
+                    'payroll_details.*',
                     'employees.last_name',
                     'employees.first_name',
                     'employees.middle_name',
                     'employees.employee_number',
                     'b.name as branch_name',
                     'b.short_name',
-                    'ts.cancelled_off as cancelled_off_hours',
+                    'payroll_details.cancelled_off as cancelled_off_hours',
                     'payroll.cancelled_off as cancelled_off_amount',
                     'p.description as position'
                 );
