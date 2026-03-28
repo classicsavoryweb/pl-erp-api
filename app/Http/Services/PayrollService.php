@@ -552,9 +552,10 @@ class PayrollService {
                             $amount = $philHealth->philhealth_max;
                         }
 
-                        $philHealthAmount = round(($amount - ($latestPayroll->employee_philhealth + $latestPayroll->employee_philhealth)) / 2, 2);
+                        $totalPhilhealthAmount = round(($amount - ($latestPayroll->employee_philhealth + $latestPayroll->employer_philhealth)), 2);
+                        $philHealthAmount = round(($totalPhilhealthAmount / 2), 2);
 
-                        if ($philHealthAmount > 0) {
+                        if ($philHealthAmount < 0) {
                             $philHealthAmount = 0;
                         }
                     }
