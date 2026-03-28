@@ -731,7 +731,7 @@ class PayrollService {
 
         $amount = 0;
 
-        $philHealthBaseAmount = round(($basicSalary * ($philHealth->percentage * 0.01)) / 2 , 2);
+        $philHealthBaseAmount = round(($basicSalary * ($philHealth->percentage * 0.01)), 2);
 
         if ($part == 1) {
             if ($basicSalary <= $philHealth->philhealth_cap) {
