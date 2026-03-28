@@ -729,6 +729,61 @@ class GenerateEntry implements ShouldQueue
         ];
     }
 
+    private function appendAdjustmentEntries(
+        array &$entries,
+        float $amount,
+        string $documentNo,
+        int $branchId,
+        string $branchName,
+        string $branchNumber,
+        ?string $vendorNo,
+        ?string $vendorName,
+        ?string $debitAcc,
+        ?string $creditAcc
+    ): void {
+        if ($amount == 0.0) {
+            return;
+        }
+
+        $entryId = $this->generateEntryId($this->counterEntry);
+        $apsysEntryId = $this->generateEntryId($this->counterApsysEntry);
+        $apsysEntryMainId = $this->generateEntryId($this->counterApsysEntryMain);
+        $normalizedAmount = abs($amount);
+
+        $entries[] = [
+            'entry_id'            => $entryId,
+            'apsys_entry_id'      => $apsysEntryId,
+            'apsys_entry_main_id' => $apsysEntryMainId,
+            'document_no'         => $documentNo,
+            'branch_id'           => $branchId,
+            'branch_name'         => $branchName,
+            'branch_number'       => $branchNumber,
+            'ven_no'              => $vendorNo,
+            'ven_name'            => $vendorName,
+            'amount'              => $normalizedAmount,
+            'acc_no'              => $amount > 0 ? $debitAcc : $creditAcc,
+            'description_per_acc' => 'Non-Taxable Adjustment',
+            'balance_type'        => 'Debit',
+            'is_block_payment'    => 0,
+        ];
+        $entries[] = [
+            'entry_id'            => $entryId,
+            'apsys_entry_id'      => $apsysEntryId,
+            'apsys_entry_main_id' => $apsysEntryMainId,
+            'document_no'         => $documentNo,
+            'branch_id'           => $branchId,
+            'branch_name'         => $branchName,
+            'branch_number'       => $branchNumber,
+            'ven_no'              => $vendorNo,
+            'ven_name'            => $vendorName,
+            'amount'              => $normalizedAmount,
+            'acc_no'              => $amount > 0 ? $creditAcc : $debitAcc,
+            'description_per_acc' => 'Non-Taxable Adjustment',
+            'balance_type'        => 'Credit',
+            'is_block_payment'    => 0,
+        ];
+    }
+
     private function buildCashDeductionGroupsForPayroll(Payroll $payroll): array
     {
         $groups = [];
@@ -1902,49 +1957,19 @@ class GenerateEntry implements ShouldQueue
                     ]);
                 }
 
-                //head office - net taxable adjustment (bank)
-                if ($payrollEmployeeBankSums['netTaxableAdjustment'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $adjustmentVendor,
-                            'ven_name'            => $adjustmentVendorName,
-                            'amount'              => $payrollEmployeeBankSums['netTaxableAdjustment'],
-                            'acc_no'              => $adjustmentDebit,
-                            'description_per_acc' => 'Non-Taxable Adjustment',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $adjustmentVendor,
-                            'ven_name'            => $adjustmentVendorName,
-                            'amount'              => $payrollEmployeeBankSums['netTaxableAdjustment'],
-                            'acc_no'              => $adjustmentCredit,
-                            'description_per_acc' => 'Non-Taxable Adjustment',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
-                }
+                //head office - non-taxable adjustment (bank)
+                $this->appendAdjustmentEntries(
+                    $entries,
+                    $payrollEmployeeBankSums['netTaxableAdjustment'],
+                    $branchShortName . '|' . $start_date . '-' . $end_date,
+                    $branchHOId,
+                    $branchHOName,
+                    $branchHONumber,
+                    $adjustmentVendor,
+                    $adjustmentVendorName,
+                    $adjustmentDebit,
+                    $adjustmentCredit
+                );
 
                 //head office - incentives amount (bank)
                 if ($bankAdditionalAndIncentiveSums > 0) {
@@ -2338,49 +2363,19 @@ class GenerateEntry implements ShouldQueue
                     }
                 }
 
-                //head office - net taxable adjustment (cash)
-                if ($payrollEmployeeCashSums['netTaxableAdjustment'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
-                            'amount'              => $payrollEmployeeCashSums['netTaxableAdjustment'],
-                            'acc_no'              => $adjustmentDebit,
-                            'description_per_acc' => 'Non-Taxable Adjustment',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
-                            'amount'              => $payrollEmployeeCashSums['netTaxableAdjustment'],
-                            'acc_no'              => $adjustmentCredit,
-                            'description_per_acc' => 'Non-Taxable Adjustment',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
-                }
+                //head office - non-taxable adjustment (cash)
+                $this->appendAdjustmentEntries(
+                    $entries,
+                    $payrollEmployeeCashSums['netTaxableAdjustment'],
+                    $branchShortName . '|' . $start_date . '-' . $end_date,
+                    $branchHOId,
+                    $branchHOName,
+                    $branchHONumber,
+                    $payrollEmployeeCashVendorNo,
+                    $payrollEmployeeCashVenName,
+                    $adjustmentDebit,
+                    $adjustmentCredit
+                );
 
                 //head office - incentives (cash)
                 if ($cashIncentiveSums > 0) {
@@ -3117,49 +3112,19 @@ class GenerateEntry implements ShouldQueue
                     ]);
                 }
 
-                //branch - net taxable adjustment (bank)
-                if ($payrollEmployeeBankSums['netTaxableAdjustment'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $adjustmentVendor,
-                            'ven_name'            => $adjustmentVendorName,
-                            'amount'              => $payrollEmployeeBankSums['netTaxableAdjustment'],
-                            'acc_no'              => $adjustmentDebit,
-                            'description_per_acc' => 'Non-Taxable Adjustment',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchHOShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $adjustmentVendor,
-                            'ven_name'            => $adjustmentVendorName,
-                            'amount'              => $payrollEmployeeBankSums['netTaxableAdjustment'],
-                            'acc_no'              => $adjustmentCredit,
-                            'description_per_acc' => 'Non-Taxable Adjustment',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
-                }
+                //branch - non-taxable adjustment (bank)
+                $this->appendAdjustmentEntries(
+                    $entries,
+                    $payrollEmployeeBankSums['netTaxableAdjustment'],
+                    $branchHOShortName . '|' . $start_date . '-' . $end_date,
+                    $branchHOId,
+                    $branchHOName,
+                    $branchHONumber,
+                    $adjustmentVendor,
+                    $adjustmentVendorName,
+                    $adjustmentDebit,
+                    $adjustmentCredit
+                );
 
                 //branch - incentives amount (bank)
                 if ($bankAdditionalAndIncentiveSums > 0) {
@@ -3546,49 +3511,19 @@ class GenerateEntry implements ShouldQueue
                     }
                 }
 
-                //branch - net taxable adjustment (cash)
-                if ($payrollEmployeeCashSums['netTaxableAdjustment'] > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $entries = array_merge($entries, [
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
-                            'amount'              => $payrollEmployeeCashSums['netTaxableAdjustment'],
-                            'acc_no'              => $adjustmentDebit,
-                            'description_per_acc' => 'Non-Taxable Adjustment',
-                            'balance_type'        => 'Debit',
-                            'is_block_payment'    => 0,
-                        ],
-
-                        [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
-                            'document_no'         => $branchShortName . '|' . $start_date . '-' . $end_date,
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $payrollEmployeeCashVendorNo,
-                            'ven_name'            => $payrollEmployeeCashVenName,
-                            'amount'              => $payrollEmployeeCashSums['netTaxableAdjustment'],
-                            'acc_no'              => $adjustmentCredit,
-                            'description_per_acc' => 'Non-Taxable Adjustment',
-                            'balance_type'        => 'Credit',
-                            'is_block_payment'    => 0,
-                        ],
-                    ]);
-                }
+                //branch - non-taxable adjustment (cash)
+                $this->appendAdjustmentEntries(
+                    $entries,
+                    $payrollEmployeeCashSums['netTaxableAdjustment'],
+                    $branchShortName . '|' . $start_date . '-' . $end_date,
+                    $branchHOId,
+                    $branchHOName,
+                    $branchHONumber,
+                    $payrollEmployeeCashVendorNo,
+                    $payrollEmployeeCashVenName,
+                    $adjustmentDebit,
+                    $adjustmentCredit
+                );
 
                 //branch - incentives amount (cash)
                 if ($cashIncentiveSums > 0) {
