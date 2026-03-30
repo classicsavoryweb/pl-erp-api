@@ -503,7 +503,11 @@ class PayrollService {
                     }
                 } else {
                     $totalDeductions = 0;
-                    $deductions = json_decode($existingPayroll->deductions, true);
+                    $deductions = $existingPayroll->deductions;
+
+                    if ($edit) {
+                        $deductions = $payrollDetails->deductions;
+                    }
     
                     foreach ($deductions as $ded) {
                         $totalDeductions += $ded["deducted_amount"];
@@ -635,7 +639,7 @@ class PayrollService {
                 "employee_philhealth" => $philHealthAmount,
                 "employer_philhealth" => $philHealthAmount,
                 "withholding_tax" => round($taxAmount,2),
-                "deductions" => json_encode($newDeductions),
+                "deductions" => $newDeductions,
                 "total_deductions" => round($totalDeductions,2),
                 "manual_deductions" => $manualDeductions,
                 "cancelled_off" => round($cancelledOffAmount,2),

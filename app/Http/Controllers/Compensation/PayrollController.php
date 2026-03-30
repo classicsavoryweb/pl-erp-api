@@ -609,6 +609,7 @@ class PayrollController extends Controller
                 $details->special_holiday_overtime = $request->special_holiday_overtime;
                 $details->adjustment_amount = $request->adjustment_amount;
                 $details->non_taxable_adjustment = $request->non_taxable_adjustment;
+                $details->deductions = $request->deductions;
 
                 $newTardiness = 0;
                 $newUndertime = 0;
@@ -624,7 +625,7 @@ class PayrollController extends Controller
                 $details->tardiness = $newTardiness;
                 $details->undertime = $newUndertime;
 
-                $payrollComp = $payrollService->computePayrollV2($details, $cutOff);
+                $payrollComp = $payrollService->computePayrollV2($details, $cutOff, true);
 
                 if ($payrollComp) {
                     foreach ($payrollComp as $key => $value) {
@@ -636,7 +637,8 @@ class PayrollController extends Controller
                     $payroll->timekeeping_branch = $branch ?? $payroll->timekeeping_branch;
                     $payroll->details->undertime_minutes = $request->undertime_minutes ?? [];
                     $payroll->details->tardiness_minutes = $request->tardiness_minutes ?? [];
-                    
+                    $payroll->details->deductions = $request->deductions;
+
                     if ($request->save_changes) {
                         PayrollDetail::where("payroll_id", $payroll->id)
                         ->update([
@@ -679,7 +681,7 @@ class PayrollController extends Controller
                             "employee_philhealth" => $payrollComp->employee_philhealth,
                             "employer_philhealth" => $payrollComp->employer_philhealth,
                             "withholding_tax" => $payrollComp->withholding_tax,
-                            "deductions" => $payrollComp->deductions,
+                            "deductions" => $request->deductions,
                             "total_deductions" => $payrollComp->total_deductions,
                             "manual_deductions" => $payrollComp->manual_deductions,
                             "cancelled_off" => $payrollComp->cancelled_off,

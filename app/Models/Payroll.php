@@ -62,6 +62,10 @@ class Payroll extends Model
         "special_leave"
     ];
 
+    protected $casts = [
+        'deductions' => 'array',
+    ];
+
     public function employee () {
         return $this->belongsTo(Employee::class);
     }
