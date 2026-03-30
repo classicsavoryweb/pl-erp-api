@@ -770,6 +770,10 @@ class PayrollService {
                     $philHealthBaseAmount = $philHealth->philhealth_max;
                 }
 
+                if ($totalBasic <= $philHealth->philhealth_cap) {
+                    $philHealthBaseAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)), 2);
+                }
+
                 $totalPhilhealthAmount = round(($philHealthBaseAmount - ($firstPayroll->employee_philhealth + $firstPayroll->employer_philhealth)), 2);
                 $philHealthAmount = round(($totalPhilhealthAmount / 2), 2);
 
