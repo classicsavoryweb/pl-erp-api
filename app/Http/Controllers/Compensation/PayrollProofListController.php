@@ -53,7 +53,7 @@ class PayrollProofListController extends Controller
             ->leftJoin("employees", "employees.id", "=", "$table.employee_id")
             ->leftJoin("payroll_list", "payroll_list.employee_id", "=", "$table.employee_id")
             ->leftJoin("bank_details", "payroll_list.bank_details_id", "=", "bank_details.id")
-            ->leftJoin("bank_account_type", "banK_details.bank_account_type_id", "=", "bank_account_type.id")
+            ->leftJoin("bank_account_type", "bank_details.bank_account_type_id", "=", "bank_account_type.id")
             ->leftJoin("payroll_details", function ($query) use($table, $cutOff) {
                 $query->on("payroll_details.employee_id", "=", "$table.employee_id")
                 ->where("payroll_details.pay_date", $cutOff->pay_date);
