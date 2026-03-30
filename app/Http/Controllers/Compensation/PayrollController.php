@@ -408,10 +408,10 @@ class PayrollController extends Controller
 
             $payroll = Payroll::with([
                 "employee",
-                "employee.current_branch",
-                "employee.latest_bank_details",
                 "timekeeping_branch",
-                "timekeeping_summary",
+                "details",
+                "position",
+                "payroll_list.current_bank_details"
             ])->find($payrollId);
 
             if (!$payroll) {
@@ -448,16 +448,20 @@ class PayrollController extends Controller
                 "taxable_income" => $taxableIncome,
                 "net_pay" => round($netPay, 2),
             ]);
-
+ 
             DB::commit();
 
             $payroll = $payroll->refresh()->load([
                 "employee",
-                "employee.current_branch",
-                "employee.latest_bank_details",
                 "timekeeping_branch",
-                "timekeeping_summary",
+                "details",
+                "position",
+                "payroll_list.current_bank_details"
             ]);
+
+
+            $payroll->details->tardiness_minutes = json_decode($payroll->details->tardiness_minutes);
+            $payroll->details->undertime_minutes = json_decode($payroll->details->undertime_minutes);
 
             return $this->sendResponse([
                 "message" => "Contributions updated successfully",

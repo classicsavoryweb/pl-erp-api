@@ -38,7 +38,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                     $transaction->position ?? '',
                     $transaction->branch_name ?? '',
                     $transaction->short_name ?? '',
-                    $transaction->current_bank_details->bank_account_type->description ?? '',
+                    in_array($transaction->bank_account_type, ["Cash Card", "Savings Account", "BDO Pay"]) ? $transaction->bank_account_type : 'CASH',
                     $transaction->cut_off ?? '',
                     $transaction->is_maternity == 1 ? "YES" : "NO",
                     $fmt($transaction->daily_rate ?? null),

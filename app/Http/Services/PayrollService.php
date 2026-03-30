@@ -708,6 +708,9 @@ class PayrollService {
         } else {
             if ($firstPayroll) {
                 $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount);
+                $pagibig = Pagibig::where('min_amount', '<=', $totalBasic)
+                ->where('max_amount', '>=', $totalBasic)
+                ->first();
 
                 $pagibigShares = $totalBasic * (0.01 * $pagibig->percentage);
                 $pagibigAmount = $pagibigShares > 49.99

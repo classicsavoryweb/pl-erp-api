@@ -53,6 +53,7 @@ class PayrollProofListController extends Controller
             ->leftJoin("employees", "employees.id", "=", "$table.employee_id")
             ->leftJoin("payroll_list", "payroll_list.employee_id", "=", "$table.employee_id")
             ->leftJoin("bank_details", "payroll_list.bank_details_id", "=", "bank_details.id")
+            ->leftJoin("bank_account_type", "banK_details.bank_account_type_id", "=", "bank_account_type.id")
             ->leftJoin("payroll_details", function ($query) use($table, $cutOff) {
                 $query->on("payroll_details.employee_id", "=", "$table.employee_id")
                 ->where("payroll_details.pay_date", $cutOff->pay_date);
@@ -79,7 +80,8 @@ class PayrollProofListController extends Controller
                     'employees.first_name',
                     'employees.middle_name',
                     'employees.employee_number',
-                    "bank_details.*"
+                    "bank_details.bank_number",
+                    "bank_account_type.description as bank_account_type"
                 );
 
             } else {
@@ -99,12 +101,13 @@ class PayrollProofListController extends Controller
                     'payroll_details.cancelled_off as cancelled_off_hours',
                     'payroll.cancelled_off as cancelled_off_amount',
                     'p.description as position',
-                    "bank_details.*"
+                    "bank_details.bank_number",
+                    "bank_account_type.description as bank_account_type"
                 );
             }
 
             if ($request->export === true) {
-                return $proofList->get();
+                return $proofList->take(1000)->get();
             }
 
             $proofList = $proofList->paginate(10);
@@ -182,20 +185,10 @@ class PayrollProofListController extends Controller
             }
 
             $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
-            // if ($sheetXml === false) {
-            //     $zip->close();
-            //     @unlink($tempCopyPath);
-            //     return $this->sendError(["message" => "Invalid converter template: missing Sheet1."]);
-            // }
 
             $dom = new DOMDocument('1.0', 'UTF-8');
             $dom->loadXML($sheetXml);
             $sheetData = $dom->getElementsByTagName('sheetData')->item(0);
-            // if (!$sheetData) {
-            //     $zip->close();
-            //     @unlink($tempCopyPath);
-            //     return $this->sendError(["message" => "Invalid converter template: missing sheet data."]);
-            // }
 
             $this->writeCell($dom, $sheetData, 'A1', (string)$company);
             if ($request->bank_account_type_id == 1) {
@@ -236,12 +229,6 @@ class PayrollProofListController extends Controller
                 $rowIndex++;
                 $writtenRows++;
             }
-
-            // if ($writtenRows === 0) {
-            //     $zip->close();
-            //     @unlink($tempCopyPath);
-            //     return $this->sendError(["message" => "No valid prooflist rows with bank account numbers found for converter export."]);
-            // }
 
             $newXml = $dom->saveXML();
             $zip->addFromString('xl/worksheets/sheet1.xml', $newXml);
