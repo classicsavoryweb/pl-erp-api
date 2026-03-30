@@ -626,8 +626,10 @@ class PayrollController extends Controller
                     foreach ($payrollComp as $key => $value) {
                         $payroll[$key] = $value;
                     }
-
+                    $branch = Branch::find($request->timekeeping_branch_id);
                     $payroll->details = $details;
+                    $payroll->timekeeping_branch_id = $request->timekeeping_branch_id ?? $payroll->timekeeping_branch_id;
+                    $payroll->timekeeping_branch = $branch ?? $payroll->timekeeping_branch;
                     $payroll->details->undertime_minutes = $request->undertime_minutes ?? [];
                     $payroll->details->tardiness_minutes = $request->tardiness_minutes ?? [];
                     
@@ -683,7 +685,8 @@ class PayrollController extends Controller
                             "additional_working_hours_total" => $payrollComp->additional_working_hours_total,
                             "working_hours_deduction_total" => $payrollComp->working_hours_deduction_total,
                             "status" => "initial",
-                            "special_leave" => $payrollComp->special_leave
+                            "special_leave" => $payrollComp->special_leave,
+                            "timekeeping_branch_id" => $request->timekeeping_branch_id,
                         ]);
                     }
                     return $this->sendResponse($payroll);
