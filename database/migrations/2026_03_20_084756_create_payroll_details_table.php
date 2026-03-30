@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string("pay_date");
             $table->string("home_branch_id");
             $table->string("position_id");
-            $table->decimal("daily_rate")->default(0);
-            $table->decimal("hourly_rate")->default(0);
-            $table->decimal("minute_rate")->default(0);
+            $table->decimal("daily_rate", 12, 2)->default(0);
+            $table->decimal("hourly_rate", 12, 5)->default(0);
+            $table->decimal("minute_rate", 12, 5)->default(0);
             
             //timekeeping summary details
             $table->string("regular_days")->nullable();
