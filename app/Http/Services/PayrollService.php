@@ -540,7 +540,10 @@ class PayrollService {
             if ($payrollDetails->is_complete_documents == 1) {
                 $sssComputation = $this->computeSSS($grossPayAmount, $cutOff->part, $latestPayroll);
                 $pagibigComputation = $this->computePAGIBIG($basicSalary, $cutOff->part, $latestPayroll);
-                $philHealthComputation = $this->computePHILHEALTH($basicSalary, $cutOff->part, $latestPayroll);
+
+                // TO BE UPDATED
+                $philHealthBasic = $salary - ($tardinessAmount + $undertimeAmount) + $cancelledOffAmount;
+                $philHealthComputation = $this->computePHILHEALTH($philHealthBasic, $cutOff->part, $latestPayroll);
 
                 $sssEmployeeAmount = round($sssComputation['ee'], 2);
                 $sssEmployerAmount = round($sssComputation['er'], 2);   
