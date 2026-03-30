@@ -437,6 +437,7 @@ class PayrollService {
             $manualDeductions = 0;
             $remarks = null;
             $specialLeave = 0;
+            $taxableIncome = 0;
 
             $contributionTotal = 0;
             $additionalWorkingHoursTotal = 0;
@@ -547,28 +548,29 @@ class PayrollService {
             }
 
             $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
-            $taxable = $taxableIncome;
 
-            if ($this->isNcrMinimum($employee) || $payrollDetails->is_on_maternity_leave == 1) {
-                $taxAmount = 0;
-            } else {
-                $tax = Tax::where("range_min", '<=' ,round($taxable, 2))
-                ->where("range_max", '>=',round($taxable, 2))
-                ->first();
-
-                $salaryBase = $tax->salary_base ?? 0;
-                $exemption = $tax->exemption ?? 0;
-                $percentage = $tax->percentage ?? 0;
-
-                $taxAmount = (($taxable - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                    ? round( (($taxable - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
-                    : 0;
+            if ($payrollDetails->is_complete_documents == 1) {
+                if ($this->isNcrMinimum($employee) || $payrollDetails->is_on_maternity_leave == 1) {
+                    $taxAmount = 0;
+                } else {
+                    $tax = Tax::where("range_min", '<=' ,round($taxableIncome, 2))
+                    ->where("range_max", '>=',round($taxableIncome, 2))
+                    ->first();
+    
+                    $salaryBase = $tax->salary_base ?? 0;
+                    $exemption = $tax->exemption ?? 0;
+                    $percentage = $tax->percentage ?? 0;
+    
+                    $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
+                        ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                        : 0;
+                }
             }
-
+            
             $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
             $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount;
             $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
-            $netPayAmount = $taxable - $taxAmount;
+            $netPayAmount = $taxableIncome - $taxAmount;
 
             $removedDeductions = [];
             $newDeductions = [];

@@ -606,17 +606,30 @@ class PayrollController extends Controller
                 $details->adjustment_amount = $request->adjustment_amount;
                 $details->non_taxable_adjustment = $request->non_taxable_adjustment;
 
-                $payrollComp = $payrollService->computePayrollV2($details, $cutOff);
-    
-                if ($payrollComp) {
+                $newTardiness = 0;
+                $newUndertime = 0;
 
+                foreach ($request->tardiness_minutes as $td) {
+                    $newTardiness += $td["minutes"];
+                }
+
+                foreach ($request->undertime_minutes as $ut) {
+                    $newUndertime += $ut["minutes"];
+                }
+
+                $details->tardiness = $newTardiness;
+                $details->undertime = $newUndertime;
+
+                $payrollComp = $payrollService->computePayrollV2($details, $cutOff);
+
+                if ($payrollComp) {
                     foreach ($payrollComp as $key => $value) {
                         $payroll[$key] = $value;
                     }
 
                     $payroll->details = $details;
-                    $payroll->details->undertime_minutes = json_decode($payroll->details->undertime_minutes) ?? [];
-                    $payroll->details->tardiness_minutes = json_decode($payroll->details->tardiness_minutes) ?? [];
+                    $payroll->details->undertime_minutes = $request->undertime_minutes ?? [];
+                    $payroll->details->tardiness_minutes = $request->tardiness_minutes ?? [];
                     
                     if ($request->save_changes) {
                         PayrollDetail::where("payroll_id", $payroll->id)
@@ -632,6 +645,10 @@ class PayrollController extends Controller
                             "legal_holiday_overtime" => $request->legal_holiday_overtime,
                             "special_holiday_overtime" => $request->special_holiday_overtime,
                             "adjustment_amount" => $request->adjustment_amount,
+                            "undertime" => $newUndertime,
+                            "tardiness" => $newTardiness,
+                            "undertime_minutes" => json_encode($request->undertime_minutes),
+                            "tardiness_minutes" => json_encode($request->tardiness_minutes)
                         ]);
 
                         Payroll::where("id", $payroll->id)
