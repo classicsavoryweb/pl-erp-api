@@ -101,9 +101,9 @@ class ProcessInitializeCutOff implements ShouldQueue
                 "is_on_maternity_leave" => $payrollList->is_on_maternity_leave,
                 "is_mancom" => $payrollList->is_mancom,
                 "is_complete_documents" => $payrollList->has_complete_documents,
-                "daily_rate" => round($dailyRate, 2),
-                "hourly_rate" => round($hourlyRate, 2),
-                "minute_rate" => round($minuteRate, 2),
+                "daily_rate" => $dailyRate,
+                "hourly_rate" => $hourlyRate,
+                "minute_rate" => $minuteRate,
                 "schedule_type" => $scheduleName,
             ]);
 
