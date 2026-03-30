@@ -107,7 +107,7 @@ class PayrollProofListController extends Controller
             }
 
             if ($request->export === true) {
-                return $proofList->take(1000)->get();
+                return $proofList->get();
             }
 
             $proofList = $proofList->paginate(10);
