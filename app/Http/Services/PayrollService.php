@@ -763,7 +763,7 @@ class PayrollService {
             $amount = $philHealthAmount;
         } else {
             if ($firstPayroll) {
-                $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount);
+                $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount) + $firstPayroll->cancelled_off;
                 $philHealthBaseAmount = round(($totalBasic * ($philHealth->percentage * 0.01)) , 2);
 
                 if ($philHealthBaseAmount > $philHealth->philhealth_max) {
