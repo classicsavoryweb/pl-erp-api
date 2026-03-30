@@ -728,7 +728,7 @@ class PayrollService {
                 $shares['er'] = round($pagibigAmount, 2);
             } else {
                 $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
-                $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+                $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction: $pagibigShares;
 
                 $shares['ee'] = round($pagibigAmount, 2);
                 $shares['er'] = round($pagibigAmount, 2);
