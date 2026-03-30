@@ -52,6 +52,7 @@ class PayrollProofListController extends Controller
             $proofList = $model::where("$table.pay_date",$cutOff->pay_date)
             ->leftJoin("employees", "employees.id", "=", "$table.employee_id")
             ->leftJoin("payroll_list", "payroll_list.employee_id", "=", "$table.employee_id")
+            ->leftJoin("bank_details", "payroll_list.bank_details_id", "=", "bank_details.id")
             ->leftJoin("payroll_details", function ($query) use($table, $cutOff) {
                 $query->on("payroll_details.employee_id", "=", "$table.employee_id")
                 ->where("payroll_details.pay_date", $cutOff->pay_date);
@@ -77,7 +78,8 @@ class PayrollProofListController extends Controller
                     'employees.last_name',
                     'employees.first_name',
                     'employees.middle_name',
-                    'employees.employee_number'
+                    'employees.employee_number',
+                    "bank_details.*"
                 );
 
             } else {
@@ -96,7 +98,8 @@ class PayrollProofListController extends Controller
                     'b.short_name',
                     'payroll_details.cancelled_off as cancelled_off_hours',
                     'payroll.cancelled_off as cancelled_off_amount',
-                    'p.description as position'
+                    'p.description as position',
+                    "bank_details.*"
                 );
             }
 
@@ -208,7 +211,7 @@ class PayrollProofListController extends Controller
             $writtenRows = 0;
             foreach ($proofLists as $transaction) {
                 $fullName = trim(($transaction->last_name ?? '') . ", " . ($transaction->first_name ?? '') . " " . ($transaction->middle_name ?? ''));
-                $bankNumber = $transaction->current_bank_details->bank_number;
+                $bankNumber = $transaction->bank_number;
                 $bankNumber = str_replace(' ', '', $bankNumber);
 
                 if (

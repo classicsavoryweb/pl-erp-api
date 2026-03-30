@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class BankDetail extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
     protected $fillable = ["employee_id", "bank_number","bank_account_type_id" ,"remarks"];
     protected $table = "bank_details";
 
@@ -17,5 +20,14 @@ class BankDetail extends Model
 
     public function employee() {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Contract')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
