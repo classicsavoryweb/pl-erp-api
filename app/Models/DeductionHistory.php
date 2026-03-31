@@ -12,7 +12,7 @@ class DeductionHistory extends Model
     use HasFactory, LogsActivity;
 
     protected $table = "deduction_history";
-    protected $fillable = ["employee_id", "reference_doc", "deduction_id", "amount", "pay_date", "date_time"];
+    protected $fillable = ["employee_id", "reference_doc", "deduction_id", "amount", "pay_date", "date_time", "old_balance", "new_balance"];
 
     public function employee() {
         return $this->belongsTo(Employee::class, "employee_id", "id");
