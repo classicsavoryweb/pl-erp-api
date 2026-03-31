@@ -762,7 +762,7 @@ class PayrollService {
                 $philHealthBaseAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)), 2);
             }
 
-            if ($philHealthBaseAmount > $philHealth->philhealth_max) {
+            if ($philHealthBaseAmount / 2 > $philHealth->philhealth_max) {
                 $philHealthBaseAmount = $philHealth->philhealth_max;
             }
 
@@ -778,7 +778,7 @@ class PayrollService {
                 $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount) + $firstPayroll->cancelled_off;
                 $philHealthBaseAmount = round(($totalBasic * ($philHealth->percentage * 0.01)) , 2);
 
-                if ($philHealthBaseAmount > $philHealth->philhealth_max) {
+                if ($philHealthBaseAmount / 2 > $philHealth->philhealth_max) {
                     $philHealthBaseAmount = $philHealth->philhealth_max;
                 }
 
@@ -799,7 +799,7 @@ class PayrollService {
                     $philHealthBaseAmount = round(($philHealth->philhealth_cap * ($philHealth->percentage * 0.01)), 2);
                 }
 
-                if ($philHealthBaseAmount > $philHealth->philhealth_max) {
+                if ($philHealthBaseAmount / 2 > $philHealth->philhealth_max) {
                     $philHealthBaseAmount = $philHealth->philhealth_max;
                 }
 
