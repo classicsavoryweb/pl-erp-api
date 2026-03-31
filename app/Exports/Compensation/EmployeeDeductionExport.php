@@ -21,6 +21,7 @@ class EmployeeDeductionExport implements FromCollection, WithHeadings
             return [
                 $unique_deductions->employee->full_name ?? "",
                 $unique_deductions->employee->employee_number ?? "",
+                $unique_deductions->deduction->id,
                 $unique_deductions->deduction->description ?? "",
                 $unique_deductions->reference_doc,
                 $unique_deductions->months,
@@ -53,6 +54,7 @@ class EmployeeDeductionExport implements FromCollection, WithHeadings
         return [
             'Employee Name',
             'Employee Number',
+            'Deduction ID',
             'Description',
             'Reference Doc',
             'Month(s)',
