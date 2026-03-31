@@ -59,7 +59,8 @@ class Payroll extends Model
         "is_maternity",
         "is_hold",
         "position_id",
-        "special_leave"
+        "special_leave",
+        "is_manual_statutory_entry"
     ];
 
     protected $casts = [

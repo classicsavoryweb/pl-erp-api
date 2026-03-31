@@ -537,7 +537,7 @@ class PayrollService {
                 ->where("start_date", $lastCutOffStartDate)
                 ->first();
 
-            if ($payrollDetails->is_complete_documents == 1) {
+            if ($payrollDetails->is_complete_documents == 1 && !$payrollDetails->is_manual_statutory_entry) {
                 $sssComputation = $this->computeSSS($grossPayAmount, $cutOff->part, $latestPayroll);
                 $pagibigComputation = $this->computePAGIBIG($basicSalary, $cutOff->part, $latestPayroll);
 
@@ -554,9 +554,17 @@ class PayrollService {
                 $philHealthAmount = round($philHealthComputation, 2);
             }
 
+            if ($payrollDetails->is_manual_statutory_entry) {
+                $sssEmployeeAmount = $payrollDetails->employee_sss;
+                $sssEmployerAmount = $payrollDetails->employer_sss;
+                $pagibigEmployee = $payrollDetails->employee_pagibig;
+                $pagibigEmployer = $payrollDetails->employer_pagibig;
+                $philHealthAmount = $payrollDetails->employee_philhealth;
+            }
+
             $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
 
-            if ($payrollDetails->is_complete_documents == 1) {
+            if ($payrollDetails->is_complete_documents == 1 && !$payrollDetails->is_manual_statutory_entry) {
                 if ($this->isNcrMinimum($employee) || $payrollDetails->is_on_maternity_leave == 1) {
                     $taxAmount = 0;
                 } else {
@@ -572,6 +580,10 @@ class PayrollService {
                         ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
                         : 0;
                 }
+            }
+
+            if ($payrollDetails->is_manual_statutory_entry) {
+                $taxAmount = $payrollDetails->withholding_tax;
             }
             
             $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;

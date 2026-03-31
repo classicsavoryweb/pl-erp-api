@@ -611,6 +611,15 @@ class PayrollController extends Controller
                 $details->non_taxable_adjustment = $request->non_taxable_adjustment;
                 $details->deductions = $request->deductions;
 
+                $details->is_manual_statutory_entry = $request->is_manual_statutory_entry;
+                $details->employee_sss = $request->employee_sss;
+                $details->employer_sss = $request->employer_sss;
+                $details->employee_pagibig = $request->employee_pagibig;
+                $details->employer_pagibig = $request->employer_pagibig;
+                $details->employee_philhealth = $request->employee_philhealth;
+                $details->employer_philhealth = $request->employer_philhealth;
+                $details->withholding_tax = $request->withholding_tax;
+
                 $newTardiness = 0;
                 $newUndertime = 0;
 
@@ -655,6 +664,7 @@ class PayrollController extends Controller
                             "adjustment_amount" => $request->adjustment_amount,
                             "undertime" => $newUndertime,
                             "tardiness" => $newTardiness,
+                            "is_manual_statutory_entry" => $request->is_manual_statutory_entry,
                             "undertime_minutes" => json_encode($request->undertime_minutes),
                             "tardiness_minutes" => json_encode($request->tardiness_minutes)
                         ]);
