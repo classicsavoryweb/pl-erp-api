@@ -23,7 +23,8 @@ class TardinessExport implements FromCollection, WithHeadings
             return [
                 $record->employee->employee_number ?? "",
                 $record->employee->full_name ?? "",
-                optional($record->employee->current_branch)->short_name ?? "",
+                optional($record->employee->current_position)->description ?? "",
+                optional($record->employee->current_branch)->name ?? "",
                 optional($record->tardiness_sanction)->count ?? "",
                 Carbon::create()->month($record->month)->format('F'), 
                 $record->year,
@@ -42,7 +43,8 @@ class TardinessExport implements FromCollection, WithHeadings
         return [
             "Employee Number",
             "Full Name",
-            "Branch",
+            "Current Position",
+            "Current Branch",
             "Count",
             "Month",
             "Year",
