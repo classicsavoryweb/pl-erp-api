@@ -673,7 +673,7 @@ class PayrollService {
 
             return (object) $payroll;
         } catch (Exception $e) {
-            Log::error("ERROR COMPUTING PAYROLL EMPLOYEE: " .$employee->full_name. " ERROR: ". $e->getMessage());
+            Log::error("ERROR COMPUTING PAYROLL EMPLOYEE: " .$employee->full_name. " ERROR: ". $e);
             return $payroll;
         }
     }
@@ -763,7 +763,7 @@ class PayrollService {
             }
 
             if ($philHealthBaseAmount / 2 > $philHealth->philhealth_max) {
-                $philHealthBaseAmount = $philHealth->philhealth_max;
+                $philHealthBaseAmount = $philHealth->philhealth_max * 2;
             }
 
             $philHealthAmount = round(($philHealthBaseAmount / 2), 2);
@@ -779,7 +779,7 @@ class PayrollService {
                 $philHealthBaseAmount = round(($totalBasic * ($philHealth->percentage * 0.01)) , 2);
 
                 if ($philHealthBaseAmount / 2 > $philHealth->philhealth_max) {
-                    $philHealthBaseAmount = $philHealth->philhealth_max;
+                    $philHealthBaseAmount = $philHealth->philhealth_max * 2;
                 }
 
                 if ($totalBasic <= $philHealth->philhealth_cap) {
@@ -800,7 +800,7 @@ class PayrollService {
                 }
 
                 if ($philHealthBaseAmount / 2 > $philHealth->philhealth_max) {
-                    $philHealthBaseAmount = $philHealth->philhealth_max;
+                    $philHealthBaseAmount = $philHealth->philhealth_max * 2;
                 }
 
                 $philHealthAmount = round(($philHealthBaseAmount / 2), 2);
