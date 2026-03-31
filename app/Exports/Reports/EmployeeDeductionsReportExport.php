@@ -24,8 +24,9 @@ class EmployeeDeductionsReportExport implements FromCollection, WithHeadings
                 $deduction->actual_deduction->reference_doc,
                 $deduction->employee->employee_number,
                 $deduction->employee->full_name,
+                $deduction->old_balance ?? 0,
                 $deduction->amount,
-                $deduction->actual_deduction->balance,
+                $deduction->new_balance ?? 0,
                 $deduction->actual_deduction->remarks
             ];
         });
@@ -38,6 +39,7 @@ class EmployeeDeductionsReportExport implements FromCollection, WithHeadings
             "Reference Doc",
             "Employee Number",
             "Employee Name",
+            "Old Balance",
             "Deduction Amount",
             "Remaining Balance",
             "Remarks"
