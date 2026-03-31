@@ -77,6 +77,9 @@ class ProcessFinalizeCutOff implements ShouldQueue
                         continue;
                     }
 
+                    $newBalance = $employeeDeduction->balance;
+                    $oldBalance = $employeeDeduction->balance;
+
                     if ($employeeDeduction->balance > 0) {
                         $newBalance = $employeeDeduction->balance - $deduction["deducted_amount"];
                         $employeeDeduction->update([
@@ -91,7 +94,9 @@ class ProcessFinalizeCutOff implements ShouldQueue
                         "reference_doc" => $employeeDeduction->reference_doc,
                         "amount" => $deduction["deducted_amount"],
                         "pay_date" => $payroll->pay_date,
-                        "date_time" => now()
+                        "date_time" => now(),
+                        "old_balance" => $oldBalance,
+                        "new_balance" => $newBalance,
                     ]);
                 }
             }
