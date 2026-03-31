@@ -432,10 +432,8 @@ class GenerateLastPayEntry implements ShouldQueue
         //deductions
         foreach ($lastPayDeductions as $lastPayDeduction) {
             $employeeDeduction = EmployeeDeduction::with('deduction')
-            ->where('employee_id', optional($lastPayDeduction)->employee_id)
-            ->where('reference_doc', optional($lastPayDeduction)->reference_doc)
-            ->where('balance', '>=', 1)
-            ->where('end_loan_status', '!=', 'Yes')
+            ->where('employee_id', $lastPayDeduction->employee_id)
+            ->where('reference_doc', $lastPayDeduction->reference_doc)
             ->first();
 
             if (!$employeeDeduction) {
@@ -479,7 +477,6 @@ class GenerateLastPayEntry implements ShouldQueue
                         'balance_type'        => 'Credit',
                         'is_block_payment'    => 0,
                     ],
-
                     [
                         'entry_id'            => $entryId,
                         'apsys_entry_id'      => $apsysEntryId,
