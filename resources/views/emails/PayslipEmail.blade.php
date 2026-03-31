@@ -130,8 +130,8 @@
                 <table width="100%" style="margin-top:5px; font-size:12px;">
                     @foreach ($payroll->deductions as $deduction)
                     <tr>
-                        <td width="50%">{{ $deduction->payslip_description ?? $deduction->type  }}</td>
-                        <td width="50%">{{ number_format($deduction->deducted_amount, 2) }}</td>
+                        <td width="50%">{{ $deduction["payslip_description"] ?? $deduction["type"]  }}</td>
+                        <td width="50%">{{ number_format($deduction["deducted_amount"], 2) }}</td>
                     </tr>
                     @endforeach
                 </table>
