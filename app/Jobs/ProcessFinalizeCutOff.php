@@ -60,7 +60,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
                     "status" => "final",
                 ]);
 
-                $deductions = json_decode($payroll->deductions, true);
+                $deductions = $payroll->deductions;
                 $adjustments = Adjustment::where("employee_id", $payroll->employee_id)
                 ->where("is_timekeeping_locked", "0")
                 ->get();
@@ -128,10 +128,10 @@ class ProcessFinalizeCutOff implements ShouldQueue
                 ]);
             }
             
-            UpdateOvertimeStatusJob::dispatch([
-                "start_time" => $start_date,
-                "end_time" => $end_Date,
-            ]);
+            // UpdateOvertimeStatusJob::dispatch([
+            //     "start_time" => $start_date,
+            //     "end_time" => $end_Date,
+            // ]);
 
             if ($this->cutOff->part == 2) {
                 ComputeEmployeeTardiness::dispatch($this->cutOff->end_date);
