@@ -30,4 +30,5 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:view_tardiness_disabler"])->get("/get-all-tardiness-disablers", [TardinessDisablerController::class, "getAllTardinessDisablers"]);
     Route::middleware(["permission:view_tardiness_disabler"])->post("/upsert-tardiness-disabler", [TardinessDisablerController::class, "upsertTardinessDisabler"]);
 
+    Route::get("/get-specific-activity-logs", [ActivityLogsController::class, "getSpecificActivityLogs"]);
 });
