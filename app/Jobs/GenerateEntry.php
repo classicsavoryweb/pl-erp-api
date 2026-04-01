@@ -109,6 +109,20 @@ class GenerateEntry implements ShouldQueue
         return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
     }
 
+    private function normalizePayrollDeductions($deductions): array
+    {
+        if (is_array($deductions)) {
+            return $deductions;
+        }
+
+        if (is_string($deductions) && $deductions !== '') {
+            $decoded = json_decode($deductions, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
     private function isApsysAvailable(): bool
     {
         try {
@@ -791,7 +805,7 @@ class GenerateEntry implements ShouldQueue
             return $groups;
         }
 
-        $deductions = json_decode($payroll->deductions, true);
+        $deductions = $this->normalizePayrollDeductions($payroll->deductions);
         if (!$deductions) {
             return $groups;
         }
@@ -1144,7 +1158,7 @@ class GenerateEntry implements ShouldQueue
 
             foreach ($payrollEmployeeBankQuery as $payrollBankDeduction) {
                 if ($payrollBankDeduction->total_deductions > 0) {
-                    $bankDeductions = json_decode($payrollBankDeduction->deductions, true);
+                    $bankDeductions = $this->normalizePayrollDeductions($payrollBankDeduction->deductions);
                     if (!$bankDeductions) continue;
 
                     foreach ($bankDeductions as $bankDeductionJson) {
@@ -1264,7 +1278,7 @@ class GenerateEntry implements ShouldQueue
 
             foreach ($payrollEmployeeCashQuery as $payrollCashDeduction) {
                 if ($payrollCashDeduction->total_deductions > 0) {
-                    $cashDeductions = json_decode($payrollCashDeduction->deductions, true);
+                    $cashDeductions = $this->normalizePayrollDeductions($payrollCashDeduction->deductions);
                     if (!$cashDeductions) continue;
 
                     foreach ($cashDeductions as $cashDeductionJson) {

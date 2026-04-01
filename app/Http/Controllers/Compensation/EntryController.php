@@ -175,33 +175,64 @@ class EntryController extends Controller
             if ($request->filled("cutoff_start") && $request->filled("cutoff_end")) {
                 $cutoffStart = $request->cutoff_start;
                 $cutoffEnd = $request->cutoff_end;
+                if ($request->filled("year")) {
+                    $dates = $this->normalizeCutOff($cutoffStart, $cutoffEnd, $request->year);
+                    $normalizedCutoffStart = $dates["start_date"];
+                    $normalizedCutoffEnd = $dates["end_date"];
+                    $cutoffStartSlash = Carbon::parse($normalizedCutoffStart)->format("m/d/Y");
+                    $cutoffEndSlash = Carbon::parse($normalizedCutoffEnd)->format("m/d/Y");
 
-                $cutoffStartSlash = str_replace("-", "/", $cutoffStart);
-                $cutoffEndSlash = str_replace("-", "/", $cutoffEnd);
+                    $cutoffPayroll = Payroll::query()
+                        ->whereDate("start_date", $normalizedCutoffStart)
+                        ->whereDate("end_date", $normalizedCutoffEnd)
+                        ->orderBy("pay_date", "DESC")
+                        ->first();
 
-                $cutoffPayroll = Payroll::query()
-                    ->whereRaw("DATE_FORMAT(start_date, '%m-%d') = ?", [$cutoffStart])
-                    ->whereRaw("DATE_FORMAT(end_date, '%m-%d') = ?", [$cutoffEnd])
-                    ->orderBy("pay_date", "DESC")
-                    ->first();
+                    $cutoffPayDate = $cutoffPayroll?->pay_date;
 
-                $cutoffPayDate = $cutoffPayroll?->pay_date;
+                    $entryQuery->where(function($query) use ($normalizedCutoffStart, $cutoffStartSlash, $normalizedCutoffEnd, $cutoffEndSlash, $cutoffPayDate) {
+                        $query
+                            ->where(function($inner) use ($normalizedCutoffStart, $cutoffStartSlash) {
+                                $inner->where("document_no", "LIKE", "%{$normalizedCutoffStart}%")
+                                      ->orWhere("document_no", "LIKE", "%{$cutoffStartSlash}%");
+                            })
+                            ->where(function($inner) use ($normalizedCutoffEnd, $cutoffEndSlash) {
+                                $inner->where("document_no", "LIKE", "%{$normalizedCutoffEnd}%")
+                                      ->orWhere("document_no", "LIKE", "%{$cutoffEndSlash}%");
+                            });
 
-                $entryQuery->where(function($query) use ($cutoffStart, $cutoffStartSlash, $cutoffEnd, $cutoffEndSlash, $cutoffPayDate) {
-                    $query
-                        ->where(function($inner) use ($cutoffStart, $cutoffStartSlash) {
-                            $inner->where("document_no", "LIKE", "%{$cutoffStart}%")
-                                  ->orWhere("document_no", "LIKE", "%{$cutoffStartSlash}%");
-                        })
-                        ->where(function($inner) use ($cutoffEnd, $cutoffEndSlash) {
-                            $inner->where("document_no", "LIKE", "%{$cutoffEnd}%")
-                                  ->orWhere("document_no", "LIKE", "%{$cutoffEndSlash}%");
-                        });
+                        if ($cutoffPayDate) {
+                            $query->orWhereDate("pay_date", $cutoffPayDate);
+                        }
+                    });
+                } else {
+                    $cutoffStartSlash = str_replace("-", "/", $cutoffStart);
+                    $cutoffEndSlash = str_replace("-", "/", $cutoffEnd);
 
-                    if ($cutoffPayDate) {
-                        $query->orWhereDate("pay_date", $cutoffPayDate);
-                    }
-                });
+                    $cutoffPayroll = Payroll::query()
+                        ->whereRaw("DATE_FORMAT(start_date, '%m-%d') = ?", [$cutoffStart])
+                        ->whereRaw("DATE_FORMAT(end_date, '%m-%d') = ?", [$cutoffEnd])
+                        ->orderBy("pay_date", "DESC")
+                        ->first();
+
+                    $cutoffPayDate = $cutoffPayroll?->pay_date;
+
+                    $entryQuery->where(function($query) use ($cutoffStart, $cutoffStartSlash, $cutoffEnd, $cutoffEndSlash, $cutoffPayDate) {
+                        $query
+                            ->where(function($inner) use ($cutoffStart, $cutoffStartSlash) {
+                                $inner->where("document_no", "LIKE", "%{$cutoffStart}%")
+                                      ->orWhere("document_no", "LIKE", "%{$cutoffStartSlash}%");
+                            })
+                            ->where(function($inner) use ($cutoffEnd, $cutoffEndSlash) {
+                                $inner->where("document_no", "LIKE", "%{$cutoffEnd}%")
+                                      ->orWhere("document_no", "LIKE", "%{$cutoffEndSlash}%");
+                            });
+
+                        if ($cutoffPayDate) {
+                            $query->orWhereDate("pay_date", $cutoffPayDate);
+                        }
+                    });
+                }
             }
              
             if ($request->has(["column_type", "key_word"])) {
