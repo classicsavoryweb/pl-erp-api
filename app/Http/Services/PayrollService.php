@@ -166,10 +166,7 @@ class PayrollService {
             if ($payrollDetails->is_complete_documents == 1 && !$payrollDetails->is_manual_statutory_entry) {
                 $sssComputation = $this->computeSSS($grossPayAmount, $cutOff->part, $latestPayroll);
                 $pagibigComputation = $this->computePAGIBIG($basicSalary, $cutOff->part, $latestPayroll);
-
-                // TO BE UPDATED
-                $philHealthBasic = $salary - ($tardinessAmount + $undertimeAmount) + $cancelledOffAmount;
-                $philHealthComputation = $this->computePHILHEALTH($philHealthBasic, $cutOff->part, $latestPayroll);
+                $philHealthComputation = $this->computePHILHEALTH($basicSalary, $cutOff->part, $latestPayroll);
 
                 $sssEmployeeAmount = round($sssComputation['ee'], 2);
                 $sssEmployerAmount = round($sssComputation['er'], 2);   
@@ -401,7 +398,7 @@ class PayrollService {
             $amount = $philHealthAmount;
         } else {
             if ($firstPayroll) {
-                $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount) + $firstPayroll->cancelled_off;
+                $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount);
                 $philHealthBaseAmount = round(($totalBasic * ($philHealth->percentage * 0.01)) , 2);
 
                 if ($philHealthBaseAmount / 2 > $philHealth->philhealth_max) {
