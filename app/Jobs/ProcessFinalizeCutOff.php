@@ -47,11 +47,6 @@ class ProcessFinalizeCutOff implements ShouldQueue
             ->where("status", "initial")
             ->get();
 
-            $incentives = Incentives::where("pay_date", $this->cutOff->pay_date)
-            ->where("status", "initial")
-            ->get();
-
-            $pay_date = $this->cutOff->pay_date;
             $start_date = $this->cutOff->start_date;
             $end_Date = $this->cutOff->end_date;
 
@@ -101,12 +96,6 @@ class ProcessFinalizeCutOff implements ShouldQueue
                 }
             }
 
-            foreach ($incentives as $incentive) {
-                $incentive->update([
-                    "status" => "final"
-                ]);
-            }
-
             $cutoffValue = $this->cutOff->cut_off;
 
             $payrollLists = PayrollList::where('is_hold', 1)->get();
@@ -128,10 +117,10 @@ class ProcessFinalizeCutOff implements ShouldQueue
                 ]);
             }
             
-            // UpdateOvertimeStatusJob::dispatch([
-            //     "start_time" => $start_date,
-            //     "end_time" => $end_Date,
-            // ]);
+            UpdateOvertimeStatusJob::dispatch([
+                "start_time" => $start_date,
+                "end_time" => $end_Date,
+            ]);
 
             if ($this->cutOff->part == 2) {
                 ComputeEmployeeTardiness::dispatch($this->cutOff->end_date);
