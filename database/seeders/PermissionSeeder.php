@@ -33,7 +33,9 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_positions"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_positions"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_branches"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_region"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_branches"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_region"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "edit_branches"], ["module" => "maintenance"]); 
         Permission::updateOrCreate(["name" => "view_employee_status"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_employee_status"], ["module" => "maintenance"]);

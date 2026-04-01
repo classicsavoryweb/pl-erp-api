@@ -69,11 +69,11 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_agencies"])->post("/create-agency", [AgencyController::class, "createAgency"]);
     Route::middleware(["permission:perform_agencies"])->post("/edit-agency/{id}", [AgencyController::class, "editAgency"]);
     //regions
-    Route::get("/get-all-regions", [RegionController::class, "getAllRegions"]);
-    Route::get("/get-regions", [RegionController::class, "getRegions"]);
-    Route::get("/export-all-regions", [RegionController::class, "exportAllRegions"]);
-    Route::middleware(["permission:perform_branches"])->post("/create-region", [RegionController::class, "createRegion"]);
-    Route::middleware(["permission:perform_branches"])->post("/edit-region/{id}", [RegionController::class, "editRegion"]);
+    Route::middleware(["permission:view_region"])->get("/get-all-regions", [RegionController::class, "getAllRegions"]);
+    Route::middleware(["permission:view_region"])->get("/get-regions", [RegionController::class, "getRegions"]);
+    Route::middleware(["permission:view_region"])->get("/export-all-regions", [RegionController::class, "exportAllRegions"]);
+    Route::middleware(["permission:perform_region"])->post("/create-region", [RegionController::class, "createRegion"]);
+    Route::middleware(["permission:perform_region"])->post("/edit-region/{id}", [RegionController::class, "editRegion"]);
     //offenses
     Route::get("/get-all-offenses", [OffenseController::class, "getAllOffenses"]);
     Route::get("/get-all-categories", [OffenseController::class, "getAllCategories"]);
