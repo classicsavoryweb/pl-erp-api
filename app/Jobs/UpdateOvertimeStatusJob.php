@@ -38,6 +38,7 @@ class UpdateOvertimeStatusJob implements ShouldQueue
         ->get();
 
         foreach ($overtimes as $overtime) {
+            if (!$overtime->cshub_overtime_id) continue;
             $overtimeLink = env('CS_HUB_URL_LINK')."/update-overtime/".$overtime->cshub_overtime_id;
             $user = env('CS_HUB_ADMIN_EMAIL');
             $password = env('CS_HUB_ADMIN_PASSWORD');
