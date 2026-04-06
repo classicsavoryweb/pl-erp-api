@@ -92,7 +92,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
             })
             ->where("type", "Direct");
 
-
             if ($employeeId !== 0) {
                 $employees = $employees->where("id", $employeeId);
             }
@@ -455,6 +454,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
                             ->first();
+
+                            if ($sched->timetable == "NO SCHEDULE" && ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "No")) {
+                                continue;
+                            }
+
                             if (!$timeKeeping || !$biotimeLog) {
                                 $absentToBeAdded = 1;
                             }

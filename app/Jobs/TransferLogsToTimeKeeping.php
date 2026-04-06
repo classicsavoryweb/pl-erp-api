@@ -110,6 +110,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         "timekeeping"
                     );
                 } else {
+                    
                     $isHoliday = false;
                     $holidayHours = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 9.5 : 8;
                     $holiday = Holiday::where("date", $actualSchedule->date)
@@ -130,6 +131,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         }
                     }
 
+                    $holidayHours = $isRequiredToReport ? 0 : $holidayHours; 
                     $existing = TimeKeeping::where("date", $actualSchedule->date)
                     ->where("employee_id", $employee->id)
                     ->get();
@@ -140,153 +142,30 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         }
                     }
 
-                    if ($actualSchedule->timetable == "INCENTIVE LEAVE") {
-                        TimeKeeping::create([
-                            "employee_id" => $employee->id,
-                            "biometric_number" => $employee->biometric_number,
-                            "biotime_log_id" => null,
-                            "schedule_time_id" => $actualSchedule->id,
-                            "date" => $actualSchedule->date,
-                            "worked_hours" => 0,
-                            "legal_holiday" => 0,
-                            "special_holiday" => 0,
-                            "regular_overtime" => 0,
-                            "tardiness" => 0,
-                            "night_diff_hours" => 0,
-                            "night_diff_overtime" => 0,
-                            "legal_holiday_hours" => 0,
-                            "legal_holiday_overtime" => 0,
-                            "special_holiday_hours" => 0,
-                            "special_holiday_overtime" => 0,
-                            "undertime" => 0,
-                            "is_cancelled_off" => false,
-                            "branch_id" => $this->branchId,
-                            "final_worked_hours" => 0
-                        ]);
-                    }
-                    
-                    if (
-                        ($actualSchedule->timetable == "NO SCHEDULE" || $actualSchedule->timetable == "SUSPENSION" || $actualSchedule->timetable == "REST DAY" || $actualSchedule->timetable == "LEAVE") &&
-                        $employee->current_position->timekeeping_type === "Daily" &&
-                        $employee->current_branch->type === "Branch" &&
-                        // !$isRequiredToReport &&
-                        $isHoliday &&
-                        $holidayType == "LH"
-                    ) {
-                        TimeKeeping::create([
-                            "employee_id" => $employee->id,
-                            "biometric_number" => $employee->biometric_number,
-                            "biotime_log_id" => null,
-                            "schedule_time_id" => $actualSchedule->id,
-                            "date" => $actualSchedule->date,
-                            "worked_hours" => 0,
-                            "legal_holiday" => $holidayType == "LH" ? "Yes" : "No",
-                            "special_holiday" => $holidayType == "SH" ? "Yes" : "No",
-                            "regular_overtime" => 0,
-                            "tardiness" => 0,
-                            "night_diff_hours" => 0,
-                            "night_diff_overtime" => 0,
-                            "legal_holiday_hours" => $holidayType == "LH" ? $holidayHours : 0,
-                            "legal_holiday_overtime" => 0,
-                            "special_holiday_hours" => $holidayType == "SH" ? $holidayHours : 0,
-                            "special_holiday_overtime" => 0,
-                            "undertime" => 0,
-                            "is_cancelled_off" => false,
-                            "branch_id" => $this->branchId,
-                            "final_worked_hours" => 0
-                        ]);
-                    }
-
-                    if (
-                        $actualSchedule->timetable == "NO SCHEDULE" &&
-                        $isHoliday &&
-                        !$isRequiredToReport &&
-                        $employee->schedule->schedule_type->name === "Compressed Schedule"
-                    ) {
-                        TimeKeeping::create([
-                            "employee_id" => $employee->id,
-                            "biometric_number" => $employee->biometric_number,
-                            "biotime_log_id" => null,
-                            "schedule_time_id" => $actualSchedule->id,
-                            "date" => $actualSchedule->date,
-                            "worked_hours" => 0,
-                            "legal_holiday" => $holidayType == "LH" ? "Yes" : "No",
-                            "special_holiday" => $holidayType == "SH" ? "Yes" : "No",
-                            "regular_overtime" => 0,
-                            "tardiness" => 0,
-                            "night_diff_hours" => 0,
-                            "night_diff_overtime" => 0,
-                            "legal_holiday_hours" => $holidayType == "LH" ? $holidayHours : 0,
-                            "legal_holiday_overtime" => 0,
-                            "special_holiday_hours" => $holidayType == "SH" ? $holidayHours : 0,
-                            "special_holiday_overtime" => 0,
-                            "undertime" => 0,
-                            "is_cancelled_off" => false,
-                            "branch_id" => $this->branchId,
-                            "final_worked_hours" => 0
-                        ]);
-                    }
-                    
-                    $sched = ["NO SCHEDULE","SUSPENSION", "REST DAY", "LEAVE", "INCENTIVE LEAVE"];
-
-                    if (!in_array($actualSchedule->timetable ,$sched)) {
-                        $hours = 0;
-
-                        if (
-                            $isHoliday &&
-                            $timekeepingType == "Daily"
-                        ) {
-                            $hours = $holidayHours;
-                        }
-
-                        TimeKeeping::create([
-                            "employee_id" => $employee->id,
-                            "biometric_number" => $employee->biometric_number,
-                            "biotime_log_id" => null,
-                            "schedule_time_id" => $actualSchedule->id,
-                            "date" => $actualSchedule->date,
-                            "worked_hours" => 0,
-                            "legal_holiday" => $holidayType == "LH" ? "Yes" : "No",
-                            "special_holiday" => $holidayType == "SH" ? "Yes" : "No",
-                            "regular_overtime" => 0,
-                            "tardiness" => 0,
-                            "night_diff_hours" => 0,
-                            "night_diff_overtime" => 0,
-                            "legal_holiday_hours" => $holidayType == "LH" ? $hours : 0,
-                            "legal_holiday_overtime" => 0,
-                            "special_holiday_hours" => $holidayType == "SH" ? $hours : 0,
-                            "special_holiday_overtime" => 0,
-                            "undertime" => 0,
-                            "is_cancelled_off" => false,
-                            "branch_id" => $this->branchId,
-                            "final_worked_hours" => 0
-                        ]);
-                    }
+                    TimeKeeping::create([
+                        "employee_id" => $employee->id,
+                        "biometric_number" => $employee->biometric_number,
+                        "biotime_log_id" => null,
+                        "schedule_time_id" => $actualSchedule->id,
+                        "date" => $actualSchedule->date,
+                        "worked_hours" => 0,
+                        "legal_holiday" => $isHoliday && $holidayType == "LH" ? "Yes" : "No",
+                        "special_holiday" => $isHoliday && $holidayType == "SH" ? "Yes" : "No",
+                        "regular_overtime" => 0,
+                        "tardiness" => 0,
+                        "night_diff_hours" => 0,
+                        "night_diff_overtime" => 0,
+                        "legal_holiday_hours" => $isHoliday && $holidayType == "LH" ? $holidayHours : 0,
+                        "legal_holiday_overtime" => 0,
+                        "special_holiday_hours" => $isHoliday && $holidayType == "SH" ? $holidayHours : 0,
+                        "special_holiday_overtime" => 0,
+                        "undertime" => 0,
+                        "is_cancelled_off" => false,
+                        "branch_id" => $this->branchId,
+                        "final_worked_hours" => 0
+                    ]);
                 }
             }
-            
-            // $timeKeepingsQuery = TimeKeeping::with([
-            //     "employee",
-            //     "employee.schedule",
-            //     "employee.schedule.schedule_type",
-            //     "schedule"
-            // ])
-            // ->where("branch_id", $this->branchId)
-            // ->whereBetween("date", $this->cutOff);
-
-            // if (!empty($this->employeeId)) {
-            //     $timeKeepingsQuery->where("employee_id", $this->employeeId);
-            // }
-            // if (!empty($this->dates)) {
-            //     $timeKeepingsQuery->whereIn("date", $this->dates);
-            // }
-
-            // $timeKeepings = $timeKeepingsQuery->get();
-
-            // foreach($timeKeepings as $timeKeep) {
-            //     $actualSchedule = $timeKeep->schedule;
-            //     $this->timeKeepingService->computePayment($timeKeep, $actualSchedule);
-            // }
 
             $this->notifyJobFinished();
             DB::commit();
