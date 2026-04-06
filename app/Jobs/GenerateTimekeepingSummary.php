@@ -313,6 +313,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         if ($holidays->count() > 1) {
                             $holidayArray = $holidays->toArray();
                             $holidayIdx = ($shouldBeDays - $totalDays);
+                            if ($holidays->count() == $holidayIdx) {
+                                $holidayIdx -= 1;
+                            }
 
                             if ($holidayArray[$holidayIdx]["date"] == $holiday->date) {
                                 $totalDays = $totalDays + $holidayIdx;
