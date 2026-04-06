@@ -1063,7 +1063,7 @@ class TimeKeepingService
                     $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
                     $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
                 }
-                if (!$hasLog) {
+                if (!$hasLog && $employee->current_position->timekeeping_type === "Monthly") {
                     $shouldPay = false;
                 }
                 if ($previousDateSchedule && $previousDateSchedule->timetable === "INCENTIVE LEAVE") {
@@ -1075,11 +1075,14 @@ class TimeKeepingService
                 if ($hasLogsOnHoliday && $employee->current_position->timekeeping_type === "Monthly") {
                     $shouldPay = true;
                 }
+            } else { 
+                if ($hasHolidayLogs) {
+                    $shouldPay = true;
+                } else {
+                    $shouldPay = false;
+                }
             }
 
-            if ($employee->current_position->timekeeping_type === "Daily" && $hasHolidayLogs) {
-                $shouldPay = true;
-            }
         }
 
         return $shouldPay;
