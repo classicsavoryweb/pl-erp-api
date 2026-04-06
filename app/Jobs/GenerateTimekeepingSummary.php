@@ -204,6 +204,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
             ->whereBetween("date", $cutOff)
+            ->orderBy("date", "ASC")
             ->get();
 
             $actualWorkedDays = 0;
@@ -284,13 +285,42 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
+                        $shouldBeDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 5 : 6;
                         $weekRange = $this->timeKeepingService->getWeekRange($actualSchedule->date);
                         $holidayWeekTimeKeeping = TimeKeeping::whereBetween('date', $weekRange)
                         ->where('employee_id', $employee->id)
                         ->where("final_worked_hours" ,'>', 0)
                         ->get();
 
-                        if ($holidayWeekTimeKeeping->count() < 5 && $timeKeepingType == "Monthly") {
+                        $holidays = TimeKeeping::whereBetween('date', $weekRange)
+                        ->where('employee_id', $employee->id)
+                        ->where(function ($query) {
+                            $query->where("legal_holiday_hours", ">", 0)
+                            ->orWhere("special_holiday_hours", ">", 0);
+                        })
+                        ->whereHas("schedule", function ($query) {
+                            $query->where("timetable", "NO SCHEDULE");
+                        })
+                        ->orderBy("date", "ASC")
+                        ->get();
+                        $totalDays = $holidayWeekTimeKeeping->count();
+
+                        if ($holidays->count() > 1) {
+                            $holidayArray = $holidays->toArray();
+                            $holidayIdx = ($shouldBeDays - $totalDays);
+
+                            if ($holidayArray[$holidayIdx]["date"] == $holiday->date) {
+                                $totalDays = $totalDays + $holidayIdx;
+                            }
+                        }
+
+                        $convertToDays = false;
+
+                        if ($totalDays < $shouldBeDays) {
+                            $convertToDays = true;
+                        }
+
+                        if ($convertToDays && $timeKeepingType == "Monthly") {
                             $regular_days += 1;
                             $actualWorkedDays += 1;
                             $holidayConvertedToDays = true;
