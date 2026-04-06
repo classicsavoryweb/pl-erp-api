@@ -289,7 +289,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $weekRange = $this->timeKeepingService->getWeekRange($actualSchedule->date);
                         $holidayWeekTimeKeeping = TimeKeeping::whereBetween('date', $weekRange)
                         ->where('employee_id', $employee->id)
-                        ->where("final_worked_hours" ,'>', 0)
+                        ->where(function ($query) {
+                            $query->where("final_worked_hours" ,'>', 0)
+                            ->orWhereHas("schedule", function ($q) {
+                                $q->whereIn("timetable", ["LEAVE", "INCENTIVE LEAVE"]);
+                            });
+                        })
                         ->get();
 
                         $holidays = TimeKeeping::whereBetween('date', $weekRange)
