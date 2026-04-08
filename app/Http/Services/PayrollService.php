@@ -9,6 +9,7 @@ use App\Models\Branch;
 use App\Models\Cutoff;
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
+use App\Models\IncentivePosition;
 use App\Models\Incentives;
 use App\Models\IncentivesBracket;
 use App\Models\IncentivesManagement;
@@ -442,21 +443,38 @@ class PayrollService {
     public function computeIncentives(Cutoff $cutOff, Employee $employee, Branch $branch) {
         $incentivesAmount = 0;
 
-        $position = $employee->current_position;
-        $formerIncentives = Incentives::where("employee_id", $employee->id)
-        ->whereNot("pay_date", $cutOff->pay_date)
-        ->orderBy("pay_date", "DESC")
+        $startDate = Carbon::parse($cutOff->start_date)->subMonths(1)->day(26)->format("Y-m-d");
+        $endDate = Carbon::parse($cutOff->start_date)->day(25)->format("Y-m-d");
+
+        $firstCutOff = $this->getCutOffForDate($startDate);
+        $secondCutOff = $this->getCutOffForDate($endDate);
+        $currentCutOff = $this->getCutOffForDate($cutOff->pay_date);
+
+        $month = Carbon::parse($secondCutOff['end_time'])->month;
+        $year = Carbon::parse($secondCutOff['end_time'])->year;
+        
+        $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+        ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
         ->first();
 
-        if ($formerIncentives && $cutOff->part == 2) {
-            $position = Position::where("id", $formerIncentives->position_id)->first();
+        $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
+        ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
+        ->first();
+
+        $position = $employee->current_position;
+        if ($firstTimeKeeping) {
+            $position = Position::find($firstTimeKeeping->position_id);
+        }
+
+        if ($secondTimeKeeping) {
+            $position = Position::find($secondTimeKeeping->position_id);
         }
 
         if ($position->rank == 1) {
             $months = Carbon::now()->diffInMonths($employee->date_hired);
             $bracket = IncentivesBracket::where("month", "<=", $months)
-                ->whereHas('positions', function ($query) use ($employee) {
-                    $query->where('positions.id', $employee->position_id);
+                ->whereHas('positions', function ($query) use ($position) {
+                    $query->where('positions.id', $position->id);
                 })
                 ->orderByRaw('CAST(month AS UNSIGNED) DESC')
                 ->first();
@@ -491,24 +509,11 @@ class PayrollService {
         $adjustmentPercent = 0;
         $additionalDays = [];
         $status = "initial";
-    
-        $startDate = Carbon::parse($cutOff->start_date)->subMonths(1)->day(26)->format("Y-m-d");
-        $endDate = Carbon::parse($cutOff->start_date)->day(25)->format("Y-m-d");
 
-        $firstCutOff = $this->getCutOffForDate($startDate);
-        $secondCutOff = $this->getCutOffForDate($endDate);
-        $currentCutOff = $this->getCutOffForDate($cutOff->pay_date);
-
-        $month = Carbon::parse($secondCutOff['end_time'])->month;
-        $year = Carbon::parse($secondCutOff['end_time'])->year;
-        
-        $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-        ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
-        ->first();
-
-        $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-        ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
-        ->first();
+        $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
+        if ($employee->oic_status == "OIC" && $incentivePosition) {
+            $additionalIncentive = $incentivePosition->oic_additional_amount;
+        }
 
         $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
         $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
@@ -648,19 +653,7 @@ class PayrollService {
             }
         }
 
-        $existingIncentives = Incentives::where("employee_id", $employee->id)
-        ->where("pay_date", $payDate)
-        ->first();
-
-        if ($existingIncentives) {
-            if ($existingIncentives->additional_incentive > 0) {
-                $additionalIncentive = $existingIncentives->additional_incentive;
-            }
-
-            if ($existingIncentives->adjustment_percent > 0) {
-                $adjustmentPercent = $existingIncentives->adjustment_percent;
-            }
-        }
+        $incentiveAmount += $additionalIncentive;
         
         $incentive = Incentives::updateOrCreate([
             "employee_id" => $employeeId,

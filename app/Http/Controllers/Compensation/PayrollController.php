@@ -212,6 +212,28 @@ class PayrollController extends Controller
             ->pluck('name', 'id')
             ->toArray();
 
+            $cutOff = Cutoff::where("status", "active")->first();
+
+            if ($cutOff) {
+                $initializedJson = [];
+
+                if ($cutOff->initializations) {
+                    $initializedJson = json_decode($cutOff->initializations, true);
+                }
+
+                $newJson = [
+                    [
+                        "generated_at" => now(),
+                        "generated_by" => Auth::user()->full_name
+                    ],
+                    ...$initializedJson
+                ];
+
+                $cutOff->update([
+                    "initializations" => json_encode($newJson)
+                ]);
+            }
+
             foreach ($request->branch_id as $branch_id) {
                 $branch = $branches[$branch_id];
                 $context = $branch ?? "Unknown Branch";

@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware("permission:perform_compensation_cutoff_setup")->get("/initialize-cut-off/{id}", [CutOffController::class, "initializeCutOff"]);
     Route::middleware("permission:perform_compensation_cutoff_setup")->get("/finalize-cut-off/{id}", [CutOffController::class, "finalizeCutOff"]);
     Route::middleware(["permission:perform_compensation_cutoff_setup"])->post("/generate-payroll", [PayrollController::class, "generateBranchPayroll"]);
+    Route::middleware(["permission:perform_compensation_cutoff_setup"])->get("/recompute-incentives/{id}", [CutOffController::class, "reComputeIncentives"]);
 
     //employee deductions
     Route::get("/get-all-employee-deductions", [EmployeeDeductionsController::class, "getAllEmployeeDeductions"]);

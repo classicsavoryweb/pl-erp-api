@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Compensation;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessFinalizeCutOff;
 use App\Jobs\ProcessInitializeCutOff;
+use App\Jobs\RecomputeIncentives;
 use App\Models\Cutoff;
 use App\Models\BranchAdditionalIncome;
 use App\Models\PayrollList;
@@ -194,18 +195,10 @@ class CutOffController extends Controller
                 "part" => "required"
             ]);
 
-            $dates = $this->normalizeCutOff($request->cutoff["start_time"], $request->cutoff["end_time"], $request->year);
-            $startDate = $dates["start_date"];
-            $endDate = $dates["end_date"];
-            $cutOff = $startDate."-".$endDate;
-
             $createdCutOff = Cutoff::find($id);
 
             if ($createdCutOff) {                
                 $createdCutOff->update([
-                    "cut_off" => $cutOff,
-                    "start_date" => $startDate,
-                    "end_date" => $endDate,
                     "status" => "active",
                     "pay_date" => $request->pay_date,
                     "part" => $request->part,
@@ -245,6 +238,42 @@ class CutOffController extends Controller
             }
 
             return $this->sendResponse($cut_off);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function reComputeIncentives(Request $request, $id) {
+        try {
+            $cutOff = Cutoff::find($id);
+
+            if ($cutOff) {
+                $initializedJson = [];
+
+                if ($cutOff->initializations) {
+                    $initializedJson = json_decode($cutOff->initializations, true);
+                }
+
+                $newJson = [
+                    [
+                        "computed_at" => now(),
+                        "computed_by" => Auth::user()->full_name
+                    ],
+                    ...$initializedJson
+                ];
+
+                $cutOff->update([
+                    "initializations" => json_encode($newJson)
+                ]);
+                RecomputeIncentives::dispatch($cutOff, Auth::user()->id);
+
+                return $this->sendResponse([
+                    "cut_off" => $cutOff,
+                    "message" => "Incentives recomputed"
+                ]);
+            }
+
+            return $this->sendError(["message" => "Cutoff not found"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
