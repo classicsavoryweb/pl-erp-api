@@ -437,6 +437,13 @@ class GenerateEntry implements ShouldQueue
         });
     }
 
+    private function isHeadOfficePayrollBranch($payrollBranch, int $branchId, int $branchHOId): bool
+    {
+        return $branchId === $branchHOId
+            || ($payrollBranch->type ?? null) === "Head Office"
+            || ($payrollBranch->short_name ?? null) === "HO";
+    }
+
     private function appendCashPayrollPayableEntries(
         array &$entries,
         Payroll $payroll,
@@ -2208,6 +2215,7 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //head office - employer statutories (cash)
+                $isHeadOfficeBranch = $this->isHeadOfficePayrollBranch($payrollBranch, $branchId, $branchHOId);
                 foreach ($payrollEmployeeCashQuery as $payrollCash) {
                     [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
                         $payrollCash,
@@ -2216,7 +2224,7 @@ class GenerateEntry implements ShouldQueue
                     );
 
                     $cashEmployerSss = $this->parseMoneyValue($payrollCash->employer_sss);
-                    if ($payrollBranch->branch_number != "SFI00001") {
+                    if (!$isHeadOfficeBranch) {
                         $this->appendCashDualContributionEntries(
                             $entries,
                             $cashEmployerSss,
@@ -2244,16 +2252,16 @@ class GenerateEntry implements ShouldQueue
                             $entries,
                             $cashEmployerSss,
                             'Employer SSS Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
+                            $vendorHONo,
+                            $vendorHOName,
                             $erSSSDebit,
                             $accountsPayable,
                             $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
-                            $vendorHONo,
-                            $vendorHOName,
+                            $erSSSVendor,
+                            $erSSSVendorName,
                             $erSSSDebit,
                             $erSSSCredit,
                             $start_date . '-' . $end_date,
@@ -2272,7 +2280,7 @@ class GenerateEntry implements ShouldQueue
                     );
 
                     $cashEmployerPh = $this->parseMoneyValue($payrollCash->employer_philhealth);
-                    if ($payrollBranch->branch_number != "SFI00001") {
+                    if (!$isHeadOfficeBranch) {
                         $this->appendCashDualContributionEntries(
                             $entries,
                             $cashEmployerPh,
@@ -2300,16 +2308,16 @@ class GenerateEntry implements ShouldQueue
                             $entries,
                             $cashEmployerPh,
                             'Employer Philhealth Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
+                            $vendorHONo,
+                            $vendorHOName,
                             $erPhilHealthDebit,
                             $accountsPayable,
                             $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
-                            $vendorHONo,
-                            $vendorHOName,
+                            $erPhilHealthVendor,
+                            $erPhilHealthVendorName,
                             $erPhilHealthDebit,
                             $erPhilHealthCredit,
                             $start_date . '-' . $end_date,
@@ -2329,7 +2337,7 @@ class GenerateEntry implements ShouldQueue
                     );
 
                     $cashEmployerPagibig = $this->parseMoneyValue($payrollCash->employer_pagibig);
-                    if ($payrollBranch->branch_number != "SFI00001") {
+                    if (!$isHeadOfficeBranch) {
                         $this->appendCashDualContributionEntries(
                             $entries,
                             $cashEmployerPagibig,
@@ -2357,16 +2365,16 @@ class GenerateEntry implements ShouldQueue
                             $entries,
                             $cashEmployerPagibig,
                             'Employer Pag-Ibig Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
+                            $vendorHONo,
+                            $vendorHOName,
                             $erPagibigDebit,
                             $accountsPayable,
                             $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
-                            $vendorHONo,
-                            $vendorHOName,
+                            $erPagibigVendor,
+                            $erPagibigVendorName,
                             $erPagibigDebit,
                             $erPagibigCredit,
                             $start_date . '-' . $end_date,
@@ -3360,6 +3368,7 @@ class GenerateEntry implements ShouldQueue
                 }
 
                 //branch - employer statutories (cash)
+                $isHeadOfficeBranch = $this->isHeadOfficePayrollBranch($payrollBranch, $branchId, $branchHOId);
                 foreach ($payrollEmployeeCashQuery as $payrollCash) {
                     [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
                         $payrollCash,
@@ -3368,7 +3377,7 @@ class GenerateEntry implements ShouldQueue
                     );
 
                     $cashEmployerSss = $this->parseMoneyValue($payrollCash->employer_sss);
-                    if ($payrollBranch->branch_number != "SFI00001") {
+                    if (!$isHeadOfficeBranch) {
                         $this->appendCashDualContributionEntries(
                             $entries,
                             $cashEmployerSss,
@@ -3395,16 +3404,16 @@ class GenerateEntry implements ShouldQueue
                             $entries,
                             $cashEmployerSss,
                             'Employer SSS Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
+                            $vendorHONo,
+                            $vendorHOName,
                             $erSSSDebit,
                             $accountsPayable,
                             $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
-                            $vendorHONo,
-                            $vendorHOName,
+                            $erSSSVendor,
+                            $erSSSVendorName,
                             $erSSSDebit,
                             $erSSSCredit,
                             $start_date . '-' . $end_date,
@@ -3423,7 +3432,7 @@ class GenerateEntry implements ShouldQueue
                     );
 
                     $cashEmployerPh = $this->parseMoneyValue($payrollCash->employer_philhealth);
-                    if ($payrollBranch->branch_number != "SFI00001") {
+                    if (!$isHeadOfficeBranch) {
                         $this->appendCashDualContributionEntries(
                             $entries,
                             $cashEmployerPh,
@@ -3450,16 +3459,16 @@ class GenerateEntry implements ShouldQueue
                             $entries,
                             $cashEmployerPh,
                             'Employer Philhealth Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
+                            $vendorHONo,
+                            $vendorHOName,
                             $erPhilHealthDebit,
                             $accountsPayable,
                             $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
-                            $vendorHONo,
-                            $vendorHOName,
+                            $erPhilHealthVendor,
+                            $erPhilHealthVendorName,
                             $erPhilHealthDebit,
                             $erPhilHealthCredit,
                             $start_date . '-' . $end_date,
@@ -3478,7 +3487,7 @@ class GenerateEntry implements ShouldQueue
                     );
 
                     $cashEmployerPagibig = $this->parseMoneyValue($payrollCash->employer_pagibig);
-                    if ($payrollBranch->branch_number != "SFI00001") {
+                    if (!$isHeadOfficeBranch) {
                         $this->appendCashDualContributionEntries(
                             $entries,
                             $cashEmployerPagibig,
@@ -3505,16 +3514,16 @@ class GenerateEntry implements ShouldQueue
                             $entries,
                             $cashEmployerPagibig,
                             'Employer Pag-Ibig Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
+                            $vendorHONo,
+                            $vendorHOName,
                             $erPagibigDebit,
                             $accountsPayable,
                             $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
-                            $vendorHONo,
-                            $vendorHOName,
+                            $erPagibigVendor,
+                            $erPagibigVendorName,
                             $erPagibigDebit,
                             $erPagibigCredit,
                             $start_date . '-' . $end_date,
