@@ -81,9 +81,7 @@ class RecomputeIncentives implements ShouldQueue
                 $payDate = $cutOff->pay_date;
                 $amountRate = $incentivesAmount;
                 $additionalIncentive = 0;
-                $adjustmentDays = 0;
                 $adjustmentPercent = 0;
-                $additionalDays = [];
                 $status = "initial";
 
                 $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
@@ -146,9 +144,7 @@ class RecomputeIncentives implements ShouldQueue
                     "max_amount" => $maxAmount,
                     "amount_rate" => $amountRate,
                     "additional_incentive" => $additionalIncentive,
-                    "adjustment_days" => $adjustmentDays,
                     "adjustment_percent" => $adjustmentPercent,
-                    "additional_days" => json_encode($additionalDays),
                     "status" => $status
                 ]);
             }
