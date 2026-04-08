@@ -203,12 +203,13 @@ class ProcessInitializeCutOff implements ShouldQueue
             }
         }
 
-        if ($cutOff->part == 1) {
-            Incentives::where("pay_date", $cutOff->start_date)
-            ->update([
-                "pay_date" => $cutOff->pay_date
-            ]);
-        }
+        // TO BE DISCUSSED
+        // if ($cutOff->part == 1) {
+        //     Incentives::where("pay_date", $cutOff->start_date)
+        //     ->update([
+        //         "pay_date" => $cutOff->pay_date
+        //     ]);
+        // }
 
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
