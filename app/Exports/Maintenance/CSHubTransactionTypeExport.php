@@ -28,12 +28,13 @@ class CSHubTransactionTypeExport implements FromCollection, WithHeadings
                 $type->deduction_status_negative,
                 $type->credit_status_positive,
                 $type->credit_status_negative,
+                $type->batch_entry,
                 $type->email_status,
+                $type->advances_debit,
                 $type->ho_debit,
                 $type->ho_credit,
                 $type->branch_debit,
                 $type->branch_credit,
-                $type->advances_debit,
                 $type->status,
             ];
         });
@@ -51,6 +52,7 @@ class CSHubTransactionTypeExport implements FromCollection, WithHeadings
             'For Deduction (Negative)',
             'For Credit (Positive)',
             'For Credit (Negative)',
+            'Batch Entry',
             'For Email',
             'Advances Debit',
             'H.O. Debit',
