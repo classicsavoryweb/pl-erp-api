@@ -189,7 +189,6 @@ class CutOffController extends Controller
             DB::beginTransaction();
             $request->validate([
                 "cutoff" => "required",
-                "year" => "required",
                 "pay_date" => "required",
                 "initialize" => "required",
                 "part" => "required"
