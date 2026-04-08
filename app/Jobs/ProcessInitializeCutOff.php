@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Services\PayrollService;
 use App\Models\Branch;
 use App\Models\Cutoff;
+use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\PayrollDetail;
 use App\Models\PayrollList;
@@ -201,6 +202,11 @@ class ProcessInitializeCutOff implements ShouldQueue
                 ]);
             }
         }
+
+        Incentives::where("pay_date", $cutOff->start_date)
+        ->update([
+            "pay_date" => $cutOff->pay_date
+        ]);
 
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
