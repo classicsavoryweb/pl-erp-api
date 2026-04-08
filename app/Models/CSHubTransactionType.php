@@ -24,6 +24,7 @@ class CSHubTransactionType extends Model
         "deduction_status_negative",
         "credit_status_positive",
         "credit_status_negative",
+        "batch_entry",
         "email_status",
         "ho_debit",
         "ho_credit",

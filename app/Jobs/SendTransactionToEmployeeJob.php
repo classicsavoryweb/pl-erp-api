@@ -118,6 +118,96 @@ class SendTransactionToEmployeeJob implements ShouldQueue
         $counterApsysEntry = null;
         $counterApsysEntryMain = null;
 
+        $vendorHO = Vendor::where("ven_name", "HO")->first();
+        $vendorHONo = $vendorHO->ven_no;
+        $vendorHOName = $vendorHO->ven_name;
+
+        $branchHO = Branch::where('short_name', 'HO')->first();
+        $branchHOId = $branchHO->id;
+        $branchHOName = $branchHO->name;
+        $branchHOShortName = $branchHO->short_name;
+        $branchHONumber = $branchHO->branch_number;
+
+        $batchEntryTransactionIds = [];
+        $batchEntryGroups = $converter_details
+            ->filter(function ($transaction) {
+                return ($transaction->transaction_type->batch_entry ?? "No") === "Yes";
+            })
+            ->groupBy("transaction_type_id");
+
+        foreach ($batchEntryGroups as $transactionTypeId => $transactions) {
+            $firstTransaction = $transactions->first();
+
+            if (!$firstTransaction) {
+                continue;
+            }
+
+            $batchEntryTransactionIds = array_merge($batchEntryTransactionIds, $transactions->pluck("id")->all());
+
+            $transactionType = $firstTransaction->transaction_type;
+            $batchNumber = $firstTransaction->converter_main->batch_number;
+            $description = $transactionType->description;
+            $isBlockPayment = $transactionType->is_block_payment;
+            $hoDebit = $transactionType->ho_debit;
+            $hoCredit = $transactionType->ho_credit;
+            $advancesDebit = $transactionType->advances_debit;
+            $amount = $transactions->sum("amount");
+            $entryId = $this->generateEntryId($counterEntry);
+            $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+            $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
+            $documentNo = $batchNumber . ' | ' . $description . ' | ' . $branchHOName;
+
+            if (!$hoDebit && $advancesDebit != 'Yes') {
+                continue;
+            }
+
+            $accountHODebitId = null;
+
+            if ($advancesDebit == 'Yes') {
+                $accountHODebitId = Account::where('acc_name', 'Advances - ' . $branchHOShortName)
+                    ->value('acc_no');
+            }
+
+            $batchEntries = [
+                [
+                    'entry_id'            => $entryId,
+                    'apsys_entry_id'      => $apsysEntryId,
+                    'apsys_entry_main_id' => $apsysEntryMainId,
+                    'document_no'         => $documentNo,
+                    'branch_id'           => $branchHOId,
+                    'branch_number'       => $branchHONumber,
+                    'branch_name'         => $branchHOName,
+                    'ven_no'              => $vendorHONo,
+                    'ven_name'            => $vendorHOName,
+                    'amount'              => $amount,
+                    'acc_no'              => $accountHODebitId ?? $hoDebit,
+                    'description_per_acc' => $description,
+                    'balance_type'        => 'Debit',
+                    'is_block_payment'    => $isBlockPayment,
+                ],
+                [
+                    'entry_id'            => $entryId,
+                    'apsys_entry_id'      => $apsysEntryId,
+                    'apsys_entry_main_id' => $apsysEntryMainId,
+                    'document_no'         => $documentNo,
+                    'branch_id'           => $branchHOId,
+                    'branch_number'       => $branchHONumber,
+                    'branch_name'         => $branchHOName,
+                    'ven_no'              => $vendorHONo,
+                    'ven_name'            => $vendorHOName,
+                    'amount'              => $amount,
+                    'acc_no'              => $hoCredit,
+                    'description_per_acc' => $description,
+                    'balance_type'        => 'Credit',
+                    'is_block_payment'    => $isBlockPayment,
+                ],
+            ];
+
+            if (!$this->isResend) {
+                $this->createEntries($batchEntries, $userId);
+            }
+        }
+
         foreach ($converter_details as $transaction) {
             $entryId = $this->generateEntryId($counterEntry);
             $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
@@ -125,16 +215,6 @@ class SendTransactionToEmployeeJob implements ShouldQueue
 
             $employee = $transaction->employee;
             $employeeNumber = $transaction->employee->employee_number;
-
-            $vendorHO = Vendor::where("ven_name", "HO")->first();
-            $vendorHONo = $vendorHO->ven_no;
-            $vendorHOName = $vendorHO->ven_name;
-
-            $branchHO = Branch::where('short_name', 'HO')
-            ->first();
-            $branchHOId = $branchHO->id;
-            $branchHOName = $branchHO->name;
-            $branchHONumber = $branchHO->branch_number;
 
             $batchNumber = $transaction->converter_main->batch_number;
             $amount = $transaction->amount;
@@ -149,9 +229,12 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             $branchShortName = $transaction->branch->short_name;
             $branchName = $transaction->branch->name;
             $branchId = $transaction->branch_id;
+            $entryVendorNo = $employee->employee_number;
+            $entryVendorName = $employee->full_name;
+            $isBatchEntry = in_array($transaction->id, $batchEntryTransactionIds, true);
 
             //HO Entry Setup
-            if ($hoDebit || $advancesDebit == 'Yes') {
+            if (!$isBatchEntry && ($hoDebit || $advancesDebit == 'Yes')) {
 
                 $accountHODebitId = null;
 
@@ -169,8 +252,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
                         'branch_name'         => $branchHOName,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
+                        'ven_no'              => $entryVendorNo,
+                        'ven_name'            => $entryVendorName,
                         'amount'              => $amount,
                         'acc_no'              => $accountHODebitId ?? $hoDebit,
                         'description_per_acc' => $description,
@@ -185,8 +268,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
                         'branch_name'         => $branchHOName,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
+                        'ven_no'              => $entryVendorNo,
+                        'ven_name'            => $entryVendorName,
                         'amount'              => $amount,
                         'acc_no'              => $hoCredit,
                         'description_per_acc' => $description,
@@ -205,7 +288,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             $apsysEntryMainId2 = $this->generateApsysEntryMainId($counterApsysEntryMain);
 
             //Branch Entry Setup
-            if ($branchDebit) {
+            if (!$isBatchEntry && $branchDebit) {
                 $branchEntries = [
                     [
                         'entry_id'            => $entryId2,
@@ -215,8 +298,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
                         'branch_name'         => $branchName,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
+                        'ven_no'              => $entryVendorNo,
+                        'ven_name'            => $entryVendorName,
                         'amount'              => $amount,
                         'acc_no'              => $branchDebit,
                         'description_per_acc' => $description,
@@ -231,8 +314,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
                         'branch_name'         => $branchName,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
+                        'ven_no'              => $entryVendorNo,
+                        'ven_name'            => $entryVendorName,
                         'amount'              => $amount,
                         'acc_no'              => $branchCredit,
                         'description_per_acc' => $description,
@@ -289,7 +372,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                     "date_created" => $transaction->created_at->format("Y-m-d"),
                 ]);
 
-                if (!$hoDebit || $advancesDebit != 'Yes') {
+                if (!$isBatchEntry && (!$hoDebit || $advancesDebit != 'Yes')) {
                     $entryId = $this->generateEntryId($counterEntry);
                     $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
                     $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
