@@ -41,6 +41,7 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
                 $attendance->second_cut_off_worked_days,
                 $attendance->adjustment_days,
                 $attendance->adjustment_percent,
+                $attendance->additional_incentive,
                 $attendance->incentive_amount,
                 $attendance->remarks,
                 $additionalDays
@@ -64,6 +65,7 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
             '2nd Cutoff Days',
             'Deduction Days',
             'Tardiness Deduction Percent',
+            'Additional Incentive',
             'Final Incentive Amount',
             'Remarks',
             'Additional Days Breakdown'
