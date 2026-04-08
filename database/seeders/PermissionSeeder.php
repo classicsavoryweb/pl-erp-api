@@ -89,6 +89,15 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_adjustment_types"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_adjustment_types"], ["module" => "maintenance"]);
 
+        Permission::updateOrCreate(["name" => "view_incentives_management"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_incentives_management"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_incentives_bracket"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_incentives_bracket"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_incentives_per_employee"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_incentives_per_employee"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_incentives_position"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_incentives_position"], ["module" => "maintenance"]);
+
         Permission::updateOrCreate(["name" => "view_contributions_and_tax"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_contributions_and_tax"], ["module" => "maintenance"]);
 

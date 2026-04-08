@@ -19,6 +19,7 @@ use App\Http\Controllers\Maintenance\ContributionsAndTaxController;
 use App\Http\Controllers\Maintenance\DiagnosisController;
 use App\Http\Controllers\Maintenance\EmployeeStatusController;
 use App\Http\Controllers\Maintenance\HolidayController;
+use App\Http\Controllers\Maintenance\IncentivesPositionController;
 use App\Http\Controllers\Maintenance\OffenseController;
 use App\Http\Controllers\Maintenance\PagibigController;
 use App\Http\Controllers\Maintenance\PeriodDefinitionController;
@@ -251,6 +252,12 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-incentives-per-employee", [IncentivesPerEmployeeController::class, "exportAllIncentivesPerEmployee"]);
     Route::middleware(["permission:perform_incentives_per_employee"])->post("/create-incentives-per-employee", [IncentivesPerEmployeeController::class, "createIncentivesPerEmployee"]);
     Route::middleware(["permission:perform_incentives_per_employee"])->post("/edit-incentives-per-employee/{id}", [IncentivesPerEmployeeController::class, "editIncentivesPerEmployee"]);
+    //incentives position
+    Route::get("/get-all-incentives-position", [IncentivesPositionController::class, "getAllIncentivesPosition"]);
+    Route::get("/export-all-incentives-position", [IncentivesPositionController::class, "exportAllIncentivesPosition"]);
+    Route::middleware(["permission:perform_incentives_position"])->post("/create-incentives-position", [IncentivesPositionController::class, "createIncentivesPosition"]);
+    Route::middleware(["permission:perform_incentives_position"])->post("/edit-incentives-position/{id}", [IncentivesPositionController::class, "editIncentivesPosition"]);
+    
     //terms
     Route::get("/get-all-terms", [TermsController::class, "getAllTerms"]);
     Route::get("/get-term", [TermsController::class, "getTerm"]);
