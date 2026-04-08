@@ -63,7 +63,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
                     $totalTardy += $timeKeeping->tardiness;
                 }
 
-                if ($totalTardy >= 60) {
+                if ($totalTardy > 120) {
                     $endpoint = $baseUrl."/get-applied-tardiness";
                     try {
                         $response = Http::withBasicAuth($user, $password)
@@ -97,7 +97,7 @@ class ComputeEmployeeTardiness implements ShouldQueue
                     }
                 }
 
-                if ($totalTardy > 60) {
+                if ($totalTardy > 120) {
                     $latestTransgression = Tardiness::with(["tardiness_sanction"])
                     ->where("employee_id", $employee->id)
                     ->where("status", "Approved")
