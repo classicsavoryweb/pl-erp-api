@@ -279,7 +279,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ];
 
                 if (!$this->isResend) {
-                    $this->createEntries($hoEntries, $userId, $vendorHONo, $vendorHOName);
+                    $this->createEntries($hoEntries, $userId, $entryVendorNo, $entryVendorName);
                 }
             }
 
@@ -298,8 +298,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
                         'branch_name'         => $branchName,
-                        'ven_no'              => $entryVendorNo,
-                        'ven_name'            => $entryVendorName,
+                        'ven_no'              => $vendorHONo,
+                        'ven_name'            => $vendorHOName,
                         'amount'              => $amount,
                         'acc_no'              => $branchDebit,
                         'description_per_acc' => $description,
@@ -314,8 +314,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         'branch_id'           => $branchId,
                         'branch_number'       => $branchNumber,
                         'branch_name'         => $branchName,
-                        'ven_no'              => $entryVendorNo,
-                        'ven_name'            => $entryVendorName,
+                        'ven_no'              => $vendorHONo,
+                        'ven_name'            => $vendorHOName,
                         'amount'              => $amount,
                         'acc_no'              => $branchCredit,
                         'description_per_acc' => $description,
