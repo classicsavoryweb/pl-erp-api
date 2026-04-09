@@ -509,6 +509,8 @@ class PayrollService {
         $adjustmentPercent = 0;
         $additionalDays = [];
         $status = "initial";
+        $undertime = 0;
+        $absent = 0;
 
         $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
         if ($employee->oic_status == "OIC" && $incentivePosition) {
@@ -537,6 +539,7 @@ class PayrollService {
 
         if ($adjustmentDays) {
             $remarks = "ABSENTS: ".$adjustmentDays. " | ";
+            $absent = $adjustmentDays;
         }
 
         foreach ($firstCutOffAdjustments as $adjustment) {
@@ -616,6 +619,7 @@ class PayrollService {
                 $numberToDeduct = floor($excessiveUndertime / $basisForDeduction);
 
                 if ($numberToDeduct > 0) {
+                    $undertime = $excessiveUndertime;
                     $amountToBeDeduct = $numberToDeduct * 0.5;
                     $adjustmentDays += $amountToBeDeduct;
 
@@ -637,6 +641,7 @@ class PayrollService {
                 $numberToDeduct = floor($totalUndertimeForMonth / $basisForDeduction);
 
                 if ($numberToDeduct > 0) {
+                    $undertime = $totalUndertimeForMonth;
                     $amountToBeDeduct = $numberToDeduct * 0.5;
                     $adjustmentDays += $amountToBeDeduct;
 
@@ -673,6 +678,8 @@ class PayrollService {
             "first_cut_off_worked_days" => $firstCutOffDays,
             "second_cut_off_worked_days" => $secondCutOffDays,
             "additional_days" => json_encode($additionalDays),
+            "undertime" => $undertime,
+            "absent" => $absent,
             "status" => $status
         ]);
 
