@@ -85,6 +85,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
             } else {
                 return [
                     trim(($transaction->last_name ?? '') . ", " . ($transaction->first_name ?? '') . " " . ($transaction->middle_name ?? '')),
+                    $transaction->position ?? '',
                     $transaction->employee_number ?? '',
                     $transaction->adjustment_percent,
                     $transaction->additional_incentive,
@@ -152,6 +153,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
         } else {
             return [
                 "Full Name",
+                "Position",
                 "Employee Number",
                 "Adjustment Percent",
                 "Additional Incentive",

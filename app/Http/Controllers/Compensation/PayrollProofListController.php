@@ -71,6 +71,9 @@ class PayrollProofListController extends Controller
                 });
             }
 
+            $proofList = $proofList->leftJoin('branches as b', 'payroll.timekeeping_branch_id', '=', 'b.id',)
+                ->leftJoin('positions as p', 'payroll.position_id', '=', 'p.id');
+
             if ($request->type === "INCENTIVES") {
                 $proofList = $proofList->addSelect(
                     'payroll_list.*',
@@ -81,13 +84,12 @@ class PayrollProofListController extends Controller
                     'employees.middle_name',
                     'employees.employee_number',
                     "bank_details.bank_number",
-                    "bank_account_type.description as bank_account_type"
+                    "bank_account_type.description as bank_account_type",
+                    'p.description as position',
                 );
 
             } else {
-                $proofList = $proofList->leftJoin('branches as b', 'payroll.timekeeping_branch_id', '=', 'b.id',)
-                ->leftJoin('positions as p', 'payroll.position_id', '=', 'p.id')
-                ->addSelect(
+                $proofList = $proofList->addSelect(
                     'payroll_list.*',
                     DB::raw('payroll.net_pay as amount'),
                     'payroll.*',
