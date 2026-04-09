@@ -110,6 +110,8 @@ class RecomputeIncentives implements ShouldQueue
 
                 if (str_contains($position->description, "Officer")) {
                     $incentiveAmount = 0;
+                    $amountRate = 0;
+                    $dailyIncentives = 0;
                 }
 
                 if ($employee->current_position->timekeeping_type == "Daily") {
