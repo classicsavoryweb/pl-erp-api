@@ -301,7 +301,6 @@ class ATDController extends Controller
             }
 
         } catch (Exception $e) {
-            Log::info($e);
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
