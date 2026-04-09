@@ -87,6 +87,29 @@ class LastPayController extends Controller
             $lastPays = $lastPays->orderBy("id", "DESC")
             ->paginate($perPage);
 
+            $lastPays->getCollection()->transform(function ($lastPay) {
+                $companyDeductions = $this->getCurrentCompanyDeductionsForEmployee($lastPay->employee_id);
+                $totalDeductions = round($companyDeductions->sum(function ($deduction) {
+                    return $this->numeric($deduction->balance ?? $deduction->amount ?? 0);
+                }), 2);
+
+                $lastPayAmount = (
+                    $this->numeric($lastPay->payroll_hold)
+                    + $this->numeric($lastPay->thirteenth_month)
+                    + $this->numeric($lastPay->incentives)
+                    + $this->numeric($lastPay->sl_vl)
+                    + $this->numeric($lastPay->meal)
+                    + $this->numeric($lastPay->tax_refund)
+                    + $this->numeric($lastPay->sales)
+                ) - $totalDeductions;
+
+                $lastPay->setRelation("deductions", $companyDeductions);
+                $lastPay->total_deductions = $totalDeductions;
+                $lastPay->last_pay = round($lastPayAmount, 2);
+
+                return $lastPay;
+            });
+
             return $this->sendResponse($lastPays);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
@@ -294,7 +317,6 @@ class LastPayController extends Controller
                     $meal_allowance = $this->numeric($lastPayDetails->meal);
                     $taxRefund = $this->numeric($lastPayDetails->tax_refund);
                     $sales = $this->numeric($lastPayDetails->sales);
-                    $totalDeductions = $this->numeric($lastPayDetails->total_deductions);
                 }
 
                 $lastPayAmount = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $sales)- $totalDeductions;
@@ -369,6 +391,23 @@ class LastPayController extends Controller
                 "amount" => round($payrollMap[$label] ?? 0, 2),
             ];
         }, $periods);
+    }
+
+    private function getCurrentCompanyDeductionsForEmployee($employeeId)
+    {
+        return EmployeeDeduction::with("deduction")
+            ->where("employee_id", $employeeId)
+            ->where("balance", ">=", 1)
+            ->where("end_loan_status", "!=", "Yes")
+            ->whereHas("deduction", function ($query) {
+                $query->whereNotIn("category", ["Pag-ibig", "SSS"]);
+            })
+            ->get()
+            ->map(function ($deduction) {
+                $deduction->amount = $this->numeric($deduction->balance);
+                return $deduction;
+            })
+            ->values();
     }
 
     public function createLastPayRecord(Request $request, $employeeNumber) {
