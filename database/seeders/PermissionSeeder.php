@@ -89,15 +89,6 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_adjustment_types"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_adjustment_types"], ["module" => "maintenance"]);
 
-        Permission::updateOrCreate(["name" => "view_incentives_management"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_incentives_management"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_incentives_bracket"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_incentives_bracket"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_incentives_per_employee"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_incentives_per_employee"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_incentives_position"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_incentives_position"], ["module" => "maintenance"]);
-
         Permission::updateOrCreate(["name" => "view_contributions_and_tax"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_contributions_and_tax"], ["module" => "maintenance"]);
 
@@ -220,6 +211,14 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_compensation_atd"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_atd"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "export_compensation_atd"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "view_incentives_management"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "perform_incentives_management"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "view_incentives_bracket"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "perform_incentives_bracket"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "view_incentives_per_employee"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "perform_incentives_per_employee"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "view_incentives_position"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "perform_incentives_position"], ["module" => "compensation"]);
 
         //reports modules
         Permission::updateOrCreate(["name" => "view_reports_module"], ["module" => "reports"]);

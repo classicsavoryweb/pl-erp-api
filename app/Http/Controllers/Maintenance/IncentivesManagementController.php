@@ -6,6 +6,7 @@ use App\Exports\Maintenance\IncentivesManagementExport;
 use App\Http\Controllers\Controller;
 use App\Models\IncentivesManagement;
 use App\Models\Employee;
+use App\Models\IncentivesPerEmployee;
 use Illuminate\Http\Request;
 use DB;
 use Exception;
@@ -102,6 +103,11 @@ class IncentivesManagementController extends Controller
             $clean = [];
             foreach (['amount', 'max_amount'] as $field) {
                 $clean[$field] = str_replace(',', '', $request->$field);
+            }
+
+            $perEmployee = IncentivesPerEmployee::where("employee_id", $employee->id)->first(); 
+            if ($perEmployee) {
+                $perEmployee->delete();
             }
 
             IncentivesManagement::create([
