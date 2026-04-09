@@ -204,7 +204,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             ];
 
             if (!$this->isResend) {
-                $this->createEntries($batchEntries, $userId);
+                $this->createEntries($batchEntries, $userId, $vendorHONo, $vendorHOName);
             }
         }
 
@@ -279,7 +279,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ];
 
                 if (!$this->isResend) {
-                    $this->createEntries($hoEntries, $userId);
+                    $this->createEntries($hoEntries, $userId, $vendorHONo, $vendorHOName);
                 }
             }
 
@@ -325,7 +325,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ];
 
                 if (!$this->isResend) {
-                    $this->createEntries($branchEntries, $userId);
+                    $this->createEntries($branchEntries, $userId, $vendorHONo, $vendorHOName);
                 }
             }
 
@@ -412,7 +412,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                         ]
                     ]);
     
-                    $this->createEntries($deductionEntry, $user->id);
+                    $this->createEntries($deductionEntry, $user->id, $vendorHONo, $vendorHOName);
                 }
 
             }            
@@ -425,7 +425,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
         }
     }
 
-    private function createEntries($entries, $userId)
+    private function createEntries($entries, $userId, ?string $apsysMainVendorNo = null, ?string $apsysMainVendorName = null)
     {
         foreach ($entries as $entry) {
 
@@ -482,8 +482,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             $entry = $groupedEntry->first();
             ApsysEntryMain::create([
                 'ent_tran_no'       => $mainId,
-                'ven_no'            => $entry['ven_no'],
-                'ven_name'          => $entry['ven_name'],
+                'ven_no'            => $apsysMainVendorNo ?? $entry['ven_no'],
+                'ven_name'          => $apsysMainVendorName ?? $entry['ven_name'],
                 'ent_doc_date'      => now(),
                 'branch_id'         => $entry['branch_number'],
                 'branch_name'       => $entry['branch_name'],
