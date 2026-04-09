@@ -407,6 +407,18 @@ class EmployeeController extends Controller
                 }
             }
 
+            if ($request->has("rank")) {
+                if (in_array($request->rank, ["management", "rank-file"])) {
+                    $rank = $request->rank == "management"
+                        ? 2
+                        : 1;
+
+                    $employees = $employees->whereHas("current_position", function ($query) use ($rank) {
+                        $query->where("rank", $rank);
+                    });
+                }
+            }
+
             if ($request->has("status")) {
                 $status = $request->status;
                 switch ($status) {
