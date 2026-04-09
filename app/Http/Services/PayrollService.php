@@ -461,13 +461,16 @@ class PayrollService {
         ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
         ->first();
 
-        $position = $employee->current_position;
         if ($firstTimeKeeping) {
             $position = Position::find($firstTimeKeeping->position_id);
         }
 
         if ($secondTimeKeeping) {
             $position = Position::find($secondTimeKeeping->position_id);
+        }
+
+        if (!$position) {
+            $position = $employee->current_position;
         }
 
         if ($position->rank == 1) {
@@ -512,10 +515,10 @@ class PayrollService {
         $undertime = 0;
         $absent = 0;
 
-        $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
-        if ($employee->oic_status == "OIC" && $incentivePosition) {
-            $additionalIncentive = $incentivePosition->oic_additional_amount;
-        }
+        // $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
+        // if ($employee->oic_status == "OIC" && $incentivePosition) {
+        //     $additionalIncentive = $incentivePosition->oic_additional_amount;
+        // }
 
         $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
         $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
@@ -566,6 +569,15 @@ class PayrollService {
         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
             $dailyIncentives = $incentivesAmount / 22; 
             $monthShouldBeWorkDays = 22;
+        }
+
+        $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
+        if ($employee->oic_status == "OIC" && $incentivePosition) {
+            $baseAdditional = $incentivePosition->oic_additional_amount;
+        
+            $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
+
+            $additionalIncentive = $additionalDailyRate * ($monthWorkedDays);
         }
 
         if ($employee->current_position->timekeeping_type == "Daily") {

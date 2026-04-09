@@ -30,7 +30,9 @@ class Incentives extends Model
         "second_cut_off_worked_days",
         "additional_days",
         "month",
-        "year"
+        "year",
+        "undertime",
+        "absent",
     ];
 
     public function employee() {

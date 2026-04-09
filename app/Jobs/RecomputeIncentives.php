@@ -84,17 +84,21 @@ class RecomputeIncentives implements ShouldQueue
                 $adjustmentPercent = 0;
                 $status = "initial";
 
-                $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
-                if ($employee->oic_status == "OIC" && $incentivePosition) {
-                    $additionalIncentive = $incentivePosition->oic_additional_amount;
-                }
-
                 $monthWorkedDays = $incentive->first_cut_off_worked_days + $incentive->second_cut_off_worked_days;
                 $monthShouldBeWorkDays = 26;
                 $dailyIncentives = $incentivesAmount / 26;
                 if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
                     $dailyIncentives = $incentivesAmount / 22; 
                     $monthShouldBeWorkDays = 22;
+                }
+
+                $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
+                if ($employee->oic_status == "OIC" && $incentivePosition) {
+                    $baseAdditional = $incentivePosition->oic_additional_amount;
+                
+                    $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
+
+                    $additionalIncentive = $additionalDailyRate * ($monthShouldBeWorkDays - $incentive->absent);
                 }
 
                 if ($employee->current_position->timekeeping_type == "Daily") {
@@ -134,8 +138,50 @@ class RecomputeIncentives implements ShouldQueue
                     }
                 }
 
+            // $undertimeDeductionDays =
+            // $incentive->adjustment_days -
+            // ($monthShouldBeWorkDays - ($incentive->first_cut_off_worked_days + $incentive->second_cut_off_worked_days));
+
+            // if ($undertimeDeductionDays > 0) {
+            //     $incentiveAmount -= ($undertimeDeductionDays * $dailyIncentives);
+            // }
+
+                if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
+                    $allowedUndertimePerMonth = 900; 
+                    $basisForDeduction = 240; 
+
+                    $excessiveUndertime = $incentive->undertime - $allowedUndertimePerMonth;
+
+                    if ($excessiveUndertime > 0) {
+                        $numberToDeduct = floor($excessiveUndertime / $basisForDeduction);
+
+                        if ($numberToDeduct > 0) {
+                            $amountToBeDeduct = $numberToDeduct * 0.5;
+                            $adjustmentDays += $amountToBeDeduct;
+
+                            $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
+
+                            $incentiveAmount -= $deductionAmount;
+                        }
+                    }       
+                } else {
+                    if ($incentive->undertime >= 240) {
+                        $basisForDeduction = 240;
+
+                        $numberToDeduct = floor($incentive->undertime / $basisForDeduction);
+
+                        if ($numberToDeduct > 0) {
+                            $amountToBeDeduct = $numberToDeduct * 0.5;
+                            $adjustmentDays += $amountToBeDeduct;
+
+                            $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
+
+                            $incentiveAmount -= $deductionAmount;
+                        }
+                    }
+                }
+
                 $incentiveAmount += $additionalIncentive;
-                
                 $incentive->update([
                     "employee_id" => $employeeId,
                     "position_id" => $positionId,
