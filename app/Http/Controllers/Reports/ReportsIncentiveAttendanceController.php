@@ -18,7 +18,11 @@ class ReportsIncentiveAttendanceController extends Controller
                 "year" => "required"
             ]);
 
-            $incentives = Incentives::with("employee", "employee.current_position")
+            $incentives = Incentives::with([
+                "employee",
+                "employee.current_position",
+                "employee.schedule.schedule_type",
+            ])
             ->where("month", $request->month)
             ->where("year", $request->year)
             ->get();
