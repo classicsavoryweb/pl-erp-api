@@ -515,11 +515,6 @@ class PayrollService {
         $undertime = 0;
         $absent = 0;
 
-        // $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
-        // if ($employee->oic_status == "OIC" && $incentivePosition) {
-        //     $additionalIncentive = $incentivePosition->oic_additional_amount;
-        // }
-
         $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
         $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
 
@@ -572,12 +567,18 @@ class PayrollService {
         }
 
         $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
-        if ($employee->oic_status == "OIC" && $incentivePosition) {
-            $baseAdditional = $incentivePosition->oic_additional_amount;
-        
-            $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
+        if ($incentivePosition) {
+            $incentivesAmount = $incentivePosition->amount;
 
-            $additionalIncentive = $additionalDailyRate * ($monthWorkedDays);
+            if ($employee->oic_status == "OIC") {
+                $baseAdditional = $incentivePosition->oic_additional_amount;
+                $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
+                $additionalIncentive = $additionalDailyRate * ($monthWorkedDays);
+
+                if ($additionalIncentive > $baseAdditional) {
+                    $additionalIncentive = $baseAdditional;
+                }
+            }
         }
 
         if ($employee->current_position->timekeeping_type == "Daily") {

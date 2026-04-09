@@ -94,12 +94,18 @@ class RecomputeIncentives implements ShouldQueue
                 }
 
                 $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
-                if ($employee->oic_status == "OIC" && $incentivePosition) {
-                    $baseAdditional = $incentivePosition->oic_additional_amount;
-                
-                    $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
+                if ($incentivePosition) {
+                    $incentivesAmount = $incentivePosition->amount;
 
-                    $additionalIncentive = $additionalDailyRate * ($monthShouldBeWorkDays - $incentive->absent);
+                    if ($employee->oic_status == "OIC") {
+                        $baseAdditional = $incentivePosition->oic_additional_amount;
+                        $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
+                        $additionalIncentive = $additionalDailyRate * ($monthShouldBeWorkDays - $incentive->absent);
+
+                        if ($additionalIncentive > $baseAdditional) {
+                            $additionalIncentive = $baseAdditional;
+                        }
+                    }
                 }
 
                 if ($employee->current_position->timekeeping_type == "Daily") {
@@ -138,14 +144,6 @@ class RecomputeIncentives implements ShouldQueue
                         $tardiness->save();
                     }
                 }
-
-            // $undertimeDeductionDays =
-            // $incentive->adjustment_days -
-            // ($monthShouldBeWorkDays - ($incentive->first_cut_off_worked_days + $incentive->second_cut_off_worked_days));
-
-            // if ($undertimeDeductionDays > 0) {
-            //     $incentiveAmount -= ($undertimeDeductionDays * $dailyIncentives);
-            // }
 
                 if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
                     $allowedUndertimePerMonth = 900; 
