@@ -17,6 +17,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Support\NotifiesJobStatus;
 use Exception;
+use Log;
 
 class RecomputeIncentives implements ShouldQueue
 {
@@ -157,8 +158,6 @@ class RecomputeIncentives implements ShouldQueue
 
                         if ($numberToDeduct > 0) {
                             $amountToBeDeduct = $numberToDeduct * 0.5;
-                            $adjustmentDays += $amountToBeDeduct;
-
                             $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
 
                             $incentiveAmount -= $deductionAmount;
@@ -172,8 +171,6 @@ class RecomputeIncentives implements ShouldQueue
 
                         if ($numberToDeduct > 0) {
                             $amountToBeDeduct = $numberToDeduct * 0.5;
-                            $adjustmentDays += $amountToBeDeduct;
-
                             $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
 
                             $incentiveAmount -= $deductionAmount;
@@ -197,6 +194,7 @@ class RecomputeIncentives implements ShouldQueue
 
             $this->notifyJobFinished();
         } catch (Exception $e) {
+            Log::info($e);
             $this->notifyJobFailed();
         }
     }
