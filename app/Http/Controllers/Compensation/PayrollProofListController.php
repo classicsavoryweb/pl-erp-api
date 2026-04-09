@@ -100,6 +100,8 @@ class PayrollProofListController extends Controller
                     'b.short_name',
                     'payroll_details.cancelled_off as cancelled_off_hours',
                     'payroll.cancelled_off as cancelled_off_amount',
+                    'payroll_details.special_leave as special_leave_days',
+                    'payroll.special_leave as special_leave_amount',
                     'p.description as position',
                     "bank_details.bank_number",
                     "bank_account_type.description as bank_account_type"
