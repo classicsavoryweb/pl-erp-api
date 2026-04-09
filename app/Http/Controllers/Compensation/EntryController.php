@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Compensation;
 use App\Exports\Compensation\EntryExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateEntry;
+use App\Models\Accounting\ApsysEntry;
+use App\Models\Accounting\ApsysEntryMain;
 use App\Models\Branch;
 use App\Models\Entry;
 use App\Models\Payroll;
@@ -18,6 +20,14 @@ use Str;
 
 class EntryController extends Controller
 {
+    private function cutoffAlreadySentToApsys(string $startDate, string $endDate): bool
+    {
+        $cutoffDocumentToken = $startDate . '-' . $endDate;
+
+        return ApsysEntryMain::where('ent_doc_no', 'like', "%{$cutoffDocumentToken}%")->exists()
+            || ApsysEntry::where('ent_doc_no', 'like', "%{$cutoffDocumentToken}%")->exists();
+    }
+
     private function getEntryBranchAliasGroups(): array
     {
         return [
@@ -302,6 +312,20 @@ class EntryController extends Controller
             $start_date = $request->date_from;
             $end_Date = $request->date_to;
             $sendToApsys = $request->boolean("send_to_apsys", true);
+
+            if ($sendToApsys) {
+                try {
+                    if ($this->cutoffAlreadySentToApsys($start_date, $end_Date)) {
+                        return $this->sendError([
+                            "message" => "This cutoff was already sent to APSYS. Please delete the existing APSYS entries first before sending again."
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    return $this->sendError([
+                        "message" => "Unable to verify existing APSYS entries for this cutoff. Please check the APSYS connection and try again."
+                    ]);
+                }
+            }
 
             GenerateEntry::dispatch($payroll, $pay_date, $start_date, $end_Date, Auth::user()->id, $sendToApsys);
 

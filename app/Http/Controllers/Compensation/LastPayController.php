@@ -37,6 +37,7 @@ class LastPayController extends Controller
             $lastPays = LastPay::with([
                 "employee",
                 "employee.current_branch",
+                "employee.current_position",
                 "deductions",
                 "deductions.deduction",
                 "employee.government_deductions",
