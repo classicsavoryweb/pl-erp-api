@@ -2,6 +2,7 @@
 
 namespace App\Exports\Reports;
 
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Illuminate\Database\Eloquent\Collection;
@@ -31,6 +32,7 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
                 $attendance->employee->employee_number,
                 $attendance->employee->full_name,
                 $attendance->employee->current_position->description,
+                Carbon::parse($attendance->employee->date_hired)->diffInMonths(Carbon::parse($attendance->created_at)),
                 $attendance->employee->oic_status,
                 $attendance->employee->current_position->rank,
                 $attendance->position->description,
@@ -56,6 +58,7 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
             'Employee Number',
             'Employee Name',
             'Current Position',
+            'Tenure',
             'OIC Status',
             "Current Rank",
             'Incentive Position',
