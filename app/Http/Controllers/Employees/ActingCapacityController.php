@@ -180,6 +180,11 @@ class ActingCapacityController extends Controller
             
             $employee = Employee::where("employee_number", $request->employee_number)->first();
 
+            $hasExisting = ActingCapacity::where("employee_id", $employee->id)->where("status", "Pending")->first();
+            if ($hasExisting) {
+                return $this->sendError(["message" => "Employee has pending acting record"]);
+            }
+
             $startDate = Carbon::parse($request->start_date);
             $endDate = Carbon::parse($request->end_date);
             $months = $startDate->diffInMonths($endDate);
