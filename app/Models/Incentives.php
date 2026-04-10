@@ -33,6 +33,8 @@ class Incentives extends Model
         "year",
         "undertime",
         "absent",
+        "base_additional_incentive",
+        "added_days"
     ];
 
     public function employee() {

@@ -48,6 +48,13 @@ class RecomputeIncentives implements ShouldQueue
             foreach ($incentives as $incentive) {
                 $position = $incentive->position;
                 $employee = $incentive->employee;
+                $incentivesAmount = 0;
+                $maxAmount = 0;
+                $payDate = $cutOff->pay_date;
+                $amountRate = 0;
+                $additionalIncentive = 0;
+                $adjustmentPercent = 0;
+                $dailyIncentives = 0;
 
                 if ($position->rank == 1) {
                     $months = Carbon::now()->diffInMonths($employee->date_hired);
@@ -77,7 +84,6 @@ class RecomputeIncentives implements ShouldQueue
 
                 $employeeId = $employee->id;
                 $positionId = $position->id;
-                $incentiveAmount = 0;
                 $maxAmount = $incentivesAmount;
                 $payDate = $cutOff->pay_date;
                 $amountRate = $incentivesAmount;
