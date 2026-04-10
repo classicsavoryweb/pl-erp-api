@@ -41,7 +41,7 @@ class RecomputeIncentives implements ShouldQueue
     {
         $cutOff = $this->cutOff;
         try {
-            $incentives = Incentives::with(["employee", "position"])
+            $incentives = Incentives::with(["employee.schedule.schedule_type", "position"])
             ->whereIn("pay_date", [$cutOff->end_date, $cutOff->pay_date])
             ->get();
 
