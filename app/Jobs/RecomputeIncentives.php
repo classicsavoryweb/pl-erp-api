@@ -95,11 +95,9 @@ class RecomputeIncentives implements ShouldQueue
 
                 $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
                 if ($incentivePosition) {
-                    if ($incentivesAmount < $incentivePosition->amount) {
-                        $incentivesAmount = $incentivePosition->amount;
-                        $amountRate = $incentivePosition->amount;
-                        $dailyIncentives = $incentivePosition->amount / $monthShouldBeWorkDays;
-                    }
+                    $incentivesAmount = $incentivePosition->amount;
+                    $amountRate = $incentivePosition->amount;
+                    $dailyIncentives = $incentivePosition->amount / $monthShouldBeWorkDays;
 
                     if ($employee->oic_status == "OIC") {
                         $baseAdditional = $incentivePosition->oic_additional_amount;
