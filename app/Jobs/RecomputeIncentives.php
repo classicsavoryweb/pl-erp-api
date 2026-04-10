@@ -59,8 +59,8 @@ class RecomputeIncentives implements ShouldQueue
                 if ($position->rank == 1) {
                     $months = Carbon::now()->diffInMonths($employee->date_hired);
                     $bracket = IncentivesBracket::whereRaw('CAST(month AS UNSIGNED) <= ?', [$months])
-                        ->whereHas('positions', function ($query) use ($employee) {
-                            $query->where('positions.id', $employee->position_id);
+                        ->whereHas('positions', function ($query) use ($position) {
+                            $query->where('positions.id', $position->id);
                         })
                         ->orderByRaw('CAST(month AS UNSIGNED) DESC')
                         ->first();
