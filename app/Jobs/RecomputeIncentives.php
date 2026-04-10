@@ -99,7 +99,7 @@ class RecomputeIncentives implements ShouldQueue
                     $amountRate = $incentivePosition->amount;
                     $dailyIncentives = $incentivePosition->amount / $monthShouldBeWorkDays;
 
-                    if ($employee->oic_status == "OIC") {
+                    if (trim($employee->oic_status) == "OIC") {
                         $baseAdditional = $incentivePosition->oic_additional_amount;
                         $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
                         $additionalIncentive = $additionalDailyRate * ($monthShouldBeWorkDays - $incentive->absent);
