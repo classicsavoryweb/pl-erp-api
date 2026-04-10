@@ -97,6 +97,7 @@ class RecomputeIncentives implements ShouldQueue
                 if ($incentivePosition) {
                     $incentivesAmount = $incentivePosition->amount;
                     $amountRate = $incentivePosition->amount;
+                    $maxAmount = $incentivePosition->amount;
                     $dailyIncentives = $incentivePosition->amount / $monthShouldBeWorkDays;
 
                     if (trim($employee->oic_status) == "OIC") {
@@ -114,6 +115,7 @@ class RecomputeIncentives implements ShouldQueue
                     $incentiveAmount = 0;
                     $amountRate = 0;
                     $dailyIncentives = 0;
+                    $maxAmount = 0;
                 }
 
                 if ($employee->current_position->timekeeping_type == "Daily") {

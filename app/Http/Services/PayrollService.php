@@ -569,6 +569,7 @@ class PayrollService {
         $incentivePosition = IncentivePosition::where("position_id", $positionId)->first();
         if ($incentivePosition) {
             $incentivesAmount = $incentivePosition->amount;
+            $maxAmount = $incentivePosition->amount;
             $amountRate = $incentivePosition->amount;
             $dailyIncentives = $incentivePosition->amount / $monthShouldBeWorkDays;
 
@@ -587,6 +588,7 @@ class PayrollService {
             $incentiveAmount = 0;
             $amountRate = 0;
             $dailyIncentives = 0;
+            $maxAmount = 0;
         }
 
         if ($employee->current_position->timekeeping_type == "Daily") {
