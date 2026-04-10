@@ -87,6 +87,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                     trim(($transaction->last_name ?? '') . ", " . ($transaction->first_name ?? '') . " " . ($transaction->middle_name ?? '')),
                     $transaction->position ?? '',
                     $transaction->employee_number ?? '',
+                    $transaction->amount_rate ?? '',
                     $transaction->adjustment_percent,
                     $transaction->additional_incentive,
                     $transaction->first_cut_off_worked_days,
@@ -155,11 +156,12 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                 "Full Name",
                 "Position",
                 "Employee Number",
+                "Base Amount",
                 "Adjustment Percent",
                 "Additional Incentive",
                 "1st Cut Off Worked Days",
                 "2nd Cut Off Worked Days",
-                "Amount",
+                "Final Incentive Amount",
             ];
         }
     }
