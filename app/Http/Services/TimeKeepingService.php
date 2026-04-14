@@ -1078,7 +1078,7 @@ class TimeKeepingService
                 if ($hasLogsOnHoliday && $employee->current_position->timekeeping_type === "Monthly") {
                     $shouldPay = true;
                 }
-                if ($holidaySchedule === "REST DAY") {
+                if (!$hasLogsOnHoliday && $holidaySchedule === "REST DAY") {
                     $shouldPay = false;
                 }
             } else { 
