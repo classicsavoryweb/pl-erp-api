@@ -16,6 +16,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Support\NotifiesJobStatus;
+use Illuminate\Support\Facades\Log;
 
 class ProcessInitializeCutOff implements ShouldQueue
 {
@@ -48,6 +49,7 @@ class ProcessInitializeCutOff implements ShouldQueue
         $history = json_decode($cutOff->initializations, true);
         $initializationDates = collect($history)
         ->pluck('initialized_at')
+        ->filter(fn($date) => !is_null($date))
         ->sortDesc()
         ->values();
         $datesArray = $initializationDates->toArray();
