@@ -993,6 +993,9 @@ class TimeKeepingService
         ->whereBetween("date", [$weekDateRange["start"], $weekDateRange["end"] ])
         ->where("employee_id", $employee->id)
         ->get();
+        $holidaySchedule = ScheduleTime::where("date", $date)
+        ->where("employee_id", $employee->id)
+        ->get();
 
         //head office
         if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
@@ -1074,6 +1077,9 @@ class TimeKeepingService
                 }
                 if ($hasLogsOnHoliday && $employee->current_position->timekeeping_type === "Monthly") {
                     $shouldPay = true;
+                }
+                if ($holidaySchedule === "REST DAY") {
+                    $shouldPay = false;
                 }
             } else { 
                 if ($hasHolidayLogs) {
