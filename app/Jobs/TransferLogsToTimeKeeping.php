@@ -26,6 +26,9 @@ class TransferLogsToTimeKeeping implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     use NotifiesJobStatus;
 
+    public $tries = 3;
+    public $timeout = 3600;
+
     protected $branchId;
     protected $cutOff;
     protected $timeKeepingService;
@@ -54,7 +57,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
 
     public function middleware() {
         return [
-            new WithoutOverlapping("timekeeping_branch_{$this->branchId}")
+            (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
+                ->shared()
+                ->releaseAfter(1200)
+                ->expireAfter(7200)
         ];
     }
 
