@@ -95,7 +95,11 @@ class PayrollController extends Controller
             if ($payroll) {
                 $payroll->details->undertime_minutes = json_decode($payroll->details->undertime_minutes) ?? [];
                 $payroll->details->tardiness_minutes = json_decode($payroll->details->tardiness_minutes) ?? [];
-                $payroll->deductions = json_decode($payroll->deductions) ?? [];
+
+                if (!is_array($payroll->deductions)) {
+                    $payroll->deductions = json_decode($payroll->deductions) ?? [];
+                }
+
                 $year = Carbon::parse($payroll->pay_date)->year;
 
                 $incentives = Incentives::where("employee_id", $payroll->employee_id)
