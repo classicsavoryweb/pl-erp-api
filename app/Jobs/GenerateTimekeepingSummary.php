@@ -235,6 +235,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ? round($daily_rate / 9.5, 2)
                 : round($daily_rate / 8, 2);
             $minute_rate = $hourly_rate / 60;
+            $absent = 0;
 
             if ($timeKeepings->count() > 0) {
                 foreach ($timeKeepings as $timeKeep) {
@@ -290,7 +291,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $actualWorkedDays += 1;
                     }
 
-                    if ($holiday && $holidayIsPaid && $schedule->selection === "NO SCHEDULE") {
+                    if ($holiday && $schedule->selection === "NO SCHEDULE") {
                         $shouldBeDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 5 : 6;
                         $weekRange = $this->timeKeepingService->getWeekRange($actualSchedule->date);
                         $holidayWeekTimeKeeping = TimeKeeping::whereBetween('date', $weekRange)
@@ -328,17 +329,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             }
                         }
 
-                        $convertToDays = false;
-
-                        if ($totalDays < $shouldBeDays) {
-                            $convertToDays = true;
-                        }
-
-                        if ($convertToDays && $timeKeepingType == "Monthly") {
-                            $regular_days += 1;
-                            $actualWorkedDays += 1;
+                        if ($totalDays < $shouldBeDays && $timeKeepingType == "Monthly") {
                             $holidayConvertedToDays = true;
                         }
+                    }
+
+                    if ($holidayConvertedToDays && $holidayIsPaid) {
+                        $regular_days += 1;
+                        $actualWorkedDays += 1;
                     }
 
                     if ($schedule->selection === "INCENTIVE LEAVE") {
@@ -423,6 +421,16 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     if ($timeKeep->travel_time > 0) {
                         $travel_time += (int) $timeKeep->travel_time;
                     }
+
+                    if (
+                        !$holidayIsPaid &&
+                        $holidayConvertedToDays &&
+                        $schedule->selection === "NO SCHEDULE" &&
+                        $employee->current_position->timekeeping_type === "Monthly" &&
+                        $holiday
+                    ) {
+                        $absent += 1;
+                    }
                 }
 
                 $isExisting = TimeKeepingSummary::where("cut_off", $cutOff['start_time']."-".$cutOff['end_time'])
@@ -439,7 +447,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 ->get();
 
                 $overRideAttendance = $regular_days;
-                if ($this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules)) {
+
+                if (
+                    $this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules) &&
+                    $absent == 0
+                ) {
                     $workDays = 0;
 
                     $schedules->each(function ($schedule) use (&$workDays) {
@@ -469,8 +481,6 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
                     
                 } else {
-                    $absent = 0;
-
                     $restDays = $schedules->filter(function ($schedule) {
                         return in_array($schedule->timetable, ["REST DAY"]);
                     });
