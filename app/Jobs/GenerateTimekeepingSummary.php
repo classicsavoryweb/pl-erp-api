@@ -571,10 +571,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 $deductions = $this->timeKeepingService->deductPreviousPaidHoliday($cutOff, $employee);
                 $remarks = "";
                 if (
-                    $deductions['special_holiday_hours_deduction'] > 0 ||
-                    $deductions['special_holiday_overtime_deduction'] > 0 ||
-                    $deductions['legal_holiday_hours_deduction'] > 0 ||
-                    $deductions['legal_holiday_overtime_deduction'] > 0
+                    (
+                        $deductions['special_holiday_hours_deduction'] > 0 ||
+                        $deductions['special_holiday_overtime_deduction'] > 0 ||
+                        $deductions['legal_holiday_hours_deduction'] > 0 ||
+                        $deductions['legal_holiday_overtime_deduction'] > 0
+                    )
+                    &&
+                    $employee->schedule->schedule_type->name === "Compressed Schedule"
                 ) {
                     $special_holiday -= $deductions['special_holiday_hours_deduction'];
                     $special_holiday_overtime -= $deductions['special_holiday_overtime_deduction'];
