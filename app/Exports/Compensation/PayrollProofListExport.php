@@ -116,6 +116,7 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                 "Hourly Rate",
                 "Status",
                 "Regular Days",
+                "Special Leave",
                 "Salary",
                 "Cancelled Off Hours",
                 "Cancelled Off Amount",
