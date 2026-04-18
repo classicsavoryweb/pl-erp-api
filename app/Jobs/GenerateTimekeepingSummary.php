@@ -208,9 +208,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
             }
 
-            $timeKeepings = TimeKeeping::where("employee_id", $employee->id)
-            ->whereBetween("date", $cutOff)
-            ->orderBy("date", "ASC")
+            $timeKeepings = TimeKeeping::select("time_keeping.*", "schedule_time.timetable")
+            ->join("schedule_time", "time_keeping.schedule_time_id", "=", "schedule_time.id")
+            ->where("time_keeping.employee_id", $employee->id)
+            ->whereBetween("time_keeping.date", $cutOff)
+            ->orderBy("time_keeping.date", "ASC")
             ->get();
 
             $actualWorkedDays = 0;
@@ -291,9 +293,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         $actualWorkedDays += 1;
                     }
 
+                    $weekRange = $this->timeKeepingService->getWeekRange($actualSchedule->date);
+
                     if ($holiday && $schedule->selection === "NO SCHEDULE") {
                         $shouldBeDays = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 5 : 6;
-                        $weekRange = $this->timeKeepingService->getWeekRange($actualSchedule->date);
                         $holidayWeekTimeKeeping = TimeKeeping::whereBetween('date', $weekRange)
                         ->where('employee_id', $employee->id)
                         ->where(function ($query) {
@@ -302,6 +305,13 @@ class GenerateTimekeepingSummary implements ShouldQueue
                                 $q->whereIn("timetable", ["LEAVE", "INCENTIVE LEAVE"]);
                             });
                         })
+                        ->get();
+
+                        $arr = $employee->schedule->schedule_type->name === "Compressed Schedule"
+                            ? ["REST DAY", "NO SCHEDULE"]
+                            : ["REST DAY"];
+                        $weekSchedules = ScheduleTime::whereBetween('date', $weekRange)
+                        ->where('employee_id', $employee->id)
                         ->get();
 
                         $holidays = TimeKeeping::whereBetween('date', $weekRange)
@@ -328,8 +338,12 @@ class GenerateTimekeepingSummary implements ShouldQueue
                                 $totalDays = $totalDays + $holidayIdx;
                             }
                         }
-
-                        if ($totalDays < $shouldBeDays && $timeKeepingType == "Monthly") {
+                        
+                        if (
+                            $weekSchedules->count() == 7 &&
+                            $totalDays < $shouldBeDays &&
+                            $timeKeepingType == "Monthly"
+                        ) {
                             $holidayConvertedToDays = true;
                         }
                     }
