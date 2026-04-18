@@ -523,7 +523,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             ->where("employee_id", $employee->id)
                             ->first();
 
-                            if ($sched->timetable == "NO SCHEDULE" && ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "No")) {
+                            if ($timeKeeping && $sched->timetable == "NO SCHEDULE" && ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "No")) {
                                 continue;
                             }
 
@@ -705,7 +705,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
             $this->notifyJobFinished();
         } catch (Exception $e) {
-            Log::info($e->getMessage());
+            Log::info($e);
             $this->notifyJobFailed();
         }
     }
