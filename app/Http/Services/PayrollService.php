@@ -313,19 +313,26 @@ class PayrollService {
         ];
 
         if ($part == 1) {
-            $shares['ee'] = round($sss->employee_ss, 2);
-            $shares['er'] = round($sss->employer_ss + $sss->employer_cc, 2);
+            if ($sss) {
+                $shares['ee'] = round($sss->employee_ss, 2);
+                $shares['er'] = round($sss->employer_ss + $sss->employer_cc, 2);
+            }
         } else {
             if ($firstPayroll) {
                 $totalGross = $grossPay + $firstPayroll->gross_pay;
                 $sss = SSS::where('salary_range_min', '<=', $totalGross)
                 ->where('salary_range_max', '>=', $totalGross)
                 ->first();
-                $shares['ee'] = round($sss->employee_ss - $firstPayroll->employee_sss, 2);
-                $shares['er'] = round(($sss->employer_ss + $sss->employer_cc) - $firstPayroll->employer_sss, 2);
+
+                if ($sss) {
+                    $shares['ee'] = round($sss->employee_ss - $firstPayroll->employee_sss, 2);
+                    $shares['er'] = round(($sss->employer_ss + $sss->employer_cc) - $firstPayroll->employer_sss, 2);
+                }
             } else {
-                $shares['ee'] = round($sss->employee_ss, 2);
-                $shares['er'] = round($sss->employer_ss + $sss->employer_cc, 2);
+                if ($sss) {
+                    $shares['ee'] = round($sss->employee_ss, 2);
+                    $shares['er'] = round($sss->employer_ss + $sss->employer_cc, 2);
+                }
             }
         }
 
@@ -343,11 +350,13 @@ class PayrollService {
         ];
 
         if ($part == 1) {
-            $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
-            $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
-
-            $shares['ee'] = round($pagibigAmount, 2);
-            $shares['er'] = round($pagibigAmount, 2);
+            if ($pagibig) {
+                $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+                $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+    
+                $shares['ee'] = round($pagibigAmount, 2);
+                $shares['er'] = round($pagibigAmount, 2);
+            }
         } else {
             if ($firstPayroll) {
                 $totalBasic = $basicSalary + $firstPayroll->salary - ($firstPayroll->tardiness_amount + $firstPayroll->undertime_amount);
@@ -355,19 +364,23 @@ class PayrollService {
                 ->where('max_amount', '>=', $totalBasic)
                 ->first();
 
-                $pagibigShares = $totalBasic * (0.01 * $pagibig->percentage);
-                $pagibigAmount = $pagibigShares > 49.99
-                    ? $pagibig->max_deduction - $firstPayroll->employee_pagibig
-                    : $pagibigShares - $firstPayroll->employee_pagibig;
-
-                $shares['ee'] = round($pagibigAmount, 2);
-                $shares['er'] = round($pagibigAmount, 2);
+                if ($pagibig) {
+                    $pagibigShares = $totalBasic * (0.01 * $pagibig->percentage);
+                    $pagibigAmount = $pagibigShares > 49.99
+                        ? $pagibig->max_deduction - $firstPayroll->employee_pagibig
+                        : $pagibigShares - $firstPayroll->employee_pagibig;
+    
+                    $shares['ee'] = round($pagibigAmount, 2);
+                    $shares['er'] = round($pagibigAmount, 2);
+                }
             } else {
-                $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
-                $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction: $pagibigShares;
-
-                $shares['ee'] = round($pagibigAmount, 2);
-                $shares['er'] = round($pagibigAmount, 2);
+                if ($pagibig) {
+                    $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
+                    $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction: $pagibigShares;
+    
+                    $shares['ee'] = round($pagibigAmount, 2);
+                    $shares['er'] = round($pagibigAmount, 2);
+                }
             }
         }
 
@@ -392,7 +405,7 @@ class PayrollService {
 
             $philHealthAmount = round(($philHealthBaseAmount / 2), 2);
 
-            if ($philHealthAmount < 0) {
+            if ($basicSalary <= 0 || $philHealthAmount < 0) {
                 $philHealthAmount = 0;
             }
 
@@ -413,7 +426,7 @@ class PayrollService {
                 $totalPhilhealthAmount = round(($philHealthBaseAmount - ($firstPayroll->employee_philhealth + $firstPayroll->employer_philhealth)), 2);
                 $philHealthAmount = round(($totalPhilhealthAmount / 2), 2);
 
-                if ($philHealthAmount < 0) {
+                if ($basicSalary <= 0 || $philHealthAmount < 0) {
                     $philHealthAmount = 0;
                 }
 
@@ -429,7 +442,7 @@ class PayrollService {
 
                 $philHealthAmount = round(($philHealthBaseAmount / 2), 2);
 
-                if ($philHealthAmount < 0) {
+                if ($basicSalary <= 0 || $philHealthAmount < 0) {
                     $philHealthAmount = 0;
                 }
 
