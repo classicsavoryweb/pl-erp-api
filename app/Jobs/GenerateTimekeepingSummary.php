@@ -613,7 +613,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $remarks = "Retracted holiday hours from previous cutoff: " . $dateString;
                 }
 
-                if ($regular_days < 0) {
+                if ($regular_days <= 0) {
                     $regular_days = 0;
                     $special_leave = 0;
                     $cancelled_off = 0;
