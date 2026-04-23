@@ -291,6 +291,8 @@ class PayrollController extends Controller
                 $details->employee_philhealth = $request->employee_philhealth;
                 $details->employer_philhealth = $request->employer_philhealth;
                 $details->withholding_tax = $request->withholding_tax;
+                $details->reload_deductions = $request->reload_deductions;
+                $details->remarks = $request->remarks;
 
                 $newTardiness = 0;
                 $newUndertime = 0;
@@ -339,7 +341,8 @@ class PayrollController extends Controller
                             "is_manual_statutory_entry" => $request->is_manual_statutory_entry,
                             "is_complete_documents" => $request->is_complete_documents,
                             "undertime_minutes" => json_encode($request->undertime_minutes),
-                            "tardiness_minutes" => json_encode($request->tardiness_minutes)
+                            "tardiness_minutes" => json_encode($request->tardiness_minutes),
+                            "remarks" => $request->remarks
                         ]);
 
                         Payroll::where("id", $payroll->id)
@@ -376,6 +379,7 @@ class PayrollController extends Controller
                             "status" => "initial",
                             "special_leave" => $payrollComp->special_leave,
                             "timekeeping_branch_id" => $request->timekeeping_branch_id,
+                            "remarks" => $request->remarks
                         ]);
                     }
                     return $this->sendResponse($payroll);
