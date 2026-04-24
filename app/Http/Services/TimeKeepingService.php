@@ -1057,10 +1057,10 @@ class TimeKeepingService
             $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
             $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
             $hasLogsOnHoliday = BiotimeLog::where("date", $holidayDate->toDateString())->where("employee_id", $employee->id)->first();
-            $shouldPay = true;
+            $shouldPay = false;
 
             if ($holiday->holiday_type == "LH") {
-                if ($previousDateSchedule) {
+                if ($previousDateSchedule && !$hasLogsOnHoliday) {
                     while ($previousDateSchedule->timetable === "REST DAY") {
                         $currentDate = Carbon::parse($previousDate);
                         $previousDate = $currentDate->copy()->subDay()->toDateString();
@@ -1068,20 +1068,14 @@ class TimeKeepingService
                         $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
                     }
                 }
-                if (!$hasLog && $employee->current_position->timekeeping_type === "Monthly") {
-                    $shouldPay = false;
-                }
                 if ($previousDateSchedule && $previousDateSchedule->timetable === "INCENTIVE LEAVE") {
                     $shouldPay = true;
                 }
-                if ($previousDateSchedule && $previousDateSchedule->timetable === "NO SCHEDULE") {
+                if ($previousDateSchedule && $hasLog) {
                     $shouldPay = true;
                 }
-                if ($hasLogsOnHoliday && $employee->current_position->timekeeping_type === "Monthly") {
+                if ($hasLogsOnHoliday) {
                     $shouldPay = true;
-                }
-                if (!$hasLogsOnHoliday && $holidaySchedule->timetable === "REST DAY") {
-                    $shouldPay = false;
                 }
             } else { 
                 if ($hasHolidayLogs) {
