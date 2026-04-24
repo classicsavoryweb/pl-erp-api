@@ -546,17 +546,17 @@ class TimeKeepingService
                 $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
 
-            if ($holiday && $legalHoliday === "Yes") {
-                $legalHolidayHours = $totalHolidayWorkedHours;
-                $legalHolidayOvertime = $overtime;
-                $overtime = 0;
-            }
+            // if ($overtime >= 1 && $holiday && $legalHoliday === "Yes") {
+            //     $legalHolidayHours = $totalHolidayWorkedHours;
+            //     $legalHolidayOvertime = $overtime;
+            //     $overtime = 0;
+            // }
 
-            if ($holiday && $specialHoliday === "Yes") {
-                $specialHolidayHours = $totalHolidayWorkedHours;
-                $specialHolidayOvertime = $overtime;
-                $overtime = 0;
-            }
+            // if ($overtime >= 1 && $holiday && $specialHoliday === "Yes") {
+            //     $specialHolidayHours = $totalHolidayWorkedHours;
+            //     $specialHolidayOvertime = $overtime;
+            //     $overtime = 0;
+            // }
         }
 
         if ($biotimePunches->count() > 1) {
@@ -1060,11 +1060,13 @@ class TimeKeepingService
             $shouldPay = true;
 
             if ($holiday->holiday_type == "LH") {
-                while ($previousDateSchedule->timetable === "REST DAY") {
-                    $currentDate = Carbon::parse($previousDate);
-                    $previousDate = $currentDate->copy()->subDay()->toDateString();
-                    $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
-                    $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+                if ($previousDateSchedule) {
+                    while ($previousDateSchedule->timetable === "REST DAY") {
+                        $currentDate = Carbon::parse($previousDate);
+                        $previousDate = $currentDate->copy()->subDay()->toDateString();
+                        $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+                        $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+                    }
                 }
                 if (!$hasLog && $employee->current_position->timekeeping_type === "Monthly") {
                     $shouldPay = false;
