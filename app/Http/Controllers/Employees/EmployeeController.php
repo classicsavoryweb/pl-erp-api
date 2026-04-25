@@ -14,6 +14,7 @@ use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
+use App\Models\Region;
 use App\Models\ScheduleDetail;
 use App\Models\ScheduleType;
 use Carbon\Carbon;
@@ -74,7 +75,7 @@ class EmployeeController extends Controller
             );
 
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
-            $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave"]);
+            $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave", "region"]);
             $position = Position::find($request->position_id);
             $biometricsNumber = "";
 
@@ -99,12 +100,18 @@ class EmployeeController extends Controller
                 $employeeNumber2 = $company."-".$agency->name."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             }
 
+            $region = null;
+            if ($request->has("region")) {
+                $region = Region::where("name", $request->region)->value("description") ?? $request->region;
+            }
+
             $employee = Employee::create([
                 "employee_number" => $employeeNumber,
                 "employee_number_2" => $employeeNumber2,
                 "employee_status_id" => $pendingStatus->id,
                 "station_id" => $position->station_id,
                 "biometric_number" => $biometricsNumber,
+                "region" => $region,
                 ...$fields
             ]);
 
