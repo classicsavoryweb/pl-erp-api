@@ -66,7 +66,7 @@ class GenerateEntry implements ShouldQueue
             }
         }
 
-        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function generateApsysEntryId(&$counterApsysEntry)
@@ -86,7 +86,7 @@ class GenerateEntry implements ShouldQueue
             }
         }
 
-        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function generateApsysEntryMainId(&$counterApsysEntryMain)
@@ -106,7 +106,7 @@ class GenerateEntry implements ShouldQueue
             }
         }
 
-        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function normalizePayrollDeductions($deductions): array
@@ -1216,7 +1216,7 @@ class GenerateEntry implements ShouldQueue
                     $query->select('employee_id')
                         ->from('payroll_list')
                         ->where('is_bank', 0)
-                        ->where('is_hold', 1);
+                        ->orWhere('is_hold', 1);
                 })
                 ->exists() ? 1 : 0;
 
@@ -2095,7 +2095,7 @@ class GenerateEntry implements ShouldQueue
                         $vendorHONo,
                         $vendorHOName,
                         $payrollBranch,
-                        $isPayrollEmployeeCashOnHold ? 1 : 0,
+                        0,
                         $payrollBranch->branch_number != "SFI00001"
                     );
                 }
@@ -3249,7 +3249,7 @@ class GenerateEntry implements ShouldQueue
                         $vendorHONo,
                         $vendorHOName,
                         $payrollBranch,
-                        $isPayrollEmployeeCashOnHold ? 1 : 0
+                        0
                     );
                 }
 
@@ -3376,15 +3376,19 @@ class GenerateEntry implements ShouldQueue
                         $cashPayrollVendorName
                     );
 
+                        //                     $eeSSSDebit,
+                        // $eeSSSVendor,
+                        // $eeSSSVendorName,
+                        // $eeSSSCredit,
                     $cashEmployerSss = $this->parseMoneyValue($payrollCash->employer_sss);
                     if (!$isHeadOfficeBranch) {
                         $this->appendCashDualContributionEntries(
                             $entries,
                             $cashEmployerSss,
                             'Employer SSS Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
-                            $payrollBranch->advance_debit,
+                            $erSSSVendor,
+                            $erSSSVendorName,
+                            $erSSSDebit,
                             $erSSSCredit,
                             $branchShortName . '|' . $start_date . '-' . $end_date,
                             $branchHOId,
@@ -3437,9 +3441,9 @@ class GenerateEntry implements ShouldQueue
                             $entries,
                             $cashEmployerPh,
                             'Employer Philhealth Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
-                            $payrollBranch->advance_debit,
+                            $erPhilHealthVendor,
+                            $erPhilHealthVendorName,
+                            $erPhilHealthDebit,
                             $erPhilHealthCredit,
                             $branchShortName . '|' . $start_date . '-' . $end_date,
                             $branchHOId,
@@ -3492,9 +3496,9 @@ class GenerateEntry implements ShouldQueue
                             $entries,
                             $cashEmployerPagibig,
                             'Employer Pag-Ibig Contribution',
-                            $sourceVendorNo,
-                            $sourceVendorName,
-                            $payrollBranch->advance_debit,
+                            $erPagibigVendor,
+                            $erPagibigVendorName,
+                            $erPagibigDebit,
                             $erPagibigCredit,
                             $branchShortName . '|' . $start_date . '-' . $end_date,
                             $branchHOId,

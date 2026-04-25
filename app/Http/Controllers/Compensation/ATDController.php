@@ -65,7 +65,7 @@ class ATDController extends Controller
             }
         }
 
-        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function generateApsysEntryId(&$counterApsysEntry)
@@ -81,7 +81,7 @@ class ATDController extends Controller
             }
         }
 
-        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function generateApsysEntryMainId(&$counterApsysEntryMain)
@@ -97,7 +97,7 @@ class ATDController extends Controller
             }
         }
 
-        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     public function getAllEmployeeDeductions(Request $request) {
