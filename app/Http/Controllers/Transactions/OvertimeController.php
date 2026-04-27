@@ -9,6 +9,7 @@ use App\Models\TimeKeepingPayment;
 use Illuminate\Http\Request;
 use App\Exports\Transactions\OvertimeExport;
 use App\Jobs\FetchOvertimeJob;
+use App\Jobs\GenerateTimekeepingSummary;
 use App\Jobs\ProcessOvertimeImport;
 use App\Models\Adjustment;
 use App\Models\AdjustmentPunch;
@@ -25,6 +26,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Models\Branch;
+use App\Models\Cutoff;
 use App\Models\ScheduleTime;
 
 class OvertimeController extends Controller
@@ -313,13 +315,6 @@ class OvertimeController extends Controller
                 $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday ?? null;
                 $adjustedTimeKeeping->save();
 
-                $holidayIsPaid = $this->timeKeepingService->determinePaidHoliday(
-                    $timeKeeping->date,
-                    $employee,
-                    $timeKeeping->branch_id
-                );
-                $adjustedTimeKeeping->paid_holiday = $holidayIsPaid ? "Yes" : "No";
-
                 $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                     $adjustedTimeKeeping,
                     true
@@ -340,6 +335,7 @@ class OvertimeController extends Controller
                     "actual_schedule" => $schedule->timetable,
                     "type" => "Overtime Force Adjustments",
                     "status" => "Approved",
+                    "is_timekeeping_locked" => false,
                     "added_by" => Auth::user()->id,
                     "added_at" => now(),
                 ]);
@@ -352,6 +348,25 @@ class OvertimeController extends Controller
                         "date" => $timeKeeping->date,
                         "branch_id" => $punch->branch_id ?? null
                     ]);
+                }
+
+                $activeCutOff = Cutoff::where("status", "active")->first();
+                $currentTimeKeeping = TimeKeeping::whereBetween("date", [$activeCutOff->start_date, $activeCutOff->end_date])
+                ->where("employee_id", $employee->id)
+                ->first();
+
+                if ($currentTimeKeeping) {
+                    GenerateTimekeepingSummary::dispatchSync(
+                        $currentTimeKeeping->branch_id,
+                        [
+                            "start_time" => $activeCutOff->start_date, 
+                            "end_time" => $activeCutOff->end_date
+                        ],
+                        Auth::id(),
+                        $currentTimeKeeping->employee_id,
+                        "Timekeeping added taxable adjustment",
+                        true
+                    );
                 }
 
                 DB::commit();
@@ -416,8 +431,16 @@ class OvertimeController extends Controller
             ->where("status", "Unpaid")
             ->get();
 
+            $grouped = $overtimes->groupBy('employee_id');
             foreach ($overtimes as $overtime) {
                 $employee = $overtime->employee;
+
+                // $isExisting = $overtimes->contains(function ($ot) use ($employee) {
+                //     return $ot->employee_id == $employee->id;
+                // });
+                // if ($isExisting) {
+                //     $groupedOT[] = $overtime;
+                // }
 
                 $timeKeeping = TimeKeeping::where("employee_id", $employee->id)
                 ->where("date", $overtime->overtime_date)
@@ -443,19 +466,13 @@ class OvertimeController extends Controller
                         "force adjustment"
                     );
 
-                    $holidayIsPaid = $this->timeKeepingService->determinePaidHoliday(
-                        $timeKeeping->date,
-                        $employee,
-                        $timeKeeping->branch_id
-                    );
-                    $adjustedTimeKeeping->paid_holiday = $holidayIsPaid ? "Yes" : "No";
+                    $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday ?? null;
+                    $adjustedTimeKeeping->save();
 
                     $adjustedTimeKeepingPayment = $this->timeKeepingService->computePayment(
                         $adjustedTimeKeeping,
                         true
                     );
-                    $adjustedTimeKeeping->paid_holiday = $timeKeeping->paid_holiday ?? null;
-                    $adjustedTimeKeeping->save();
 
                     $taxable_amount = $adjustedTimeKeepingPayment->total_amount - ($oldtimeKeepingPayment->total_amount ?? 0);
                     $amount_paid = $oldtimeKeepingPayment->total_amount ?? 0;
@@ -471,6 +488,7 @@ class OvertimeController extends Controller
                         "correct_amount_paid" => round($adjustedTimeKeepingPayment->total_amount, 2),
                         "actual_schedule" => $schedule->timetable,
                         "type" => "Overtime Force Adjustments",
+                        "is_timekeeping_locked" => false,
                         "status" => "Approved",
                         "added_by" => Auth::user()->id,
                         "added_at" => now(),
@@ -484,6 +502,29 @@ class OvertimeController extends Controller
                             "date" => $timeKeeping->date,
                             "branch_id" => $punch->branch_id ?? null
                         ]);
+                    }
+                }
+            }
+
+            if ($overtimes->isNotEmpty() && $grouped->isNotEmpty()) {
+                $activeCutOff = Cutoff::where("status", "active")->first();
+                foreach ($grouped as $employeeId => $ot) {
+                    $currentTimeKeeping = TimeKeeping::whereBetween("date", [$activeCutOff->start_date, $activeCutOff->end_date])
+                    ->where("employee_id", $employeeId)
+                    ->first();
+
+                    if ($currentTimeKeeping) {
+                        GenerateTimekeepingSummary::dispatchSync(
+                            $currentTimeKeeping->branch_id,
+                            [
+                                "start_time" => $activeCutOff->start_date, 
+                                "end_time" => $activeCutOff->end_date
+                            ],
+                            Auth::id(),
+                            $currentTimeKeeping->employee_id,
+                            "Timekeeping added taxable adjustment",
+                            true
+                        );
                     }
                 }
             }

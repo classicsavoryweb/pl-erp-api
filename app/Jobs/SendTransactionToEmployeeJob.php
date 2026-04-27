@@ -58,7 +58,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             }
         }
 
-        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function generateApsysEntryId(&$counterApsysEntry)
@@ -74,7 +74,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             }
         }
 
-        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function generateApsysEntryMainId(&$counterApsysEntryMain)
@@ -90,7 +90,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             }
         }
 
-        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     /**

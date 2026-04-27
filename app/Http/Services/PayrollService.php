@@ -62,7 +62,7 @@ class PayrollService {
             $netPayAmount = 0;
             $totalDeductions = 0;
             $manualDeductions = 0;
-            $remarks = null;
+            $remarks = $payrollDetails->remarks ?? null;
             $specialLeave = 0;
             $taxableIncome = 0;
 
@@ -98,7 +98,7 @@ class PayrollService {
                 $payrollDetails->is_mancom == 0 &&
                 $payrollDetails->is_on_maternity_leave == 0
             ) {
-                if (!$existingPayroll || $existingPayroll->net_pay <= 0) {
+                if (!$existingPayroll || $existingPayroll->net_pay <= 0 || $payrollDetails->reload_deductions) {
                     $employeeDeductions = EmployeeDeduction::with(["deduction"])
                     ->where("employee_id", $employee->id)
                     ->where("balance", ">", 0.01)

@@ -546,17 +546,17 @@ class TimeKeepingService
                 $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
 
-            if ($holiday && $legalHoliday === "Yes") {
-                $legalHolidayHours = $totalHolidayWorkedHours;
-                $legalHolidayOvertime = $overtime;
-                $overtime = 0;
-            }
+            // if ($overtime >= 1 && $holiday && $legalHoliday === "Yes") {
+            //     $legalHolidayHours = $totalHolidayWorkedHours;
+            //     $legalHolidayOvertime = $overtime;
+            //     $overtime = 0;
+            // }
 
-            if ($holiday && $specialHoliday === "Yes") {
-                $specialHolidayHours = $totalHolidayWorkedHours;
-                $specialHolidayOvertime = $overtime;
-                $overtime = 0;
-            }
+            // if ($overtime >= 1 && $holiday && $specialHoliday === "Yes") {
+            //     $specialHolidayHours = $totalHolidayWorkedHours;
+            //     $specialHolidayOvertime = $overtime;
+            //     $overtime = 0;
+            // }
         }
 
         if ($biotimePunches->count() > 1) {
@@ -1057,29 +1057,32 @@ class TimeKeepingService
             $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
             $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
             $hasLogsOnHoliday = BiotimeLog::where("date", $holidayDate->toDateString())->where("employee_id", $employee->id)->first();
-            $shouldPay = true;
+            $shouldPay = false;
 
             if ($holiday->holiday_type == "LH") {
-                while ($previousDateSchedule->timetable === "REST DAY") {
-                    $currentDate = Carbon::parse($previousDate);
-                    $previousDate = $currentDate->copy()->subDay()->toDateString();
-                    $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
-                    $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
-                }
-                if (!$hasLog && $employee->current_position->timekeeping_type === "Monthly") {
-                    $shouldPay = false;
+                if ($previousDateSchedule && !$hasLogsOnHoliday) {
+                    while ($previousDateSchedule->timetable === "REST DAY") {
+                        $currentDate = Carbon::parse($previousDate);
+                        $previousDate = $currentDate->copy()->subDay()->toDateString();
+                        $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+                        $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+                    }
                 }
                 if ($previousDateSchedule && $previousDateSchedule->timetable === "INCENTIVE LEAVE") {
                     $shouldPay = true;
                 }
-                if ($previousDateSchedule && $previousDateSchedule->timetable === "NO SCHEDULE") {
+                if ($previousDateSchedule && $hasLog) {
                     $shouldPay = true;
                 }
-                if ($hasLogsOnHoliday && $employee->current_position->timekeeping_type === "Monthly") {
-                    $shouldPay = true;
-                }
-                if (!$hasLogsOnHoliday && $holidaySchedule->timetable === "REST DAY") {
+                if (
+                    !$hasLogsOnHoliday &&
+                    $holidaySchedule->timetable === "REST DAY" &&
+                    $employee->current_position->timekeeping_type === "Monthly"
+                ) {
                     $shouldPay = false;
+                }
+                if ($hasLogsOnHoliday) {
+                    $shouldPay = true;
                 }
             } else { 
                 if ($hasHolidayLogs) {

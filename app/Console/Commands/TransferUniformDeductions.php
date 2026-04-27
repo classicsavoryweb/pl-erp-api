@@ -170,7 +170,7 @@ class TransferUniformDeductions extends Command
             }
         }
 
-        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterEntry++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function generateApsysEntryId(&$counterApsysEntry)
@@ -186,7 +186,7 @@ class TransferUniformDeductions extends Command
             }
         }
 
-        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterApsysEntry++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function generateApsysEntryMainId(&$counterApsysEntryMain)
@@ -202,7 +202,7 @@ class TransferUniformDeductions extends Command
             }
         }
 
-        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT);
+        return 'PSD' . str_pad($counterApsysEntryMain++, 8, '0', STR_PAD_LEFT)."-ERP";
     }
 
     private function createEntries($entries)

@@ -110,6 +110,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
             ->format("Y-m-d");
 
             foreach ($employees as $employee) {
+                Log::info("=========================");
+                Log::info($employee->full_name);
             $adjustmentRemarks = "";
 
             if ($employee->type === "Agency") {
@@ -466,6 +468,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $this->timeKeepingService->isCompleteAttendanceThisCutOff($employee, $schedules) &&
                     $absent == 0
                 ) {
+
+                    Log::info("COMPLETE ATTENDANCE");
+                    Log::info($actualWorkedDays);
                     $workDays = 0;
 
                     $schedules->each(function ($schedule) use (&$workDays) {
@@ -523,7 +528,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             ->where("employee_id", $employee->id)
                             ->first();
 
-                            if ($timeKeeping && $sched->timetable == "NO SCHEDULE" && ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "No")) {
+                            if ($timeKeeping && $sched->timetable == "NO SCHEDULE" && ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes")) {
                                 continue;
                             }
 
@@ -613,7 +618,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $remarks = "Retracted holiday hours from previous cutoff: " . $dateString;
                 }
 
-                if ($regular_days < 0) {
+                if ($regular_days <= 0) {
                     $regular_days = 0;
                     $special_leave = 0;
                     $cancelled_off = 0;

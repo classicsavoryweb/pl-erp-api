@@ -55,7 +55,12 @@ class ProcessFinalizeCutOff implements ShouldQueue
                     "status" => "final",
                 ]);
 
-                $deductions = $payroll->deductions;
+                $deductions = $payroll->deductions ?? [];
+
+                if (!is_array($payroll->deductions)) {
+                    $deductions = json_decode($payroll->deductions) ?? [];
+                }
+
                 $adjustments = Adjustment::where("employee_id", $payroll->employee_id)
                 ->where("is_timekeeping_locked", "0")
                 ->get();
