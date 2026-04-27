@@ -34,9 +34,18 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_positions"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_branches"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_region"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_branches"], ["module" => "maintenance"]);
+        $legacyPerformBranches = Permission::where("name", "perform_branches")->first();
+        $createBranches = Permission::updateOrCreate(["name" => "create_branches"], ["module" => "maintenance"]);
+        if ($legacyPerformBranches) {
+            foreach ($legacyPerformBranches->roles as $role) {
+                $role->givePermissionTo($createBranches);
+            }
+            $legacyPerformBranches->delete();
+        }
+        Permission::where("name", "edit_branches")->delete();
         Permission::updateOrCreate(["name" => "perform_region"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "edit_branches"], ["module" => "maintenance"]); 
+        Permission::updateOrCreate(["name" => "edit_branches_all"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "edit_branches_oic"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_employee_status"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_employee_status"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_stations"], ["module" => "maintenance"]);

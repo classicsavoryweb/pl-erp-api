@@ -32,6 +32,8 @@ class Branch extends Model
         "group_head",
         'kitchen_oic_employee_number',
         'kitchen_oic',
+        'kitchen_oic_2_employee_number',
+        'kitchen_oic_2',
         'mancom_employee_number',
         'mancom',
         'expense_debit',
@@ -58,6 +60,10 @@ class Branch extends Model
 
     public function kitchen_oic() {
         return $this->hasOne(Employee::class, "employee_number", "kitchen_oic_employee_number");
+    }
+
+    public function kitchen_oic_2() {
+        return $this->hasOne(Employee::class, "employee_number", "kitchen_oic_2_employee_number");
     }
 
     public function branch_oic() {
