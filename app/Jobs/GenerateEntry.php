@@ -1216,7 +1216,7 @@ class GenerateEntry implements ShouldQueue
                     $query->select('employee_id')
                         ->from('payroll_list')
                         ->where('is_bank', 0)
-                        ->orWhere('is_hold', 1);
+                        ->where('is_hold', 1);
                 })
                 ->exists() ? 1 : 0;
 
