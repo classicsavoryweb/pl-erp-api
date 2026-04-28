@@ -26,8 +26,8 @@ class TransferLogsToTimeKeeping implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     use NotifiesJobStatus;
 
-    public $tries = 3;
-    public $timeout = 3600;
+    // public $tries = 3;
+    // public $timeout = 3600;
 
     protected $branchId;
     protected $cutOff;
