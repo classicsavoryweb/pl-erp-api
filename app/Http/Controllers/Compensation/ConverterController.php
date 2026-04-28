@@ -573,7 +573,7 @@ class ConverterController extends Controller
                     $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])
                     ->latest()->first();
 
-                    if ($isExisting && in_array($isExisting->status, ['Pending', 'Generated'])) {
+                    if ($isExisting && in_array($isExisting->status, ['Pending', 'Generated', 'Sent'])) {
                         continue;
                     }
 
