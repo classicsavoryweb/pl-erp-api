@@ -23,6 +23,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Support\NotifiesJobStatus;
+use Exception;
+use Log;
 
 class SendTransactionToEmployeeJob implements ShouldQueue
 {
@@ -329,8 +331,12 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 }
             }
 
-            Mail::mailer("WEEKLY_PAYROLL_MAILER")->to($employee->email)
-            ->send(new SendTransactionToEmployeeMail($transaction));
+            try {
+                Mail::mailer("WEEKLY_PAYROLL_MAILER")->to($employee->email)
+                ->send(new SendTransactionToEmployeeMail($transaction));
+            } catch (Exception $e) {
+                Log::info($e->getMessage());
+            }
 
             if ($transaction->transaction_type->isDeduction()) {
                 $monthlyAmortization = $transaction->terms > 0 ? $transaction->amount / $transaction->terms : $transaction->amount;
