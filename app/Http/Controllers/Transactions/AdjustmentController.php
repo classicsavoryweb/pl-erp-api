@@ -200,8 +200,12 @@ class AdjustmentController extends Controller
                     "taxable adjustment"
                 );
 
-                $adjustmentTimeKeeping->paid_holiday = $oldTimeKeeping->paid_holiday ?? null;
+                $adjustmentTimeKeeping->paid_holiday = $oldTimeKeeping ? $oldTimeKeeping->paid_holiday : null;
                 $adjustmentTimeKeeping->save();
+
+                $adjustmentTimeKeeping->schedule = (object) [
+                    "timetable" => $schedule->selection
+                ];
 
                 $adjustmentPayment = $this->timeKeepingService->computePayment(
                     $adjustmentTimeKeeping, 

@@ -561,7 +561,7 @@ class TimeKeepingService
 
         if ($biotimePunches->count() > 1) {
 
-            $cutOff = $this->getCutOff($scheduleTime->date);        
+            $cutOff = $this->getCutOff($log->date);        
             $activeCutOff = CutOff::where("start_date", $cutOff['start_time'])->where("end_date", $cutOff["end_time"])->first();
 
             $overtimeApplied = Overtime::where("employee_id", $employee->id)
