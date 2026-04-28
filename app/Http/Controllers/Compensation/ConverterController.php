@@ -570,7 +570,14 @@ class ConverterController extends Controller
                 $transactions = [];
 
                 foreach ($data['data']['transactions'] as $trans) {
+                    $employee = Employee::where("employee_number", $trans["user"]["employee_number"])->first();
+
+                    if (!$employee) {
+                        continue;
+                    }
+
                     $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])
+                    ->where("employee_id", $employee->id)
                     ->latest()->first();
 
                     if ($isExisting && in_array($isExisting->status, ['Pending', 'Generated', 'Sent'])) {
