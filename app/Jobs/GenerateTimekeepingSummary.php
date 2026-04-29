@@ -110,8 +110,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
             ->format("Y-m-d");
 
             foreach ($employees as $employee) {
-                Log::info("=========================");
-                Log::info($employee->full_name);
+                // Log::info("=========================");
+                // Log::info($employee->full_name);
             $adjustmentRemarks = "";
 
             if ($employee->type === "Agency") {
@@ -469,8 +469,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $absent == 0
                 ) {
 
-                    Log::info("COMPLETE ATTENDANCE");
-                    Log::info($actualWorkedDays);
+                    // Log::info("COMPLETE ATTENDANCE");
+                    // Log::info($actualWorkedDays);
                     $workDays = 0;
 
                     $schedules->each(function ($schedule) use (&$workDays) {
