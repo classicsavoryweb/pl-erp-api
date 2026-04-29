@@ -182,16 +182,16 @@ class Employee extends Model
         $dailySalary = 0;
 
         $scheduleType = $this->schedule->schedule_type->name ?? "N/A";
-        $salaryPosition = $this->payroll_list->salary_amount;
+        $payrollList = $this->payroll_list;
 
-        if (!$salaryPosition) {
+        if (!$payrollList) {
             return $dailySalary;
         }
         try {
             if ($scheduleType === "Compressed Schedule") {
-                $dailySalary = $salaryPosition / 22;
+                $dailySalary = $payrollList->salary_amount / 22;
             } else {
-                $dailySalary = $salaryPosition / 26;
+                $dailySalary = $payrollList->salary_amount / 26;
             }
             return $dailySalary;
         } catch (Exception $e) {
