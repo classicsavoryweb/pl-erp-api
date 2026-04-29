@@ -352,6 +352,10 @@ class PayrollService {
             "ee" => 0
         ];
 
+        if ($basicSalary <= 0) {
+            return $shares;
+        }
+
         if ($part == 1) {
             if ($pagibig) {
                 $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
