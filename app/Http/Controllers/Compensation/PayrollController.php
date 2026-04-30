@@ -293,6 +293,8 @@ class PayrollController extends Controller
                 $details->withholding_tax = $request->withholding_tax;
                 $details->reload_deductions = $request->reload_deductions;
                 $details->remarks = $request->remarks;
+                $details->is_on_maternity_leave = $request->is_on_maternity_leave;
+                $details->is_hold = $request->is_hold;
 
                 $newTardiness = 0;
                 $newUndertime = 0;
@@ -323,6 +325,7 @@ class PayrollController extends Controller
                     $payroll->details->deductions = $request->deductions;
 
                     if ($request->save_changes) {
+                        DB::beginTransaction();
                         PayrollDetail::where("payroll_id", $payroll->id)
                         ->update([
                             "regular_days" => $request->regular_days,
@@ -338,6 +341,8 @@ class PayrollController extends Controller
                             "adjustment_amount" => $request->adjustment_amount,
                             "undertime" => $newUndertime,
                             "tardiness" => $newTardiness,
+                            "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                            "is_hold" => $request->is_hold,
                             "is_manual_statutory_entry" => $request->is_manual_statutory_entry,
                             "is_complete_documents" => $request->is_complete_documents,
                             "undertime_minutes" => json_encode($request->undertime_minutes),
@@ -379,8 +384,21 @@ class PayrollController extends Controller
                             "status" => "initial",
                             "special_leave" => $payrollComp->special_leave,
                             "timekeeping_branch_id" => $request->timekeeping_branch_id,
+                            "is_maternity" => $request->is_on_maternity_leave,
+                            "is_hold" => $request->is_hold,
                             "remarks" => $request->remarks
                         ]);
+
+                        $payrollList = $payroll->payroll_list;
+                        $is_bank = $request->is_on_maternity_leave == 1 ? false : true;
+
+                        $payrollList->update([
+                            "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                            "is_bank" => $is_bank,
+                            "is_hold" => $request->is_hold
+                        ]);
+
+                        DB::commit();
                     }
                     return $this->sendResponse($payroll);
                 }
@@ -388,6 +406,7 @@ class PayrollController extends Controller
 
             return $this->sendError(["message" => "Payroll not found"]);
         } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
