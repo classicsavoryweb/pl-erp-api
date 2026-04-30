@@ -314,6 +314,10 @@ class PayrollService {
             "er" => 0,
             "ee" => 0
         ];
+        
+        if ($grossPay == 0) {
+            return $shares;
+        }
 
         if ($part == 1) {
             if ($sss) {
