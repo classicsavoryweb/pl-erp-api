@@ -73,7 +73,6 @@ class EmployeeDeduction extends Model
         return LogOptions::defaults()
             ->logAll()
             ->useLogName('Employee Deductions')
-            ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 }

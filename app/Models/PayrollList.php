@@ -59,7 +59,6 @@ class PayrollList extends Model
         return LogOptions::defaults()
             ->logAll()
             ->useLogName('Payroll List')
-            ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 }

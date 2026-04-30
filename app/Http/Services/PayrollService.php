@@ -219,16 +219,19 @@ class PayrollService {
             $newDeductions = [];
 
             $netPayCheck = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
-            $companyLoans = collect($deductions)->filter(fn($deduct) => !in_array($deduct['type'], ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]))
-            ->sortBy('deducted_amount');
-            $governmentLoans = collect($deductions)->filter(fn($deduct) => in_array($deduct['type'], ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]))
-            ->sortBy('deducted_amount');
+            // $companyLoans = collect($deductions)->filter(fn($deduct) => !in_array($deduct['type'], ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]))
+            // ->sortByDesc('deducted_amount');
+            // $governmentLoans = collect($deductions)->filter(fn($deduct) => in_array($deduct['type'], ["SSS Loans", "Pag-ibig/HDMF Loans", "Pag-ibig MP2"]))
+            // ->sortByDesc('deducted_amount');
             $netPayNoDeductions = $netPayAmount + $nonTaxableAmount;
-            $companyLoans = $companyLoans->values()->toArray();
-            $governmentLoans = $governmentLoans->values()->toArray();
-
+            // $companyLoans = $companyLoans->values()->toArray();
+            // $governmentLoans = $governmentLoans->values()->toArray();
+            $deductions = collect($deductions)
+            ->sortBy("deducted_amount")
+            ->values()
+            ->toArray();
             if ($netPayCheck < 0) {
-                foreach ($companyLoans as $deduction) {
+                foreach ($deductions as $deduction) {
                     $netPayNoDeductions -= $deduction['deducted_amount'];
 
                     if ($netPayNoDeductions < 0) {
@@ -238,15 +241,15 @@ class PayrollService {
                     }
                 }
 
-                foreach ($governmentLoans as $deduction) {
-                    $netPayNoDeductions -= $deduction['deducted_amount'];
+                // foreach ($governmentLoans as $deduction) {
+                //     $netPayNoDeductions -= $deduction['deducted_amount'];
 
-                    if ($netPayNoDeductions < 0) {
-                        $totalDeductions -= $deduction['deducted_amount'];
-                        $netPayNoDeductions += $deduction['deducted_amount'];
-                        $removedDeductions[] = $deduction['deduction_id'];
-                    }
-                }
+                //     if ($netPayNoDeductions < 0) {
+                //         $totalDeductions -= $deduction['deducted_amount'];
+                //         $netPayNoDeductions += $deduction['deducted_amount'];
+                //         $removedDeductions[] = $deduction['deduction_id'];
+                //     }
+                // }
             }
 
             foreach ($deductions as $deduction) {
@@ -311,6 +314,10 @@ class PayrollService {
             "er" => 0,
             "ee" => 0
         ];
+        
+        if ($grossPay == 0) {
+            return $shares;
+        }
 
         if ($part == 1) {
             if ($sss) {
@@ -349,6 +356,10 @@ class PayrollService {
             "ee" => 0
         ];
 
+        if ($basicSalary <= 0) {
+            return $shares;
+        }
+
         if ($part == 1) {
             if ($pagibig) {
                 $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
@@ -376,8 +387,8 @@ class PayrollService {
             } else {
                 if ($pagibig) {
                     $pagibigShares = $basicSalary * (0.01 * $pagibig->percentage);
-                    $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction: $pagibigShares;
-    
+                    $pagibigAmount = $pagibigShares > 49.99 ? $pagibig->max_deduction / 2: $pagibigShares;
+
                     $shares['ee'] = round($pagibigAmount, 2);
                     $shares['er'] = round($pagibigAmount, 2);
                 }

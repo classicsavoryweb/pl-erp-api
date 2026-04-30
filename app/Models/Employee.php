@@ -182,44 +182,17 @@ class Employee extends Model
         $dailySalary = 0;
 
         $scheduleType = $this->schedule->schedule_type->name ?? "N/A";
-        $salaryPosition = $this->current_position?->salary;
-        $rateCode = $this->home_branch?->rate_code;
-        if (!$salaryPosition) {
+        $payrollList = $this->payroll_list;
+
+        if (!$payrollList) {
             return $dailySalary;
         }
         try {
             if ($scheduleType === "Compressed Schedule") {
-                if ($salaryPosition->rate_category === "MINIMUM") {
-                    if (!$rateCode) {
-                        return $dailySalary;
-                    }
-                    $minimumRate = Rate::where("code", $rateCode)->first();
-                    if (!$minimumRate) {
-                        return $dailySalary;
-                    }
-    
-                    $dailySalary = ($minimumRate->minimum * 26) / 22;
-                } else {
-                    $dailySalary = ($salaryPosition->basic_salary ?? 0) / 22;
-                }
+                $dailySalary = $payrollList->salary_amount / 22;
+            } else {
+                $dailySalary = $payrollList->salary_amount / 26;
             }
-    
-            if ($scheduleType === "Normal Schedule") {
-                if ($salaryPosition->rate_category === "MINIMUM") {
-                    if (!$rateCode) {
-                        return $dailySalary;
-                    }
-                    $minimumRate = Rate::where("code", $rateCode)->first();
-                    if (!$minimumRate) {
-                        return $dailySalary;
-                    }
-    
-                    $dailySalary = $minimumRate->minimum;
-                } else {
-                    $dailySalary = ($salaryPosition->basic_salary ?? 0) / 26;
-                }
-            }
-
             return $dailySalary;
         } catch (Exception $e) {
             return $dailySalary;
