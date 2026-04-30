@@ -2,8 +2,11 @@
 
 namespace App\Jobs;
 
+use App\Models\BiotimeLog;
 use App\Models\Cutoff;
 use App\Models\Employee;
+use App\Models\Payroll;
+use App\Models\PayrollDetail;
 use App\Models\Tardiness;
 use App\Models\TardinessMinutes;
 use App\Models\TardinessSanction;
@@ -45,22 +48,40 @@ class ComputeEmployeeTardiness implements ShouldQueue
             $employees = Employee::where("status", "active")->get();
 
             foreach ($employees as $employee) {
-                $timeKeepings = TimeKeeping::with([
-                    "biotime_log",
-                    "biotime_log.punches"
-                ])->whereBetween("date", [$startDate, $endDate])
-                ->whereHas("biotime_log", function ($query) {
-                    $query->whereNot("status", "INCOMPLETE");
-                })
+
+                $details = PayrollDetail::whereMonth("pay_date", $month)
+                ->whereYear("pay_date", $year)
                 ->where("employee_id", $employee->id)
-                ->where("tardiness", ">", 0)
-                ->get();
+                ->get()
+                ->pluck("tardiness_minutes");
+
+                $tardyMinutes = [];
+                $baseTardy = [];
+                foreach ($details as $detail) {
+                    $array = json_decode($detail, true);
+
+                    if (is_array ($array)) {
+                        foreach ($array as $arr) {
+                            $baseTardy[] = $arr;
+                        }
+                    }
+                }
+
+                foreach ($baseTardy as $base) {
+                    $log = BiotimeLog::where("date", $base["date"])
+                    ->where("employee_id", $employee->id)
+                    ->first();
+
+                    if (!$log || ($log && $log->status != "INCOMPLETE")) {
+                        $tardyMinutes[] = $base;
+                    }
+                }
 
                 $totalTardy = 0;
-                $unExcusedTimeKeepings = $timeKeepings;
+                $unExcusedTimeKeepings = $tardyMinutes;
 
-                foreach ($timeKeepings as $timeKeeping) {
-                    $totalTardy += $timeKeeping->tardiness;
+                foreach ($tardyMinutes as $tardy) {
+                    $totalTardy += $tardy['minutes'];
                 }
 
                 if ($totalTardy > 120) {
@@ -83,14 +104,10 @@ class ComputeEmployeeTardiness implements ShouldQueue
                             $data = $response->json();
                             $excusedDates = collect($data['data']['excused_dates']);
                             if ($excusedDates->count() > 0) {
-                                $dates = $excusedDates->pluck('date');
-                                $unExcusedTimeKeepings = TimeKeeping::whereNotIn('date', $dates)
-                                ->whereBetween("date", [$startDate, $endDate])
-                                ->where('employee_id', $employee->id)
-                                ->get();
+                                $dates = $excusedDates->pluck('date')->toArray();
+                                $unExcusedTimeKeepings = collect($tardyMinutes)->filter(fn ($item) => !in_array($item['date'], $dates));
+                                $totalTardy = $unExcusedTimeKeepings->sum('minutes');
                             }
-
-                            $totalTardy = $unExcusedTimeKeepings->sum('tardiness');
                         }
                     } catch (Exception $e) {
                         Log::info($e->getMessage());
@@ -126,14 +143,14 @@ class ComputeEmployeeTardiness implements ShouldQueue
                     ]);
 
                     foreach ($unExcusedTimeKeepings as $timeKeeping) {
-                        if ($timeKeeping->tardiness > 0) {
+                        if ($timeKeeping['minutes'] > 0) {
                             TardinessMinutes::updateOrCreate([
                                 "employee_id" => $employee->id,
-                                "late_date" => $timeKeeping->date,
+                                "late_date" => $timeKeeping['date'],
                                 "month" => $month,
                                 "year" => $year
                             ],[
-                                "late_minutes" => $timeKeeping->tardiness,
+                                "late_minutes" => $timeKeeping['minutes'],
                             ]);
                         }
                     }
