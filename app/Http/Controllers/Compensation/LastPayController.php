@@ -88,6 +88,10 @@ class LastPayController extends Controller
             ->paginate($perPage);
 
             $lastPays->getCollection()->transform(function ($lastPay) {
+                if ($lastPay->status !== "Unposted") {
+                    return $lastPay;
+                }
+
                 $companyDeductions = $this->getCurrentCompanyDeductionsForEmployee($lastPay->employee_id);
                 $totalDeductions = round($companyDeductions->sum(function ($deduction) {
                     return $this->numeric($deduction->balance ?? $deduction->amount ?? 0);

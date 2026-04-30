@@ -8,10 +8,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Accounting\Account;
 use App\Models\Branch;
 use App\Models\Employee;
+use App\Models\EmployeePosition;
 use App\Models\OtherCompany\OtherEmployee;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 
@@ -60,6 +62,16 @@ class BranchController extends Controller
         ],
     ];
 
+    private function branchOicAssignmentQuery(string $employeeNumber)
+    {
+        return Branch::where("status", "active")
+            ->where(function ($query) use ($employeeNumber) {
+                $query->where("branch_head_employee_number", $employeeNumber)
+                    ->orWhere("kitchen_oic_employee_number", $employeeNumber)
+                    ->orWhere("kitchen_oic_2_employee_number", $employeeNumber);
+            });
+    }
+
     private function applyBranchFilters(Request $request, $branches)
     {
         if ($request->has(["column_type", "key_word"])) {
@@ -92,11 +104,7 @@ class BranchController extends Controller
                 continue;
             }
 
-            $branchOicAssignment = Branch::where(function ($query) use ($employeeNumber) {
-                $query->where("branch_head_employee_number", $employeeNumber)
-                    ->orWhere("kitchen_oic_employee_number", $employeeNumber)
-                    ->orWhere("kitchen_oic_2_employee_number", $employeeNumber);
-            })->first();
+            $branchOicAssignment = $this->branchOicAssignmentQuery($employeeNumber)->first();
 
             $latestPosition = $employee->latest_position;
             $desiredDate = $dateOverrides[$employeeNumber] ?? null;
@@ -135,21 +143,295 @@ class BranchController extends Controller
         }
     }
 
-    private function getOicDateAppointed(?string $employeeNumber): ?string
+    private function getLoggedOicDateAppointed(?int $employeePositionId): ?string
+    {
+        if (!$employeePositionId) {
+            return null;
+        }
+
+        $activities = Activity::query()
+            ->where('subject_type', EmployeePosition::class)
+            ->where('subject_id', $employeePositionId)
+            ->whereIn('event', ['created', 'updated'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        foreach ($activities as $activity) {
+            $attributes = $activity->properties['attributes'] ?? [];
+            $old = $activity->properties['old'] ?? [];
+
+            if (($old['oic_assignment'] ?? null) === 'Yes' && !empty($old['date_appointed'])) {
+                return $old['date_appointed'];
+            }
+
+            if (($attributes['oic_assignment'] ?? null) === 'Yes' && !empty($attributes['date_appointed'])) {
+                return $attributes['date_appointed'];
+            }
+        }
+
+        return null;
+    }
+
+    private function getEmployeeLatestOicDateAppointed(Employee $employee, bool $includeHistoricalFallback = false): ?string
+    {
+        $dateAppointed = $employee->latest_position?->date_appointed;
+
+        if ($dateAppointed || !$includeHistoricalFallback) {
+            return $dateAppointed;
+        }
+
+        return EmployeePosition::query()
+            ->where('employee_id', $employee->id)
+            ->whereNotNull('date_appointed')
+            ->where('date_appointed', '<>', '')
+            ->orderByDesc('date_started')
+            ->orderByDesc('id')
+            ->value('date_appointed')
+            ?: $this->getLoggedOicDateAppointed($employee->latest_position?->id);
+    }
+
+    private function getOtherCompanyLatestOicDateAppointed(OtherEmployee $employee): ?string
+    {
+        return DB::connection($employee->getConnectionName())
+            ->table('employee_position')
+            ->where('employee_id', $employee->id)
+            ->whereNotNull('date_appointed')
+            ->where('date_appointed', '<>', '')
+            ->orderByDesc('date_started')
+            ->orderByDesc('id')
+            ->value('date_appointed');
+    }
+
+    private function bestHistoricalEmployeeMatch($employees)
+    {
+        if ($employees->count() === 1) {
+            return $employees->first();
+        }
+
+        $employeesWithDates = $employees
+            ->map(function ($employee) {
+                $dateAppointed = $employee instanceof OtherEmployee
+                    ? $this->getOtherCompanyLatestOicDateAppointed($employee)
+                    : $this->getEmployeeLatestOicDateAppointed($employee, true);
+
+                return [
+                    'employee' => $employee,
+                    'date_appointed' => $dateAppointed,
+                    'normalized_date' => $this->normalizeDate($dateAppointed) ?: '',
+                ];
+            })
+            ->filter(fn ($match) => !empty($match['date_appointed']))
+            ->sortByDesc('normalized_date')
+            ->values();
+
+        return $employeesWithDates->first()['employee'] ?? null;
+    }
+
+    private function normalizeOicName(?string $name): ?string
+    {
+        if (!$name) {
+            return null;
+        }
+
+        $name = preg_replace('/\s+/', ' ', trim(strtolower($name)));
+        $name = preg_replace('/[^a-z0-9 ]/', '', $name);
+
+        return $name ?: null;
+    }
+
+    private function nameTokens(?string $name): array
+    {
+        $normalizedName = $this->normalizeOicName($name);
+
+        if (!$normalizedName) {
+            return [];
+        }
+
+        return array_values(array_filter(explode(' ', $normalizedName), fn ($token) => strlen($token) > 1));
+    }
+
+    private function employeeMatchesName($employee, array $tokens): bool
+    {
+        $candidateNames = [
+            $employee->full_name ?? null,
+            $employee->proper_full_name ?? null,
+            $employee->formal_full_name ?? null,
+        ];
+
+        foreach ($candidateNames as $candidateName) {
+            $normalizedCandidateName = $this->normalizeOicName($candidateName);
+
+            if (!$normalizedCandidateName) {
+                continue;
+            }
+
+            $missingToken = false;
+            foreach ($tokens as $token) {
+                if (!str_contains($normalizedCandidateName, $token)) {
+                    $missingToken = true;
+                    break;
+                }
+            }
+
+            if (!$missingToken) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function resolveEmployeeByHistoricalName(?string $name)
+    {
+        $tokens = $this->nameTokens($name);
+
+        if (count($tokens) < 2) {
+            return null;
+        }
+
+        $employees = Employee::with('latest_position')
+            ->where(function ($query) use ($tokens) {
+                foreach ($tokens as $token) {
+                    $query->where(function ($tokenQuery) use ($token) {
+                        $tokenQuery->where('first_name', 'LIKE', "%{$token}%")
+                            ->orWhere('middle_name', 'LIKE', "%{$token}%")
+                            ->orWhere('last_name', 'LIKE', "%{$token}%");
+                    });
+                }
+            })
+            ->limit(50)
+            ->get()
+            ->filter(fn ($employee) => $this->employeeMatchesName($employee, $tokens))
+            ->values();
+
+        $employee = $this->bestHistoricalEmployeeMatch($employees);
+
+        if ($employee) {
+            return $employee;
+        }
+
+        $otherEmployees = OtherEmployee::query()
+            ->where(function ($query) use ($tokens) {
+                foreach ($tokens as $token) {
+                    $query->where(function ($tokenQuery) use ($token) {
+                        $tokenQuery->where('first_name', 'LIKE', "%{$token}%")
+                            ->orWhere('middle_name', 'LIKE', "%{$token}%")
+                            ->orWhere('last_name', 'LIKE', "%{$token}%");
+                    });
+                }
+            })
+            ->limit(50)
+            ->get()
+            ->filter(fn ($employee) => $this->employeeMatchesName($employee, $tokens))
+            ->values();
+
+        return $this->bestHistoricalEmployeeMatch($otherEmployees);
+    }
+
+    private function getOicDateAppointedByHistoricalName(?string $name): ?string
+    {
+        $employee = $this->resolveEmployeeByHistoricalName($name);
+
+        if (!$employee) {
+            return null;
+        }
+
+        if ($employee instanceof OtherEmployee) {
+            return $this->getOtherCompanyLatestOicDateAppointed($employee);
+        }
+
+        $dateAppointed = $this->getEmployeeLatestOicDateAppointed($employee, true);
+
+        return $dateAppointed;
+    }
+
+    private function formatHistoryName(?string $name): ?string
+    {
+        if (!$name) {
+            return null;
+        }
+
+        $name = preg_replace('/\s+/', ' ', trim($name));
+
+        if ($name === '') {
+            return null;
+        }
+
+        if (str_contains($name, ',')) {
+            return mb_strtoupper($name, 'UTF-8');
+        }
+
+        $employee = $this->resolveEmployeeByHistoricalName($name);
+
+        if ($employee) {
+            return mb_strtoupper(
+                preg_replace('/\s+/', ' ', trim($employee->full_name)),
+                'UTF-8'
+            );
+        }
+
+        $parts = explode(' ', $name);
+
+        if (count($parts) < 2) {
+            return mb_strtoupper($name, 'UTF-8');
+        }
+
+        $lastName = array_pop($parts);
+        $firstAndMiddleName = implode(' ', $parts);
+
+        return mb_strtoupper("{$lastName}, {$firstAndMiddleName}", 'UTF-8');
+    }
+
+    private function getOicDateAppointed(?string $employeeNumber, bool $includeHistoricalFallback = false): ?string
     {
         if (!$employeeNumber) {
             return null;
         }
 
-        if (!array_key_exists($employeeNumber, $this->oicDateAppointmentCache)) {
+        $cacheKey = $includeHistoricalFallback ? "historical:{$employeeNumber}" : $employeeNumber;
+
+        if (!array_key_exists($cacheKey, $this->oicDateAppointmentCache)) {
             $employee = Employee::with("latest_position")
                 ->where("employee_number", $employeeNumber)
                 ->first();
 
-            $this->oicDateAppointmentCache[$employeeNumber] = $employee?->latest_position?->date_appointed;
+            if ($employee) {
+                $dateAppointed = $this->getEmployeeLatestOicDateAppointed(
+                    $employee,
+                    $includeHistoricalFallback
+                );
+
+                if (!$dateAppointed && $includeHistoricalFallback) {
+                    $dateAppointed = $this->getLoggedOicDateAppointed($employee->latest_position?->id);
+                }
+            } else {
+                $otherEmployee = OtherEmployee::query()
+                    ->where("employee_number", $employeeNumber)
+                    ->orWhere("employee_number_2", $employeeNumber)
+                    ->first();
+
+                $dateAppointed = $otherEmployee
+                    ? $this->getOtherCompanyLatestOicDateAppointed($otherEmployee)
+                    : null;
+            }
+
+            $this->oicDateAppointmentCache[$cacheKey] = $dateAppointed;
         }
 
-        return $this->oicDateAppointmentCache[$employeeNumber];
+        return $this->oicDateAppointmentCache[$cacheKey];
+    }
+
+    private function normalizeDate(?string $date): ?string
+    {
+        if (!$date) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($date)->format('Y-m-d');
+        } catch (\Throwable $th) {
+            return $date;
+        }
     }
 
     private function clearOicDateAppointmentCache(array $employeeNumbers = []): void
@@ -162,6 +444,7 @@ class BranchController extends Controller
         foreach ($employeeNumbers as $employeeNumber) {
             if ($employeeNumber) {
                 unset($this->oicDateAppointmentCache[$employeeNumber]);
+                unset($this->oicDateAppointmentCache["historical:{$employeeNumber}"]);
             }
         }
     }
@@ -238,7 +521,7 @@ class BranchController extends Controller
 
         $entry = sprintf(
             '%s (Date Appointed: %s)',
-            $name,
+            $this->formatHistoryName($name),
             $this->formatHistoryDate($date)
         );
 
@@ -247,6 +530,31 @@ class BranchController extends Controller
         }
 
         $entries[] = $entry;
+    }
+
+    private function resolveOicHistoryDate(array $values, string $nameField, string $employeeField, string $dateField): ?string
+    {
+        return $values[$dateField]
+            ?? $this->getOicDateAppointed($values[$employeeField] ?? null, true)
+            ?? $this->getOicDateAppointedByHistoricalName($values[$nameField] ?? null);
+    }
+
+    private function appendChangedOicHistoryEntry(array &$entries, array $old, array $attributes, string $nameField, string $employeeField, string $dateField): void
+    {
+        if (!array_key_exists($nameField, $attributes)) {
+            return;
+        }
+
+        $oldName = $old[$nameField] ?? null;
+        $newName = $attributes[$nameField] ?? null;
+
+        if ($oldName && $oldName !== $newName) {
+            $this->appendHistoryEntry(
+                $entries,
+                $oldName,
+                $this->resolveOicHistoryDate($old, $nameField, $employeeField, $dateField)
+            );
+        }
     }
 
     private function getRoleHistoryEntries(Branch $branch, array $roleConfig): array
@@ -278,16 +586,18 @@ class BranchController extends Controller
                 $this->appendHistoryEntry(
                     $entries,
                     $attributes[$nameField] ?? null,
-                    $attributes[$dateField] ?? null
+                    $this->resolveOicHistoryDate($attributes, $nameField, $employeeField, $dateField)
                 );
                 continue;
             }
+
+            $this->appendChangedOicHistoryEntry($entries, $old, $attributes, $nameField, $employeeField, $dateField);
 
             if (array_key_exists($nameField, $attributes)) {
                 $this->appendHistoryEntry(
                     $entries,
                     $attributes[$nameField] ?? null,
-                    $attributes[$dateField] ?? null
+                    $this->resolveOicHistoryDate($attributes, $nameField, $employeeField, $dateField)
                 );
                 continue;
             }
@@ -301,10 +611,16 @@ class BranchController extends Controller
             }
         }
 
+        $currentValues = [
+            $nameField => $branch->{$nameField},
+            $employeeField => $branch->{$employeeField},
+            $dateField => $branch->{$dateField} ?? null,
+        ];
+
         $this->appendHistoryEntry(
             $entries,
             $branch->{$nameField},
-            $this->getOicDateAppointed($branch->{$employeeField})
+            $this->resolveOicHistoryDate($currentValues, $nameField, $employeeField, $dateField)
         );
 
         return $entries;
@@ -324,6 +640,7 @@ class BranchController extends Controller
                 $rows[] = [
                     'branch' => $branch->name,
                     'branch_code' => $branch->short_name,
+                    'status' => $branch->status,
                     'position' => $roleConfig['label'],
                     'history_entries' => $historyEntries,
                 ];
@@ -339,14 +656,14 @@ class BranchController extends Controller
     private function validateEditableOicDates(Request $request, Branch $branch): ?array
     {
         $this->clearOicDateAppointmentCache();
-        $today = Carbon::today()->format('Y-m-d');
+        $maxDate = Carbon::today()->addMonth()->format('Y-m-d');
 
         foreach (self::OIC_HISTORY_POSITIONS as $roleConfig) {
             $employeeField = $roleConfig['employee_field'];
             $dateField = $roleConfig['date_field'];
 
             $requestEmployee = $request->{$employeeField} ?: null;
-            $requestDate = $request->{$dateField} ?: null;
+            $requestDate = $this->normalizeDate($request->{$dateField} ?: null);
 
             if ($requestDate && !$requestEmployee) {
                 return ["message" => "Date appointed requires an assigned {$roleConfig['label']}."];
@@ -356,15 +673,8 @@ class BranchController extends Controller
                 continue;
             }
 
-            if ($requestDate < $today) {
-                $currentEmployee = $branch->{$employeeField} ?: null;
-                $currentDate = $this->getOicDateAppointed($currentEmployee);
-                $isUnchangedLegacyValue = $requestEmployee === $currentEmployee
-                    && $requestDate === $currentDate;
-
-                if (!$isUnchangedLegacyValue) {
-                    return ["message" => "{$roleConfig['label']} date appointed cannot be before today."];
-                }
+            if ($requestDate > $maxDate) {
+                return ["message" => "{$roleConfig['label']} date appointed cannot be greater than one month from today."];
             }
         }
 
@@ -757,7 +1067,8 @@ class BranchController extends Controller
 
             $branch->update($updateData);
 
-            $this->syncEmployeeOicStatuses($affectedEmployeeNumbers, $dateOverrides);
+            $effectiveDateOverrides = $branch->status === "active" ? $dateOverrides : [];
+            $this->syncEmployeeOicStatuses($affectedEmployeeNumbers, $effectiveDateOverrides);
             $branch->refresh();
 
             $this->clearOicDateAppointmentCache($affectedEmployeeNumbers);

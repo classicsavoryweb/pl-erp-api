@@ -28,6 +28,7 @@ class BranchOicHistoryExport implements FromCollection, WithHeadings, WithTitle
             return array_merge([
                 $row['branch'] ?? null,
                 $row['branch_code'] ?? null,
+                $row['status'] ?? null,
                 $row['position'] ?? null,
             ], $historyEntries);
         });
@@ -36,7 +37,7 @@ class BranchOicHistoryExport implements FromCollection, WithHeadings, WithTitle
     public function headings(): array
     {
         return array_merge(
-            ['Branch', 'Branch Code', 'Position'],
+            ['Branch', 'Branch Code', 'Status', 'Position'],
             array_fill(0, $this->maxHistoryColumns, '')
         );
     }
