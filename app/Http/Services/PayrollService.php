@@ -16,6 +16,7 @@ use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
 use App\Models\Pagibig;
 use App\Models\Payroll;
+use App\Models\PayrollDetail;
 use App\Models\PayrollList;
 use App\Models\PhilhealthPercentageBase;
 use App\Models\Position;
@@ -476,14 +477,16 @@ class PayrollService {
 
         $month = Carbon::parse($secondCutOff['end_time'])->month;
         $year = Carbon::parse($secondCutOff['end_time'])->year;
-        
-        $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-        ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
-        ->first();
 
-        $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-        ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
-        ->first();
+        $payrollDetails = PayrollDetail::where("employee_id", $employee->id)
+        ->whereMonth("pay_date", $month)
+        ->whereYear("pay_date", $year)
+        ->orderBy("pay_date", "ASC")
+        ->take(2)
+        ->get();
+
+        $firstTimeKeeping = $payrollDetails->get(0);
+        $secondTimeKeeping = $payrollDetails->get(1);
 
         if ($firstTimeKeeping) {
             $position = Position::find($firstTimeKeeping->position_id);
@@ -499,6 +502,9 @@ class PayrollService {
 
         if ($position->rank == 1) {
             $months = Carbon::now()->diffInMonths($employee->date_hired);
+            if ($months < 1) {
+                $months = 1;
+            }
             $bracket = IncentivesBracket::whereRaw('CAST(month AS UNSIGNED) <= ?', [$months])
                 ->whereHas('positions', function ($query) use ($position) {
                     $query->where('positions.id', $position->id);
@@ -538,9 +544,11 @@ class PayrollService {
         $status = "initial";
         $undertime = 0;
         $absent = 0;
+        $baseAdditional = 0;
+        $addedDays = 0;
 
-        $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
-        $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
+        $firstCutOffDays = $firstTimeKeeping->regular_days + $firstTimeKeeping->special_leave;
+        $secondCutOffDays = $secondTimeKeeping->regular_days + $firstTimeKeeping->special_leave;
 
         $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
         
@@ -569,7 +577,7 @@ class PayrollService {
                 "date" => $adjustment->date,
                 "days" => $adjustment->days
             ];
-
+            $addedDays += $adjustment->days;
             $firstCutOffDays += $adjustment->days;
         }
 
@@ -578,7 +586,7 @@ class PayrollService {
                 "date" => $adjustment->date,
                 "days" => $adjustment->days
             ];
-
+            $addedDays += $adjustment->days;
             $secondCutOffDays += $adjustment->days;
         }
 
@@ -727,7 +735,9 @@ class PayrollService {
             "additional_days" => json_encode($additionalDays),
             "undertime" => $undertime,
             "absent" => $absent,
-            "status" => $status
+            "status" => $status,
+            "base_additional_incentive" => $baseAdditional,
+            "added_days" => $addedDays,
         ]);
 
         return $incentive;
