@@ -37,7 +37,12 @@ class ActualTimeController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $bioTimeLogs = BiotimeLog::query();
+            $bioTimeLogs = BiotimeLog::with([
+                "employee",
+                "employee.current_branch",
+                "punches",
+                "punches.branch"
+            ])->query();
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
@@ -103,13 +108,7 @@ class ActualTimeController extends Controller
                 return Excel::download(new ActualLogsExport($bioTimeLogs), "actual_logs.xls");
             }
 
-            $bioTimeLogs = $bioTimeLogs->with([
-                "employee",
-                "employee.current_branch",
-                "punches",
-                "punches.branch"
-            ])
-            ->paginate($perPage);
+            $bioTimeLogs = $bioTimeLogs->paginate($perPage);
 
             return $this->sendResponse($bioTimeLogs);
         } catch (Exception $e) {
