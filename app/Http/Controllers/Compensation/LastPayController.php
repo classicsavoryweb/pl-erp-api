@@ -276,6 +276,7 @@ class LastPayController extends Controller
 
                     $incentivesPayroll = Incentives::where("employee_id", $employee->id)
                         ->where("pay_date", ">=" ,$payrollPayDate)
+                        ->where("status", "final")
                         ->get();
                 }
 
@@ -508,16 +509,6 @@ class LastPayController extends Controller
 
                 if ($request->has("payroll_hold")) {
                     $totalPayroll = $this->numeric($request->payroll_hold);
-                }
-
-                if ($this->numeric($request->incentives) != 0 && $payrollPayDate) {
-                    $incentivesPayroll = Incentives::where("employee_id", $employee->id)
-                    ->where("pay_date", ">=" ,$payrollPayDate)
-                    ->get();
-                    
-                    foreach ($incentivesPayroll as $incentive) {
-                        $incentives += $this->numeric($incentive->incentive_amount);
-                    }
                 }
 
                 $allPayrolls = Payroll::where("employee_id", $employee->id)
