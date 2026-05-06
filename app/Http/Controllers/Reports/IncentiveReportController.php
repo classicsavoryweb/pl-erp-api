@@ -28,6 +28,7 @@ class IncentiveReportController extends Controller
             ])
             ->whereMonth("pay_date", $request->month)
             ->where("year", $request->year)
+            ->where("status", "final")
             ->get();
 
             return Excel::download(
