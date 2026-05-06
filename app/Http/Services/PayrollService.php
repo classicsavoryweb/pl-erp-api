@@ -16,9 +16,11 @@ use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
 use App\Models\Pagibig;
 use App\Models\Payroll;
+use App\Models\PayrollDetail;
 use App\Models\PayrollList;
 use App\Models\PhilhealthPercentageBase;
 use App\Models\Position;
+use App\Models\Rate;
 use App\Models\SSS;
 use App\Models\Tardiness;
 use App\Models\Tax;
@@ -476,14 +478,16 @@ class PayrollService {
 
         $month = Carbon::parse($secondCutOff['end_time'])->month;
         $year = Carbon::parse($secondCutOff['end_time'])->year;
-        
-        $firstTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-        ->where("cut_off", $firstCutOff["start_time"]."-".$firstCutOff["end_time"])
-        ->first();
 
-        $secondTimeKeeping = TimeKeepingSummary::where("employee_id", $employee->id)
-        ->where("cut_off", $secondCutOff["start_time"]."-".$secondCutOff["end_time"])
-        ->first();
+        $payrollDetails = PayrollDetail::where("employee_id", $employee->id)
+        ->whereMonth("pay_date", $month)
+        ->whereYear("pay_date", $year)
+        ->orderBy("pay_date", "ASC")
+        ->take(2)
+        ->get();
+
+        $firstTimeKeeping = $payrollDetails->get(0);
+        $secondTimeKeeping = $payrollDetails->get(1);
 
         if ($firstTimeKeeping) {
             $position = Position::find($firstTimeKeeping->position_id);
@@ -499,6 +503,9 @@ class PayrollService {
 
         if ($position->rank == 1) {
             $months = Carbon::now()->diffInMonths($employee->date_hired);
+            if ($months < 1) {
+                $months = 1;
+            }
             $bracket = IncentivesBracket::whereRaw('CAST(month AS UNSIGNED) <= ?', [$months])
                 ->whereHas('positions', function ($query) use ($position) {
                     $query->where('positions.id', $position->id);
@@ -538,9 +545,11 @@ class PayrollService {
         $status = "initial";
         $undertime = 0;
         $absent = 0;
+        $baseAdditional = 0;
+        $addedDays = 0;
 
-        $firstCutOffDays = $firstTimeKeeping->regular_days ?? 0;
-        $secondCutOffDays = $secondTimeKeeping->regular_days ?? 0;
+        $firstCutOffDays = $firstTimeKeeping->regular_days + $firstTimeKeeping->special_leave;
+        $secondCutOffDays = $secondTimeKeeping->regular_days + $firstTimeKeeping->special_leave;
 
         $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
         
@@ -569,7 +578,7 @@ class PayrollService {
                 "date" => $adjustment->date,
                 "days" => $adjustment->days
             ];
-
+            $addedDays += $adjustment->days;
             $firstCutOffDays += $adjustment->days;
         }
 
@@ -578,7 +587,7 @@ class PayrollService {
                 "date" => $adjustment->date,
                 "days" => $adjustment->days
             ];
-
+            $addedDays += $adjustment->days;
             $secondCutOffDays += $adjustment->days;
         }
 
@@ -727,7 +736,9 @@ class PayrollService {
             "additional_days" => json_encode($additionalDays),
             "undertime" => $undertime,
             "absent" => $absent,
-            "status" => $status
+            "status" => $status,
+            "base_additional_incentive" => $baseAdditional,
+            "added_days" => $addedDays,
         ]);
 
         return $incentive;
@@ -735,18 +746,25 @@ class PayrollService {
 
     private function isNcrMinimum(Employee $employee): bool
     {
-        $rateCategory = strtoupper((string) ($employee->current_position?->salary?->rate_category ?? ''));
-        if ($rateCategory !== 'MINIMUM') {
-            return false;
-        }
-
+        $ncrRate = Rate::where("code", "E")->first();
+        $divisor = 26;
+        $isMinimum = false;
         $branchLocation = $employee->home_branch?->location ?? '';
-        $branchLocation = strtoupper(trim((string) $branchLocation));
-        if ($branchLocation === '') {
-            return false;
+        $rateCategory = $employee->salary_position->rate_category;
+
+        if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+            $divisor = 22;
         }
 
-        return str_contains($branchLocation, 'NCR');
+        if (
+            (str_contains($branchLocation, 'NCR') && ($employee->payroll_list->salary_amount / $divisor) == $ncrRate->minimum) ||
+            (str_contains($branchLocation, 'NCR') && $rateCategory == 'MINIMUM')
+        ) {
+            $isMinimum = true;
+        }
+        
+
+        return $isMinimum;
     }
 
     public function getCutOffForDate($date){

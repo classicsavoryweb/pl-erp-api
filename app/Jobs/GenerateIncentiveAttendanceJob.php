@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Http\Services\PayrollService;
 use App\Models\Cutoff;
+use App\Models\Payroll;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
 use Carbon\Carbon;
@@ -36,18 +37,18 @@ class GenerateIncentiveAttendanceJob implements ShouldQueue
         $firstCutOff = Cutoff::where("start_date", $startDate)->first();
         $secondCutOff = Cutoff::where("end_date", $endDate)->first();
 
-        $timeKeepings = TimeKeepingSummary::whereIn("cut_off", [$firstCutOff->cut_off, $secondCutOff->cut_off])
-        ->with(['employee', 'employee.current_position', 'branch'])
+        $payrolls = Payroll::whereIn("pay_date", [$firstCutOff->pay_date, $secondCutOff->pay_date])
+        ->with(['employee', 'employee.current_position', 'timekeeping_branch'])
         ->distinct('employee_id')
         ->get();
 
-        foreach ($timeKeepings as $timeKeeping) {
-            $employee = $timeKeeping->employee;
+        foreach ($payrolls as $payroll) {
+            $employee = $payroll->employee;
 
             $this->payrollService->computeIncentives(
                 $secondCutOff,
                 $employee,
-                $timeKeeping->branch
+                $payroll->timekeeping_branch
             );
         }
     }

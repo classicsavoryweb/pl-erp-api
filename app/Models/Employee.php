@@ -436,6 +436,10 @@ class Employee extends Model
         return $this->hasMany(Payroll::class, "employee_id", "id");
     }
 
+    public function salary_position() {
+        return $this->hasOne(SalaryPosition::class, "position_id", "position_id");
+    }
+
     public function government_deductions() {
         return $this->hasMany(EmployeeDeduction::class, "employee_id", "id")
         ->whereHas("deduction", function ($query) {

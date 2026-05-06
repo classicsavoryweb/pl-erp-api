@@ -89,6 +89,7 @@ class PayrollProofListController extends Controller
 
             } else {
                 $proofList = $proofList->leftJoin('branches as b', 'payroll.timekeeping_branch_id', '=', 'b.id',)
+                ->leftJoin('branches as hb', 'employees.home_branch_id', '=', 'hb.id',)
                 ->addSelect(
                     'payroll_list.*',
                     DB::raw('payroll.net_pay as amount'),
@@ -98,6 +99,8 @@ class PayrollProofListController extends Controller
                     'employees.first_name',
                     'employees.middle_name',
                     'employees.employee_number',
+                    'hb.name as home_branch_name',
+                    'hb.short_name as home_branch_short_name',
                     'b.name as branch_name',
                     'b.short_name',
                     'payroll_details.cancelled_off as cancelled_off_hours',

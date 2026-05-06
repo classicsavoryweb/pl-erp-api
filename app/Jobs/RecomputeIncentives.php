@@ -58,6 +58,9 @@ class RecomputeIncentives implements ShouldQueue
 
                 if ($position->rank == 1) {
                     $months = Carbon::now()->diffInMonths($employee->date_hired);
+                    if ($months < 1) {
+                        $months = 1;
+                    }
                     $bracket = IncentivesBracket::whereRaw('CAST(month AS UNSIGNED) <= ?', [$months])
                         ->whereHas('positions', function ($query) use ($position) {
                             $query->where('positions.id', $position->id);
@@ -89,6 +92,7 @@ class RecomputeIncentives implements ShouldQueue
                 $amountRate = $incentivesAmount;
                 $additionalIncentive = 0;
                 $adjustmentPercent = 0;
+                $baseAdditional = 0;
                 $status = "initial";
 
                 $monthWorkedDays = $incentive->first_cut_off_worked_days + $incentive->second_cut_off_worked_days;
@@ -202,7 +206,8 @@ class RecomputeIncentives implements ShouldQueue
                     "amount_rate" => $amountRate,
                     "additional_incentive" => $additionalIncentive,
                     "adjustment_percent" => $adjustmentPercent,
-                    "status" => $status
+                    "status" => $status,
+                    "base_additional_incentive" => $baseAdditional
                 ]);
             }
 

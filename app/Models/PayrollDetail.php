@@ -59,6 +59,9 @@ class PayrollDetail extends Model
     public function home_branch() {
         return $this->hasOne(Branch::class, "id", "home_branch_id");
     }
+    public function position() {
+        return $this->hasOne(Position::class, "id", "position_id");
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
