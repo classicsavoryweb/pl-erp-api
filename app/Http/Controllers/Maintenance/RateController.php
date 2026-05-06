@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Maintenance;
 
 use App\Exports\Maintenance\RateExport;
 use App\Http\Controllers\Controller;
+use App\Jobs\UpdateMonthlySalaryJob;
 use App\Models\Rate;
 use Illuminate\Http\Request;
 use Exception;
@@ -85,12 +86,17 @@ class RateController extends Controller
                 "status" => "required",
             ]);
 
+            $rate = Rate::findOrFail($id);
             Rate::where("id", $id)->update([
                 "code" => $request->code,
                 "area" => str_replace(["\\r\\n", "\\n", "\\r"], PHP_EOL, $request->area),
                 "minimum" => $request->minimum,
                 "status" => $request->status,
             ]);
+
+            if ($rate->minimum != $request->minimum) {
+                UpdateMonthlySalaryJob::dispatch($rate->code);
+            }
             return $this->sendResponse(["message" => "Rate updated successfully"]);
         } catch(Exception $e) {
 
