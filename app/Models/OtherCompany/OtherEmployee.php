@@ -324,7 +324,11 @@ class OtherEmployee extends Model
 
     public function latest_position()
     {
-        return $this->hasOne(EmployeePosition::class)->latestOfMany("date_started");
+        return $this->hasOne(EmployeePosition::class)
+            ->ofMany([
+                "date_started" => "max",
+                "id" => "max",
+            ]);
     }
 
     public function user() {

@@ -3,18 +3,29 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Exports\Maintenance\BranchExport;
+use App\Exports\Maintenance\BranchesWorkbookExport;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\Account;
 use App\Models\Branch;
 use App\Models\Employee;
+use App\Models\EmployeePosition;
 use App\Models\OtherCompany\OtherEmployee;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 
 class BranchController extends Controller
 {
+    private array $oicDateAppointmentCache = [];
+    private const OIC_DATE_APPOINTED_FIELDS = [
+        "branch_head_date_appointed" => "branch_head_employee_number",
+        "kitchen_oic_date_appointed" => "kitchen_oic_employee_number",
+        "kitchen_oic_2_date_appointed" => "kitchen_oic_2_employee_number",
+    ];
+
     private const ACCOUNT_ACTIVITY_FIELDS = [
         'expense_debit',
         'expense_credit',
@@ -30,7 +41,55 @@ class BranchController extends Controller
         'branch_ho_stat_credit',
     ];
 
-    private function syncEmployeeOicStatuses(array $employeeNumbers): void
+    private const OIC_HISTORY_POSITIONS = [
+        [
+            'label' => 'Branch OIC',
+            'name_field' => 'branch_head',
+            'employee_field' => 'branch_head_employee_number',
+            'date_field' => 'branch_head_date_appointed',
+        ],
+        [
+            'label' => 'Kitchen OIC',
+            'name_field' => 'kitchen_oic',
+            'employee_field' => 'kitchen_oic_employee_number',
+            'date_field' => 'kitchen_oic_date_appointed',
+        ],
+        [
+            'label' => 'Kitchen OIC 2',
+            'name_field' => 'kitchen_oic_2',
+            'employee_field' => 'kitchen_oic_2_employee_number',
+            'date_field' => 'kitchen_oic_2_date_appointed',
+        ],
+    ];
+
+    private function branchOicAssignmentQuery(string $employeeNumber)
+    {
+        return Branch::where("status", "active")
+            ->where(function ($query) use ($employeeNumber) {
+                $query->where("branch_head_employee_number", $employeeNumber)
+                    ->orWhere("kitchen_oic_employee_number", $employeeNumber)
+                    ->orWhere("kitchen_oic_2_employee_number", $employeeNumber);
+            });
+    }
+
+    private function applyBranchFilters(Request $request, $branches)
+    {
+        if ($request->has(["column_type", "key_word"])) {
+            $branches = $branches->where($request->column_type, "LIKE", "%" . $request->key_word . "%");
+        }
+
+        if ($request->has(["date_from", "date_to"])) {
+            $branches = $branches->whereBetween('date_open', [$request->date_from, $request->date_to]);
+        }
+
+        if ($request->has(["status"])) {
+            $branches = $branches->where("status", $request->status);
+        }
+
+        return $branches;
+    }
+
+    private function syncEmployeeOicStatuses(array $employeeNumbers, array $dateOverrides = []): void
     {
         $employeeNumbers = array_values(array_unique(array_filter($employeeNumbers)));
 
@@ -45,13 +104,36 @@ class BranchController extends Controller
                 continue;
             }
 
-            $hasBranchOicAssignment = Branch::where(function ($query) use ($employeeNumber) {
-                $query->where("branch_head_employee_number", $employeeNumber)
-                    ->orWhere("kitchen_oic_employee_number", $employeeNumber);
-            })->exists();
+            $branchOicAssignment = $this->branchOicAssignmentQuery($employeeNumber)->first();
 
-            $hasPositionOicAssignment = ($employee->latest_position?->oic_assignment ?? null) === "Yes";
-            $newOicStatus = ($hasBranchOicAssignment || $hasPositionOicAssignment) ? "OIC" : null;
+            $latestPosition = $employee->latest_position;
+            $desiredDate = $dateOverrides[$employeeNumber] ?? null;
+
+            if ($branchOicAssignment && $latestPosition) {
+                $shouldUpdateBranchOic = $latestPosition->oic_assignment !== "Yes"
+                    || !$latestPosition->date_appointed
+                    || ($desiredDate && $latestPosition->date_appointed !== $desiredDate);
+
+                if ($shouldUpdateBranchOic) {
+                    $latestPosition->update([
+                        "oic_assignment" => "Yes",
+                        "date_appointed" => $desiredDate
+                            ?: ($latestPosition->date_appointed ?: now()->format("Y-m-d")),
+                    ]);
+                    $employee->unsetRelation("latest_position");
+                    $latestPosition = $employee->latest_position;
+                }
+            } elseif ($latestPosition && $latestPosition->oic_assignment === "Yes") {
+                $latestPosition->update([
+                    "oic_assignment" => "No",
+                    "date_appointed" => null,
+                ]);
+                $employee->unsetRelation("latest_position");
+                $latestPosition = $employee->latest_position;
+            }
+
+            $hasPositionOicAssignment = ($latestPosition?->oic_assignment ?? null) === "Yes";
+            $newOicStatus = ($branchOicAssignment || $hasPositionOicAssignment) ? "OIC" : null;
 
             if ($employee->oic_status !== $newOicStatus) {
                 $employee->update([
@@ -59,6 +141,544 @@ class BranchController extends Controller
                 ]);
             }
         }
+    }
+
+    private function getLoggedOicDateAppointed(?int $employeePositionId): ?string
+    {
+        if (!$employeePositionId) {
+            return null;
+        }
+
+        $activities = Activity::query()
+            ->where('subject_type', EmployeePosition::class)
+            ->where('subject_id', $employeePositionId)
+            ->whereIn('event', ['created', 'updated'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        foreach ($activities as $activity) {
+            $attributes = $activity->properties['attributes'] ?? [];
+            $old = $activity->properties['old'] ?? [];
+
+            if (($old['oic_assignment'] ?? null) === 'Yes' && !empty($old['date_appointed'])) {
+                return $old['date_appointed'];
+            }
+
+            if (($attributes['oic_assignment'] ?? null) === 'Yes' && !empty($attributes['date_appointed'])) {
+                return $attributes['date_appointed'];
+            }
+        }
+
+        return null;
+    }
+
+    private function getEmployeeLatestOicDateAppointed(Employee $employee, bool $includeHistoricalFallback = false): ?string
+    {
+        $dateAppointed = $employee->latest_position?->date_appointed;
+
+        if ($dateAppointed || !$includeHistoricalFallback) {
+            return $dateAppointed;
+        }
+
+        return EmployeePosition::query()
+            ->where('employee_id', $employee->id)
+            ->whereNotNull('date_appointed')
+            ->where('date_appointed', '<>', '')
+            ->orderByDesc('date_started')
+            ->orderByDesc('id')
+            ->value('date_appointed')
+            ?: $this->getLoggedOicDateAppointed($employee->latest_position?->id);
+    }
+
+    private function getOtherCompanyLatestOicDateAppointed(OtherEmployee $employee): ?string
+    {
+        return DB::connection($employee->getConnectionName())
+            ->table('employee_position')
+            ->where('employee_id', $employee->id)
+            ->whereNotNull('date_appointed')
+            ->where('date_appointed', '<>', '')
+            ->orderByDesc('date_started')
+            ->orderByDesc('id')
+            ->value('date_appointed');
+    }
+
+    private function bestHistoricalEmployeeMatch($employees)
+    {
+        if ($employees->count() === 1) {
+            return $employees->first();
+        }
+
+        $employeesWithDates = $employees
+            ->map(function ($employee) {
+                $dateAppointed = $employee instanceof OtherEmployee
+                    ? $this->getOtherCompanyLatestOicDateAppointed($employee)
+                    : $this->getEmployeeLatestOicDateAppointed($employee, true);
+
+                return [
+                    'employee' => $employee,
+                    'date_appointed' => $dateAppointed,
+                    'normalized_date' => $this->normalizeDate($dateAppointed) ?: '',
+                ];
+            })
+            ->filter(fn ($match) => !empty($match['date_appointed']))
+            ->sortByDesc('normalized_date')
+            ->values();
+
+        return $employeesWithDates->first()['employee'] ?? null;
+    }
+
+    private function normalizeOicName(?string $name): ?string
+    {
+        if (!$name) {
+            return null;
+        }
+
+        $name = preg_replace('/\s+/', ' ', trim(strtolower($name)));
+        $name = preg_replace('/[^a-z0-9 ]/', '', $name);
+
+        return $name ?: null;
+    }
+
+    private function nameTokens(?string $name): array
+    {
+        $normalizedName = $this->normalizeOicName($name);
+
+        if (!$normalizedName) {
+            return [];
+        }
+
+        return array_values(array_filter(explode(' ', $normalizedName), fn ($token) => strlen($token) > 1));
+    }
+
+    private function employeeMatchesName($employee, array $tokens): bool
+    {
+        $candidateNames = [
+            $employee->full_name ?? null,
+            $employee->proper_full_name ?? null,
+            $employee->formal_full_name ?? null,
+        ];
+
+        foreach ($candidateNames as $candidateName) {
+            $normalizedCandidateName = $this->normalizeOicName($candidateName);
+
+            if (!$normalizedCandidateName) {
+                continue;
+            }
+
+            $missingToken = false;
+            foreach ($tokens as $token) {
+                if (!str_contains($normalizedCandidateName, $token)) {
+                    $missingToken = true;
+                    break;
+                }
+            }
+
+            if (!$missingToken) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function resolveEmployeeByHistoricalName(?string $name)
+    {
+        $tokens = $this->nameTokens($name);
+
+        if (count($tokens) < 2) {
+            return null;
+        }
+
+        $employees = Employee::with('latest_position')
+            ->where(function ($query) use ($tokens) {
+                foreach ($tokens as $token) {
+                    $query->where(function ($tokenQuery) use ($token) {
+                        $tokenQuery->where('first_name', 'LIKE', "%{$token}%")
+                            ->orWhere('middle_name', 'LIKE', "%{$token}%")
+                            ->orWhere('last_name', 'LIKE', "%{$token}%");
+                    });
+                }
+            })
+            ->limit(50)
+            ->get()
+            ->filter(fn ($employee) => $this->employeeMatchesName($employee, $tokens))
+            ->values();
+
+        $employee = $this->bestHistoricalEmployeeMatch($employees);
+
+        if ($employee) {
+            return $employee;
+        }
+
+        $otherEmployees = OtherEmployee::query()
+            ->where(function ($query) use ($tokens) {
+                foreach ($tokens as $token) {
+                    $query->where(function ($tokenQuery) use ($token) {
+                        $tokenQuery->where('first_name', 'LIKE', "%{$token}%")
+                            ->orWhere('middle_name', 'LIKE', "%{$token}%")
+                            ->orWhere('last_name', 'LIKE', "%{$token}%");
+                    });
+                }
+            })
+            ->limit(50)
+            ->get()
+            ->filter(fn ($employee) => $this->employeeMatchesName($employee, $tokens))
+            ->values();
+
+        return $this->bestHistoricalEmployeeMatch($otherEmployees);
+    }
+
+    private function getOicDateAppointedByHistoricalName(?string $name): ?string
+    {
+        $employee = $this->resolveEmployeeByHistoricalName($name);
+
+        if (!$employee) {
+            return null;
+        }
+
+        if ($employee instanceof OtherEmployee) {
+            return $this->getOtherCompanyLatestOicDateAppointed($employee);
+        }
+
+        $dateAppointed = $this->getEmployeeLatestOicDateAppointed($employee, true);
+
+        return $dateAppointed;
+    }
+
+    private function formatHistoryName(?string $name): ?string
+    {
+        if (!$name) {
+            return null;
+        }
+
+        $name = preg_replace('/\s+/', ' ', trim($name));
+
+        if ($name === '') {
+            return null;
+        }
+
+        if (str_contains($name, ',')) {
+            return mb_strtoupper($name, 'UTF-8');
+        }
+
+        $employee = $this->resolveEmployeeByHistoricalName($name);
+
+        if ($employee) {
+            return mb_strtoupper(
+                preg_replace('/\s+/', ' ', trim($employee->full_name)),
+                'UTF-8'
+            );
+        }
+
+        $parts = explode(' ', $name);
+
+        if (count($parts) < 2) {
+            return mb_strtoupper($name, 'UTF-8');
+        }
+
+        $lastName = array_pop($parts);
+        $firstAndMiddleName = implode(' ', $parts);
+
+        return mb_strtoupper("{$lastName}, {$firstAndMiddleName}", 'UTF-8');
+    }
+
+    private function getOicDateAppointed(?string $employeeNumber, bool $includeHistoricalFallback = false): ?string
+    {
+        if (!$employeeNumber) {
+            return null;
+        }
+
+        $cacheKey = $includeHistoricalFallback ? "historical:{$employeeNumber}" : $employeeNumber;
+
+        if (!array_key_exists($cacheKey, $this->oicDateAppointmentCache)) {
+            $employee = Employee::with("latest_position")
+                ->where("employee_number", $employeeNumber)
+                ->first();
+
+            if ($employee) {
+                $dateAppointed = $this->getEmployeeLatestOicDateAppointed(
+                    $employee,
+                    $includeHistoricalFallback
+                );
+
+                if (!$dateAppointed && $includeHistoricalFallback) {
+                    $dateAppointed = $this->getLoggedOicDateAppointed($employee->latest_position?->id);
+                }
+            } else {
+                $otherEmployee = OtherEmployee::query()
+                    ->where("employee_number", $employeeNumber)
+                    ->orWhere("employee_number_2", $employeeNumber)
+                    ->first();
+
+                $dateAppointed = $otherEmployee
+                    ? $this->getOtherCompanyLatestOicDateAppointed($otherEmployee)
+                    : null;
+            }
+
+            $this->oicDateAppointmentCache[$cacheKey] = $dateAppointed;
+        }
+
+        return $this->oicDateAppointmentCache[$cacheKey];
+    }
+
+    private function normalizeDate(?string $date): ?string
+    {
+        if (!$date) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($date)->format('Y-m-d');
+        } catch (\Throwable $th) {
+            return $date;
+        }
+    }
+
+    private function clearOicDateAppointmentCache(array $employeeNumbers = []): void
+    {
+        if (empty($employeeNumbers)) {
+            $this->oicDateAppointmentCache = [];
+            return;
+        }
+
+        foreach ($employeeNumbers as $employeeNumber) {
+            if ($employeeNumber) {
+                unset($this->oicDateAppointmentCache[$employeeNumber]);
+                unset($this->oicDateAppointmentCache["historical:{$employeeNumber}"]);
+            }
+        }
+    }
+
+    private function captureOicDateSnapshot(Branch $branch): array
+    {
+        $snapshot = [];
+
+        foreach (self::OIC_DATE_APPOINTED_FIELDS as $dateField => $employeeField) {
+            $snapshot[$dateField] = $this->getOicDateAppointed($branch->{$employeeField});
+        }
+
+        return $snapshot;
+    }
+
+    private function appendOicDateSnapshotsToLatestUpdateActivity(int $branchId, array $oldSnapshot, array $newSnapshot): void
+    {
+        $activity = Activity::query()
+            ->where('subject_type', Branch::class)
+            ->where('subject_id', $branchId)
+            ->where('event', 'updated')
+            ->latest('id')
+            ->first();
+
+        if (!$activity) {
+            return;
+        }
+
+        $properties = $activity->properties?->toArray() ?? [];
+        $attributes = $properties['attributes'] ?? [];
+        $old = $properties['old'] ?? [];
+
+        foreach (array_keys(self::OIC_DATE_APPOINTED_FIELDS) as $field) {
+            $attributes[$field] = $newSnapshot[$field] ?? null;
+            $old[$field] = $oldSnapshot[$field] ?? null;
+        }
+
+        $properties['attributes'] = $attributes;
+        $properties['old'] = $old;
+
+        $activity->properties = $properties;
+        $activity->save();
+    }
+
+    private function appendOicDateAppointments($branches)
+    {
+        return $branches->map(function ($branch) {
+            $branch->branch_head_date_appointed = $this->getOicDateAppointed($branch->branch_head_employee_number);
+            $branch->kitchen_oic_date_appointed = $this->getOicDateAppointed($branch->kitchen_oic_employee_number);
+            $branch->kitchen_oic_2_date_appointed = $this->getOicDateAppointed($branch->kitchen_oic_2_employee_number);
+
+            return $branch;
+        });
+    }
+
+    private function formatHistoryDate(?string $date): string
+    {
+        if (!$date) {
+            return '-';
+        }
+
+        try {
+            return Carbon::parse($date)->format("n/j/Y");
+        } catch (\Throwable $th) {
+            return (string) $date;
+        }
+    }
+
+    private function appendHistoryEntry(array &$entries, ?string $name, ?string $date): void
+    {
+        if (!$name) {
+            return;
+        }
+
+        $entry = sprintf(
+            '%s (Date Appointed: %s)',
+            $this->formatHistoryName($name),
+            $this->formatHistoryDate($date)
+        );
+
+        if (!empty($entries) && end($entries) === $entry) {
+            return;
+        }
+
+        $entries[] = $entry;
+    }
+
+    private function resolveOicHistoryDate(array $values, string $nameField, string $employeeField, string $dateField): ?string
+    {
+        return $values[$dateField]
+            ?? $this->getOicDateAppointed($values[$employeeField] ?? null, true)
+            ?? $this->getOicDateAppointedByHistoricalName($values[$nameField] ?? null);
+    }
+
+    private function appendChangedOicHistoryEntry(array &$entries, array $old, array $attributes, string $nameField, string $employeeField, string $dateField): void
+    {
+        if (!array_key_exists($nameField, $attributes)) {
+            return;
+        }
+
+        $oldName = $old[$nameField] ?? null;
+        $newName = $attributes[$nameField] ?? null;
+
+        if ($oldName && $oldName !== $newName) {
+            $this->appendHistoryEntry(
+                $entries,
+                $oldName,
+                $this->resolveOicHistoryDate($old, $nameField, $employeeField, $dateField)
+            );
+        }
+    }
+
+    private function getRoleHistoryEntries(Branch $branch, array $roleConfig): array
+    {
+        $entries = [];
+        $nameField = $roleConfig['name_field'];
+        $dateField = $roleConfig['date_field'];
+        $employeeField = $roleConfig['employee_field'];
+        $latestKnownName = null;
+
+        $activities = Activity::query()
+            ->where('subject_type', Branch::class)
+            ->where('subject_id', $branch->id)
+            ->whereIn('event', ['created', 'updated'])
+            ->orderBy('id', 'asc')
+            ->get();
+
+        foreach ($activities as $activity) {
+            $attributes = $activity->properties['attributes'] ?? [];
+            $old = $activity->properties['old'] ?? [];
+
+            if (array_key_exists($nameField, $attributes)) {
+                $latestKnownName = $attributes[$nameField] ?: null;
+            } elseif (array_key_exists($nameField, $old) && !$latestKnownName) {
+                $latestKnownName = $old[$nameField] ?: null;
+            }
+
+            if ($activity->event === 'created') {
+                $this->appendHistoryEntry(
+                    $entries,
+                    $attributes[$nameField] ?? null,
+                    $this->resolveOicHistoryDate($attributes, $nameField, $employeeField, $dateField)
+                );
+                continue;
+            }
+
+            $this->appendChangedOicHistoryEntry($entries, $old, $attributes, $nameField, $employeeField, $dateField);
+
+            if (array_key_exists($nameField, $attributes)) {
+                $this->appendHistoryEntry(
+                    $entries,
+                    $attributes[$nameField] ?? null,
+                    $this->resolveOicHistoryDate($attributes, $nameField, $employeeField, $dateField)
+                );
+                continue;
+            }
+
+            if (array_key_exists($dateField, $attributes) && $latestKnownName) {
+                $this->appendHistoryEntry(
+                    $entries,
+                    $latestKnownName,
+                    $attributes[$dateField] ?? null
+                );
+            }
+        }
+
+        $currentValues = [
+            $nameField => $branch->{$nameField},
+            $employeeField => $branch->{$employeeField},
+            $dateField => $branch->{$dateField} ?? null,
+        ];
+
+        $this->appendHistoryEntry(
+            $entries,
+            $branch->{$nameField},
+            $this->resolveOicHistoryDate($currentValues, $nameField, $employeeField, $dateField)
+        );
+
+        return $entries;
+    }
+
+    private function buildOicHistoryRows($branches): array
+    {
+        $rows = [];
+        $maxHistoryColumns = 0;
+        $this->clearOicDateAppointmentCache();
+
+        foreach ($branches as $branch) {
+            foreach (self::OIC_HISTORY_POSITIONS as $roleConfig) {
+                $historyEntries = $this->getRoleHistoryEntries($branch, $roleConfig);
+                $maxHistoryColumns = max($maxHistoryColumns, count($historyEntries));
+
+                $rows[] = [
+                    'branch' => $branch->name,
+                    'branch_code' => $branch->short_name,
+                    'status' => $branch->status,
+                    'position' => $roleConfig['label'],
+                    'history_entries' => $historyEntries,
+                ];
+            }
+        }
+
+        return [
+            'rows' => $rows,
+            'max_history_columns' => max(1, $maxHistoryColumns),
+        ];
+    }
+
+    private function validateEditableOicDates(Request $request, Branch $branch): ?array
+    {
+        $this->clearOicDateAppointmentCache();
+        $maxDate = Carbon::today()->addMonth()->format('Y-m-d');
+
+        foreach (self::OIC_HISTORY_POSITIONS as $roleConfig) {
+            $employeeField = $roleConfig['employee_field'];
+            $dateField = $roleConfig['date_field'];
+
+            $requestEmployee = $request->{$employeeField} ?: null;
+            $requestDate = $this->normalizeDate($request->{$dateField} ?: null);
+
+            if ($requestDate && !$requestEmployee) {
+                return ["message" => "Date appointed requires an assigned {$roleConfig['label']}."];
+            }
+
+            if (!$requestDate) {
+                continue;
+            }
+
+            if ($requestDate > $maxDate) {
+                return ["message" => "{$roleConfig['label']} date appointed cannot be greater than one month from today."];
+            }
+        }
+
+        return null;
     }
 
     private function resolveEmployeeByNumber(?string $employeeNumber): ?array
@@ -92,26 +712,16 @@ class BranchController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $branches = Branch::query();
-
-            if ($request->has(["column_type", "key_word"])) {
-               $branches = $branches->where($request->column_type,"LIKE","%".$request->key_word."%");
-            }
-
-            if ($request->has(["date_from", "date_to"])) {
-                $branches = $branches->whereBetween('date_open', [$request->date_from, $request->date_to]);
-            }
-
-            if ($request->has(["status"])) {
-                $branches = $branches->where("status", $request->status);
-            }
+            $branches = $this->applyBranchFilters($request, Branch::query());
 
             if ($request->has(["export"]) && $request->export) {
                 $branches = $branches->get();
+                $branches = $this->appendOicDateAppointments($branches);
                 return Excel::download(new BranchExport($branches), "branches.xls");
             }
  
             $branches = $branches->paginate($perPage);
+            $branches->setCollection($this->appendOicDateAppointments($branches->getCollection()));
 
             return $this->sendResponse($branches);
         } catch(Exception $e) {
@@ -121,9 +731,24 @@ class BranchController extends Controller
     }
 
     public function exportBranches(Request $request) {
-        $request["export"] = true;
+        try {
+            $branches = $this->applyBranchFilters($request, Branch::query())
+                ->get();
+            $branches = $this->appendOicDateAppointments($branches);
 
-        return $this->getAllBranches($request);
+            $oicHistory = $this->buildOicHistoryRows($branches);
+
+            return Excel::download(
+                new BranchesWorkbookExport(
+                    $branches,
+                    $oicHistory['rows'],
+                    $oicHistory['max_history_columns']
+                ),
+                "branches.xls"
+            );
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
     }
 
     public function getBranches(Request $request) {
@@ -217,8 +842,12 @@ class BranchController extends Controller
                 "branch_email" => "required",
                 "rate_code" => "required",
                 'branch_head_employee_number' => "nullable|string",
+                "branch_head_date_appointed" => "nullable|date",
                 "group_head_employee_number" => "nullable|string",
                 "kitchen_oic_employee_number" => "nullable|string",
+                "kitchen_oic_date_appointed" => "nullable|date",
+                "kitchen_oic_2_employee_number" => "nullable|string",
+                "kitchen_oic_2_date_appointed" => "nullable|date",
                 "mancom_employee_number" => "nullable|string",
                 // "expense_debit" => "required",
                 // "expense_credit" => "required",
@@ -241,6 +870,7 @@ class BranchController extends Controller
             $ghEmployee = $this->resolveEmployeeByNumber($request->group_head_employee_number);
             $mancom = $this->resolveEmployeeByNumber($request->mancom_employee_number);
             $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
+            $kitchenOIC2 = $this->resolveEmployeeByNumber($request->kitchen_oic_2_employee_number);
 
             if ($request->filled('branch_head_employee_number') && !$bhEmployee) {
                 return $this->sendError(["message" => "Branch head employee number not found."]);
@@ -253,6 +883,20 @@ class BranchController extends Controller
             }
             if ($request->filled('kitchen_oic_employee_number') && !$kitchenOIC) {
                 return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
+            }
+            if ($request->filled('kitchen_oic_2_employee_number') && !$kitchenOIC2) {
+                return $this->sendError(["message" => "Kitchen OIC 2 employee number not found."]);
+            }
+            $dateOverrides = [];
+
+            if (!empty($bhEmployee['employee_number']) && !empty($request->branch_head_date_appointed)) {
+                $dateOverrides[$bhEmployee['employee_number']] = $request->branch_head_date_appointed;
+            }
+            if (!empty($kitchenOIC['employee_number']) && !empty($request->kitchen_oic_date_appointed)) {
+                $dateOverrides[$kitchenOIC['employee_number']] = $request->kitchen_oic_date_appointed;
+            }
+            if (!empty($kitchenOIC2['employee_number']) && !empty($request->kitchen_oic_2_date_appointed)) {
+                $dateOverrides[$kitchenOIC2['employee_number']] = $request->kitchen_oic_2_date_appointed;
             }
 
             $branch = Branch::create([
@@ -277,6 +921,8 @@ class BranchController extends Controller
                 "mancom" => $mancom['full_name'] ?? null,
                 "kitchen_oic_employee_number" => $kitchenOIC['employee_number'] ?? null,
                 "kitchen_oic" => $kitchenOIC['full_name'] ?? null, 
+                "kitchen_oic_2_employee_number" => $kitchenOIC2['employee_number'] ?? null,
+                "kitchen_oic_2" => $kitchenOIC2['full_name'] ?? null,
                 "expense_debit" => $request->expense_debit ?? null, 
                 "expense_credit" => $request->expense_credit ?? null, 
                 "advance_debit" => $request->advance_debit ?? null, 
@@ -294,7 +940,8 @@ class BranchController extends Controller
             $this->syncEmployeeOicStatuses([
                 $branch->branch_head_employee_number,
                 $branch->kitchen_oic_employee_number,
-            ]);
+                $branch->kitchen_oic_2_employee_number,
+            ], $dateOverrides);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);
         } catch(Exception $e) {
@@ -305,42 +952,48 @@ class BranchController extends Controller
 
     public function editBranch(Request $request, $id) {
         try {
-            $request->validate([
-                "name" => "required|unique:branches,name,".$id,
-                "status" => "required",
-                //"travel_time" => "required",
-                //"device_name" => "required",
-                "branch_number" => "required|unique:branches,branch_number,".$id,
-                "short_name" => "required|unique:branches,short_name,".$id,
-                "type" => "required",
-                "address" => "required",
-                "location" => "required",
-                "company" => "required",
-                "date_open" => "required",
-                "branch_email" => "required",
-                "rate_code" => "required",
+            $branch = Branch::findOrFail($id);
+            $canEditAll = $request->user()->can("edit_branches_all");
+            $canEditOic = $canEditAll || $request->user()->can("edit_branches_oic");
+
+            if (!$canEditOic) {
+                return $this->sendError(["message" => "You do not have permission to edit this branch."], 403);
+            }
+
+            $rules = [
                 'branch_head_employee_number' => "nullable|string",
+                "branch_head_date_appointed" => "nullable|date",
                 "group_head_employee_number" => "nullable|string",
                 "kitchen_oic_employee_number" => "nullable|string",
+                "kitchen_oic_date_appointed" => "nullable|date",
+                "kitchen_oic_2_employee_number" => "nullable|string",
+                "kitchen_oic_2_date_appointed" => "nullable|date",
                 "mancom_employee_number" => "nullable|string",
-                // "expense_debit" => "required",
-                // "expense_credit" => "required",
-                // "advance_debit" => "required",
-                // "advance_credit" => "required",
-                // "ho_13th_debit" => "required",
-                // "ho_13th_debit_1" => "required",
-                // "ho_13th_credit" => "required",
-                // "branch_ho_13th_debit" => "required",
-                // "branch_ho_13th_debit_1" => "required",
-                // "branch_ho_13th_credit" => "required",
-                // "branch_ho_stat_debit" => "required",
-                // "branch_ho_stat_credit" => "required",
-            ]);
+            ];
+
+            if ($canEditAll) {
+                $rules = array_merge([
+                    "name" => "required|unique:branches,name,".$id,
+                    "status" => "required",
+                    "branch_number" => "required|unique:branches,branch_number,".$id,
+                    "short_name" => "required|unique:branches,short_name,".$id,
+                    "type" => "required",
+                    "address" => "required",
+                    "location" => "required",
+                    "company" => "required",
+                    "date_open" => "required",
+                    "branch_email" => "required",
+                    "rate_code" => "required",
+                ], $rules);
+            }
+
+            $request->validate($rules);
 
             $bhEmployee = $this->resolveEmployeeByNumber($request->branch_head_employee_number);
             $ghEmployee = $this->resolveEmployeeByNumber($request->group_head_employee_number);
             $mancom = $this->resolveEmployeeByNumber($request->mancom_employee_number);
             $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
+            $kitchenOIC2 = $this->resolveEmployeeByNumber($request->kitchen_oic_2_employee_number);
 
             if ($request->filled('branch_head_employee_number') && !$bhEmployee) {
                 return $this->sendError(["message" => "Branch head employee number not found."]);
@@ -354,28 +1007,36 @@ class BranchController extends Controller
             if ($request->filled('kitchen_oic_employee_number') && !$kitchenOIC) {
                 return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
-            $branch = Branch::findOrFail($id);
+            if ($request->filled('kitchen_oic_2_employee_number') && !$kitchenOIC2) {
+                return $this->sendError(["message" => "Kitchen OIC 2 employee number not found."]);
+            }
+            $dateValidationError = $this->validateEditableOicDates($request, $branch);
+            if ($dateValidationError) {
+                return $this->sendError($dateValidationError);
+            }
+            $this->clearOicDateAppointmentCache();
+            $oldOicDateSnapshot = $this->captureOicDateSnapshot($branch);
             $affectedEmployeeNumbers = [
                 $branch->branch_head_employee_number,
                 $branch->kitchen_oic_employee_number,
+                $branch->kitchen_oic_2_employee_number,
                 $bhEmployee['employee_number'] ?? null,
                 $kitchenOIC['employee_number'] ?? null,
+                $kitchenOIC2['employee_number'] ?? null,
             ];
+            $dateOverrides = [];
 
-            $branch->update([
-                "name" => $request->name,
-                "status" => $request->status,
-                "travel_time" => $request->travel_time,
-                "device_name" => $request->device_name ?? null,
-                "short_name" => $request->short_name,
-                "branch_number" => $request->branch_number,
-                "type" => $request->type,
-                "address" => $request->address,
-                "location" => $request->location,
-                "date_open" => $request->date_open,
-                "company" => $request->company,
-                "rate_code" => $request->rate_code,
-                "branch_email" => $request->branch_email,
+            if (!empty($bhEmployee['employee_number']) && !empty($request->branch_head_date_appointed)) {
+                $dateOverrides[$bhEmployee['employee_number']] = $request->branch_head_date_appointed;
+            }
+            if (!empty($kitchenOIC['employee_number']) && !empty($request->kitchen_oic_date_appointed)) {
+                $dateOverrides[$kitchenOIC['employee_number']] = $request->kitchen_oic_date_appointed;
+            }
+            if (!empty($kitchenOIC2['employee_number']) && !empty($request->kitchen_oic_2_date_appointed)) {
+                $dateOverrides[$kitchenOIC2['employee_number']] = $request->kitchen_oic_2_date_appointed;
+            }
+
+            $updateData = [
                 'branch_head_employee_number' => $bhEmployee['employee_number'] ?? null,
                 "group_head_employee_number" => $ghEmployee['employee_number'] ?? null,
                 'branch_head' => $bhEmployee['full_name'] ?? null,
@@ -384,21 +1045,49 @@ class BranchController extends Controller
                 "mancom" => $mancom['full_name'] ?? null,
                 "kitchen_oic_employee_number" => $kitchenOIC['employee_number'] ?? null,
                 "kitchen_oic" => $kitchenOIC['full_name'] ?? null,
-                "expense_debit" => $request->expense_debit ?? null, 
-                "expense_credit" => $request->expense_credit ?? null, 
-                "advance_debit" => $request->advance_debit ?? null, 
-                "advance_credit" => $request->advance_credit ?? null,
-                "ho_13th_debit" => $request->ho_13th_debit ?? null,
-                "ho_13th_debit_1" => $request->ho_13th_debit_1 ?? null,
-                "ho_13th_credit" => $request->ho_13th_credit ?? null,
-                "branch_ho_13th_debit" => $request->branch_ho_13th_debit ?? null,
-                "branch_ho_13th_debit_1" => $request->branch_ho_13th_debit_1 ?? null,
-                "branch_ho_13th_credit" => $request->branch_ho_13th_credit ?? null,
-                "branch_ho_stat_debit" => $request->branch_ho_stat_debit ?? null,
-                "branch_ho_stat_credit" => $request->branch_ho_stat_credit ?? null,
-            ]);
+                "kitchen_oic_2_employee_number" => $kitchenOIC2['employee_number'] ?? null,
+                "kitchen_oic_2" => $kitchenOIC2['full_name'] ?? null,
+            ];
 
-            $this->syncEmployeeOicStatuses($affectedEmployeeNumbers);
+            if ($canEditAll) {
+                $updateData = array_merge([
+                    "name" => $request->name,
+                    "status" => $request->status,
+                    "travel_time" => $request->travel_time,
+                    "device_name" => $request->device_name ?? null,
+                    "short_name" => $request->short_name,
+                    "branch_number" => $request->branch_number,
+                    "type" => $request->type,
+                    "address" => $request->address,
+                    "location" => $request->location,
+                    "date_open" => $request->date_open,
+                    "company" => $request->company,
+                    "rate_code" => $request->rate_code,
+                    "branch_email" => $request->branch_email,
+                    "expense_debit" => $request->expense_debit ?? null, 
+                    "expense_credit" => $request->expense_credit ?? null, 
+                    "advance_debit" => $request->advance_debit ?? null, 
+                    "advance_credit" => $request->advance_credit ?? null,
+                    "ho_13th_debit" => $request->ho_13th_debit ?? null,
+                    "ho_13th_debit_1" => $request->ho_13th_debit_1 ?? null,
+                    "ho_13th_credit" => $request->ho_13th_credit ?? null,
+                    "branch_ho_13th_debit" => $request->branch_ho_13th_debit ?? null,
+                    "branch_ho_13th_debit_1" => $request->branch_ho_13th_debit_1 ?? null,
+                    "branch_ho_13th_credit" => $request->branch_ho_13th_credit ?? null,
+                    "branch_ho_stat_debit" => $request->branch_ho_stat_debit ?? null,
+                    "branch_ho_stat_credit" => $request->branch_ho_stat_credit ?? null,
+                ], $updateData);
+            }
+
+            $branch->update($updateData);
+
+            $effectiveDateOverrides = $branch->status === "active" ? $dateOverrides : [];
+            $this->syncEmployeeOicStatuses($affectedEmployeeNumbers, $effectiveDateOverrides);
+            $branch->refresh();
+
+            $this->clearOicDateAppointmentCache($affectedEmployeeNumbers);
+            $newOicDateSnapshot = $this->captureOicDateSnapshot($branch);
+            $this->appendOicDateSnapshotsToLatestUpdateActivity($branch->id, $oldOicDateSnapshot, $newOicDateSnapshot);
 
             return $this->sendResponse(["message" => "Branch updated successfully"]);
         } catch(Exception $e) {

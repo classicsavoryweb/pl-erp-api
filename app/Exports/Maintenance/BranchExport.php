@@ -4,9 +4,10 @@ namespace App\Exports\Maintenance;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use Illuminate\Database\Eloquent\Collection;
 
-class BranchExport implements FromCollection, WithHeadings
+class BranchExport implements FromCollection, WithHeadings, WithTitle
 {
 
     protected Collection $branches;
@@ -33,6 +34,7 @@ class BranchExport implements FromCollection, WithHeadings
                 $branch->branch_head,
                 $branch->group_head,
                 $branch->kitchen_oic,
+                $branch->kitchen_oic_2,
                 $branch->mancom,
                 $branch->travel_time,
                 $branch->device_name,
@@ -69,6 +71,7 @@ class BranchExport implements FromCollection, WithHeadings
             'Branch OIC',
             'Group Head',
             'Kitchen OIC',
+            'Kitchen OIC 2',
             'Mancom',
             'Travel Time',
             'Device Name',
@@ -86,5 +89,10 @@ class BranchExport implements FromCollection, WithHeadings
             'Statutory, Branch/HO (Debit)',
             'Statutory, Branch/HO (Credit)',
         ];
+    }
+
+    public function title(): string
+    {
+        return 'Branches';
     }
 }

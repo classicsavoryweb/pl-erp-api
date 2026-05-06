@@ -32,6 +32,6 @@ protected Collection $positions;
 
     public function headings(): array
     {
-        return ['Employee Number','Full Name', "Position", "Date Started", "OIC Assignment" , "Date Appointed", "Remarks"];
+        return ['Employee Number','Full Name', "Position", "Date Started", "OIC Assignment", "Date Appointed", "Remarks"];
     }
 }

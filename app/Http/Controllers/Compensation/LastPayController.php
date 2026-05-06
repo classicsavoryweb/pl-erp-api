@@ -30,6 +30,14 @@ class LastPayController extends Controller
         return (float) str_replace(',', '', (string) $value);
     }
 
+    private function getTaxRefundPeriod(int $year): array
+    {
+        return [
+            "start" => Carbon::create($year - 1, 12, 26)->format("Y-m-d"),
+            "end" => Carbon::create($year, 12, 25)->format("Y-m-d"),
+        ];
+    }
+
     public function getAllLastPay(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -88,6 +96,10 @@ class LastPayController extends Controller
             ->paginate($perPage);
 
             $lastPays->getCollection()->transform(function ($lastPay) {
+                if ($lastPay->status !== "Unposted") {
+                    return $lastPay;
+                }
+
                 $companyDeductions = $this->getCurrentCompanyDeductionsForEmployee($lastPay->employee_id);
                 $totalDeductions = round($companyDeductions->sum(function ($deduction) {
                     return $this->numeric($deduction->balance ?? $deduction->amount ?? 0);
@@ -280,6 +292,11 @@ class LastPayController extends Controller
                 ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
                 ->get();
                 $payrollRowsOverride = $this->buildThirteenthMonthPayrollRows($allPayrolls, $yearHolded);
+                $taxRefundPeriod = $this->getTaxRefundPeriod($yearHolded);
+                $taxRefundPayrolls = Payroll::where("employee_id", $employee->id)
+                    ->where("status", "final")
+                    ->whereBetween("end_date", [$taxRefundPeriod["start"], $taxRefundPeriod["end"]])
+                    ->get();
 
                 $annualSalary = 0;
                 $annualTaxableIncome = 0;
@@ -292,8 +309,11 @@ class LastPayController extends Controller
 
                 foreach ($allPayrolls as $payroll) {
                     $salary = $this->numeric($payroll->salary) - ($this->numeric($payroll->undertime_amount) + $this->numeric($payroll->tardiness_amount));
-                    $annualTaxableIncome += $this->numeric($payroll->taxable_income);
                     $annualSalary += $salary;
+                }
+
+                foreach ($taxRefundPayrolls as $payroll) {
+                    $annualTaxableIncome += $this->numeric($payroll->taxable_income);
                     $totalWithholdingTax += $this->numeric($payroll->withholding_tax);
                 }
                 $month13th = $annualSalary / 12;
@@ -504,6 +524,11 @@ class LastPayController extends Controller
                 ->where("status", "final")
                 ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
                 ->get();
+                $taxRefundPeriod = $this->getTaxRefundPeriod($yearHolded);
+                $taxRefundPayrolls = Payroll::where("employee_id", $employee->id)
+                    ->where("status", "final")
+                    ->whereBetween("end_date", [$taxRefundPeriod["start"], $taxRefundPeriod["end"]])
+                    ->get();
 
                 $annualSalary = 0;
                 $annualTaxableIncome = 0;
@@ -522,8 +547,11 @@ class LastPayController extends Controller
 
                 foreach ($allPayrolls as $payroll) {
                     $salary = $this->numeric($payroll->salary) - ($this->numeric($payroll->undertime_amount) + $this->numeric($payroll->tardiness_amount));
-                    $annualTaxableIncome += $this->numeric($payroll->taxable_income);
                     $annualSalary += $salary;
+                }
+
+                foreach ($taxRefundPayrolls as $payroll) {
+                    $annualTaxableIncome += $this->numeric($payroll->taxable_income);
                     $totalWithholdingTax += $this->numeric($payroll->withholding_tax);
                 }
                 $month13th = $annualSalary / 12;
@@ -535,11 +563,14 @@ class LastPayController extends Controller
                 ->where("max_amount", ">=" , $annualTaxableIncome)
                 ->first();
 
+                $computedTaxRefund = 0;
                 if ($annualTax) {
                     $amountShouldBePaid = $this->numeric($annualTax->tax_lower_limit) + (($annualTaxableIncome - $this->numeric($annualTax->minimum_amount)) * (0.01 * $this->numeric($annualTax->percentage)));
-                    $taxRefund = $amountShouldBePaid < $totalWithholdingTax ? $totalWithholdingTax - $amountShouldBePaid : 0;
-                } else {
-                    $taxRefund = 0;
+                    $computedTaxRefund = $amountShouldBePaid < $totalWithholdingTax ? $totalWithholdingTax - $amountShouldBePaid : 0;
+                }
+
+                if (!$request->has("tax_refund")) {
+                    $taxRefund = $computedTaxRefund;
                 }
 
                 $lastPay = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $salesIncentives)- $totalDeductions;
@@ -705,6 +736,203 @@ class LastPayController extends Controller
             return $this->sendError(["message" => "Last Pay Deduction not found"]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    private function buildLastPayPreview(LastPay $lastPay): array
+    {
+        $lastPay->loadMissing([
+            "employee",
+            "employee.current_branch",
+            "employee.current_position",
+            "deductions",
+            "deductions.deduction",
+        ]);
+
+        $earnings = [
+            "payroll_hold" => round($this->numeric($lastPay->payroll_hold), 2),
+            "thirteenth_month" => round($this->numeric($lastPay->thirteenth_month), 2),
+            "tax_refund" => round($this->numeric($lastPay->tax_refund), 2),
+            "sales_incentives" => round($this->numeric($lastPay->sales), 2),
+            "incentives" => round($this->numeric($lastPay->incentives), 2),
+            "sl_vl" => round($this->numeric($lastPay->sl_vl), 2),
+            "meal_allowance" => round($this->numeric($lastPay->meal), 2),
+        ];
+
+        $grossPay = round(array_sum($earnings), 2);
+        $deductions = $lastPay->deductions->map(function ($deduction) {
+            return [
+                "id" => $deduction->id,
+                "reference_doc" => $deduction->reference_doc,
+                "deduction_id" => $deduction->deduction_id,
+                "type" => $deduction->deduction?->description,
+                "category" => $deduction->deduction?->category,
+                "amount" => round($this->numeric($deduction->amount), 2),
+            ];
+        })->values();
+
+        $governmentDeductions = $deductions
+            ->filter(fn ($deduction) => in_array($deduction["category"], ["Pag-ibig", "SSS"]))
+            ->values();
+        $companyDeductions = $deductions
+            ->reject(fn ($deduction) => in_array($deduction["category"], ["Pag-ibig", "SSS"]))
+            ->values();
+        $totalDeductions = round($deductions->sum("amount"), 2);
+        $computedLastPay = round($grossPay - $totalDeductions, 2);
+
+        return [
+            "last_pay" => [
+                "id" => $lastPay->id,
+                "last_pay_number" => $lastPay->last_pay_number,
+                "status" => $lastPay->status,
+                "year" => $lastPay->year,
+                "created_at" => $lastPay->created_at,
+                "updated_at" => $lastPay->updated_at,
+            ],
+            "employee" => [
+                "id" => $lastPay->employee?->id,
+                "employee_number" => $lastPay->employee?->employee_number,
+                "full_name" => $lastPay->employee?->full_name,
+                "branch" => $lastPay->employee?->current_branch?->short_name,
+                "branch_name" => $lastPay->employee?->current_branch?->name,
+                "position" => $lastPay->employee?->current_position?->description,
+            ],
+            "earnings" => $earnings,
+            "deductions" => [
+                "company" => $companyDeductions,
+                "government" => $governmentDeductions,
+                "all" => $deductions,
+            ],
+            "totals" => [
+                "gross_pay" => $grossPay,
+                "total_deductions" => $totalDeductions,
+                "computed_last_pay" => $computedLastPay,
+                "stored_total_deductions" => round($this->numeric($lastPay->total_deductions), 2),
+                "stored_last_pay" => round($this->numeric($lastPay->last_pay), 2),
+                "difference_from_stored_total_deductions" => round($totalDeductions - $this->numeric($lastPay->total_deductions), 2),
+                "difference_from_stored_last_pay" => round($computedLastPay - $this->numeric($lastPay->last_pay), 2),
+            ],
+            "formula" => "payroll_hold + thirteenth_month + tax_refund + sales_incentives + incentives + sl_vl + meal_allowance - total_deductions",
+        ];
+    }
+
+    public function previewLastPay($lastPayId) {
+        try {
+            $lastPay = LastPay::find($lastPayId);
+
+            if (!$lastPay) {
+                return $this->sendError(["message" => "Last pay not found"]);
+            }
+
+            return $this->sendResponse($this->buildLastPayPreview($lastPay));
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    private function buildTaxRefundComputation(LastPay $lastPay): array
+    {
+        $lastPay->loadMissing(["employee"]);
+
+        $year = (int) $lastPay->year;
+        if (!$year && $lastPay->employee?->separation_date) {
+            $source = Carbon::parse($lastPay->employee->separation_date);
+            $year = (int) $source->year;
+            if ($source->greaterThanOrEqualTo(Carbon::create($year, 12, 11)->startOfDay())) {
+                $year += 1;
+            }
+        }
+
+        if (!$year) {
+            $year = (int) Carbon::now()->year;
+        }
+
+        $taxRefundPeriod = $this->getTaxRefundPeriod($year);
+        $periodStart = $taxRefundPeriod["start"];
+        $periodEnd = $taxRefundPeriod["end"];
+
+        $payrolls = Payroll::where("employee_id", $lastPay->employee_id)
+            ->where("status", "final")
+            ->whereBetween("end_date", [$periodStart, $periodEnd])
+            ->orderBy("end_date")
+            ->get();
+
+        $rows = $payrolls
+            ->groupBy(fn ($payroll) => Carbon::parse($payroll->end_date)->format("Y-m"))
+            ->map(function ($items, $monthKey) {
+                return [
+                    "month" => Carbon::createFromFormat("Y-m", $monthKey)->format("F"),
+                    "code" => $items->first()?->tax_status,
+                    "regular_gross" => round($items->sum(fn ($payroll) => $this->numeric($payroll->gross_pay)), 2),
+                    "sss" => round($items->sum(fn ($payroll) => $this->numeric($payroll->employee_sss)), 2),
+                    "phic" => round($items->sum(fn ($payroll) => $this->numeric($payroll->employee_philhealth)), 2),
+                    "hdmf" => round($items->sum(fn ($payroll) => $this->numeric($payroll->employee_pagibig)), 2),
+                    "taxable_income" => round($items->sum(fn ($payroll) => $this->numeric($payroll->taxable_income)), 2),
+                    "tax_withheld" => round($items->sum(fn ($payroll) => $this->numeric($payroll->withholding_tax)), 2),
+                ];
+            })
+            ->values();
+
+        $totals = [
+            "regular_gross" => round($rows->sum("regular_gross"), 2),
+            "sss" => round($rows->sum("sss"), 2),
+            "phic" => round($rows->sum("phic"), 2),
+            "hdmf" => round($rows->sum("hdmf"), 2),
+            "taxable_income" => round($rows->sum("taxable_income"), 2),
+            "tax_withheld" => round($rows->sum("tax_withheld"), 2),
+        ];
+
+        $annualTax = AnnualTax::where("minimum_amount", "<=", $totals["taxable_income"])
+            ->where("max_amount", ">=", $totals["taxable_income"])
+            ->first();
+
+        $taxDue = 0;
+        if ($annualTax) {
+            $taxDue = $this->numeric($annualTax->tax_lower_limit)
+                + (($totals["taxable_income"] - $this->numeric($annualTax->minimum_amount)) * (0.01 * $this->numeric($annualTax->percentage)));
+        }
+
+        $computedRefund = max($totals["tax_withheld"] - $taxDue, 0);
+
+        return [
+            "employee" => [
+                "id" => $lastPay->employee?->id,
+                "employee_number" => $lastPay->employee?->employee_number,
+                "full_name" => $lastPay->employee?->full_name,
+                "tax_status" => $payrolls->first()?->tax_status,
+            ],
+            "last_pay" => [
+                "id" => $lastPay->id,
+                "last_pay_number" => $lastPay->last_pay_number,
+                "year" => $lastPay->year,
+                "stored_tax_refund" => round($this->numeric($lastPay->tax_refund), 2),
+            ],
+            "period" => [
+                "start" => $periodStart,
+                "end" => $periodEnd,
+            ],
+            "rows" => $rows,
+            "totals" => [
+                ...$totals,
+                "annual_tax_due" => round($taxDue, 2),
+                "computed_tax_refund" => round($computedRefund, 2),
+                "difference_from_stored_tax_refund" => round($computedRefund - $this->numeric($lastPay->tax_refund), 2),
+            ],
+            "date_printed" => Carbon::now()->format("m/d/Y"),
+        ];
+    }
+
+    public function taxRefundComputation($lastPayId) {
+        try {
+            $lastPay = LastPay::find($lastPayId);
+
+            if (!$lastPay) {
+                return $this->sendError(["message" => "Last pay not found"]);
+            }
+
+            return $this->sendResponse($this->buildTaxRefundComputation($lastPay));
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }

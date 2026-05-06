@@ -95,8 +95,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-filter-branches", [BranchController::class, "getFilterBranches"]);
     Route::get("/get-branch-activities/{id}", [BranchController::class, "getBranchActivities"]);
     Route::get("/export-all-branches", [BranchController::class, "exportBranches"]);
-    Route::middleware(["permission:perform_branches"])->post("/create-branch", [BranchController::class, "createBranch"]);
-    Route::middleware(["permission:perform_branches"])->post("/edit-branch/{id}", [BranchController::class, "editBranch"]);
+    Route::middleware(["permission:create_branches"])->post("/create-branch", [BranchController::class, "createBranch"]);
+    Route::middleware(["permission:edit_branches_all|edit_branches_oic"])->post("/edit-branch/{id}", [BranchController::class, "editBranch"]);
     //training titles
     Route::get("/get-all-training-titles", [TrainingTitleController::class, "getAllTrainingTitles"]);
     Route::get("/get-training-titles", [TrainingTitleController::class, "getTrainingTitles"]);
