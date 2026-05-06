@@ -20,6 +20,7 @@ use App\Models\PayrollDetail;
 use App\Models\PayrollList;
 use App\Models\PhilhealthPercentageBase;
 use App\Models\Position;
+use App\Models\Rate;
 use App\Models\SSS;
 use App\Models\Tardiness;
 use App\Models\Tax;
@@ -745,18 +746,25 @@ class PayrollService {
 
     private function isNcrMinimum(Employee $employee): bool
     {
-        $rateCategory = strtoupper((string) ($employee->current_position?->salary?->rate_category ?? ''));
-        if ($rateCategory !== 'MINIMUM') {
-            return false;
-        }
-
+        $ncrRate = Rate::where("code", "E")->first();
+        $divisor = 26;
+        $isMinimum = false;
         $branchLocation = $employee->home_branch?->location ?? '';
-        $branchLocation = strtoupper(trim((string) $branchLocation));
-        if ($branchLocation === '') {
-            return false;
+        $rateCategory = $employee->salary_position->rate_category;
+
+        if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+            $divisor = 22;
         }
 
-        return str_contains($branchLocation, 'NCR');
+        if (
+            (str_contains($branchLocation, 'NCR') && ($employee->payroll_list->salary_amount / $divisor) == $ncrRate->minimum) ||
+            (str_contains($branchLocation, 'NCR') && $rateCategory == 'MINIMUM')
+        ) {
+            $isMinimum = true;
+        }
+        
+
+        return $isMinimum;
     }
 
     public function getCutOffForDate($date){
