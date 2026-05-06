@@ -42,7 +42,7 @@ class ActualTimeController extends Controller
                 "employee.current_branch",
                 "punches",
                 "punches.branch"
-            ])->query();
+            ]);
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
