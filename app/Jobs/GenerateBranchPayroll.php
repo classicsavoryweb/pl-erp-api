@@ -47,6 +47,11 @@ class GenerateBranchPayroll implements ShouldQueue
         foreach ($timeKeepingSummaries as $tkSummary) {
             try {
                 $employee = $tkSummary->employee;
+
+                if ($tkSummary->regular_days <= 0) {
+                    continue;
+                }
+
                 $payrollDetails = PayrollDetail::where("employee_id", $tkSummary->employee_id)
                 ->where("pay_date", $activeCutOff->pay_date)
                 ->first();
