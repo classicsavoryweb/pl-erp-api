@@ -842,9 +842,12 @@ class BranchController extends Controller
                 "branch_email" => "required",
                 "rate_code" => "required",
                 'branch_head_employee_number' => "nullable|string",
+                "branch_head_date_appointed" => "nullable|date",
                 "group_head_employee_number" => "nullable|string",
                 "kitchen_oic_employee_number" => "nullable|string",
+                "kitchen_oic_date_appointed" => "nullable|date",
                 "kitchen_oic_2_employee_number" => "nullable|string",
+                "kitchen_oic_2_date_appointed" => "nullable|date",
                 "mancom_employee_number" => "nullable|string",
                 // "expense_debit" => "required",
                 // "expense_credit" => "required",
@@ -883,6 +886,17 @@ class BranchController extends Controller
             }
             if ($request->filled('kitchen_oic_2_employee_number') && !$kitchenOIC2) {
                 return $this->sendError(["message" => "Kitchen OIC 2 employee number not found."]);
+            }
+            $dateOverrides = [];
+
+            if (!empty($bhEmployee['employee_number']) && !empty($request->branch_head_date_appointed)) {
+                $dateOverrides[$bhEmployee['employee_number']] = $request->branch_head_date_appointed;
+            }
+            if (!empty($kitchenOIC['employee_number']) && !empty($request->kitchen_oic_date_appointed)) {
+                $dateOverrides[$kitchenOIC['employee_number']] = $request->kitchen_oic_date_appointed;
+            }
+            if (!empty($kitchenOIC2['employee_number']) && !empty($request->kitchen_oic_2_date_appointed)) {
+                $dateOverrides[$kitchenOIC2['employee_number']] = $request->kitchen_oic_2_date_appointed;
             }
 
             $branch = Branch::create([
@@ -927,7 +941,7 @@ class BranchController extends Controller
                 $branch->branch_head_employee_number,
                 $branch->kitchen_oic_employee_number,
                 $branch->kitchen_oic_2_employee_number,
-            ], []);
+            ], $dateOverrides);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);
         } catch(Exception $e) {
