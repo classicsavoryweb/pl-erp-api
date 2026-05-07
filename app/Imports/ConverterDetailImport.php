@@ -32,7 +32,7 @@ class ConverterDetailImport implements ToCollection, WithHeadingRow, WithMultipl
     public function collection(Collection $collection)
     {
         foreach ($collection as $trans) {
-            $employee = Employee::with("current_branch")->where("employee_number", $trans["employee_id"])->first();
+            $employee = Employee::with("current_branch")->where("employee_number", (string) $trans["employee_id"])->first();
             if ($employee) {
                 $branch = Branch::where("short_name", (string) $trans["branch_code"])->first();
 
