@@ -589,4 +589,94 @@ class TimeKeepingController extends Controller
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
+
+    public function getEmployeesPerTimekeepingBranch(Request $request) {
+        try {
+            $branches = $request->branch_id;
+            $activeCutOff = Cutoff::where("status", "active")->first();
+
+            if (!$activeCutOff) {
+                return $this->sendError(["message" => "No active cutoff"]);
+            }
+
+            $employees = ScheduleTime::select(
+                "employees.last_name",
+                "employees.first_name",
+                "employees.middle_name",
+                "employees.biometric_number",
+                "employees.id as employee_id",
+                "branches.short_name as timekeeping_branch_code",
+                "branches.id as timekeeping_branch_id",
+                "positions.description as current_position"
+            )
+            ->join("employees", "employees.id", "=", "schedule_time.employee_id")
+            ->join("positions", "employees.position_id", "=", "positions.id")
+            ->join("branches", "branches.id", "=", "schedule_time.branch_id")
+            ->whereBetween("schedule_time.date", [$activeCutOff->start_date, $activeCutOff->end_date])
+            ->whereIn("schedule_time.branch_id", $branches)
+            ->groupBy(
+                "employees.id",
+                "employees.last_name",
+                "employees.first_name",
+                "employees.middle_name",
+                "employees.biometric_number",
+                "branches.short_name",
+                "branches.id",
+                "positions.description"
+            )
+            ->orderBy("schedule_time.branch_id")
+            ->orderBy("employees.last_name")
+            ->get();
+
+            return $this->sendResponse($employees);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function generateTimeKeepingPerEmployee(Request $request) {
+        try {
+            $request->validate([
+                "employee_id" => "required",
+                "timekeeping_branch_id" => "required"
+            ]);
+
+            $employee = Employee::find($request->employee_id);
+            if (!$employee) {
+                return $this->sendError(["message" => "Employee not found"]);
+            }
+
+            $activeCutOff = Cutoff::where("status", "active")->first();
+            if (!$activeCutOff) {
+                return $this->sendError(["message" => "No active cutoff"]);
+            }
+
+            TransferLogsToTimeKeeping::dispatchSync(
+                $request->timekeeping_branch_id,
+                [
+                    "start_time" => $activeCutOff->start_date,
+                    "end_time" => $activeCutOff->end_date
+                ],
+                null,
+                false,
+                $request->employee_id
+            );
+
+            GenerateTimekeepingSummary::dispatchSync(
+                $request->timekeeping_branch_id,
+                [
+                    "start_time" => $activeCutOff->start_date,
+                    "end_time" => $activeCutOff->end_date
+                ],
+                null,
+                $request->employee_id,
+            );
+
+
+            return $this->sendResponse(["message" => "Successfully generated"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+
+    }
 }
