@@ -649,13 +649,14 @@ class ConverterController extends Controller
                     continue;
                 }
 
-                ConverterDetail::create([
+                ConverterDetail::updateOrCreate([
                     "employee_id" => $employee->id,
                     "branch_id" => $employee->current_branch->id,
+                    "transaction_number" => $transaction["transaction_number"],
                     "status" => "Pending",
                     "source" => "CSHUB",
+                ], [
                     "terms" => $transaction["terms"],
-                    "transaction_number" => $transaction["transaction_number"],
                     "amount" => $transaction["amount"],
                     "remarks" => $transaction["purpose"],
                     "transaction_type_id" => $transactionType->id,
