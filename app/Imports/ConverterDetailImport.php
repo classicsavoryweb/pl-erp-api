@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\ConverterDetail;
 use App\Models\Employee;
 use Illuminate\Support\Collection;
+use Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
@@ -32,9 +33,8 @@ class ConverterDetailImport implements ToCollection, WithHeadingRow, WithMultipl
     {
         foreach ($collection as $trans) {
             $employee = Employee::with("current_branch")->where("employee_number", $trans["employee_id"])->first();
-
             if ($employee) {
-                $branch = Branch::where("short_name", $trans["branch_code"])->first();
+                $branch = Branch::where("short_name", (string) $trans["branch_code"])->first();
 
                 if (!$branch) {
                     $branch = $employee->current_branch;
