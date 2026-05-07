@@ -431,6 +431,48 @@ class LastPayController extends Controller
             ->values();
     }
 
+    private function refreshUnpostedLastPayDeductions(LastPay $lastPay): LastPay
+    {
+        if ($lastPay->status !== "Unposted") {
+            return $lastPay;
+        }
+
+        $currentCompanyDeductions = $this->getCurrentCompanyDeductionsForEmployee($lastPay->employee_id);
+
+        LastPayDeduction::where("last_pay_id", $lastPay->id)
+            ->whereHas("deduction", function ($query) {
+                $query->whereNotIn("category", ["Pag-ibig", "SSS"]);
+            })
+            ->delete();
+
+        foreach ($currentCompanyDeductions as $deduction) {
+            $lastPay->deductions()->create([
+                "employee_id" => $lastPay->employee_id,
+                "reference_doc" => $deduction->reference_doc,
+                "deduction_id" => $deduction->deduction_id,
+                "amount" => $this->numeric($deduction->balance),
+            ]);
+        }
+
+        $totalDeductions = $this->numeric(LastPayDeduction::where("last_pay_id", $lastPay->id)->sum("amount"));
+        $lastPayAmount = (
+            $this->numeric($lastPay->payroll_hold)
+            + $this->numeric($lastPay->thirteenth_month)
+            + $this->numeric($lastPay->incentives)
+            + $this->numeric($lastPay->sl_vl)
+            + $this->numeric($lastPay->meal)
+            + $this->numeric($lastPay->tax_refund)
+            + $this->numeric($lastPay->sales)
+        ) - $totalDeductions;
+
+        $lastPay->update([
+            "total_deductions" => $totalDeductions,
+            "last_pay" => $lastPayAmount,
+        ]);
+
+        return $lastPay->fresh(["employee", "employee.current_branch", "employee.current_position", "deductions", "deductions.deduction"]);
+    }
+
     public function createLastPayRecord(Request $request, $employeeNumber) {
         try {
             DB::beginTransaction();
@@ -816,6 +858,8 @@ class LastPayController extends Controller
                 return $this->sendError(["message" => "Last pay not found"]);
             }
 
+            $lastPay = $this->refreshUnpostedLastPayDeductions($lastPay);
+
             return $this->sendResponse($this->buildLastPayPreview($lastPay));
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
@@ -934,6 +978,7 @@ class LastPayController extends Controller
             $lastPay = LastPay::find($lastPayId);
 
             if ($lastPay && $lastPay->status === "Unposted") {
+                $lastPay = $this->refreshUnpostedLastPayDeductions($lastPay);
 
                 GenerateLastPayEntry::dispatch($lastPay, Auth::user()->id);
 
@@ -977,6 +1022,8 @@ class LastPayController extends Controller
             $lastPay = LastPay::with(["deductions", "deductions.deduction"])->find($lastPayId);
 
             if ($lastPay) {
+                $lastPay = $this->refreshUnpostedLastPayDeductions($lastPay);
+
                 $totalPayroll = $this->numeric($lastPay->payroll_hold);
                 $month13th = $this->numeric($lastPay->thirteenth_month);
 
