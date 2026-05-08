@@ -47,7 +47,7 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
                 $attendance->adjustment_percent,
                 $attendance->additional_incentive,
                 $attendance->incentive_amount,
-                $attendance->days_added,
+                $attendance->added_days,
                 $additionalDays,
                 $attendance->remarks
             ];
