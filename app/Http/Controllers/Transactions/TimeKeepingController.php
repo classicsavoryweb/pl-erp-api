@@ -592,6 +592,7 @@ class TimeKeepingController extends Controller
 
     public function getEmployeesPerTimekeepingBranch(Request $request) {
         try {
+            session_write_close();
             $branches = $request->branch_id;
             $activeCutOff = Cutoff::where("status", "active")->first();
 
@@ -636,6 +637,7 @@ class TimeKeepingController extends Controller
 
     public function generateTimeKeepingPerEmployee(Request $request) {
         try {
+            session_write_close();
             $request->validate([
                 "employee_id" => "required",
                 "timekeeping_branch_id" => "required"
