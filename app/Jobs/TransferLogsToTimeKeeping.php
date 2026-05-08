@@ -67,7 +67,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
     public function handle(): void
     {
         try {
-            DB::beginTransaction();
+            // DB::beginTransaction();
 
             $schedulesQuery = ScheduleTime::with([
                 "employee",
@@ -174,10 +174,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
             }
 
             $this->notifyJobFinished();
-            DB::commit();
+            // DB::commit();
         } catch (Exception $e) {
             Log::error($e);
-            DB::rollBack();
+            // DB::rollBack();
             $this->notifyJobFailed();
         }
     }

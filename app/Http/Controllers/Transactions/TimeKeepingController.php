@@ -637,10 +637,6 @@ class TimeKeepingController extends Controller
 
     public function generateTimeKeepingPerEmployee(Request $request) {
         try {
-
-            $user = auth()->user();
-            session_write_close();
-
             $request->validate([
                 "employee_id" => "required",
                 "timekeeping_branch_id" => "required"
@@ -655,6 +651,11 @@ class TimeKeepingController extends Controller
             if (!$activeCutOff) {
                 return $this->sendError(["message" => "No active cutoff"]);
             }
+
+            $cutOff = [
+                "start_time" => $activeCutOff->start_date,
+                "end_time" => $activeCutOff->end_date
+            ];
 
             TransferLogsToTimeKeeping::dispatchSync(
                 $request->timekeeping_branch_id,
