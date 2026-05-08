@@ -40,14 +40,16 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
                 $attendance->employee->schedule->schedule_type->name,
                 $attendance->employee->current_position->timekeeping_type,
                 $attendance->amount_rate,
+                $attendance->base_additional_incentive,
                 $attendance->first_cut_off_worked_days,
                 $attendance->second_cut_off_worked_days,
                 $attendance->adjustment_days,
                 $attendance->adjustment_percent,
                 $attendance->additional_incentive,
                 $attendance->incentive_amount,
-                $attendance->remarks,
-                $additionalDays
+                $attendance->days_added,
+                $additionalDays,
+                $attendance->remarks
             ];
         });
     }
@@ -66,14 +68,16 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
             "Schedule Type",
             "Payment Type",
             "Base Amount",
+            "Base Additional Incentive",
             '1st Cutoff Days',
             '2nd Cutoff Days',
             'Deduction Days',
             'Tardiness Deduction Percent',
             'Additional Incentive',
             'Final Incentive Amount',
+            'Days Added',
+            'Additional Days Breakdown',
             'Remarks',
-            'Additional Days Breakdown'
         ];
 
     }
