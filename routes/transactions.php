@@ -53,7 +53,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-time-keeping", [TimeKeepingController::class, "getTimeKeeping"]);
     Route::middleware(["permission:perform_transactions_time_keeping"])->post("/update-time-keeping-undertime", [TimeKeepingController::class, "updateTimeKeepingUndertime"]);
     Route::get("/trigger-fetch-biotime", [TimeKeepingController::class, "triggerFetchBiotimeLogs"]);
-    
+    Route::get("/get-employees-by-timekeeping-branch", [TimeKeepingController::class, "getEmployeesPerTimekeepingBranch"]);
+    Route::post("/generate-timekeeping-by-employee", [TimeKeepingController::class, "generateTimeKeepingPerEmployee"]);
+
     //time keeping summary
     Route::middleware(["permission:perform_transactions_time_keeping_summary"])->post("/generate-time-keeping-summary", [TimeKeepingController::class, "generateTimeKeepingSummary"]);
     Route::get("/get-all-time-keeping-summary", [TimeKeepingController::class, "getAllTimeKeepingSummary"]);

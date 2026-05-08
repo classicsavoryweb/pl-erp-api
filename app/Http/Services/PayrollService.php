@@ -549,7 +549,7 @@ class PayrollService {
         $addedDays = 0;
 
         $firstCutOffDays = $firstTimeKeeping->regular_days + $firstTimeKeeping->special_leave;
-        $secondCutOffDays = $secondTimeKeeping->regular_days + $firstTimeKeeping->special_leave;
+        $secondCutOffDays = $secondTimeKeeping->regular_days + $secondTimeKeeping->special_leave;
 
         $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
         
