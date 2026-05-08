@@ -637,7 +637,10 @@ class TimeKeepingController extends Controller
 
     public function generateTimeKeepingPerEmployee(Request $request) {
         try {
+
+            $user = auth()->user();
             session_write_close();
+
             $request->validate([
                 "employee_id" => "required",
                 "timekeeping_branch_id" => "required"
