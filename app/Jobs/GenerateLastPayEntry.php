@@ -13,6 +13,7 @@ use App\Models\LastPayDeduction;
 use App\Models\LastPaySetup;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\User;
+use App\Support\EntryBranchNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -550,6 +551,8 @@ class GenerateLastPayEntry implements ShouldQueue
                 ]);
             }
         }
+
+        $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
 
         foreach ($entries as $entry) {
             Entry::create([

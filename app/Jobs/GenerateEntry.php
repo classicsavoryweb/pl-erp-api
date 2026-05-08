@@ -16,6 +16,7 @@ use App\Models\Entry;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\User;
+use App\Support\EntryBranchNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -3641,6 +3642,7 @@ class GenerateEntry implements ShouldQueue
 
             try {
                 DB::beginTransaction();
+                $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
 
                 foreach ($entries as $entry) {
 

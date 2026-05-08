@@ -14,6 +14,7 @@ use App\Models\Deduction;
 use App\Models\EmployeeDeduction;
 use App\Models\Entry;
 use App\Models\User;
+use App\Support\EntryBranchNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
@@ -433,6 +434,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
 
     private function createEntries($entries, $userId, ?string $apsysMainVendorNo = null, ?string $apsysMainVendorName = null)
     {
+        $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
+
         foreach ($entries as $entry) {
 
             Entry::create([

@@ -12,6 +12,7 @@ use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Deduction;
 use App\Models\Entry;
+use App\Support\EntryBranchNumber;
 use App\Imports\EmployeeDeductionsImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -905,6 +906,8 @@ class EmployeeDeductionsController extends Controller
         if (empty($entries)) {
             return;
         }
+
+        $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
 
         foreach ($entries as $entry) {
 

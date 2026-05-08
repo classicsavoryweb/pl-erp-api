@@ -7,6 +7,7 @@ use App\Models\Accounting\ApsysEntryMain;
 use App\Models\Accounting\Vendor;
 use App\Models\Branch;
 use App\Models\Entry;
+use App\Support\EntryBranchNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -184,6 +185,8 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
 
     private function createEntries($entries, $user)
     {
+        $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
+
         foreach ($entries as $entry) {
 
             Entry::create([
