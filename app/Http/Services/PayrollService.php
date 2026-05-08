@@ -482,6 +482,7 @@ class PayrollService {
         $payrollDetails = PayrollDetail::where("employee_id", $employee->id)
         ->whereMonth("pay_date", $month)
         ->whereYear("pay_date", $year)
+        ->where("is_on_maternity_leave", 0)
         ->orderBy("pay_date", "ASC")
         ->take(2)
         ->get();
