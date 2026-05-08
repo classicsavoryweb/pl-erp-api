@@ -69,14 +69,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $this->payrollService = new PayrollService();
     }
 
-    // public function middleware() {
-    //     return [
-    //         (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
-    //             ->shared()
-    //             ->releaseAfter(1200)
-    //             ->expireAfter(7200)
-    //     ];
-    // }
+    public function middleware() {
+        return [
+            (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
+                ->shared()
+                ->releaseAfter(1200)
+                ->expireAfter(7200)
+        ];
+    }
 
     public function handle(): void
     {
