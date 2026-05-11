@@ -30,6 +30,30 @@ use Str;
 
 class EmployeeController extends Controller
 {
+    private function isOicAssignment(Employee $employee): bool
+    {
+        if (($employee->oic_status ?? null) === "OIC") {
+            return true;
+        }
+
+        $latestPosition = $employee->latest_position ?? null;
+
+        return $latestPosition && ($latestPosition->oic_assignment ?? null) === "Yes";
+    }
+
+    private function appendOicToCurrentPosition(Employee $employee): void
+    {
+        $position = $employee->current_position;
+
+        if (!$position || !$position->description || !$this->isOicAssignment($employee)) {
+            return;
+        }
+
+        if (!str_ends_with($position->description, " (OIC)")) {
+            $position->description = "{$position->description} (OIC)";
+        }
+    }
+
     public function addEmployee(Request $request){
         try {
             DB::beginTransaction();
@@ -160,6 +184,7 @@ class EmployeeController extends Controller
         try {
             $employee = Employee::with([
                 "current_position",
+                "latest_position",
                 "agency",
                 "current_branch",
                 "station",
@@ -182,6 +207,7 @@ class EmployeeController extends Controller
             $employee->flexible_schedule = $employee->schedule->flexible_schedule ?? "";
             $employee->basic_salary = $employee->monthlySalary();
             $employee->daily_rate = $employee->schedule ? $employee->dailySalary() : 0;
+            $this->appendOicToCurrentPosition($employee);
 
             try {
                 $storage = Storage::disk("hr_system_folder");
