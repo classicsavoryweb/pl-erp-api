@@ -293,6 +293,15 @@ class OvertimeController extends Controller
             ->where("date", $overtime->overtime_date)
             ->first();
 
+            $isActiveCutOff = Cutoff::where("start_date", "<=" ,$overtime->overtime_date)
+            ->where("end_date", ">=", $overtime->overtime_date)
+            ->where("status", "active")
+            ->first();
+
+            if ($isActiveCutOff) {
+                return $this->sendError(["message" => "Cant adjust overtime in active cutoff"]);
+            }
+
             if ($timeKeeping) {
                 $schedule = ScheduleTime::where("employee_id", $employee->id)
                 ->where("date", $overtime->overtime_date)
@@ -434,6 +443,15 @@ class OvertimeController extends Controller
             $grouped = $overtimes->groupBy('employee_id');
             foreach ($overtimes as $overtime) {
                 $employee = $overtime->employee;
+
+                $isActiveCutOff = Cutoff::where("start_date", "<=" ,$overtime->overtime_date)
+                ->where("end_date", ">=", $overtime->overtime_date)
+                ->where("status", "active")
+                ->first();
+
+                if ($isActiveCutOff) {
+                    continue;
+                }
 
                 // $isExisting = $overtimes->contains(function ($ot) use ($employee) {
                 //     return $ot->employee_id == $employee->id;
