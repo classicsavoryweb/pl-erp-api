@@ -610,7 +610,10 @@ class PayrollService {
             if (trim($employee->oic_status) == "OIC") {
                 $baseAdditional = $incentivePosition->oic_additional_amount;
                 $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
-                $additionalIncentive = $additionalDailyRate * ($monthWorkedDays);
+                $additionalIncentive = $additionalDailyRate * (
+                    ($firstTimeKeeping->regular_days ?? 0) + ($firstTimeKeeping->special_leave ?? 0) +
+                    ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0)
+                );
 
                 if ($additionalIncentive > $baseAdditional) {
                     $additionalIncentive = $baseAdditional;
