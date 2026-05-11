@@ -592,6 +592,7 @@ class TimeKeepingController extends Controller
 
     public function getEmployeesPerTimekeepingBranch(Request $request) {
         try {
+            session_write_close();
             $branches = $request->branch_id;
             $activeCutOff = Cutoff::where("status", "active")->first();
 
@@ -650,6 +651,11 @@ class TimeKeepingController extends Controller
             if (!$activeCutOff) {
                 return $this->sendError(["message" => "No active cutoff"]);
             }
+
+            $cutOff = [
+                "start_time" => $activeCutOff->start_date,
+                "end_time" => $activeCutOff->end_date
+            ];
 
             TransferLogsToTimeKeeping::dispatchSync(
                 $request->timekeeping_branch_id,

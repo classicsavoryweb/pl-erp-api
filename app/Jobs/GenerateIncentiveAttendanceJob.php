@@ -39,6 +39,7 @@ class GenerateIncentiveAttendanceJob implements ShouldQueue
 
         $payrolls = Payroll::whereIn("pay_date", [$firstCutOff->pay_date, $secondCutOff->pay_date])
         ->with(['employee', 'employee.current_position', 'timekeeping_branch'])
+        ->where("is_maternity", 0)
         ->distinct('employee_id')
         ->get();
 

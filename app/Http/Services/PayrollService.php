@@ -482,6 +482,7 @@ class PayrollService {
         $payrollDetails = PayrollDetail::where("employee_id", $employee->id)
         ->whereMonth("pay_date", $month)
         ->whereYear("pay_date", $year)
+        ->where("is_on_maternity_leave", 0)
         ->orderBy("pay_date", "ASC")
         ->take(2)
         ->get();
@@ -548,8 +549,8 @@ class PayrollService {
         $baseAdditional = 0;
         $addedDays = 0;
 
-        $firstCutOffDays = $firstTimeKeeping->regular_days + $firstTimeKeeping->special_leave;
-        $secondCutOffDays = $secondTimeKeeping->regular_days + $secondTimeKeeping->special_leave;
+        $firstCutOffDays = ($firstTimeKeeping->regular_days ?? 0) + ($firstTimeKeeping->special_leave ?? 0);
+        $secondCutOffDays = ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0);
 
         $days = $employee->schedule->schedule_type->name === "Compressed Schedule" ? 11 : 13; 
         

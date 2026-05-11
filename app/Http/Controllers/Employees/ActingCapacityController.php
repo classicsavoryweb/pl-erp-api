@@ -10,6 +10,10 @@ use App\Models\ActingCapacityExtension;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
+use App\Models\IncentivePosition;
+use App\Models\IncentivesBracket;
+use App\Models\IncentivesManagement;
+use App\Models\IncentivesPerEmployee;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\Rate;
@@ -519,11 +523,51 @@ class ActingCapacityController extends Controller
                     ]);
                 }
 
+                if ($position->rank == 2) {
+                    $baseIncentive = 0;
+                    $positionIncentives = IncentivePosition::where("position_id", $position->id)->first();
+
+                    if ($positionIncentives) {
+                        $baseIncentive = $positionIncentives->amount;
+                    }
+
+                    if ($position->description == "Senior Staff") {
+                        $months = Carbon::now()->diffInMonths($employee->date_hired);
+                        if ($months < 1) {
+                            $months = 1;
+                        }
+
+                        $bracket = IncentivesBracket::whereRaw('CAST(month AS UNSIGNED) <= ?', [$months])
+                            ->whereHas('positions', function ($query) use ($actingCapacity) {
+                                $query->where('positions.id', $actingCapacity->current_position_id);
+                            })
+                            ->orderByRaw('CAST(month AS UNSIGNED) DESC')
+                            ->first();
+
+                        if ($bracket) {
+                            $baseIncentive = $bracket->amount;
+                        }
+                        
+                        $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $employee->id)->first();
+
+                        if ($rankAndFileIncentive) {
+                            $baseIncentive = $rankAndFileIncentive->amount;
+                        }
+                    }
+
+                    IncentivesManagement::updateOrCreate([
+                        "employee_id" => $actingEmployee->id,
+                    ], [
+                        "amount" => $baseIncentive,
+                        "max_amount" => $baseIncentive
+                    ]);
+                }
+
                 $storage = Storage::disk("hr_system_folder");
                 if ($request->has("attachments")) {
                     foreach($request->attachments as $attachment) {
                         $pathName = "";
-                        $directory = "/Acting Capacity Files/" . $employee->employee_number;
+                        $directory = "/Acting Capacity Files/" . $actingEmployee->employee_number;
                         $file = $attachment["file"];
 
                         if (!$storage->exists($directory)) {
