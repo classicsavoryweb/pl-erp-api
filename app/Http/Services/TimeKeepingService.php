@@ -559,7 +559,7 @@ class TimeKeepingService
             // }
         }
 
-        if ($biotimePunches->count() > 1) {
+        if ($biotimePunches->count() > 1 && $schedule->selection != "INCENTIVE LEAVE") {
 
             $cutOff = $this->getCutOff($log->date);        
             $activeCutOff = CutOff::where("start_date", $cutOff['start_time'])->where("end_date", $cutOff["end_time"])->first();
