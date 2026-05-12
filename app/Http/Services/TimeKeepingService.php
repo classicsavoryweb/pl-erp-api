@@ -794,12 +794,13 @@ class TimeKeepingService
         }
 
         if ($schedule->selection === "INCENTIVE LEAVE") {
-            $timeKeeping = $model->create([
+            $timeKeeping = $model->updateOrCreate([
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
-                "biotime_log_id" => null,
                 "schedule_time_id" => $scheduleTime->id,
                 "date" => $scheduleTime->date,
+            ],[
+                "biotime_log_id" => null,
                 "worked_hours" => $schedule->total_hours,
                 "legal_holiday" => 0,
                 "special_holiday" => 0,
