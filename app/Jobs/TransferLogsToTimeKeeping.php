@@ -137,7 +137,7 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         }
 
                         if ($employee->current_position->timekeeping_type == "Daily") {
-                            $isRequiredToReport = true;
+                            $isRequiredToReport = false;
                         }
                     }
 
