@@ -135,6 +135,10 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         if ($holiday->required_for === "BOTH" || $holiday->required_for === strtoupper($branch->type)) {
                             $isRequiredToReport = true;
                         }
+
+                        if ($employee->current_position->timekeeping_type == "Daily") {
+                            $isRequiredToReport = true;
+                        }
                     }
 
                     $holidayHours = $isRequiredToReport ? 0 : $holidayHours; 
