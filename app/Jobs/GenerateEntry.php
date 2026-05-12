@@ -21,6 +21,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Collection;
 use App\Support\NotifiesJobStatus;
 use Log;
@@ -51,6 +52,16 @@ class GenerateEntry implements ShouldQueue
         $this->end_date = $end_date;
         $this->user = $user;
         $this->sendToApsys = $sendToApsys;
+    }
+
+    public function middleware()
+    {
+        return [
+            (new WithoutOverlapping('accounting_psd_sequence'))
+                ->shared()
+                ->releaseAfter(1200)
+                ->expireAfter(7200)
+        ];
     }
 
     private function generateEntryId(&$counterEntry)
