@@ -242,6 +242,12 @@ class EmployeeDeductionsController extends Controller
                 );
             }
 
+            $summaryQuery = clone $deductions;
+            $summary = [
+                "deduction_count" => (clone $summaryQuery)->count(),
+                "total_balance" => (float) (clone $summaryQuery)->sum("balance"),
+            ];
+
             $hasFilters = ($request->has("employee_id") && $request->employee_id)
                 || ($request->has(["column_type", "key_word"]) && $request->column_type && $request->key_word)
                 || ($request->has(["date_created_from", "date_created_to"]) && $request->date_created_from && $request->date_created_to);
@@ -256,7 +262,10 @@ class EmployeeDeductionsController extends Controller
 
             $deductions = $deductions->paginate($perPage);
 
-            return $this->sendResponse($deductions);
+            return $this->sendResponse([
+                "deductions" => $deductions,
+                "summary" => $summary,
+            ]);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
