@@ -17,6 +17,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use App\Support\NotifiesJobStatus;
 
@@ -34,6 +35,16 @@ class GenerateLastPayEntry implements ShouldQueue
     {
         $this->lastPay = $lastPay;
         $this->user = $user;
+    }
+
+    public function middleware()
+    {
+        return [
+            (new WithoutOverlapping('accounting_psd_sequence'))
+                ->shared()
+                ->releaseAfter(1200)
+                ->expireAfter(7200)
+        ];
     }
 
     private function generateEntryId(&$counterEntry)
