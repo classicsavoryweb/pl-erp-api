@@ -1067,6 +1067,9 @@ class TimeKeepingService
                         $previousDate = $currentDate->copy()->subDay()->toDateString();
                         $previousDateSchedule = ScheduleTime::where("date", $previousDate)->where("employee_id", $employee->id)->first();
                         $hasLog = BiotimeLog::where("date", $previousDate)->where("employee_id", $employee->id)->first();
+                        if (!$previousDateSchedule) {
+                            return false;
+                        }
                     }
                 }
                 if ($previousDateSchedule && $previousDateSchedule->timetable === "INCENTIVE LEAVE") {
