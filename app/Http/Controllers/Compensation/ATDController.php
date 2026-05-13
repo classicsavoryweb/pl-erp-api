@@ -14,6 +14,7 @@ use App\Models\Deduction;
 use App\Models\ATDAccessType;
 use App\Models\Entry;
 use App\Models\Term;
+use App\Support\EntryBranchNumber;
 use Carbon\Carbon;
 use Http;
 use Illuminate\Support\Facades\Auth;
@@ -516,6 +517,8 @@ class ATDController extends Controller
         if (empty($entries)) {
             return;
         }
+
+        $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
 
         foreach ($entries as $entry) {
 
