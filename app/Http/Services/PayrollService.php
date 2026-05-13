@@ -487,6 +487,7 @@ class PayrollService {
         ->take(2)
         ->get();
 
+        $position = null;
         $firstTimeKeeping = $payrollDetails->get(0);
         $secondTimeKeeping = $payrollDetails->get(1);
 
@@ -503,7 +504,7 @@ class PayrollService {
         }
 
         if ($position->rank == 1) {
-            $months = Carbon::now()->diffInMonths($employee->date_hired);
+            $months = Carbon::parse("2026-05-09")->diffInMonths($employee->date_hired);
             if ($months < 1) {
                 $months = 1;
             }
@@ -548,6 +549,8 @@ class PayrollService {
         $absent = 0;
         $baseAdditional = 0;
         $addedDays = 0;
+        $undertimeDeductionDays = 0;
+        $totalDays = 0;
 
         $firstCutOffDays = ($firstTimeKeeping->regular_days ?? 0) + ($firstTimeKeeping->special_leave ?? 0);
         $secondCutOffDays = ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0);
@@ -684,6 +687,7 @@ class PayrollService {
                     $adjustmentDays += $amountToBeDeduct;
 
                     $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
+                    $undertimeDeductionDays = $amountToBeDeduct;
 
                     $incentiveAmount -= $deductionAmount;
 
@@ -706,6 +710,7 @@ class PayrollService {
                     $adjustmentDays += $amountToBeDeduct;
 
                     $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
+                    $undertimeDeductionDays = $amountToBeDeduct;
 
                     $incentiveAmount -= $deductionAmount;
 
@@ -719,6 +724,8 @@ class PayrollService {
         }
 
         $incentiveAmount += $additionalIncentive;
+
+        $totalDays = $monthWorkedDays + $addedDays - $undertimeDeductionDays;
         
         $incentive = Incentives::updateOrCreate([
             "employee_id" => $employeeId,
@@ -743,6 +750,8 @@ class PayrollService {
             "status" => $status,
             "base_additional_incentive" => $baseAdditional,
             "added_days" => $addedDays,
+            "total_days" => $totalDays,
+            "undertime_deduction_days" => $undertimeDeductionDays
         ]);
 
         return $incentive;

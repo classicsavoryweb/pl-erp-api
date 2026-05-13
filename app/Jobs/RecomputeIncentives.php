@@ -95,7 +95,8 @@ class RecomputeIncentives implements ShouldQueue
                 $baseAdditional = 0;
                 $status = "initial";
 
-                $monthWorkedDays = $incentive->first_cut_off_worked_days + $incentive->second_cut_off_worked_days;
+                $monthWorkedDays = $incentive->total_days;
+                $actualWorkedDays = $incentive->first_cut_off_worked_days + $incentive->second_cut_off_worked_days; 
                 $monthShouldBeWorkDays = 26;
                 $dailyIncentives = $incentivesAmount / 26;
                 if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
@@ -113,7 +114,7 @@ class RecomputeIncentives implements ShouldQueue
                     if (trim($employee->oic_status) == "OIC") {
                         $baseAdditional = $incentivePosition->oic_additional_amount;
                         $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
-                        $additionalIncentive = $additionalDailyRate * ($monthShouldBeWorkDays - $incentive->absent);
+                        $additionalIncentive = $additionalDailyRate * $actualWorkedDays;
 
                         if ($additionalIncentive > $baseAdditional) {
                             $additionalIncentive = $baseAdditional;
@@ -162,37 +163,6 @@ class RecomputeIncentives implements ShouldQueue
 
                         $tardiness->deduction_status = 1;
                         $tardiness->save();
-                    }
-                }
-
-                if ($employee->schedule->schedule_type->name === "Compressed Schedule") {
-                    $allowedUndertimePerMonth = 900; 
-                    $basisForDeduction = 240; 
-
-                    $excessiveUndertime = $incentive->undertime - $allowedUndertimePerMonth;
-
-                    if ($excessiveUndertime > 0) {
-                        $numberToDeduct = floor($excessiveUndertime / $basisForDeduction);
-
-                        if ($numberToDeduct > 0) {
-                            $amountToBeDeduct = $numberToDeduct * 0.5;
-                            $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
-
-                            $incentiveAmount -= $deductionAmount;
-                        }
-                    }       
-                } else {
-                    if ($incentive->undertime >= 240) {
-                        $basisForDeduction = 240;
-
-                        $numberToDeduct = floor($incentive->undertime / $basisForDeduction);
-
-                        if ($numberToDeduct > 0) {
-                            $amountToBeDeduct = $numberToDeduct * 0.5;
-                            $deductionAmount = ($amountRate / $monthShouldBeWorkDays) * $amountToBeDeduct;
-
-                            $incentiveAmount -= $deductionAmount;
-                        }
                     }
                 }
 
