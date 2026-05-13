@@ -7,10 +7,12 @@ use App\Models\Accounting\ApsysEntryMain;
 use App\Models\Accounting\Vendor;
 use App\Models\Branch;
 use App\Models\Entry;
+use App\Support\EntryBranchNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use App\Support\NotifiesJobStatus;
@@ -33,6 +35,16 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
         $this->user = $user;
         $this->month = $month;
         $this->year = $year;
+    }
+
+    public function middleware()
+    {
+        return [
+            (new WithoutOverlapping('accounting_psd_sequence'))
+                ->shared()
+                ->releaseAfter(1200)
+                ->expireAfter(7200)
+        ];
     }
 
     private function generateEntryId(&$counterEntry)
@@ -184,6 +196,8 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
 
     private function createEntries($entries, $user)
     {
+        $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
+
         foreach ($entries as $entry) {
 
             Entry::create([

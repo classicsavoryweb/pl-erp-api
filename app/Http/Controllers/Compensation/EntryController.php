@@ -30,17 +30,23 @@ class EntryController extends Controller
 
     private function getEntryBranchAliasGroups(): array
     {
+        $ttfcBranchNumbers = ['TTFC00035', 'SFI00190'];
+        if (env('COMPANY_NAME') === 'TTFC') {
+            $ttfcBranchNumbers[] = 'SFI00010';
+        }
+
         return [
             [
                 'canonical_name' => 'Operations Department - Branch',
                 'canonical_short_name' => 'OPD',
                 'canonical_branch_number' => 'TTFC00035',
-                'branch_numbers' => ['TTFC00035', 'SFI00190'],
+                'branch_numbers' => $ttfcBranchNumbers,
                 'keywords' => [
                     'operations department - branch',
                     'operations department - branch 4',
                     'opd',
                     'opd4',
+                    'ttfc00035',
                 ],
             ],
             [

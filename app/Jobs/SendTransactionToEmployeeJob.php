@@ -14,11 +14,13 @@ use App\Models\Deduction;
 use App\Models\EmployeeDeduction;
 use App\Models\Entry;
 use App\Models\User;
+use App\Support\EntryBranchNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -45,6 +47,16 @@ class SendTransactionToEmployeeJob implements ShouldQueue
         $this->userId = $userId;
         $this->details = $details ?? [];
         $this->isResend = $isResend;
+    }
+
+    public function middleware()
+    {
+        return [
+            (new WithoutOverlapping('accounting_psd_sequence'))
+                ->shared()
+                ->releaseAfter(1200)
+                ->expireAfter(7200)
+        ];
     }
 
     private function generateEntryId(&$counterEntry)
@@ -433,6 +445,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
 
     private function createEntries($entries, $userId, ?string $apsysMainVendorNo = null, ?string $apsysMainVendorName = null)
     {
+        $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
+
         foreach ($entries as $entry) {
 
             Entry::create([
