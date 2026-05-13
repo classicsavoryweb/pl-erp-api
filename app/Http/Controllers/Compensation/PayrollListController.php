@@ -76,6 +76,12 @@ class PayrollListController extends Controller
                 $payrollList = $payrollList->where("is_included", $request->status == "included" ? 1 : 0);
             }
 
+            if ($request->has(["employee_status"]) && in_array($request->employee_status, ["active", "inactive"])) {
+                $payrollList = $payrollList->whereHas("employee", function ($query) use ($request) {
+                    $query->where("status", $request->employee_status);
+                });
+            }
+
             if ($request->has(["export"]) && $request->export) {
                 $payrollList = $payrollList->get();
                 return Excel::download(new PayrollListExport($payrollList), "payroll_list.xls");
