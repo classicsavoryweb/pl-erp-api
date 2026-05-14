@@ -763,7 +763,11 @@ class PayrollService {
         $divisor = 26;
         $isMinimum = false;
         $branchLocation = $employee->home_branch?->location ?? '';
-        $rateCategory = $employee->salary_position->rate_category;
+        $rateCategory = null;
+
+        if ($employee->salary_position) {
+            $rateCategory = $employee->salary_position->rate_category;
+        }
 
         if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
             $divisor = 22;
