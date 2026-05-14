@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\Rate;
+use App\Models\ScheduleType;
 use Exception;
 use DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -92,6 +93,12 @@ class EmployeePositionControlller extends Controller
                 "date_appointed" => $branchBasedOic["date_appointed"],
             ]);
 
+            $scheduleType = ScheduleType::where("name", $position->schedule_type)->first();
+
+            $employee->schedule()->update([
+                "schedule_type_id" => $scheduleType->id
+            ]);
+
             $salary = $position->salary;
             $payrollList = $employee->payroll_list;
 
@@ -144,6 +151,13 @@ class EmployeePositionControlller extends Controller
                 ...$request->except(["id", "oic_assignment", "date_appointed"]),
                 "oic_assignment" => $branchBasedOic["oic_assignment"],
                 "date_appointed" => $branchBasedOic["date_appointed"],
+            ]);
+
+            $position = Position::find($request->position_id);
+            $scheduleType = ScheduleType::where("name", $position->schedule_type)->first();
+
+            $employee->schedule()->update([
+                "schedule_type_id" => $scheduleType->id
             ]);
 
             DB::commit();

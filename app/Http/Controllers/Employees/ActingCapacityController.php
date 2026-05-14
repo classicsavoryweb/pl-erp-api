@@ -17,6 +17,7 @@ use App\Models\IncentivesPerEmployee;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\Rate;
+use App\Models\ScheduleType;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -502,10 +503,15 @@ class ActingCapacityController extends Controller
                 $salary = $position->salary;
                 $payrollList = $actingCapacity->employee->payroll_list;
 
+                $scheduleType = ScheduleType::where("name", $position->schedule_type)->first();
+                $actingEmployee->schedule()->update([
+                    "schedule_type_id" => $scheduleType->id
+                ]);
+
                 $monthlyRate = 0;
                 $minimum = 0;
                 $multiplier = 26;
-                if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                if ($position->schedule_type == "Compressed Schedule") {
                     $multiplier = 22;
                 }
 
