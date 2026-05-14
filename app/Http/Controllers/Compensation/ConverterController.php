@@ -682,6 +682,8 @@ class ConverterController extends Controller
 
                 $batch->update([
                     "status" => "Sent",
+                    "sent_at" => now(),
+                    "sent_by" => Auth::user()->id
                 ]);
 
                 $batch->converter_details()->update([

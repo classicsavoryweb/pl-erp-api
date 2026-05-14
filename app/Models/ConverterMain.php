@@ -25,6 +25,8 @@ class ConverterMain extends Model
         "voided_at",
         "bank_account_type_id",
         "transaction_type_id",
+        "sent_by",
+        "sent_at"
     ];
 
     protected static function booted()
@@ -50,6 +52,10 @@ class ConverterMain extends Model
 
     public function voided_by() {
         return $this->hasOne(User::class, "id", "voided_by");
+    }
+
+    public function sent_by() {
+        return $this->hasOne(User::class, "id", "sent_by");
     }
 
     public function converter_details() {
