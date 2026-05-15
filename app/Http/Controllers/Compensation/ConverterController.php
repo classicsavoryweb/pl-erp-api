@@ -544,8 +544,8 @@ class ConverterController extends Controller
         try {
             $request->validate([
                 "type" => "required",
-                "posted_from" => "required",
-                "posted_to" => "required"
+                "approved_from" => "required",
+                "approved_to" => "required"
             ]);
 
             $transactionLink = env('CS_HUB_URL_LINK')."/get-transactions";
@@ -561,8 +561,8 @@ class ConverterController extends Controller
             ->get($transactionLink,[
                 "company" => $company,
                 "type" => $request->type,
-                "posted_from" => $request->posted_from,
-                "posted_to" => $request->posted_to
+                "approved_from" => $request->approved_from,
+                "approved_to" => $request->approved_to
             ]);
 
             if ($response->successful()) {
