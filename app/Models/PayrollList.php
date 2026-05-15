@@ -30,6 +30,16 @@ class PayrollList extends Model
         "email"
     ];
 
+    protected $casts = [
+        'is_included' => 'boolean',
+        'is_statutory_only' => 'boolean',
+        'is_mancom' => 'boolean',
+        'is_on_maternity_leave' => 'boolean',
+        'is_bank' => 'boolean',
+        'is_hold' => 'boolean',
+        'has_complete_documents' => 'boolean',
+    ];
+
     public function employee() {
         return $this->belongsTo(Employee::class, "employee_id", "id");
     }
