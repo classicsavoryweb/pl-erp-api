@@ -618,6 +618,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $remarks = "Retracted holiday hours from previous cutoff: " . $dateString;
                 }
 
+                if ($overRideAttendance <= 3) {
+                    $regular_days = $overRideAttendance;
+                }
+
                 if ($regular_days <= 0) {
                     $regular_days = 0;
                     $special_leave = 0;
@@ -633,11 +637,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $travel_time = 0;
                     $tardiness = 0;
                     $adjustment_amount = 0;
+                    $lateDate = [];
                 }
 
-                if ($overRideAttendance <= 3) {
-                    $regular_days = $overRideAttendance;
-                }
 
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut_off" => $cutOff['start_time']."-".$cutOff['end_time'],
