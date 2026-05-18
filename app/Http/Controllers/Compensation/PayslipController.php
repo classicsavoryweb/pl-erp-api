@@ -64,6 +64,14 @@ class PayslipController extends Controller
         try {
             DB::beginTransaction();
 
+            if ($request->payslip === "current") {
+                $activeCutOff = Cutoff::where("status", "active")->first();
+
+                if ($activeCutOff && $activeCutOff->is_cutoff_locked == 0) {
+                    return $this->sendError(["message" => "Cutoff not finalized"]);
+                }
+            }
+
             $payroll = $this->buildPayrollQuery($request)->get();
 
             if ($request->send_email) {
