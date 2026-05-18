@@ -99,6 +99,7 @@ class PayrollProofListController extends Controller
                     'employees.first_name',
                     'employees.middle_name',
                     'employees.employee_number',
+                    'employees.status as employment_status',
                     'hb.name as home_branch_name',
                     'hb.short_name as home_branch_short_name',
                     'b.name as branch_name',
