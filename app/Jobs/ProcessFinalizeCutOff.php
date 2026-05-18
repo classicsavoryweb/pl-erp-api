@@ -105,24 +105,28 @@ class ProcessFinalizeCutOff implements ShouldQueue
 
             $cutoffValue = $this->cutOff->cut_off;
 
-            $payrollLists = PayrollList::where('is_hold', 1)->get();
+            // $payrollLists = PayrollList::where('is_hold', 1)->get();
 
-            foreach ($payrollLists as $payrollList) {
+            // foreach ($payrollLists as $payrollList) {
 
-                $holdedCutoffs = [];
+            //     $holdedCutoffs = [];
 
-                if (!empty($payrollList->holded_cutoffs)) {
-                    $holdedCutoffs = json_decode($payrollList->holded_cutoffs, true) ?? [];
-                }
+            //     if (!empty($payrollList->holded_cutoffs)) {
+            //         $holdedCutoffs = json_decode($payrollList->holded_cutoffs, true) ?? [];
+            //     }
 
-                if (!in_array($cutoffValue, $holdedCutoffs)) {
-                    $holdedCutoffs[] = $cutoffValue;
-                }
+            //     if (!in_array($cutoffValue, $holdedCutoffs)) {
+            //         $holdedCutoffs[] = $cutoffValue;
+            //     }
 
-                $payrollList->update([
-                    'holded_cutoffs' => json_encode($holdedCutoffs),
-                ]);
-            }
+            //     $payrollList->update([
+            //         'holded_cutoffs' => json_encode($holdedCutoffs),
+            //     ]);
+            // }
+
+            Incentives::where("pay_date", $this->cutOff->pay_date)->update([
+                "status" => "final"
+            ]);
             
             UpdateOvertimeStatusJob::dispatch([
                 "start_time" => $start_date,
