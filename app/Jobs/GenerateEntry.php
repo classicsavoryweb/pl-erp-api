@@ -1130,6 +1130,10 @@ class GenerateEntry implements ShouldQueue
             $branchName = $payrollBranch->name;
             $branchShortName = $payrollBranch->short_name;
             $branchNumber = $payrollBranch->branch_number;
+            $bankEmployeeIds = [];
+            $bankIncentiveSums = 0;
+            $cashEmployeeIds = [];
+            $cashIncentiveSums = 0;
 
             $payrollEmployeeBankQuery = Payroll::query();
             $this->scopePayrollToEffectiveBranch($payrollEmployeeBankQuery, $branchId, $branchHOId);
