@@ -199,6 +199,11 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_compensation_payroll_list"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "view_compensation_cutoff_setup"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_cutoff_setup"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "initialize_compensation_cutoff_setup"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "generate_payroll_compensation_cutoff_setup"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "finalize_compensation_cutoff_setup"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "recompute_incentives_compensation_cutoff_setup"], ["module" => "compensation"]);
+
         Permission::updateOrCreate(["name" => "view_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "export_all_compensation_deductions"], ["module" => "compensation"]);
