@@ -1337,9 +1337,13 @@ class GenerateEntry implements ShouldQueue
             $cashEmployeeIds = $payrollEmployeeCashQuery
                 ->where('is_maternity', 0)
                 ->pluck('employee_id');
-            $cashIncentiveSums = Incentives::whereIn('employee_id', $cashEmployeeIds)
-                ->where('pay_date', $this->pay_date) 
-                ->sum('incentive_amount');
+            $cashIncentivesByEmployee = Incentives::select('employee_id', DB::raw('SUM(incentive_amount) as incentive_amount'))
+                ->whereIn('employee_id', $cashEmployeeIds)
+                ->where('pay_date', $this->pay_date)
+                ->groupBy('employee_id')
+                ->get()
+                ->keyBy('employee_id');
+            $cashIncentiveSums = $cashIncentivesByEmployee->sum('incentive_amount');
 
             $entries = [];
 
@@ -2417,86 +2421,106 @@ class GenerateEntry implements ShouldQueue
 
                 //head office - incentives (cash)
                 if ($cashIncentiveSums > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $incentiveEntries = [];
 
-                    if ($payrollBranch->branch_number != "SFI00001") {
+                    foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                        if ($payrollCash->is_maternity) {
+                            continue;
+                        }
+
+                        $cashIncentiveAmount = $this->parseMoneyValue(
+                            $cashIncentivesByEmployee[$payrollCash->employee_id]->incentive_amount ?? 0
+                        );
+
+                        if ($cashIncentiveAmount <= 0) {
+                            continue;
+                        }
+
+                        [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
+                            $payrollCash,
+                            $cashPayrollVendorNo,
+                            $cashPayrollVendorName
+                        );
+
+                        $firstEntry = $this->generateEntryId($this->counterEntry);
+                        $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+
+                        if ($payrollBranch->branch_number != "SFI00001") {
+                            $incentiveEntries[] = [
+                                'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
+                                'document_no'         => 'Additional Income',
+                                'branch_id'           => $branchHOId,
+                                'branch_name'         => $branchHOName,
+                                'branch_number'       => $branchHONumber,
+                                'ven_no'              => $sourceVendorNo,
+                                'ven_name'            => $sourceVendorName,
+                                'amount'              => $cashIncentiveAmount,
+                                'acc_no'              => $payrollBranch->advance_debit,
+                                'description_per_acc' => 'Payroll Incentive',
+                                'balance_type'        => 'Debit',
+                                'is_block_payment'    => 0,
+                            ];
+
+                            $incentiveEntries[] = [
+                                'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
+                                'document_no'         => 'Additional Income',
+                                'branch_id'           => $branchHOId,
+                                'branch_name'         => $branchHOName,
+                                'branch_number'       => $branchHONumber,
+                                'ven_no'              => $sourceVendorNo,
+                                'ven_name'            => $sourceVendorName,
+                                'amount'              => $cashIncentiveAmount,
+                                'acc_no'              => $creditStoreId,
+                                'description_per_acc' => 'Payroll Incentive',
+                                'balance_type'        => 'Credit',
+                                'is_block_payment'    => 0,
+                            ];
+                        }
 
                         $incentiveEntries[] = [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
+                            'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => 'Additional Income',
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $cashPayrollVendorNo,
-                            'ven_name'            => $cashPayrollVendorName,
-                            'amount'              => $cashIncentiveSums,
-                            'acc_no'              => $payrollBranch->advance_debit,
+                            'branch_id'           => $branchId,
+                            'branch_name'         => $branchName,
+                            'branch_number'       => $branchNumber,
+                            'ven_no'              => $vendorHONo,
+                            'ven_name'            => $vendorHOName,
+                            'amount'              => $cashIncentiveAmount,
+                            'acc_no'              => $debitStoreId,
                             'description_per_acc' => 'Payroll Incentive',
                             'balance_type'        => 'Debit',
                             'is_block_payment'    => 0,
                         ];
 
                         $incentiveEntries[] = [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
+                            'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => 'Additional Income',
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $cashPayrollVendorNo,
-                            'ven_name'            => $cashPayrollVendorName,
-                            'amount'              => $cashIncentiveSums,
-                            'acc_no'              => $creditStoreId,
+                            'branch_id'           => $branchId,
+                            'branch_name'         => $branchName,
+                            'branch_number'       => $branchNumber,
+                            'ven_no'              => $vendorHONo,
+                            'ven_name'            => $vendorHOName,
+                            'amount'              => $cashIncentiveAmount,
+                            'acc_no'              => $payrollBranch->expense_credit,
                             'description_per_acc' => 'Payroll Incentive',
                             'balance_type'        => 'Credit',
                             'is_block_payment'    => 0,
                         ];
                     }
-
-                    $incentiveEntries[] = [
-                        'entry_id'            => $secondEntry,
-                        'apsys_entry_id'      => $secondApsysEntry,
-                        'apsys_entry_main_id' => $secondApsysEntryMain,
-                        'document_no'         => 'Additional Income',
-                        'branch_id'           => $branchId,
-                        'branch_name'         => $branchName,
-                        'branch_number'       => $branchNumber,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'amount'              => $cashIncentiveSums,
-                        'acc_no'              => $debitStoreId,
-                        'description_per_acc' => 'Payroll Incentive',
-                        'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
-                    ];
-
-                    $incentiveEntries[] = [
-                        'entry_id'            => $secondEntry,
-                        'apsys_entry_id'      => $secondApsysEntry,
-                        'apsys_entry_main_id' => $secondApsysEntryMain,
-                        'document_no'         => 'Additional Income',
-                        'branch_id'           => $branchId,
-                        'branch_name'         => $branchName,
-                        'branch_number'       => $branchNumber,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'amount'              => $cashIncentiveSums,
-                        'acc_no'              => $payrollBranch->expense_credit,
-                        'description_per_acc' => 'Payroll Incentive',
-                        'balance_type'        => 'Credit',
-                        'is_block_payment'    => 0,
-                    ];
 
                     $entries = array_merge($entries, $incentiveEntries);
                 }
@@ -3570,86 +3594,106 @@ class GenerateEntry implements ShouldQueue
 
                 //branch - incentives amount (cash)
                 if ($cashIncentiveSums > 0) {
-                    $firstEntry = $this->generateEntryId($this->counterEntry);
-                    $secondEntry = $this->generateEntryId($this->counterEntry);
-
-                    $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-                    $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
-
-                    $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
-                    $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
                     $incentiveEntries = [];
 
-                    if ($payrollBranch->branch_number != "SFI00001") {
+                    foreach ($payrollEmployeeCashQuery as $payrollCash) {
+                        if ($payrollCash->is_maternity) {
+                            continue;
+                        }
+
+                        $cashIncentiveAmount = $this->parseMoneyValue(
+                            $cashIncentivesByEmployee[$payrollCash->employee_id]->incentive_amount ?? 0
+                        );
+
+                        if ($cashIncentiveAmount <= 0) {
+                            continue;
+                        }
+
+                        [$sourceVendorNo, $sourceVendorName] = $this->resolveCashSourceVendor(
+                            $payrollCash,
+                            $cashPayrollVendorNo,
+                            $cashPayrollVendorName
+                        );
+
+                        $firstEntry = $this->generateEntryId($this->counterEntry);
+                        $secondEntry = $this->generateEntryId($this->counterEntry);
+
+                        $firstApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+                        $secondApsysEntry = $this->generateEntryId($this->counterApsysEntry);
+
+                        $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+                        $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
+
+                        if ($payrollBranch->branch_number != "SFI00001") {
+                            $incentiveEntries[] = [
+                                'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
+                                'document_no'         => 'Additional Income',
+                                'branch_id'           => $branchHOId,
+                                'branch_name'         => $branchHOName,
+                                'branch_number'       => $branchHONumber,
+                                'ven_no'              => $sourceVendorNo,
+                                'ven_name'            => $sourceVendorName,
+                                'amount'              => $cashIncentiveAmount,
+                                'acc_no'              => $payrollBranch->advance_debit,
+                                'description_per_acc' => 'Payroll Incentive',
+                                'balance_type'        => 'Debit',
+                                'is_block_payment'    => 0,
+                            ];
+
+                            $incentiveEntries[] = [
+                                'entry_id'            => $firstEntry,
+                                'apsys_entry_id'      => $firstApsysEntry,
+                                'apsys_entry_main_id' => $firstApsysEntryMain,
+                                'document_no'         => 'Additional Income',
+                                'branch_id'           => $branchHOId,
+                                'branch_name'         => $branchHOName,
+                                'branch_number'       => $branchHONumber,
+                                'ven_no'              => $sourceVendorNo,
+                                'ven_name'            => $sourceVendorName,
+                                'amount'              => $cashIncentiveAmount,
+                                'acc_no'              => $creditStoreId,
+                                'description_per_acc' => 'Payroll Incentive',
+                                'balance_type'        => 'Credit',
+                                'is_block_payment'    => 0,
+                            ];
+                        }
 
                         $incentiveEntries[] = [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
+                            'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => 'Additional Income',
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $cashPayrollVendorNo,
-                            'ven_name'            => $cashPayrollVendorName,
-                            'amount'              => $cashIncentiveSums,
-                            'acc_no'              => $payrollBranch->advance_debit,
+                            'branch_id'           => $branchId,
+                            'branch_name'         => $branchName,
+                            'branch_number'       => $branchNumber,
+                            'ven_no'              => $vendorHONo,
+                            'ven_name'            => $vendorHOName,
+                            'amount'              => $cashIncentiveAmount,
+                            'acc_no'              => $debitStoreId,
                             'description_per_acc' => 'Payroll Incentive',
                             'balance_type'        => 'Debit',
                             'is_block_payment'    => 0,
                         ];
 
                         $incentiveEntries[] = [
-                            'entry_id'            => $firstEntry,
-                            'apsys_entry_id'      => $firstApsysEntry,
-                            'apsys_entry_main_id' => $firstApsysEntryMain,
+                            'entry_id'            => $secondEntry,
+                            'apsys_entry_id'      => $secondApsysEntry,
+                            'apsys_entry_main_id' => $secondApsysEntryMain,
                             'document_no'         => 'Additional Income',
-                            'branch_id'           => $branchHOId,
-                            'branch_name'         => $branchHOName,
-                            'branch_number'       => $branchHONumber,
-                            'ven_no'              => $cashPayrollVendorNo,
-                            'ven_name'            => $cashPayrollVendorName,
-                            'amount'              => $cashIncentiveSums,
-                            'acc_no'              => $creditStoreId,
+                            'branch_id'           => $branchId,
+                            'branch_name'         => $branchName,
+                            'branch_number'       => $branchNumber,
+                            'ven_no'              => $vendorHONo,
+                            'ven_name'            => $vendorHOName,
+                            'amount'              => $cashIncentiveAmount,
+                            'acc_no'              => $payrollBranch->expense_credit,
                             'description_per_acc' => 'Payroll Incentive',
                             'balance_type'        => 'Credit',
                             'is_block_payment'    => 0,
                         ];
                     }
-
-                    $incentiveEntries[] = [
-                        'entry_id'            => $secondEntry,
-                        'apsys_entry_id'      => $secondApsysEntry,
-                        'apsys_entry_main_id' => $secondApsysEntryMain,
-                        'document_no'         => 'Additional Income',
-                        'branch_id'           => $branchId,
-                        'branch_name'         => $branchName,
-                        'branch_number'       => $branchNumber,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'amount'              => $cashIncentiveSums,
-                        'acc_no'              => $debitStoreId,
-                        'description_per_acc' => 'Payroll Incentive',
-                        'balance_type'        => 'Debit',
-                        'is_block_payment'    => 0,
-                    ];
-
-                    $incentiveEntries[] = [
-                        'entry_id'            => $secondEntry,
-                        'apsys_entry_id'      => $secondApsysEntry,
-                        'apsys_entry_main_id' => $secondApsysEntryMain,
-                        'document_no'         => 'Additional Income',
-                        'branch_id'           => $branchId,
-                        'branch_name'         => $branchName,
-                        'branch_number'       => $branchNumber,
-                        'ven_no'              => $vendorHONo,
-                        'ven_name'            => $vendorHOName,
-                        'amount'              => $cashIncentiveSums,
-                        'acc_no'              => $payrollBranch->expense_credit,
-                        'description_per_acc' => 'Payroll Incentive',
-                        'balance_type'        => 'Credit',
-                        'is_block_payment'    => 0,
-                    ];
 
                     $entries = array_merge($entries, $incentiveEntries);
                 }
