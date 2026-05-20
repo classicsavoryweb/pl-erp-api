@@ -2262,9 +2262,9 @@ class GenerateEntry implements ShouldQueue
                             $erSSSDebit,
                             $payrollBranch->expense_credit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                             $isPayrollEmployeeCashOnHold ? 1 : 0
                         );
                     } else {
@@ -2285,9 +2285,9 @@ class GenerateEntry implements ShouldQueue
                             $erSSSDebit,
                             $erSSSCredit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     }
                 }
@@ -2318,9 +2318,9 @@ class GenerateEntry implements ShouldQueue
                             $erPhilHealthDebit,
                             $payrollBranch->expense_credit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                             $isPayrollEmployeeCashOnHold ? 1 : 0
                         );
                     } else {
@@ -2341,9 +2341,9 @@ class GenerateEntry implements ShouldQueue
                             $erPhilHealthDebit,
                             $erPhilHealthCredit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     }
                 }
@@ -2375,9 +2375,9 @@ class GenerateEntry implements ShouldQueue
                             $erPagibigDebit,
                             $payrollBranch->expense_credit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                             $isPayrollEmployeeCashOnHold ? 1 : 0
                         );
                     } else {
@@ -2398,9 +2398,9 @@ class GenerateEntry implements ShouldQueue
                             $erPagibigDebit,
                             $erPagibigCredit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     }
                 }
@@ -3439,9 +3439,9 @@ class GenerateEntry implements ShouldQueue
                             $erSSSDebit,
                             $payrollBranch->expense_credit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     } else {
                         $this->appendCashDualContributionEntries(
@@ -3461,9 +3461,9 @@ class GenerateEntry implements ShouldQueue
                             $erSSSDebit,
                             $erSSSCredit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     }
                 }
@@ -3494,9 +3494,9 @@ class GenerateEntry implements ShouldQueue
                             $erPhilHealthDebit,
                             $payrollBranch->expense_credit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     } else {
                         $this->appendCashDualContributionEntries(
@@ -3516,9 +3516,9 @@ class GenerateEntry implements ShouldQueue
                             $erPhilHealthDebit,
                             $erPhilHealthCredit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     }
                 }
@@ -3549,9 +3549,9 @@ class GenerateEntry implements ShouldQueue
                             $erPagibigDebit,
                             $payrollBranch->expense_credit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     } else {
                         $this->appendCashDualContributionEntries(
@@ -3571,9 +3571,9 @@ class GenerateEntry implements ShouldQueue
                             $erPagibigDebit,
                             $erPagibigCredit,
                             $start_date . '-' . $end_date,
-                            $branchHOId,
-                            $branchHOName,
-                            $branchHONumber,
+                            $branchId,
+                            $branchName,
+                            $branchNumber,
                         );
                     }
                 }
