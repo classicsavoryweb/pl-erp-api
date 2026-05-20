@@ -24,10 +24,10 @@ class ReportsPayrollStatutoryController extends Controller
             ]);
 
             $templateRelativePath = 'templates/statutory-payroll-template.xlsx';
-            if (!Storage::disk('local')->exists($templateRelativePath)) {
+            if (!Storage::disk('hr_system_folder')->exists($templateRelativePath)) {
                 return $this->sendError(['message' => 'Statutory payroll template not found.']);
             }
-            $templatePath = Storage::disk('local')->path($templateRelativePath);
+            $templatePath = Storage::disk('hr_system_folder')->path($templateRelativePath);
 
             $rangeEnd = Carbon::createFromDate($validated['year'], $validated['month'], 25)->startOfDay();
             $rangeStart = $rangeEnd->copy()->subMonth()->day(26)->startOfDay();
