@@ -207,7 +207,12 @@ class PayrollListController extends Controller
                 "salary_amount" => "nullable|numeric|min:0"
             ]);
 
-            PayrollList::where("id", $id)->update([
+            $payrollList = PayrollList::find($id);
+            if (!$payrollList) {
+                return  $this->sendError(["message" => "Record not found"]);
+            }
+
+            $payrollList->update([
                 "is_included" => $request->is_included,
                 "is_statutory_only" => $request->is_statutory_only,
                 "is_mancom" => $request->is_mancom,
