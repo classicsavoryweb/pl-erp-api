@@ -18,8 +18,22 @@ class LastPayExport implements FromCollection, WithHeadings
     public function collection()
     {
         return $this->lastPays->map(function ($lastPay) {
+            $createdActivity = $lastPay->activities
+                ? $lastPay->activities->first(function ($activity) {
+                    return $activity->event === 'created' || $activity->description === 'created';
+                })
+                : null;
+            $postedActivity = $lastPay->activities
+                ? $lastPay->activities->first(function ($activity) {
+                    return $activity->event === 'posted' || $activity->description === 'posted';
+                })
+                : null;
+            $datePosted = $postedActivity?->created_at;
+            if (!$datePosted && $lastPay->status === 'Posted') {
+                $datePosted = $lastPay->updated_at;
+            }
+
             return [
-                optional($lastPay->created_at)->format('Y-m-d'),
                 $lastPay->last_pay_number,
                 $lastPay->employee->full_name ?? '',
                 $lastPay->employee->employee_number ?? '',
@@ -27,6 +41,10 @@ class LastPayExport implements FromCollection, WithHeadings
                 $lastPay->employee->current_branch->short_name ?? '',
                 $lastPay->last_pay,
                 $lastPay->status,
+                optional($lastPay->created_at)->format('Y-m-d'),
+                $this->activityUserName($createdActivity),
+                optional($datePosted)->format('Y-m-d'),
+                $this->activityUserName($postedActivity),
             ];
         });
     }
@@ -34,7 +52,6 @@ class LastPayExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Date Created',
             'Last Pay Number',
             'Employee Name',
             'Employee Number',
@@ -42,6 +59,22 @@ class LastPayExport implements FromCollection, WithHeadings
             'Branch',
             'Last Pay',
             'Status',
+            'Date Created',
+            'Created By',
+            'Date Posted',
+            'Posted By',
         ];
+    }
+
+    private function activityUserName($activity): string
+    {
+        if (!$activity?->causer) {
+            return '';
+        }
+
+        return $activity->causer->proper_full_name
+            ?? $activity->causer->full_name
+            ?? $activity->causer->name
+            ?? '';
     }
 }
