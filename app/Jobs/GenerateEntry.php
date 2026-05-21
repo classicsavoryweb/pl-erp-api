@@ -643,7 +643,7 @@ class GenerateEntry implements ShouldQueue
             'acc_no'              => $temporaryAccountA,
             'description_per_acc' => $description,
             'balance_type'        => 'Debit',
-            'is_block_payment'    => 1,
+            'is_block_payment'    => 0,
         ];
         $entries[] = [
             'entry_id'            => $secondEntry,
@@ -659,7 +659,7 @@ class GenerateEntry implements ShouldQueue
             'acc_no'              => $creditAcc,
             'description_per_acc' => $description,
             'balance_type'        => 'Credit',
-            'is_block_payment'    => 1,
+            'is_block_payment'    => 0,
         ];
     }
 
@@ -1485,7 +1485,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $temporaryAccountA,
                             'description_per_acc' => 'Employee SSS Contribution',
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
                         [
                             'entry_id'            => $secondEntry,
@@ -1501,7 +1501,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $eeSSSCredit,
                             'description_per_acc' => 'Employee SSS Contribution',
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ]
                     ]);
                 }
@@ -1563,7 +1563,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $temporaryAccountA,
                             'description_per_acc' => 'Employee Philhealth Contribution',
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
                         [
                             'entry_id'            => $secondEntry,
@@ -1579,7 +1579,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $eePhilHealthCredit,
                             'description_per_acc' => 'Employee Philhealth Contribution',
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ]
                     ]);
                 }
@@ -1641,7 +1641,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $temporaryAccountA,
                             'description_per_acc' => 'Employee Pag-Ibig Contribution',
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
                         [
                             'entry_id'            => $secondEntry,
@@ -1657,7 +1657,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $eePagibigCredit,
                             'description_per_acc' => 'Employee Pag-Ibig Contribution',
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ]
                     ]);
                 }
@@ -1739,7 +1739,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $temporaryAccountA,
                             'description_per_acc' => 'Withholding Tax',
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
 
                         [
@@ -1756,7 +1756,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $withHoldingTaxCredit,
                             'description_per_acc' => 'Withholding Tax',
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
                     ]);
                 }
@@ -2663,7 +2663,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $temporaryAccountA,
                             'description_per_acc' => 'Employee SSS Contribution',
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
                         [
                             'entry_id'            => $secondEntry,
@@ -2679,7 +2679,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $eeSSSCredit,
                             'description_per_acc' => 'Employee SSS Contribution',
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ]
                     ]);
                 }
@@ -2741,7 +2741,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $temporaryAccountA,
                             'description_per_acc' => 'Employee Philhealth Contribution',
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
                         [
                             'entry_id'            => $secondEntry,
@@ -2757,7 +2757,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $eePhilHealthCredit,
                             'description_per_acc' => 'Employee Philhealth Contribution',
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ]
                     ]);
                 }
@@ -2819,7 +2819,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $temporaryAccountA,
                             'description_per_acc' => 'Employee Pag-Ibig Contribution',
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
                         [
                             'entry_id'            => $secondEntry,
@@ -2835,7 +2835,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $eePagibigCredit,
                             'description_per_acc' => 'Employee Pag-Ibig Contribution',
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ]
                     ]);
                 }
@@ -2917,7 +2917,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $temporaryAccountA,
                             'description_per_acc' => 'Withholding Tax',
                             'balance_type'        => 'Debit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
 
                         [
@@ -2934,7 +2934,7 @@ class GenerateEntry implements ShouldQueue
                             'acc_no'              => $withHoldingTaxCredit,
                             'description_per_acc' => 'Withholding Tax',
                             'balance_type'        => 'Credit',
-                            'is_block_payment'    => 1,
+                            'is_block_payment'    => 0,
                         ],
                     ]);
                 }
