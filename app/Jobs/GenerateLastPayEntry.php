@@ -452,6 +452,8 @@ class GenerateLastPayEntry implements ShouldQueue
                 continue;
             }
 
+            $deductionAmount = $lastPayDeduction->amount;
+
             if ($employeeDeduction->deduction->category === 'SSS') {
                 $entryId = $this->generateEntryId($counterEntry);
                 $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
@@ -467,7 +469,7 @@ class GenerateLastPayEntry implements ShouldQueue
                         'branch_name'         => $branchHOName,
                         'ven_no'              => $employeeNumber,
                         'ven_name'            => $employeeFullName,
-                        'amount'              => $employeeDeduction->balance,
+                        'amount'              => $deductionAmount,
                         'acc_no'              => $sssLoansDebit,
                         'description_per_acc' => 'Last Pay|Deduction',
                         'balance_type'        => 'Debit',
@@ -483,7 +485,7 @@ class GenerateLastPayEntry implements ShouldQueue
                         'branch_name'         => $branchHOName,
                         'ven_no'              => $employeeNumber,
                         'ven_name'            => $employeeFullName,
-                        'amount'              => $employeeDeduction->balance,
+                        'amount'              => $deductionAmount,
                         'acc_no'              => $sssLoansCredit,
                         'description_per_acc' => 'Last Pay|Deduction',
                         'balance_type'        => 'Credit',
@@ -499,7 +501,7 @@ class GenerateLastPayEntry implements ShouldQueue
                         'branch_name'         => $branchHOName,
                         'ven_no'              => $sssLoansRemittanceVendor,
                         'ven_name'            => $employeeFullName,
-                        'amount'              => $employeeDeduction->balance,
+                        'amount'              => $deductionAmount,
                         'acc_no'              => $sssLoansRemittanceDebit,
                         'description_per_acc' => 'Last Pay|Deduction',
                         'balance_type'        => 'Debit',
@@ -515,7 +517,7 @@ class GenerateLastPayEntry implements ShouldQueue
                         'branch_name'         => $branchHOName,
                         'ven_no'              => $sssLoansRemittanceVendor,
                         'ven_name'            => $employeeFullName,
-                        'amount'              => $employeeDeduction->balance,
+                        'amount'              => $deductionAmount,
                         'acc_no'              => $sssLoansRemittanceCredit,
                         'description_per_acc' => 'Last Pay|Deduction',
                         'balance_type'        => 'Credit',
@@ -537,7 +539,7 @@ class GenerateLastPayEntry implements ShouldQueue
                         'branch_name'         => $branchHOName,
                         'ven_no'              => $employeeNumber,
                         'ven_name'            => $employeeFullName,
-                        'amount'              => $employeeDeduction->balance,
+                        'amount'              => $deductionAmount,
                         'acc_no'              => $sssLoansDebit,
                         'description_per_acc' => 'Last Pay|Deduction',
                         'balance_type'        => 'Debit',
@@ -553,7 +555,7 @@ class GenerateLastPayEntry implements ShouldQueue
                         'branch_name'         => $branchHOName,
                         'ven_no'              => $employeeNumber,
                         'ven_name'            => $employeeFullName,
-                        'amount'              => $employeeDeduction->balance,
+                        'amount'              => $deductionAmount,
                         'acc_no'              => $sssLoansCredit,
                         'description_per_acc' => 'Last Pay|Deduction',
                         'balance_type'        => 'Credit',
