@@ -28,13 +28,13 @@ class BankAccountHistoryExport implements FromCollection, WithHeadings
         $employees = $this->employees->map(function ($employee) {
             $row = [
                 $employee->full_name,
-                $employee->employee_number,
+                (string) $employee->employee_number,
             ];
 
             foreach ($employee->bank_details as $bank) {
-                $row[] = $bank->bank_number;
+                $row[] = (string) $bank->bank_number;
                 $row[] = Carbon::parse($bank->created_at)->toDateString();
-                $row[] = $bank->remarks;
+                $row[] = (string) $bank->remarks;
             }
 
             return $row;
