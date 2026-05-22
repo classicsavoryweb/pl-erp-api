@@ -326,6 +326,8 @@ class GenerateEntry implements ShouldQueue
             $firstApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
             $secondApsysEntryMain = $this->generateEntryId($this->counterApsysEntryMain);
 
+            $isBlockPayment = !in_array($label, ['SSS Loan', 'PAG-IBIG Loan', 'Bank Salary Loan']);
+
             $entries = array_merge($entries, [
                 [
                     'entry_id'            => $firstEntry,
@@ -373,7 +375,7 @@ class GenerateEntry implements ShouldQueue
                     'acc_no'              => $temporaryAccountA,
                     'description_per_acc' => $label,
                     'balance_type'        => 'Debit',
-                    'is_block_payment'    => 1,
+                    'is_block_payment'    => $isBlockPayment,
                 ],
                 [
                     'entry_id'            => $secondEntry,
@@ -389,7 +391,7 @@ class GenerateEntry implements ShouldQueue
                     'acc_no'              => $this->getAmortizationCreditAccNo($deduction),
                     'description_per_acc' => $label,
                     'balance_type'        => 'Credit',
-                    'is_block_payment'    => 1,
+                    'is_block_payment'    => $isBlockPayment,
                 ],
             ]);
         }
