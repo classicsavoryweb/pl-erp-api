@@ -77,7 +77,7 @@ class ProcessInitializeCutOff implements ShouldQueue
             $scheduleName = $payrollList->employee->schedule?->schedule_type?->name ?? "Normal Schedule";
             $branchIdToUse = $employee->branch_id;
 
-            if ($payrollList->is_on_maternity_leave == 1) {
+            if ($payrollList->is_on_maternity_leave == 1 || $payrollList->is_mancom == 1) {
                 $hoBranch = Branch::where("short_name", "HO")->first();
                 $branchIdToUse = $hoBranch->id;
             }
