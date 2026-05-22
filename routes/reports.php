@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Compensation\PayslipController;
+use App\Http\Controllers\Reports\BankAccountController;
 use App\Http\Controllers\Reports\IncentiveReportController;
 use App\Http\Controllers\Reports\ReportsThirteenthMonthController;
 use App\Http\Controllers\Reports\ReportsPagibigController;
@@ -66,4 +67,7 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //timekeeping summary look up to payroll list
     Route::middleware(["permission:perform_reports_timekeeping_summary_report"])->get('/export-timekeeping-summary-report', [TimeKeepingSummaryReportController::class, 'exportTimeKeepingSummaryReport']);
+
+    //bank account history export
+    Route::middleware(["permission:perform_reports_bank_account_history"])->get("/export-bank-account-history", [BankAccountController::class, "exportBankAccountHistory"]);
 });
