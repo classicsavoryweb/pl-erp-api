@@ -845,7 +845,8 @@ class LastPayController extends Controller
             ->filter(fn ($deduction) => in_array($deduction["category"], ["Pag-ibig", "SSS"]))
             ->values();
         $companyDeductions = $deductions
-            ->reject(fn ($deduction) => in_array($deduction["category"], ["Pag-ibig", "SSS"]))
+            ->reject(fn ($deduction) => in_array($deduction["category"], ["Pag-ibig", "SSS"])
+                && $deduction["type"] !== "SSS Loans")
             ->values();
         $totalDeductions = round($deductions->sum("amount"), 2);
         $computedLastPay = round($grossPay - $totalDeductions, 2);
