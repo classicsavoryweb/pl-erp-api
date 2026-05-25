@@ -91,10 +91,12 @@ Route::middleware('auth:sanctum')->group( function () {
 
     //last pay
     Route::get("/get-all-last-pay", [LastPayController::class, "getAllLastPay"]);
+    Route::get("/export-all-last-pay", [LastPayController::class, "exportAllLastPay"]);
     Route::get("/get-all-holded-employees", [LastPayController::class, "getHoldedEmployees"]);
     Route::get("/get-initial-last-pay/{employeeNumber}", [LastPayController::class, "getEmployeeInitialLastPayDetails"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/create-last-pay/{employeeNumber}", [LastPayController::class, "createLastPayRecord"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay/{lastPayId}", [LastPayController::class, "editLastPayRecord"]);
+    Route::middleware(["permission:perform_compensation_last_pay"])->post("/reload-last-pay-deductions/{lastPayId}", [LastPayController::class, "reloadLastPayDeductions"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/remove-last-pay-deduction/{employeeNumber}", [LastPayController::class, "removeLastPayDeduction"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/edit-last-pay-deduction-details/{lastPayDeductionId}", [LastPayController::class, "editLastPayDeductionDetails"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->get("/preview-last-pay/{lastPayId}", [LastPayController::class, "previewLastPay"]);
