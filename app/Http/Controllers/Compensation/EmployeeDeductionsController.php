@@ -803,7 +803,13 @@ class EmployeeDeductionsController extends Controller
                 "block_payment" => "required",
             ]);
 
-            EmployeeDeduction::where("id", $id)->update([
+            $employeeDeduction = EmployeeDeduction::find($id);
+
+            if (!$employeeDeduction) {
+                return $this->sendError(["message" => "Employee deduction not found"]);
+            }
+
+            $employeeDeduction->update([
                 "employee_id" => $request->employee_id,
                 "deduction_id" => $request->deduction_id,
                 "months" => $request->months,
