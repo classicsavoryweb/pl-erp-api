@@ -6,8 +6,12 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use Maatwebsite\Excel\DefaultValueBinder;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 
-class BankAccountHistoryExport implements FromCollection, WithHeadings
+class BankAccountHistoryExport extends DefaultValueBinder implements FromCollection, WithHeadings, WithCustomValueBinder
 {
 
     protected Collection $employees;
@@ -23,6 +27,16 @@ class BankAccountHistoryExport implements FromCollection, WithHeadings
     /**
     * @return \Illuminate\Support\Collection
     */
+
+    public function bindValue(Cell $cell, $value)
+    {
+        $cell->setValueExplicit(
+            $value,
+            DataType::TYPE_STRING
+        );
+
+        return true;
+    }
     public function collection()
     {
         $employees = $this->employees->map(function ($employee) {
@@ -32,8 +46,8 @@ class BankAccountHistoryExport implements FromCollection, WithHeadings
             ];
 
             foreach ($employee->bank_details as $bank) {
-                $row[] = "'". $bank->bank_number;
-                $row[] = Carbon::parse($bank->created_at)->toDateString();
+                $row[] = (string) $bank->bank_number;
+                $row[] = Carbon::parse($bank->created_at)->format("m/d/Y");
                 $row[] = (string) $bank->remarks;
             }
 
