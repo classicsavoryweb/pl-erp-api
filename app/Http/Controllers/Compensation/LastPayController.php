@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Http\Controllers\Controller;
+use App\Exports\Compensation\LastPayExport;
 use App\Jobs\GenerateLastPayEntry;
 use App\Models\AnnualTax;
 use App\Models\Employee;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use Log;
 
@@ -92,40 +94,26 @@ class LastPayController extends Controller
                 });
             }
 
-            $lastPays = $lastPays->orderBy("id", "DESC")
-            ->paginate($perPage);
+            $lastPays = $lastPays->orderBy("id", "DESC");
 
-            $lastPays->getCollection()->transform(function ($lastPay) {
-                if ($lastPay->status !== "Unposted") {
-                    return $lastPay;
-                }
+            if ($request->has(["export"]) && $request->export) {
+                $lastPays = $lastPays->get();
 
-                $companyDeductions = $this->getCurrentCompanyDeductionsForEmployee($lastPay->employee_id);
-                $totalDeductions = round($companyDeductions->sum(function ($deduction) {
-                    return $this->numeric($deduction->balance ?? $deduction->amount ?? 0);
-                }), 2);
+                return Excel::download(new LastPayExport($lastPays), "last_pay.xls");
+            }
 
-                $lastPayAmount = (
-                    $this->numeric($lastPay->payroll_hold)
-                    + $this->numeric($lastPay->thirteenth_month)
-                    + $this->numeric($lastPay->incentives)
-                    + $this->numeric($lastPay->sl_vl)
-                    + $this->numeric($lastPay->meal)
-                    + $this->numeric($lastPay->tax_refund)
-                    + $this->numeric($lastPay->sales)
-                ) - $totalDeductions;
-
-                $lastPay->setRelation("deductions", $companyDeductions);
-                $lastPay->total_deductions = $totalDeductions;
-                $lastPay->last_pay = round($lastPayAmount, 2);
-
-                return $lastPay;
-            });
+            $lastPays = $lastPays->paginate($perPage);
 
             return $this->sendResponse($lastPays);
         } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+
+    public function exportAllLastPay(Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllLastPay($request);
     }
 
     public function getHoldedEmployees(Request $request) {
@@ -183,7 +171,7 @@ class LastPayController extends Controller
                 $taxRefund = 0;
                 $sales = 0;
 
-                $companyDeductions = EmployeeDeduction::with("deduction")
+                $currentCompanyDeductions = EmployeeDeduction::with("deduction")
                 ->where("employee_id", $employee->id)
                 ->where("balance", ">=", 1)
                 ->where("end_loan_status", "!=", "Yes")
@@ -191,6 +179,8 @@ class LastPayController extends Controller
                     $query->whereNotIn("category", ["Pag-ibig", "SSS"]);
                 })
                 ->get();
+
+                $companyDeductions = $currentCompanyDeductions;
 
                 $governmentDeductions = EmployeeDeduction::with("deduction")
                 ->where("employee_id", $employee->id)
@@ -205,6 +195,14 @@ class LastPayController extends Controller
                 $sssLoansSelected = "No";
 
                 if ($lastPayDetails && $lastPayDetails->deductions) {
+                    $companyDeductions = $lastPayDetails->deductions->filter(function ($item) {
+                        return $item->deduction &&
+                            !in_array($item->deduction->category, ["Pag-ibig", "SSS"]);
+                    })->map(function ($deduction) {
+                        $deduction->balance = $this->numeric($deduction->amount);
+                        return $deduction;
+                    })->values();
+
                     $sssLoans = $lastPayDetails->deductions->filter(function ($item) {
                         return $item->deduction &&
                             $item->deduction->description === 'SSS Loans';
@@ -247,7 +245,9 @@ class LastPayController extends Controller
                     }
                 }
 
-                $companyDeductions = $companyDeductions->merge($sssLoans);
+                if ($lastPayDetails) {
+                    $companyDeductions = $companyDeductions->merge($sssLoans);
+                }
 
                 $yearSourceDate = $employee->separation_date;
                 if (empty($yearSourceDate)) {
@@ -305,7 +305,13 @@ class LastPayController extends Controller
                 $totalDeductions = 0;
 
                 foreach ($companyDeductions as $deduction) {
-                    $totalDeductions += $this->numeric($deduction->balance);
+                    if ($lastPayDetails) {
+                        $totalDeductions += $deduction->deduction?->description === "SSS Loans"
+                            ? $this->numeric($deduction->balance)
+                            : $this->numeric($deduction->amount);
+                    } else {
+                        $totalDeductions += $this->numeric($deduction->balance);
+                    }
                 }
 
                 foreach ($allPayrolls as $payroll) {
@@ -471,6 +477,31 @@ class LastPayController extends Controller
         ]);
 
         return $lastPay->fresh(["employee", "employee.current_branch", "employee.current_position", "deductions", "deductions.deduction"]);
+    }
+
+    private function applyPostedLastPayDeductionBalances(LastPay $lastPay): void
+    {
+        $lastPayDeductions = LastPayDeduction::where("last_pay_id", $lastPay->id)
+            ->where("employee_id", $lastPay->employee_id)
+            ->get();
+
+        foreach ($lastPayDeductions as $lastPayDeduction) {
+            $employeeDeduction = EmployeeDeduction::where("employee_id", $lastPayDeduction->employee_id)
+                ->where("reference_doc", $lastPayDeduction->reference_doc)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$employeeDeduction) {
+                continue;
+            }
+
+            $currentBalance = $this->numeric($employeeDeduction->balance);
+            $deductionAmount = $this->numeric($lastPayDeduction->amount);
+
+            $employeeDeduction->update([
+                "balance" => max(0, $currentBalance - $deductionAmount),
+            ]);
+        }
     }
 
     public function createLastPayRecord(Request $request, $employeeNumber) {
@@ -643,14 +674,6 @@ class LastPayController extends Controller
                     }
                 }
 
-                foreach ($governmentDeductions as $deduction) {
-                    if ($deduction->deduction->description === 'SSS Loans' && $request->sss_loans === 'Yes') {
-                        $deduction->update([
-                            "balance" => 0
-                        ]);
-                    }
-                }
-
                 DB::commit();
                 return $this->sendResponse([
                     "company_deductions" => $companyDeductions,
@@ -703,22 +726,7 @@ class LastPayController extends Controller
                     "last_pay" => $lastPayAmount
                 ]);
 
-                if ($deductionFromLastPay) {
-                    $deductionType = $deductionFromLastPay->deduction->description ?? null;
-                    if ($deductionType === "SSS Loans") {
-                        $employeeDeduction = EmployeeDeduction::where("employee_id", $employee->id)
-                            ->where("reference_doc", $deductionFromLastPay->reference_doc)
-                            ->first();
-
-                        if ($employeeDeduction) {
-                            $employeeDeduction->update([
-                                "balance" => $this->numeric($employeeDeduction->balance) + $this->numeric($deductionFromLastPay->amount)
-                            ]);
-                        }
-                    }
-
-                    $deductionFromLastPay->delete();
-                }
+                $deductionFromLastPay->delete();
 
                 DB::commit();
                 return $this->sendResponse([
@@ -728,6 +736,34 @@ class LastPayController extends Controller
 
             DB::rollBack();
             return $this->sendError(["message" => "Last Pay Deduction not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function reloadLastPayDeductions($lastPayId) {
+        try {
+            DB::beginTransaction();
+
+            $lastPay = LastPay::with("employee")->find($lastPayId);
+
+            if (!$lastPay) {
+                DB::rollBack();
+                return $this->sendError(["message" => "Last pay not found"]);
+            }
+
+            if ($lastPay->status !== "Unposted") {
+                DB::rollBack();
+                return $this->sendError(["message" => "Only unposted last pay can reload deductions"]);
+            }
+
+            $lastPay = $this->refreshUnpostedLastPayDeductions($lastPay);
+            $employeeNumber = $lastPay->employee?->employee_number;
+
+            DB::commit();
+
+            return $this->getEmployeeInitialLastPayDetails($employeeNumber);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
@@ -859,8 +895,6 @@ class LastPayController extends Controller
                 return $this->sendError(["message" => "Last pay not found"]);
             }
 
-            $lastPay = $this->refreshUnpostedLastPayDeductions($lastPay);
-
             return $this->sendResponse($this->buildLastPayPreview($lastPay));
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
@@ -979,7 +1013,12 @@ class LastPayController extends Controller
             $lastPay = LastPay::find($lastPayId);
 
             if ($lastPay && $lastPay->status === "Unposted") {
-                $lastPay = $this->refreshUnpostedLastPayDeductions($lastPay);
+                if ($this->numeric($lastPay->last_pay) < 0) {
+                    DB::rollBack();
+                    return $this->sendError(["message" => "Last pay is negative cannot be posted"]);
+                }
+
+                $this->applyPostedLastPayDeductionBalances($lastPay);
 
                 GenerateLastPayEntry::dispatch($lastPay, Auth::user()->id);
 
@@ -1023,8 +1062,6 @@ class LastPayController extends Controller
             $lastPay = LastPay::with(["deductions", "deductions.deduction"])->find($lastPayId);
 
             if ($lastPay) {
-                $lastPay = $this->refreshUnpostedLastPayDeductions($lastPay);
-
                 $totalPayroll = $this->numeric($lastPay->payroll_hold);
                 $month13th = $this->numeric($lastPay->thirteenth_month);
 
@@ -1066,24 +1103,11 @@ class LastPayController extends Controller
                                 "amount" => $this->numeric($deduction->balance),
                             ]);
 
-                            $deduction->update([
-                                "balance" => 0
-                            ]);
                         }
                     }
                 } else {
                     if ($sssDeductions->isNotEmpty()) {
                         foreach ($sssDeductions as $deduction) {
-                            $employeeDeduction = EmployeeDeduction::where("employee_id", $lastPay->employee_id)
-                                ->where("reference_doc", $deduction->reference_doc)
-                                ->first();
-
-                            if ($employeeDeduction) {
-                                $employeeDeduction->update([
-                                    "balance" => $this->numeric($employeeDeduction->balance) + $this->numeric($deduction->amount)
-                                ]);
-                            }
-
                             $deduction->delete();
                         }
                     }
