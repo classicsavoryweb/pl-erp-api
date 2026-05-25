@@ -32,7 +32,7 @@ class BankAccountHistoryExport implements FromCollection, WithHeadings
             ];
 
             foreach ($employee->bank_details as $bank) {
-                $row[] = (string) $bank->bank_number;
+                $row[] = "'". $bank->bank_number;
                 $row[] = Carbon::parse($bank->created_at)->toDateString();
                 $row[] = (string) $bank->remarks;
             }
