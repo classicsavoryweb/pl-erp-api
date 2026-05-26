@@ -165,30 +165,6 @@ class TimeKeepingService
             $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
         }
 
-        //holiday computation
-        if ($holiday) {
-            $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";
-            $specialHoliday = $holiday->holiday_type === "SH" ? "Yes" : "No";
-            $holidayWorkingHours = $scheduleStart->diffInSeconds($parsedLastPunch);
-            $holidayWorkedHours = $holidayWorkingHours - ($scheduledBreakInMinutes * 60);
-            $totalHolidayWorkedHours = $holidayWorkedHours / 3600;
-
-            if ($legalHoliday === "Yes") {
-                $legalHolidayHours = $totalHolidayWorkedHours;
-                $legalHolidayOvertime = $overtime;
-            }
-
-            if ($specialHoliday === "Yes") {
-                $specialHolidayHours = $totalHolidayWorkedHours;
-                if ($totalHolidayWorkedHours < $hours) {
-                    $specialHolidayHours = $hours; 
-                }
-                $specialHolidayOvertime = $overtime;
-            }
-
-            $overtime = 0;
-        }
-
         if (
             $biotimePunches->count() === 4 &&
             (
@@ -466,6 +442,30 @@ class TimeKeepingService
                     $nightDiffOt = $OTHours;
                 }
             }
+        }
+
+        //holiday computation
+        if ($holiday) {
+            $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";
+            $specialHoliday = $holiday->holiday_type === "SH" ? "Yes" : "No";
+            $holidayWorkingHours = $scheduleStart->diffInSeconds($parsedLastPunch);
+            $holidayWorkedHours = $holidayWorkingHours - ($scheduledBreakInMinutes * 60);
+            $totalHolidayWorkedHours = $holidayWorkedHours / 3600;
+
+            if ($legalHoliday === "Yes") {
+                $legalHolidayHours = $totalHolidayWorkedHours;
+                $legalHolidayOvertime = $overtime;
+            }
+
+            if ($specialHoliday === "Yes") {
+                $specialHolidayHours = $totalHolidayWorkedHours;
+                if ($totalHolidayWorkedHours < $hours) {
+                    $specialHolidayHours = $hours; 
+                }
+                $specialHolidayOvertime = $overtime;
+            }
+
+            $overtime = 0;
         }
 
         if (
