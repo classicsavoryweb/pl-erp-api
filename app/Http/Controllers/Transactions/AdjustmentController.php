@@ -248,7 +248,7 @@ class AdjustmentController extends Controller
                 $amount_paid = $originalPayment->total_amount ?? 0;
 
                 if ($taxable_amount == 0) {
-                    return $this->sendError(["message" => "Taxable adjustment computed id 0.00"]);
+                    return $this->sendError(["message" => "Taxable adjustment computed is 0.00"]);
                 }
 
                 $adjustment->update([
