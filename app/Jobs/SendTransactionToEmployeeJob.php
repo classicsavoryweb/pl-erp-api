@@ -15,6 +15,7 @@ use App\Models\EmployeeDeduction;
 use App\Models\Entry;
 use App\Models\User;
 use App\Support\EntryBranchNumber;
+use Http;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
@@ -118,6 +119,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
         $transactionsIds = $this->details;
 
         $userId = $this->userId;
+
+        $userEmployee = User::find($userId);
 
         $converter_details = $batch->converter_details()
         ->with(["employee", "employee.latest_bank_details","transaction_type"]);
@@ -247,6 +250,10 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             $entryVendorName = $employee->full_name;
             $isBatchEntry = in_array($transaction->id, $batchEntryTransactionIds, true);
 
+            $type = null;
+            if (in_array($transaction->transaction_type->source_id, [1,2])) {
+                $type = $transaction->transaction_type->source_id == 1 ? "LOAN" : "HEALTHCARE";
+            }
             //HO Entry Setup
             if (!$isBatchEntry && ($hoDebit || $advancesDebit == 'Yes')) {
 
@@ -348,6 +355,30 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 ->send(new SendTransactionToEmployeeMail($transaction));
             } catch (Exception $e) {
                 Log::info($e->getMessage());
+            }
+            
+            if (in_array($transaction->transaction_type->source_id, [1,2])) {
+                try {
+                    $baseUrl = env('CS_HUB_URL_LINK');
+                    $user = env('CS_HUB_ADMIN_EMAIL');
+                    $password = env('CS_HUB_ADMIN_PASSWORD');
+                    $endPoint = $baseUrl."/update-transaction-status";
+                    $response = Http::withBasicAuth($user, $password)
+                        ->withHeaders([
+                            "Accept" => "application/json",
+                            "Content-Type" => "application/json",
+                        ])
+                        ->timeout(30)
+                        ->post($endPoint, [
+                            "transaction_number" => $transaction->transaction_number,
+                            "status" => "Credited",
+                            "type" => $type,
+                            "employee_number" => $userEmployee->employee_number,
+                            "company" => env("COMPANY_NAME")
+                        ]);          
+                } catch (Exception $e) {
+                    Log::info($e->getMessage());
+                }
             }
 
             if ($transaction->transaction_type->isDeduction()) {
