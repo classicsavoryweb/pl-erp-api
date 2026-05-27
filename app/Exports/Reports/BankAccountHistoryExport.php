@@ -43,6 +43,7 @@ class BankAccountHistoryExport extends DefaultValueBinder implements FromCollect
             $row = [
                 $employee->full_name,
                 (string) $employee->employee_number,
+                (string) $employee->payroll_list?->current_bank_details?->bank_number ?? ""
             ];
 
             foreach ($employee->bank_details as $bank) {
@@ -62,6 +63,7 @@ class BankAccountHistoryExport extends DefaultValueBinder implements FromCollect
         $headings = [
             'Employee Name',
             'Employee Number',
+            "Payroll List Bank Account Number"
         ];
 
         for ($i = 1; $i <= $this->maxBanks; $i++) {

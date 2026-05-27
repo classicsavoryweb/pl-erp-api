@@ -17,7 +17,8 @@ class BankAccountController extends Controller
                 "status" => "required"
             ]);
 
-            $employees = Employee::With([
+            $employees = Employee::with([
+                "payroll_list.current_bank_details",
                 "bank_details" => function ($q) {
                     $q->latest();
                 }
