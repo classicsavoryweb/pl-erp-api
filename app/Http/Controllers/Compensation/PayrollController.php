@@ -390,13 +390,15 @@ class PayrollController extends Controller
                         ]);
 
                         $payrollList = $payroll->payroll_list;
-                        $is_bank = $request->is_on_maternity_leave == 1 ? false : true;
-
-                        $payrollList->update([
-                            "is_on_maternity_leave" => $request->is_on_maternity_leave,
-                            "is_bank" => $is_bank,
-                            "is_hold" => $request->is_hold
-                        ]);
+                        if ($payrollList->is_on_maternity_leave != $request->is_on_maternity_leave) {
+                            $is_bank = $request->is_on_maternity_leave == 1 ? false : true;
+    
+                            $payrollList->update([
+                                "is_on_maternity_leave" => $request->is_on_maternity_leave,
+                                "is_bank" => $is_bank,
+                                "is_hold" => $request->is_hold
+                            ]);
+                        }
 
                         DB::commit();
                     }
