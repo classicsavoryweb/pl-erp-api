@@ -170,6 +170,7 @@ class ConverterController extends Controller
                 "posted_by",
                 "generated_by",
                 "voided_by",
+                "sent_by",
                 "bank_account_type",
                 "converter_details" => function ($q) {
                     $q->join('employees', 'employees.id', '=', 'converter_details.employee_id')
