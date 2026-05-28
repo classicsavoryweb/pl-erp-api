@@ -2,6 +2,7 @@
 
 namespace App\Exports\Maintenance;
 
+use App\Models\Rate;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -11,10 +12,14 @@ class BranchExport implements FromCollection, WithHeadings, WithTitle
 {
 
     protected Collection $branches;
+    protected array $minimumRates;
 
     public function __construct(Collection $branches)
     {
         $this->branches = $branches;
+        $this->minimumRates = Rate::whereIn("code", $branches->pluck("rate_code")->filter()->unique())
+            ->pluck("minimum", "code")
+            ->all();
     }
 
     public function collection()
@@ -31,6 +36,7 @@ class BranchExport implements FromCollection, WithHeadings, WithTitle
                 $branch->branch_email,
                 $branch->address,
                 $branch->rate_code,
+                $this->minimumRates[$branch->rate_code] ?? '',
                 $branch->branch_head,
                 $branch->group_head,
                 $branch->kitchen_oic,
@@ -68,6 +74,7 @@ class BranchExport implements FromCollection, WithHeadings, WithTitle
             'Branch Email',
             'Branch Address',
             'Rate Code',
+            'Minimum Rate',
             'Branch OIC',
             'Group Head',
             'Kitchen OIC',
