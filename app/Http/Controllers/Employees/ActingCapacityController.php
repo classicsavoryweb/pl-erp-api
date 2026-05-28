@@ -559,6 +559,10 @@ class ActingCapacityController extends Controller
                         if ($rankAndFileIncentive) {
                             $baseIncentive = $rankAndFileIncentive->amount;
                         }
+
+                        if ($baseIncentive < 2750) {
+                            $baseIncentive = 2750;
+                        }
                     }
 
                     IncentivesManagement::updateOrCreate([
