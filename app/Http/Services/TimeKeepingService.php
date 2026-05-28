@@ -844,6 +844,10 @@ class TimeKeepingService
 
         $schedule = $timeKeeping->schedule->timetable;
 
+        if (!$isAdjustment && !$timeKeeping->schedule) {
+            return $timeKeepingPayment;
+        }
+
         if ($isAdjustment && $timeTable) {
             $schedule = $timeTable;
         }
