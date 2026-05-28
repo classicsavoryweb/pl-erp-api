@@ -85,6 +85,10 @@ class BranchController extends Controller
             $branches = $branches->where("status", $request->status);
         }
 
+        if ($request->has(["rate_code"])) {
+            $branches = $branches->where("rate_code", $request->rate_code);
+        }
+
         return $branches;
     }
 
