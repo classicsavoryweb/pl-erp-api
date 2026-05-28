@@ -282,9 +282,9 @@ class GenerateTimekeepingSummary implements ShouldQueue
                         }
                     }
 
-                    // if ($schedule->selection === "SUSPENSION") {
-                    //     continue;
-                    // }
+                    if ($schedule->selection === "SUSPENSION") {
+                        $absent += 1;
+                    }
 
                     if ($hours == $timeKeep->final_worked_hours && $timeKeep->final_worked_hours > 0 && !$timeKeep->is_cancelled_off) {
                         $regular_days += $schedule->days;
