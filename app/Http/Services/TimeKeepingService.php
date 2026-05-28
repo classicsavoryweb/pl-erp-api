@@ -842,11 +842,11 @@ class TimeKeepingService
         $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
         $paymentPerMinute = $paymentPerHour / 60;
 
-        $schedule = $timeKeeping->schedule->timetable;
-
         if (!$isAdjustment && !$timeKeeping->schedule) {
             return $timeKeepingPayment;
         }
+
+        $schedule = $timeKeeping->schedule->timetable;
 
         if ($isAdjustment && $timeTable) {
             $schedule = $timeTable;
