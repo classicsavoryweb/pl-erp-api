@@ -374,7 +374,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                             "status" => "Credited",
                             "type" => $type,
                             "employee_number" => $userEmployee->employee_number,
-                            "company" => env("COMPANY_NAME")
+                            "company" => env("COMPANY_NAME"),
+                            "amount" => $transaction->amount
                         ]);          
                 } catch (Exception $e) {
                     Log::info($e->getMessage());
