@@ -581,11 +581,18 @@ class ConverterController extends Controller
                         continue;
                     }
 
+                    $statusArray = ['Pending', 'Generated', 'Sent'];
+
                     $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])
                     ->where("employee_id", $employee->id)
-                    ->latest()->first();
+                    ->latest()
+                    ->first();
 
-                    if ($isExisting && in_array($isExisting->status, ['Pending', 'Generated', 'Sent'])) {
+                    if (isset($trans["is_liquidated"]) && $trans["is_liquidated"] == "Yes") {
+                        $statusArray = ["Pending", "Generated"];
+                    }
+
+                    if ($isExisting && in_array($isExisting->status, $statusArray)) {
                         continue;
                     }
 
@@ -650,19 +657,22 @@ class ConverterController extends Controller
                 ->whereNot("status", "Voided")
                 ->first();
 
+                if (isset($transaction["is_liquidated"]) && $transaction["is_liquidated"] == "Yes") {
+                    $isExisting = false;
+                }
+
                 if ($isExisting) {
                     continue;
                 }
 
-                ConverterDetail::updateOrCreate([
+                ConverterDetail::create([
                     "employee_id" => $employee->id,
                     "branch_id" => $employee->current_branch->id,
                     "transaction_number" => $transaction["transaction_number"],
                     "status" => "Pending",
                     "source" => "CSHUB",
-                ], [
-                    "terms" => $transaction["terms"],
                     "amount" => $transaction["amount"],
+                    "terms" => $transaction["terms"],
                     "remarks" => $transaction["purpose"],
                     "transaction_type_id" => $transactionType->id,
                     "added_by" => Auth::user()->id
