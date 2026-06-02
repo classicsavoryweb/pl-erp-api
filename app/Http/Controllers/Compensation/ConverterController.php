@@ -287,9 +287,13 @@ class ConverterController extends Controller
         try {
             DB::beginTransaction();
 
-            $detail = ConverterDetail::find($detailId);
+            $detail = ConverterDetail::with(["converter_main"])->find($detailId);
 
             if ($detail) {
+                if ($detail->converter_main && $detail->converter_main->status == "Pending") {
+                    return $this->sendError(["message" => "Transaction is in pending converter"]);
+                }
+
                 $detail->update([
                     "status" => "Voided"
                 ]);

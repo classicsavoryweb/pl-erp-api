@@ -710,7 +710,10 @@ class TimeKeepingService
                 $cancelled_off_hours = round($decimalHours, 2);
             }
 
-            if ($workHours <= 1 && !$isCancelledOff && $schedule->selection !== "NO SCHEDULE") {
+            if (
+                ($workHours <= 1 && !$isCancelledOff && $schedule->selection !== "NO SCHEDULE") ||
+                $schedule->selection == "SUSPENSION"
+            ) {
                 $finalWorkHours = 0;
                 $legalHoliday = 0;
                 $specialHoliday = 0;

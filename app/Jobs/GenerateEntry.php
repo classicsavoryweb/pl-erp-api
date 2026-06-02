@@ -2278,7 +2278,7 @@ class GenerateEntry implements ShouldQueue
                             $vendorHOName,
                             $erSSSDebit,
                             $erSSSCredit,
-                            $start_date . '-' . $end_date,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
@@ -2334,7 +2334,7 @@ class GenerateEntry implements ShouldQueue
                             $vendorHOName,
                             $erPhilHealthDebit,
                             $accountsPayable,
-                            $start_date . '-' . $end_date,
+                            $branchShortName . '|' .$start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
@@ -2391,7 +2391,7 @@ class GenerateEntry implements ShouldQueue
                             $vendorHOName,
                             $erPagibigDebit,
                             $accountsPayable,
-                            $start_date . '-' . $end_date,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
@@ -3418,10 +3418,6 @@ class GenerateEntry implements ShouldQueue
                         $cashPayrollVendorName
                     );
 
-                        //                     $eeSSSDebit,
-                        // $eeSSSVendor,
-                        // $eeSSSVendorName,
-                        // $eeSSSCredit,
                     $cashEmployerSss = $this->parseMoneyValue($payrollCash->employer_sss);
                     if (!$isHeadOfficeBranch) {
                         $this->appendCashDualContributionEntries(
@@ -3454,7 +3450,7 @@ class GenerateEntry implements ShouldQueue
                             $vendorHOName,
                             $erSSSDebit,
                             $accountsPayable,
-                            $start_date . '-' . $end_date,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
@@ -3509,7 +3505,7 @@ class GenerateEntry implements ShouldQueue
                             $vendorHOName,
                             $erPhilHealthDebit,
                             $accountsPayable,
-                            $start_date . '-' . $end_date,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
@@ -3564,7 +3560,7 @@ class GenerateEntry implements ShouldQueue
                             $vendorHOName,
                             $erPagibigDebit,
                             $accountsPayable,
-                            $start_date . '-' . $end_date,
+                            $branchShortName . '|' . $start_date . '-' . $end_date,
                             $branchId,
                             $branchName,
                             $branchNumber,
@@ -3727,12 +3723,12 @@ class GenerateEntry implements ShouldQueue
                     if ($this->apsysAvailable) {
                         ApsysEntry::create([
                             'ent_tran_no'       => $entry['apsys_entry_id'],
-                            'ent_post_date'     => now(),
+                            'ent_post_date'     => $this->pay_date,
                             'ven_no'            => $entry['ven_no'],
-                            'ent_doc_date'      => now(),
+                            'ent_doc_date'      => $this->pay_date,
                             'branch_id'         => $entry['branch_number'],
                             'ent_doc_no'        => $entry['document_no'],
-                            'ent_due_date'      => now(),
+                            'ent_due_date'      => $this->pay_date,
                             'ent_header'        => $entry['document_no'],
                             'ent_crf_no'        => '',
                             'ent_trans_amt'     => $entry['amount'],
@@ -3753,7 +3749,7 @@ class GenerateEntry implements ShouldQueue
                             'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
                             'ent_status'        => 'Unapplied',
                             'ent_chk'           => 'No',
-                            'date_added'        => now(),
+                            'date_added'        => $this->pay_date,
                         ]);
                     }
                 }
@@ -3766,12 +3762,12 @@ class GenerateEntry implements ShouldQueue
                             'ent_tran_no'       => $mainId,
                             'ven_no'            => $entry['ven_no'],
                             'ven_name'          => $entry['ven_name'],
-                            'ent_doc_date'      => now(),
+                            'ent_doc_date'      => $this->pay_date,
                             'branch_id'         => $entry['branch_number'],
                             'branch_name'         => $entry['branch_name'],
                             'ent_header'        => $entry['document_no'],
                             'ent_trans_amt'     => $entry['amount'],
-                            'ent_post_date'     => now(),
+                            'ent_post_date'     => $this->pay_date,
                             'ent_module_type'   => 'Single',
                             'ent_status'        => 'Unapplied',
                             'check_no'          => null,
@@ -3781,7 +3777,7 @@ class GenerateEntry implements ShouldQueue
                             'ent_app_amt'       => $entry['amount'],
                             'ent_unapp_amt'     => 0,
                             'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
-                            'ent_due_date'      => now(),
+                            'ent_due_date'      => $this->pay_date,
                         ]);
                     }
                 }
