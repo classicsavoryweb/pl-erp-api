@@ -1023,6 +1023,7 @@ class EmployeeDeductionsController extends Controller
                     "Accept" => "application/json",
                     "Content-Type" => "application/json"
                 ])->timeout(60)
+                ->retry(3)
                 ->post($transactionLink,[
                     "transaction_number" => $transaction["trans_no"],
                     "status" => "Deducted Liquidation",

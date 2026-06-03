@@ -368,7 +368,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                             "Accept" => "application/json",
                             "Content-Type" => "application/json",
                         ])
-                        ->timeout(30)
+                        ->retry(3)
+                        ->timeout(60)
                         ->post($endPoint, [
                             "transaction_number" => $transaction->transaction_number,
                             "status" => "Credited",
