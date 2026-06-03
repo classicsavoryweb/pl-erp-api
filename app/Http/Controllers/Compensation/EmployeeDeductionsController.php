@@ -883,7 +883,7 @@ class EmployeeDeductionsController extends Controller
             ]);
 
             $transactionLink = env('CS_HUB_URL_LINK')."/update-transaction-status";
-            $user = env('CS_HUB_ADMIN_EMAIL');
+            $userName = env('CS_HUB_ADMIN_EMAIL');
             $password = env('CS_HUB_ADMIN_PASSWORD');
             $company = env('COMPANY_NAME');
 
@@ -1018,7 +1018,7 @@ class EmployeeDeductionsController extends Controller
 
                 $this->createEntries($entries, $user);
 
-                $response = Http::withBasicAuth($user, $password)
+                $response = Http::withBasicAuth($userName, $password)
                 ->withHeaders([
                     "Accept" => "application/json",
                     "Content-Type" => "application/json"
