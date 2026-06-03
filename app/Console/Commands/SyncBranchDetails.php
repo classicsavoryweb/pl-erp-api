@@ -54,12 +54,7 @@ class SyncBranchDetails extends Command
 
         $batchSize = 200;
 
-            $company = env('COMPANY_NAME') == "SFI"
-        ? "Savory Fast Food Inc." 
-        : "Tony Ting Food Concepts Inc.";
-
         Branch::orderBy('id')
-        ->where("company", $company)
         ->chunkById($batchSize, function ($branches) use ($targetColumnKeys, $keyColumn, &$syncFailed, &$otherCompanyUnavailable) {
                 $payload = [];
                 $roleEmployeeNumbers = $branches
