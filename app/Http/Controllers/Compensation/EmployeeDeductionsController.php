@@ -1018,19 +1018,19 @@ class EmployeeDeductionsController extends Controller
 
                 $this->createEntries($entries, $user);
 
-                // $response = Http::withBasicAuth($user, $password)
-                // ->withHeaders([
-                //     "Accept" => "application/json",
-                //     "Content-Type" => "application/json"
-                // ])->timeout(60)
-                // ->post($transactionLink,[
-                //     "transaction_number" => $transaction["trans_no"],
-                //     "status" => "Deducted Liquidation",
-                //     "type" => "SALARY_DEDUCTION",
-                //     "employee_number" => $employee->employee_number,
-                //     "company" => $company,
-                //     "amount" => $transaction["actual_liq_difference"]
-                // ]);
+                $response = Http::withBasicAuth($user, $password)
+                ->withHeaders([
+                    "Accept" => "application/json",
+                    "Content-Type" => "application/json"
+                ])->timeout(60)
+                ->post($transactionLink,[
+                    "transaction_number" => $transaction["trans_no"],
+                    "status" => "Deducted Liquidation",
+                    "type" => "SALARY_DEDUCTION",
+                    "employee_number" => $employee->employee_number,
+                    "company" => $company,
+                    "amount" => $transaction["actual_liq_difference"]
+                ]);
             }
 
             DB::commit();
