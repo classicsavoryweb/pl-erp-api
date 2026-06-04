@@ -353,6 +353,8 @@ class PayrollService {
         ->where('max_amount', '>=', $basicSalary)
         ->first();
 
+        $pagibigAmount = 0;
+
         $shares = [
             "er" => 0,
             "ee" => 0
@@ -395,6 +397,11 @@ class PayrollService {
                     $shares['er'] = round($pagibigAmount, 2);
                 }
             }
+        }
+
+        if ($pagibigAmount < 0) {
+            $shares['ee'] = 0;
+            $shares['er'] = 0;
         }
 
         return $shares;
