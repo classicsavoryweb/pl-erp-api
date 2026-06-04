@@ -43,6 +43,10 @@ class Incentives extends Model
         return $this->belongsTo(Employee::class);
     }
 
+    public function branch() {
+        return $this->hasOne(Branch::class, "id", "branch_id");
+    }
+
     public function position() {
         return $this->hasOne(Position::class, "id", "position_id");
     }

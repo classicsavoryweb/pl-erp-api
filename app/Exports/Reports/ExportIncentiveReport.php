@@ -31,6 +31,7 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
             return [
                 $attendance->employee->employee_number,
                 $attendance->employee->full_name,
+                $attendance->branch->short_name,
                 $attendance->employee->current_position->description,
                 Carbon::parse($attendance->employee->date_hired)->diffInMonths(Carbon::parse($attendance->created_at)),
                 $attendance->employee->oic_status,
@@ -62,6 +63,7 @@ class ExportIncentiveReport implements FromCollection, WithHeadings
         return [
             'Employee Number',
             'Employee Name',
+            'Timekeeping Branch',
             'Current Position',
             'Tenure',
             'OIC Status',

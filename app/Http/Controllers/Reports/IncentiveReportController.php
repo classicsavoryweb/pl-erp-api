@@ -24,6 +24,7 @@ class IncentiveReportController extends Controller
                 "employee.current_position",
                 "employee.schedule",
                 "employee.schedule.schedule_type",
+                "branch",
                 "position",
             ])
             ->whereMonth("pay_date", $request->month)

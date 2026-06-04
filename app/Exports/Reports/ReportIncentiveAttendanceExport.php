@@ -29,6 +29,7 @@ class ReportIncentiveAttendanceExport implements FromCollection, WithHeadings
             return [
                 $attendance->employee->employee_number,
                 $attendance->employee->full_name,
+                $attendance->branch->short_name,
                 $attendance->employee->current_position->description,
                 $attendance->employee->schedule->schedule_type->name,
                 $attendance->first_cut_off_worked_days,
@@ -45,6 +46,7 @@ class ReportIncentiveAttendanceExport implements FromCollection, WithHeadings
         return [
             'Employee Number',
             'Employee Name',
+            'Timekeeping Branch',
             'Position',
             'Schedule Type',
             '1st Cutoff Days',
