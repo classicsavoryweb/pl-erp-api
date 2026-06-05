@@ -162,6 +162,7 @@ class ConverterController extends Controller
 
                 $request["converter_main_ids"] = $converters;
 
+                unset($request['date_from'], $request['date_to']);
                 return $this->getAllConverterDetails($request);
             }
 
