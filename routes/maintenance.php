@@ -280,10 +280,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-tardiness-sanctions", [TardinessSanctionController::class, "exportAllTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/create-tardiness-sanction", [TardinessSanctionController::class, "createTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/edit-tardiness-sanction/{id}", [TardinessSanctionController::class, "editTardinessSanctions"]);
-    Route::get("/get-uniform", [SizesController::class, "getUniform"]);
-    Route::post("/create-uniform", [SizesController::class, "createUniform"]);
-    Route::post("/edit-uniform/{id}", [SizesController::class, "editUniform"]);
-    Route::get("/delete-uniform/{id}", [SizesController::class, "deleteUniform"]);
+    Route::get("/get-uniform-sizes", [SizesController::class, "getUniformSizes"]);
+    Route::middleware(["permission:perform_maintenance_sizes"])->post("/create-uniform-sizes", [SizesController::class, "createUniformSizes"]);
+    Route::middleware(["permission:perform_maintenance_sizes"])->post("/edit-uniform-sizes/{id}", [SizesController::class, "editUniformSizes"]);
+    
     
 
 });

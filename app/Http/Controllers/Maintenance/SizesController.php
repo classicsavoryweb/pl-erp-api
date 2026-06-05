@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Maintenance;
 
-use App\Models\sizes;
+use App\Models\Sizes;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Exception;
 
 class SizesController extends Controller
 {
-    public function createUniform(Request $request){
+    public function createUniformSizes(Request $request){
         try {
             $request->validate([
                 "description" => "required|unique:sizes,description",
                 "status" => "required",
             ]);
 
-            sizes::create([
+            Sizes::create([
                 "description" => $request->description,
                 "status" => $request->status,
             ]);
@@ -28,9 +28,9 @@ class SizesController extends Controller
         }
     }
 
-    public function getUniform(Request $request){
+    public function getUniformSizes(Request $request){
         try{
-            $sizes = sizes::all();
+            $sizes = Sizes::all();
 
             return $this -> sendResponse($sizes);
         }catch(Exception $e) {
@@ -40,13 +40,13 @@ class SizesController extends Controller
 
     }
 
-    public function editUniform(Request $request , $id){
+    public function editUniformSizes(Request $request , $id){
         try{
              $request->validate([
                 "description" => "required|unique:sizes,description," . $id,
                 "status" => "required",
             ]);
-            sizes::where("id", $id)->update([
+            Sizes::where("id", $id)->update([
                 "description" => $request->description,
                 "status" => $request->status,
             ]);
@@ -58,16 +58,5 @@ class SizesController extends Controller
         }
     }
 
-    public function deleteUniform($id){
-        try {
-            $sizes = sizes::find($id);
-            $sizes->delete();
-
-            return $this->sendResponse(["message"=> "Role and its permissions deleted successfully."]);
-        } catch(Exception $e) {
-            return $this->sendError(["message" => $e->getMessage()]);
-        }
-
-    }
 }
 
