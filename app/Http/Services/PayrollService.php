@@ -232,7 +232,7 @@ class PayrollService {
             ->sortBy("deducted_amount")
             ->values()
             ->toArray();
-            if ($netPayCheck < 0) {
+            if (!$payrollDetails->modify_deductions && $netPayCheck < 0) {
                 foreach ($deductions as $deduction) {
                     $netPayNoDeductions -= $deduction['deducted_amount'];
 

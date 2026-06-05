@@ -22,18 +22,17 @@ class ProcessInitializeCutOff implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     use NotifiesJobStatus;
-    protected Cutoff $cutOff;
+    protected $branchId;
     protected PayrollService $payrollService;
     protected $userId;
-    protected $notificationLabel = "Initialize Cutoff";
     protected $notificationContext;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(Cutoff $cutoff, ?int $userId = null, ?string $notificationContext = null)
+    public function __construct(?int $branchId = null, ?int $userId = null, ?string $notificationContext = null)
     {
-        $this->cutOff = $cutoff;
+        $this->branchId = $branchId;
         $this->payrollService = new PayrollService();
         $this->userId = $userId;
         $this->notificationContext = $notificationContext;
@@ -45,29 +44,26 @@ class ProcessInitializeCutOff implements ShouldQueue
     public function handle(): void
     {
         try {
-        $cutOff = $this->cutOff;
-        $history = json_decode($cutOff->initializations, true);
-        $initializationDates = collect($history)
-        ->pluck('initialized_at')
-        ->filter(fn($date) => !is_null($date))
-        ->sortDesc()
-        ->values();
-        $datesArray = $initializationDates->toArray();
-        $count = count($datesArray);
+        $branchId = $this->branchId;
+        $cutOff = Cutoff::where("status", "active")->first();
 
         $includedEmployees = PayrollList::with([
             "employee",
             "employee.schedule",
             "employee.schedule.schedule_type"
         ])
-        ->where("is_included", 1);
+        ->whereHas("employee", function ($query) use ($branchId) {
+            $query->where("branch_id", $branchId);
+        })
+        ->where("is_included", 1)
+        ->get();
 
-        if ($count > 1) {
-            $dateBasis = $datesArray[$count - 2];
-            $includedEmployees = $includedEmployees->where("updated_at", ">=", $dateBasis);
-        }
+        $payrollIds = Payroll::where("pay_date", $cutOff->pay_date)
+        ->where("timekeeping_branch_id", $branchId)
+        ->pluck("id");
 
-        $includedEmployees = $includedEmployees->get();
+        Payroll::whereIn("id", $payrollIds)->delete();
+        PayrollDetail::whereIn("payroll_id", $payrollIds)->delete();
 
         foreach ($includedEmployees as $payrollList) {
             $divisor = 13;

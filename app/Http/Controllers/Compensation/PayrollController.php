@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Compensation;
 use App\Http\Controllers\Controller;
 use App\Http\Services\PayrollService;
 use App\Jobs\GenerateBranchPayroll;
+use App\Jobs\ProcessInitializeCutOff;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\Tardiness;
@@ -206,6 +207,54 @@ class PayrollController extends Controller
         }
     }
 
+    public function initializeBranchPayroll(Request $request) {
+        try {
+
+            $request->validate([
+                "branch_id" => "required|array"
+            ]);
+
+            $branches = Branch::get()
+            ->pluck('name', 'id')
+            ->toArray();
+
+            $cutOff = Cutoff::where("status", "active")->first();
+
+            if ($cutOff) {
+                $initializedJson = [];
+
+                if ($cutOff->initializations) {
+                    $initializedJson = json_decode($cutOff->initializations, true);
+                }
+
+                $newJson = [
+                    [
+                        "initialized_at" => now(),
+                        "initialized_by" => Auth::user()->full_name
+                    ],
+                    ...$initializedJson
+                ];
+
+                $cutOff->update([
+                    "initializations" => json_encode($newJson)
+                ]);
+            }
+
+            foreach ($request->branch_id as $branch_id) {
+                $branch = $branches[$branch_id];
+                $context = $branch ?? "Unknown Branch";
+
+                ProcessInitializeCutOff::dispatch($branch_id, Auth::id(), $context);
+            }
+
+            return $this->sendResponse([
+                "message" => "Payroll is generating."
+            ]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function generateBranchPayroll(Request $request) {
         try {
 
@@ -292,6 +341,7 @@ class PayrollController extends Controller
                 $details->employer_philhealth = $request->employer_philhealth;
                 $details->withholding_tax = $request->withholding_tax;
                 $details->reload_deductions = $request->reload_deductions;
+                $details->modify_deductions = $request->modify_deductions;
                 $details->remarks = $request->remarks;
                 $details->is_on_maternity_leave = $request->is_on_maternity_leave;
                 $details->is_hold = $request->is_hold;
