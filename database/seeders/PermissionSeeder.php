@@ -258,5 +258,18 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_reports_timekeeping_summary_report"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_bank_account_history"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_bank_account_history"], ["module" => "reports"]);
+
+
+        //uniform (maintenance)
+        Permission::updateOrCreate(["name" => "view_maintenance_suppliers"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_maintenance_suppliers"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_maintenance_sizes"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_maintenance_sizes"], ["module" => "maintenance"]);
+        //uniform module (section)
+        Permission::updateOrCreate(["name" => "view_uniform_module"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_item_masterlist"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_item_masterlist"], ["module" => "uniform"]);
+        
+
     }
 }
