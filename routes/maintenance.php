@@ -39,6 +39,7 @@ use App\Http\Controllers\Maintenance\TermsController;
 use App\Http\Controllers\Maintenance\LastPaySetupController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
+use App\Http\Controllers\Maintenance\SizesController;
 use Illuminate\Support\Facades\Route;
 
 // MAINTENANCE MODULE
@@ -279,4 +280,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-tardiness-sanctions", [TardinessSanctionController::class, "exportAllTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/create-tardiness-sanction", [TardinessSanctionController::class, "createTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/edit-tardiness-sanction/{id}", [TardinessSanctionController::class, "editTardinessSanctions"]);
+    Route::get("/get-uniform-sizes", [SizesController::class, "getUniformSizes"]);
+    Route::middleware(["permission:perform_maintenance_sizes"])->post("/create-uniform-sizes", [SizesController::class, "createUniformSizes"]);
+    Route::middleware(["permission:perform_maintenance_sizes"])->post("/edit-uniform-sizes/{id}", [SizesController::class, "editUniformSizes"]);
+    
+    
+
 });
