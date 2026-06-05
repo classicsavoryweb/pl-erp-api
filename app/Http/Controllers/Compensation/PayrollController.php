@@ -375,6 +375,11 @@ class PayrollController extends Controller
                     $payroll->details->deductions = $request->deductions;
 
                     if ($request->save_changes) {
+
+                        if ($payrollComp->net_pay < 0) {
+                            return $this->sendError(["message" => "Netpay is negative"]);
+                        }
+
                         DB::beginTransaction();
                         PayrollDetail::where("payroll_id", $payroll->id)
                         ->update([
