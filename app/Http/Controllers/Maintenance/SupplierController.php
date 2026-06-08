@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Models\Supplier;
+use App\Exports\Maintenance\SupplierExport;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SupplierController extends Controller
 {
@@ -29,16 +31,30 @@ class SupplierController extends Controller
     }
 
     public function getUniformSupplier(Request $request){
-        $perPage = $request->per_page ?? 10;
+         try {
+            $perPage = $request->per_page ?? 10;
 
-        try{
-            $suppliers = Supplier::paginate($perPage);
-            return $this -> sendResponse($suppliers);
-        }catch(Exception $e) {
+            $suppliers = Supplier::query();
+            if ($request->has(["column_type", "key_word"])) {
+               $suppliers = $suppliers->where($request->column_type,"LIKE","%".$request->key_word."%");
+            }
+           
+            if ($request->has(["export"]) && $request->export) {
+                $suppliers = $suppliers->get();
+                return Excel::download(new SupplierExport($suppliers), "suppliers.xls");
+            }
 
+            $suppliers = $suppliers->paginate($perPage);
+            return $this->sendResponse($suppliers);
+        } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
 
+    }
+    public function exportSupplier (Request $request) {
+        $request["export"] = true;
+
+        return $this->getUniformSupplier($request);
     }
 
     public function editUniformSupplier(Request $request , $id){
@@ -57,6 +73,11 @@ class SupplierController extends Controller
 
             return $this->sendError(["message" => $e->getMessage() ]);
         }
+    }
+    public function exportAllPositions (Request $request) {
+        $request["export"] = true;
+
+        return $this->getAllPositions($request);
     }
 
    
