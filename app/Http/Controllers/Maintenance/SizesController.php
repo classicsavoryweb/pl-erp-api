@@ -29,8 +29,9 @@ class SizesController extends Controller
     }
 
     public function getUniformSizes(Request $request){
+        $perPage = $request->per_page ?? 10;
         try{
-            $sizes = Sizes::all();
+            $sizes = Sizes::paginate($perPage);
 
             return $this -> sendResponse($sizes);
         }catch(Exception $e) {
