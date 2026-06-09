@@ -40,6 +40,7 @@ use App\Http\Controllers\Maintenance\LastPaySetupController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Maintenance\SizesController;
+use App\Http\Controllers\Maintenance\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 // MAINTENANCE MODULE
@@ -281,9 +282,12 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/create-tardiness-sanction", [TardinessSanctionController::class, "createTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/edit-tardiness-sanction/{id}", [TardinessSanctionController::class, "editTardinessSanctions"]);
     Route::get("/get-uniform-sizes", [SizesController::class, "getUniformSizes"]);
+    Route::get("/export-uniform-sizes", [SizesController::class, "exportSizes"]);
     Route::middleware(["permission:perform_maintenance_sizes"])->post("/create-uniform-sizes", [SizesController::class, "createUniformSizes"]);
     Route::middleware(["permission:perform_maintenance_sizes"])->post("/edit-uniform-sizes/{id}", [SizesController::class, "editUniformSizes"]);
-    
-    
+    Route::get("/get-uniform-supplier", [SupplierController::class, "getUniformSupplier"]);
+    Route::get("/export-uniform-supplier", [SupplierController::class, "exportSupplier"]);
+    Route::middleware(["permission:perform_maintenance_suppliers"])->post("/create-uniform-supplier", [SupplierController::class, "createUniformSupplier"]);
 
 });
+
