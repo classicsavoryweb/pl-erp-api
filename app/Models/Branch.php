@@ -116,6 +116,10 @@ class Branch extends Model
         ->withTimestamps();
     }
 
+    public function payrolls() {
+        return $this->hasMany(Payroll::class, "timekeeping_branch_id", "id");
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

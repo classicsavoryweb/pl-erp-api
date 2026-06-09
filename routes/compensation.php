@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get('/payroll/export-bank-details', [PayrollListBankDetailsController::class, 'exportBankDetails']);
     Route::middleware(["permission:perform_compensation_incentives"])->post("/update-payroll-incentive/{payrollId}", [PayrollController::class, "updatePayrollIncentive"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/preview-payroll-compution/{id}", [PayrollController::class, "showPayrollComputation"]);
+    Route::get("/get-branches-to-regenerate-payroll", [PayrollController::class, "getAllBranchesToRegeneratePayroll"]);
 
     //converter transactions
     Route::get("/get-all-converter-details", [ConverterController::class, "getAllConverterDetails"]);

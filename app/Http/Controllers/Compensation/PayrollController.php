@@ -14,6 +14,7 @@ use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
 use App\Models\Branch;
 use App\Models\Cutoff;
+use App\Models\Employee;
 use App\Models\PayrollDetail;
 use Carbon\Carbon;
 use Exception;
@@ -464,6 +465,35 @@ class PayrollController extends Controller
             return $this->sendError(["message" => "Payroll not found"]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getAllBranchesToRegeneratePayroll() {
+        try {
+            $branches = [];
+
+            $currentCutOff = Cutoff::where("status", "active")->first();
+
+            $branchesWithPayroll = Payroll::whereDoesntHave("timekeeping_summary")
+            ->where("pay_date", $currentCutOff->pay_date)
+            ->whereNot("timekeeping_summary_id", 0)
+            ->pluck("timekeeping_branch_id")
+            ->unique();
+
+            $branchesWithoutPayroll = Branch::whereDoesntHave("payrolls", function ($query) use ($currentCutOff) {
+                $query->where("pay_date", $currentCutOff->pay_date);
+            })
+            ->pluck("id");
+
+            $branches = $branchesWithPayroll
+            ->merge($branchesWithoutPayroll)
+            ->unique()
+            ->map(fn($id) => (int) $id)
+            ->values();
+
+            return $this->sendResponse(["branches" => $branches]);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
