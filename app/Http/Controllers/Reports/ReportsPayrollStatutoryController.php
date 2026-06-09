@@ -32,7 +32,7 @@ class ReportsPayrollStatutoryController extends Controller
             $rangeEnd = Carbon::createFromDate($validated['year'], $validated['month'], 25)->startOfDay();
             $rangeStart = $rangeEnd->copy()->subMonth()->day(26)->startOfDay();
 
-            $payrolls = Payroll::with(['employee', 'employee.current_branch', 'timekeeping_branch', 'employee.current_position'])
+            $payrolls = Payroll::with(['employee', 'employee.current_branch', 'employee.home_branch', 'employee.payroll_list', 'payroll_list', 'timekeeping_branch', 'employee.current_position', 'details'])
                 ->whereBetween('start_date', [$rangeStart->toDateString(), $rangeEnd->toDateString()])
                 ->get();
 
@@ -63,7 +63,7 @@ class ReportsPayrollStatutoryController extends Controller
             $startRow = 5;
             $maxRow = $sheet->getHighestRow();
             $templateTotalsRow = null;
-            $summaryRowStyleSource = $sheet->getStyle("AG{$startRow}:AK{$startRow}");
+            $summaryRowStyleSource = $sheet->getStyle("AF{$startRow}:AJ{$startRow}");
             $summaryTotalTemplateRow = null;
             $summaryTotalStyleSource = null;
 
@@ -76,10 +76,10 @@ class ReportsPayrollStatutoryController extends Controller
             }
 
             for ($r = $startRow; $r <= $maxRow; $r++) {
-                $value = $sheet->getCell("AG{$r}")->getValue();
+                $value = $sheet->getCell("AF{$r}")->getValue();
                 if (is_string($value) && strtoupper(trim($value)) === 'TOTAL') {
                     $summaryTotalTemplateRow = $r;
-                    $summaryTotalStyleSource = $sheet->getStyle("AG{$r}:AK{$r}");
+                    $summaryTotalStyleSource = $sheet->getStyle("AF{$r}:AJ{$r}");
                     break;
                 }
             }
@@ -122,20 +122,20 @@ class ReportsPayrollStatutoryController extends Controller
                         $sheet->getRowDimension($r)->setRowHeight($rowHeight);
                     }
                     $sheet->duplicateStyle(
-                        $sheet->getStyle("A{$templateRow}:AK{$templateRow}"),
-                        "A{$r}:AK{$r}"
+                        $sheet->getStyle("A{$templateRow}:AJ{$templateRow}"),
+                        "A{$r}:AJ{$r}"
                     );
 
                     $sheet->setCellValue("K{$r}", "=SUM(I{$r}+J{$r})");
-                    $sheet->setCellValue("O{$r}", "=SUM(K{$r}+L{$r}+M{$r}+N{$r})");
-                    $sheet->setCellValue("T{$r}", "=SUM(R{$r}+S{$r})");
-                    $sheet->setCellValue("W{$r}", "=SUM(U{$r}+V{$r})");
-                    $sheet->setCellValue("Z{$r}", "=SUM(X{$r}+Y{$r})");
-                    $sheet->setCellValue("AA{$r}", "=SUM(Q{$r}+U{$r}+X{$r})");
-                    $sheet->setCellValue("AH{$r}", "=SUMIF(D:D,AG:AG,T:T)");
-                    $sheet->setCellValue("AI{$r}", "=SUMIF(D:D,AG:AG,V:V)");
-                    $sheet->setCellValue("AJ{$r}", "=SUMIF(D:D,AG:AG,Y:Y)");
-                    $sheet->setCellValue("AK{$r}", "=SUM(AH{$r}:AJ{$r})");
+                    $sheet->setCellValue("N{$r}", "=SUM(K{$r}+L{$r}+M{$r})");
+                    $sheet->setCellValue("S{$r}", "=SUM(Q{$r}+R{$r})");
+                    $sheet->setCellValue("V{$r}", "=SUM(T{$r}+U{$r})");
+                    $sheet->setCellValue("Y{$r}", "=SUM(W{$r}+X{$r})");
+                    $sheet->setCellValue("Z{$r}", "=SUM(P{$r}+T{$r}+W{$r})");
+                    $sheet->setCellValue("AG{$r}", "=SUMIF(D:D,AF:AF,S:S)");
+                    $sheet->setCellValue("AH{$r}", "=SUMIF(D:D,AF:AF,U:U)");
+                    $sheet->setCellValue("AI{$r}", "=SUMIF(D:D,AF:AF,X:X)");
+                    $sheet->setCellValue("AJ{$r}", "=SUM(AG{$r}:AI{$r})");
                 }
 
                 $maxRow = $newMaxRow;
@@ -144,16 +144,16 @@ class ReportsPayrollStatutoryController extends Controller
 
             $inputColumns = [
                 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                'I', 'J', 'L', 'M', 'N', 'P',
-                'Q', 'R', 'S', 'U', 'V', 'X', 'Y',
-                'AB', 'AC',
+                'I', 'J', 'L', 'M', 'O',
+                'P', 'Q', 'R', 'T', 'U', 'W', 'X',
+                'AA', 'AB',
             ];
 
             for ($row = $startRow; $row <= $maxRow; $row++) {
                 foreach ($inputColumns as $col) {
                     $sheet->setCellValue($col . $row, null);
                 }
-                $sheet->setCellValue('AG' . $row, null);
+                $sheet->setCellValue('AF' . $row, null);
             }
 
             $row = $startRow;
@@ -162,18 +162,47 @@ class ReportsPayrollStatutoryController extends Controller
                     break;
                 }
 
-                $payroll = $employeePayrolls->first();
+                $nonMaternityPayrolls = $employeePayrolls->filter(function ($employeePayroll) {
+                    return !(bool) ($employeePayroll?->details?->is_on_maternity_leave
+                        ?? $employeePayroll?->is_maternity
+                        ?? $employeePayroll?->payroll_list?->is_on_maternity_leave
+                        ?? false);
+                });
+                $payrollsForDisplay = $nonMaternityPayrolls->isNotEmpty()
+                    ? $nonMaternityPayrolls
+                    : collect();
+                $payroll = ($payrollsForDisplay->isNotEmpty() ? $payrollsForDisplay : $employeePayrolls)
+                    ->sortByDesc('start_date')
+                    ->first();
                 $employee = $payroll?->employee;
-                $branch = $employeePayrolls->pluck('timekeeping_branch')->filter()->first()
-                    ?? $employee?->current_branch;
+                $branch = $payroll?->timekeeping_branch ?? $employee?->current_branch;
                 $branchCode = $branch?->short_name ?? '';
-                $region = $branch?->location ?? '';
+                $region = $employee?->home_branch?->location ?? $branch?->location ?? '';
+                $hasMaternityPayroll = $employeePayrolls->contains(function ($employeePayroll) {
+                    return (bool) ($employeePayroll?->details?->is_on_maternity_leave
+                        ?? $employeePayroll?->is_maternity
+                        ?? $employeePayroll?->payroll_list?->is_on_maternity_leave
+                        ?? false);
+                });
+                $isContributionOnly = $hasMaternityPayroll && $payrollsForDisplay->isEmpty();
+                $hideContributions = (string) ($employee?->employee_number ?? '') === '0014939';
                 $lastName = trim((string) ($employee?->last_name ?? ''));
                 $firstName = trim((string) ($employee?->first_name ?? ''));
                 $middleName = trim((string) ($employee?->middle_name ?? ''));
-                $victoryStatus = $employee?->hasCompleteStatutories() ? 'VICTORY' : 'NON-VICTORY';
+                $latestPayroll = $employeePayrolls->sortByDesc('start_date')->first();
+                $hasCompleteDocuments = $latestPayroll?->details?->is_complete_documents
+                    ?? $employee?->payroll_list?->has_complete_documents
+                    ?? false;
+                $victoryStatus = $hasCompleteDocuments ? 'VICTORY' : 'NON-VICTORY';
                 $taxTypeRaw = strtoupper(trim((string) ($employee?->tax_type ?? $payroll?->tax_status ?? '')));
-                $nonTaxableLabel = str_contains($taxTypeRaw, 'NON') ? 'NON TAXABLE' : 'TAXABLE';
+                $homeBranchLocation = strtoupper((string) ($employee?->home_branch?->location ?? ''));
+                $isNcrMinimumNonTaxable = str_contains($homeBranchLocation, 'NCR')
+                    && $employeePayrolls->contains(function ($employeePayroll) {
+                        return in_array(round((float) ($employeePayroll?->daily_rate ?? 0), 2), [695.00, 821.36], true);
+                    });
+                $nonTaxableLabel = str_contains($taxTypeRaw, 'NON') || $isNcrMinimumNonTaxable
+                    ? 'NON TAXABLE'
+                    : 'TAXABLE';
                 $fullName = $lastName;
 
                 if ($firstName !== '') {
@@ -184,27 +213,41 @@ class ReportsPayrollStatutoryController extends Controller
                     $fullName = $fullName !== '' ? ($fullName . ' ' . $middleName) : $middleName;
                 }
     
-                $basicPay = $employeePayrolls->sum('salary');
-                $additionalWorkingHours = $employeePayrolls->sum('additional_working_hours_total');
-                $taxableAdjustment = $employeePayrolls->sum('taxable_adjustment');
-                $overtimeAmount = $employeePayrolls->sum('overtime_amount');
-                $nightDiffAmount = $employeePayrolls->sum('night_differential_amount')
-                    + $employeePayrolls->sum('night_differential_overtime_amount');
-                $withholdingTax = $employeePayrolls->sum('withholding_tax');
-                $grossPayTotal = $employeePayrolls->sum('gross_pay');
-                $sssBasis = SSS::where('salary_range_min', '<=', $grossPayTotal)
-                    ->where('salary_range_max', '>=', $grossPayTotal)
-                    ->first();
-                $employeeSss = $sssBasis?->employee_ss ?? 0;
-                $employerSss = $sssBasis?->employer_ss ?? 0;
-                $employerEc = $sssBasis?->employer_cc ?? 0;
+                $basicPay = $payrollsForDisplay->sum('salary')
+                    - $payrollsForDisplay->sum('undertime_amount')
+                    - $payrollsForDisplay->sum('tardiness_amount');
+                $legalHolidayAmount = $payrollsForDisplay->sum('legal_holiday_amount')
+                    + $payrollsForDisplay->sum('special_holiday_amount');
+                $overtimeAmount = $payrollsForDisplay->sum('overtime_amount')
+                    + $payrollsForDisplay->sum('legal_holiday_overtime_amount')
+                    + $payrollsForDisplay->sum('special_holiday_overtime_amount')
+                    + $payrollsForDisplay->sum('night_differential_overtime_amount')
+                    + $payrollsForDisplay->sum('cancelled_off');
+                $nightDiffAmount = $payrollsForDisplay->sum('night_differential_amount');
+                $withholdingTax = $payrollsForDisplay->sum('withholding_tax');
+                $employeeSss = $employeePayrolls->sum('employee_sss');
+                $employerSssTotal = $employeePayrolls->sum('employer_sss');
+                $employerSss = $employerSssTotal;
+                $employerEc = 0;
+                $sssBasis = null;
+
+                if ($employeeSss > 0 || $employerSssTotal > 0) {
+                    $sssBasis = SSS::where('employee_ss', round($employeeSss, 2))
+                        ->whereRaw('ROUND(employer_ss + employer_cc, 2) = ?', [round($employerSssTotal, 2)])
+                        ->first();
+                }
+
+                if ($sssBasis) {
+                    $employerSss = (float) $sssBasis->employer_ss;
+                    $employerEc = (float) $sssBasis->employer_cc;
+                }
                 $employeePhilhealth = $employeePayrolls->sum('employee_philhealth');
                 $employerPhilhealth = $employeePayrolls->sum('employer_philhealth');
                 $employeePagibig = $employeePayrolls->sum('employee_pagibig');
                 $employerPagibig = $employeePayrolls->sum('employer_pagibig');
                 $totalDeductions = $employeePayrolls->sum('total_deductions');
                 $thirteenthMonthPay = 0;
-                $remarks = (string) ($payroll?->remarks ?? '');
+                $remarks = '';
 
                 if (!empty($employee?->separation_date)) {
                     $separationDate = Carbon::parse($employee->separation_date);
@@ -229,7 +272,26 @@ class ReportsPayrollStatutoryController extends Controller
                     }
 
                     $thirteenthMonthPay = $annualSalary / 12;
-                    $remarks = 'Resigned Date : ' . $separationDate->format('F d Y');
+                    $remarks = 'Resign Date : ' . $separationDate->format('F d Y');
+                }
+
+                if ($isContributionOnly) {
+                    $basicPay = 0;
+                    $legalHolidayAmount = 0;
+                    $overtimeAmount = 0;
+                    $nightDiffAmount = 0;
+                    $withholdingTax = 0;
+                    $thirteenthMonthPay = 0;
+                }
+
+                if ($hideContributions) {
+                    $employeeSss = 0;
+                    $employerSss = 0;
+                    $employerEc = 0;
+                    $employeePhilhealth = 0;
+                    $employerPhilhealth = 0;
+                    $employeePagibig = 0;
+                    $employerPagibig = 0;
                 }
 
                 $sheet->setCellValueExplicit('A' . $row, (string) ($employee?->employee_number ?? ''), DataType::TYPE_STRING);
@@ -241,20 +303,19 @@ class ReportsPayrollStatutoryController extends Controller
                 $sheet->setCellValueExplicit('G' . $row, (string) $victoryStatus, DataType::TYPE_STRING);
                 $sheet->setCellValueExplicit('H' . $row, (string) $nonTaxableLabel, DataType::TYPE_STRING);
                 $sheet->setCellValue('I' . $row, (float) $basicPay);
-                $sheet->setCellValue('J' . $row, (float) $additionalWorkingHours);
-                $sheet->setCellValue('L' . $row, (float) $taxableAdjustment);
-                $sheet->setCellValue('M' . $row, (float) $overtimeAmount);
-                $sheet->setCellValue('N' . $row, (float) $nightDiffAmount);
-                $sheet->setCellValue('P' . $row, (float) $withholdingTax);
-                $sheet->setCellValue('Q' . $row, (float) $employeeSss);
-                $sheet->setCellValue('R' . $row, (float) $employerSss);
-                $sheet->setCellValue('S' . $row, (float) $employerEc);
-                $sheet->setCellValue('U' . $row, (float) $employeePhilhealth);
-                $sheet->setCellValue('V' . $row, (float) $employerPhilhealth);
-                $sheet->setCellValue('X' . $row, (float) $employeePagibig);
-                $sheet->setCellValue('Y' . $row, (float) $employerPagibig);
-                $sheet->setCellValue('AB' . $row, (float) $thirteenthMonthPay);
-                $sheet->setCellValueExplicit('AC' . $row, (string) $remarks, DataType::TYPE_STRING);
+                $sheet->setCellValue('J' . $row, (float) $legalHolidayAmount);
+                $sheet->setCellValue('L' . $row, (float) $overtimeAmount);
+                $sheet->setCellValue('M' . $row, (float) $nightDiffAmount);
+                $sheet->setCellValue('O' . $row, (float) $withholdingTax);
+                $sheet->setCellValue('P' . $row, (float) $employeeSss);
+                $sheet->setCellValue('Q' . $row, (float) $employerSss);
+                $sheet->setCellValue('R' . $row, (float) $employerEc);
+                $sheet->setCellValue('T' . $row, (float) $employeePhilhealth);
+                $sheet->setCellValue('U' . $row, (float) $employerPhilhealth);
+                $sheet->setCellValue('W' . $row, (float) $employeePagibig);
+                $sheet->setCellValue('X' . $row, (float) $employerPagibig);
+                $sheet->setCellValue('AA' . $row, (float) $thirteenthMonthPay);
+                $sheet->setCellValueExplicit('AB' . $row, (string) $remarks, DataType::TYPE_STRING);
 
                 $row++;
             }
@@ -279,15 +340,15 @@ class ReportsPayrollStatutoryController extends Controller
                 if ($summaryRow > $maxRow) {
                     break;
                 }
-                $sheet->setCellValueExplicit('AG' . $summaryRow, (string) $branchName, DataType::TYPE_STRING);
-                $sheet->setCellValue("AH{$summaryRow}", "=SUMIF(D:D,AG{$summaryRow},T:T)");
-                $sheet->setCellValue("AI{$summaryRow}", "=SUMIF(D:D,AG{$summaryRow},V:V)");
-                $sheet->setCellValue("AJ{$summaryRow}", "=SUMIF(D:D,AG{$summaryRow},Y:Y)");
-                $sheet->setCellValue("AK{$summaryRow}", "=SUM(AH{$summaryRow}:AJ{$summaryRow})");
+                $sheet->setCellValueExplicit('AF' . $summaryRow, (string) $branchName, DataType::TYPE_STRING);
+                $sheet->setCellValue("AG{$summaryRow}", "=SUMIF(D:D,AF{$summaryRow},S:S)");
+                $sheet->setCellValue("AH{$summaryRow}", "=SUMIF(D:D,AF{$summaryRow},U:U)");
+                $sheet->setCellValue("AI{$summaryRow}", "=SUMIF(D:D,AF{$summaryRow},X:X)");
+                $sheet->setCellValue("AJ{$summaryRow}", "=SUM(AG{$summaryRow}:AI{$summaryRow})");
                 if ($summaryRowStyleSource) {
-                    $sheet->duplicateStyle($summaryRowStyleSource, "AG{$summaryRow}:AK{$summaryRow}");
+                    $sheet->duplicateStyle($summaryRowStyleSource, "AF{$summaryRow}:AJ{$summaryRow}");
                 }
-                $sheet->getStyle("AG{$summaryRow}:AK{$summaryRow}")
+                $sheet->getStyle("AF{$summaryRow}:AJ{$summaryRow}")
                     ->getFont()
                     ->setBold(false);
                 $summaryRow++;
@@ -304,19 +365,19 @@ class ReportsPayrollStatutoryController extends Controller
             }
 
             if ($summaryTotalRow >= $startRow) {
-                $sheet->setCellValueExplicit('AG' . $summaryTotalRow, 'TOTAL', DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit('AF' . $summaryTotalRow, 'TOTAL', DataType::TYPE_STRING);
+                $sheet->setCellValue("AG{$summaryTotalRow}", "=SUM(AG{$startRow}:AG{$lastSummaryRow})");
                 $sheet->setCellValue("AH{$summaryTotalRow}", "=SUM(AH{$startRow}:AH{$lastSummaryRow})");
                 $sheet->setCellValue("AI{$summaryTotalRow}", "=SUM(AI{$startRow}:AI{$lastSummaryRow})");
-                $sheet->setCellValue("AJ{$summaryTotalRow}", "=SUM(AJ{$startRow}:AJ{$lastSummaryRow})");
-                $sheet->setCellValue("AK{$summaryTotalRow}", "=SUM(AH{$summaryTotalRow}:AJ{$summaryTotalRow})");
+                $sheet->setCellValue("AJ{$summaryTotalRow}", "=SUM(AG{$summaryTotalRow}:AI{$summaryTotalRow})");
                 if ($summaryTotalStyleSource) {
-                    $sheet->duplicateStyle($summaryTotalStyleSource, "AG{$summaryTotalRow}:AK{$summaryTotalRow}");
+                    $sheet->duplicateStyle($summaryTotalStyleSource, "AF{$summaryTotalRow}:AJ{$summaryTotalRow}");
                 } else {
-                    $sheet->getStyle("AG{$summaryTotalRow}:AK{$summaryTotalRow}")
+                    $sheet->getStyle("AF{$summaryTotalRow}:AJ{$summaryTotalRow}")
                         ->getFont()
                         ->setBold(true);
                 }
-                $sheet->getStyle("AG{$summaryTotalRow}:AK{$summaryTotalRow}")
+                $sheet->getStyle("AF{$summaryTotalRow}:AJ{$summaryTotalRow}")
                     ->getFont()
                     ->setBold(true);
             }
@@ -331,10 +392,16 @@ class ReportsPayrollStatutoryController extends Controller
 
             $lastRowExpr = 'LOOKUP(2,1/(A:A<>""),ROW(A:A))';
             $totalColumns = [
-                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                'Y', 'Z', 'AA', 'AB',
+                'I', 'J', 'K', 'L', 'M', 'N', 'O',
+                'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+                'X', 'Y', 'Z', 'AA',
             ];
+
+            for ($r = $startRow; $r <= $totalsRow; $r++) {
+                if ($r < $totalsRow) {
+                    $sheet->setCellValue("N{$r}", "=SUM(K{$r}+L{$r}+M{$r})");
+                }
+            }
 
             foreach ($totalColumns as $col) {
                 $sheet->setCellValue("{$col}{$totalsRow}", "=SUM({$col}{$startRow}:INDEX({$col}:{$col},{$lastRowExpr}))");
