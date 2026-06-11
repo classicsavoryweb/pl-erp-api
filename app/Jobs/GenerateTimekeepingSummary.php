@@ -522,7 +522,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                         if (
                             $employee->schedule->schedule_type->name === "Normal Schedule" &&
-                            !in_array($sched->timetable,["REST DAY", "INCENTIVE LEAVE"])
+                            !in_array($sched->timetable,["REST DAY", "INCENTIVE LEAVE", "SUSPENSION"])
                         ) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
