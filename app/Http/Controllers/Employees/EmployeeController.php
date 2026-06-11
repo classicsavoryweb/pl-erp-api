@@ -548,7 +548,9 @@ class EmployeeController extends Controller
                     "email",
                     "max:255",
                     "regex:/^\S+$/",
-                    Rule::unique("employees", "email")->ignore($employee->id),
+                    Rule::unique("employees", "email")
+                    ->ignore($employee->id)
+                    ->where(fn ($query) => $query->where("status", "active")),
                 ]
             ]);
 
