@@ -382,7 +382,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0 && $totalOT > 0) {
-                        $cancelled_off += $timeKeep->cancelled_off_hours < $timeKeep->cancelled_off_hours ? $timeKeep->cancelled_off_hours : $totalOT;
+                        $cancelled_off += $timeKeep->cancelled_off_hours < $timeKeep->approved_overtime ? $timeKeep->cancelled_off_hours : $totalOT;
                     }
                     
                     if ($timeKeep->legal_holiday === "Yes" && $holidayIsPaid) {
