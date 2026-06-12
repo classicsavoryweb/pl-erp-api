@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:transfer_time_keeping_branch"])->post("/transfer-timekeeping-branch/{schedule_id}", [ScheduleTimeController::class, "transferTimekeepingBranch"]);
     Route::middleware(["permission:transfer_time_keeping_branch"])->get("/get-transactions-schedule-time-employees", [ScheduleTimeController::class, "getTransactionsScheduleTimeEmployees"]);
     Route::middleware(["permission:transfer_time_keeping_branch"])->post("/transfer-timekeeping-branch-all", [ScheduleTimeController::class, "transferTimekeepingBranchAll"]);
+    Route::middleware(["permission:perform_transactions_schedule_time"])->post("/edit-schedule-time/{id}", [ScheduleTimeController::class, "editScheduleTime"]);
 
     //actual logs
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
