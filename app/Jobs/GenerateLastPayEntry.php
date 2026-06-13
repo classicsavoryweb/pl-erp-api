@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Accounting\ApsysEntry;
 use App\Models\Accounting\ApsysEntryMain;
+use App\Models\Accounting\Vendor;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
@@ -140,6 +141,7 @@ class GenerateLastPayEntry implements ShouldQueue
         $sssLoansRemittanceDebit  = $lastPaySetups['sssloansremittance']->debit_id;
         $sssLoansRemittanceCredit = $lastPaySetups['sssloansremittance']->credit_id;
         $sssLoansRemittanceVendor = $lastPaySetups['sssloansremittance']->vendor_id;
+        $sssLoansRemittanceVendorName = Vendor::where('ven_no', $sssLoansRemittanceVendor)->value('ven_name');
 
         $branchHO = Branch::where('short_name', 'HO')->first();
         $branchHOId = $branchHO->id;
@@ -455,14 +457,17 @@ class GenerateLastPayEntry implements ShouldQueue
             $deductionAmount = $lastPayDeduction->amount;
 
             if ($employeeDeduction->deduction->category === 'SSS') {
-                $entryId = $this->generateEntryId($counterEntry);
-                $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
-                $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
+                $employeeEntryId = $this->generateEntryId($counterEntry);
+                $remittanceEntryId = $this->generateEntryId($counterEntry);
+                $employeeApsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+                $remittanceApsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+                $employeeApsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
+                $remittanceApsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
                 $entries = array_merge($entries, [
                     [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
+                        'entry_id'            => $employeeEntryId,
+                        'apsys_entry_id'      => $employeeApsysEntryId,
+                        'apsys_entry_main_id' => $employeeApsysEntryMainId,
                         'document_no'         => $employeeDeduction->reference_doc . '|Head Office',
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
@@ -476,9 +481,9 @@ class GenerateLastPayEntry implements ShouldQueue
                         'is_block_payment'    => 0,
                     ],
                     [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
+                        'entry_id'            => $employeeEntryId,
+                        'apsys_entry_id'      => $employeeApsysEntryId,
+                        'apsys_entry_main_id' => $employeeApsysEntryMainId,
                         'document_no'         => $employeeDeduction->reference_doc . '|Head Office',
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
@@ -492,15 +497,15 @@ class GenerateLastPayEntry implements ShouldQueue
                         'is_block_payment'    => 0,
                     ],
                     [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
+                        'entry_id'            => $remittanceEntryId,
+                        'apsys_entry_id'      => $remittanceApsysEntryId,
+                        'apsys_entry_main_id' => $remittanceApsysEntryMainId,
                         'document_no'         => $employeeDeduction->reference_doc . '|Head Office',
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
                         'branch_name'         => $branchHOName,
                         'ven_no'              => $sssLoansRemittanceVendor,
-                        'ven_name'            => $employeeFullName,
+                        'ven_name'            => $sssLoansRemittanceVendorName,
                         'amount'              => $deductionAmount,
                         'acc_no'              => $sssLoansRemittanceDebit,
                         'description_per_acc' => 'Last Pay|Deduction',
@@ -508,15 +513,15 @@ class GenerateLastPayEntry implements ShouldQueue
                         'is_block_payment'    => 0,
                     ],
                     [
-                        'entry_id'            => $entryId,
-                        'apsys_entry_id'      => $apsysEntryId,
-                        'apsys_entry_main_id' => $apsysEntryMainId,
+                        'entry_id'            => $remittanceEntryId,
+                        'apsys_entry_id'      => $remittanceApsysEntryId,
+                        'apsys_entry_main_id' => $remittanceApsysEntryMainId,
                         'document_no'         => $employeeDeduction->reference_doc . '|Head Office',
                         'branch_id'           => $branchHOId,
                         'branch_number'       => $branchHONumber,
                         'branch_name'         => $branchHOName,
                         'ven_no'              => $sssLoansRemittanceVendor,
-                        'ven_name'            => $employeeFullName,
+                        'ven_name'            => $sssLoansRemittanceVendorName,
                         'amount'              => $deductionAmount,
                         'acc_no'              => $sssLoansRemittanceCredit,
                         'description_per_acc' => 'Last Pay|Deduction',
