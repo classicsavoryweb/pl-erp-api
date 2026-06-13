@@ -58,12 +58,12 @@ class ProcessInitializeCutOff implements ShouldQueue
         ->where("is_included", 1)
         ->get();
 
-        $payrollIds = Payroll::where("pay_date", $cutOff->pay_date)
-        ->where("timekeeping_branch_id", $branchId)
-        ->pluck("id");
+        // $payrollIds = Payroll::where("pay_date", $cutOff->pay_date)
+        // ->where("timekeeping_branch_id", $branchId)
+        // ->pluck("id");
 
-        Payroll::whereIn("id", $payrollIds)->delete();
-        PayrollDetail::whereIn("payroll_id", $payrollIds)->delete();
+        // Payroll::whereIn("id", $payrollIds)->delete();
+        // PayrollDetail::whereIn("payroll_id", $payrollIds)->delete();
 
         foreach ($includedEmployees as $payrollList) {
             $divisor = 13;
