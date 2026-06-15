@@ -384,7 +384,7 @@ class EmployeeController extends Controller
     public function getEmployees(Request $request) {
         try {
 
-            $employees = Employee::where("status", "active")->get();
+            $employees = Employee::with(["current_position", "current_branch"])->where("status", "active")->get();
             return $this->sendResponse(["employees" => $employees]);
         } catch(Exception $e) {
 
