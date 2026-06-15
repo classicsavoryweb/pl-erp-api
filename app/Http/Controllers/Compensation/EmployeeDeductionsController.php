@@ -251,8 +251,8 @@ class EmployeeDeductionsController extends Controller
             ->where("approved_status", "Yes");
 
             $summary = [
-                "deduction_count" => (clone $summaryQuery)->where("balance", ">", 0)->count(),
-                "total_balance" => (float) (clone $summaryQuery)->sum("balance"),
+                "deduction_count" => $summaryQuery->count(),
+                "total_balance" => $summaryQuery->sum("balance"),
             ];
 
             $hasFilters = ($request->has("employee_id") && $request->employee_id)
