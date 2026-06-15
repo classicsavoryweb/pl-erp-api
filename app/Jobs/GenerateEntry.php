@@ -3180,7 +3180,7 @@ class GenerateEntry implements ShouldQueue
                 $this->appendAdjustmentEntries(
                     $entries,
                     $payrollEmployeeBankSums['netTaxableAdjustment'],
-                    $branchHOShortName . '|' . $start_date . '-' . $end_date,
+                    $branchShortName . '|' . $start_date . '-' . $end_date,
                     $branchHOId,
                     $branchHOName,
                     $branchHONumber,
