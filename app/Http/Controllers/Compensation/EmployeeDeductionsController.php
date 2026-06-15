@@ -247,6 +247,9 @@ class EmployeeDeductionsController extends Controller
             }
 
             $summaryQuery = clone $deductions;
+            $summaryQuery = $summaryQuery->where("balance", ">", 0)
+            ->where("approved_status", "Yes");
+
             $summary = [
                 "deduction_count" => (clone $summaryQuery)->where("balance", ">", 0)->count(),
                 "total_balance" => (float) (clone $summaryQuery)->sum("balance"),
