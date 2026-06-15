@@ -22,7 +22,10 @@ class RequestAndIssuanceItemsController extends Controller
     {
         try {
             return $this->sendResponse([
-                'items' => UniformItem::with('gender','size')->get(),
+                'items' => UniformItem::with('gender', 'size')
+                    ->where('status', 'active')
+                    ->orderBy('description')
+                    ->get(),
             ]);
         } catch (Exception $e) {
             return $this->sendError([
