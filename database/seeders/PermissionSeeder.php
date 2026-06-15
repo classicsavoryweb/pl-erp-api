@@ -269,6 +269,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_uniform_module"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_item_masterlist"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_item_masterlist"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_request_and_issuance"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_request_and_issuance"], ["module" => "uniform"]);
         
 
     }
