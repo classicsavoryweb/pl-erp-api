@@ -6,14 +6,19 @@ use Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Illuminate\Database\Eloquent\Collection;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class ConverterDetailsExport implements FromCollection, WithHeadings
+class ConverterDetailsExport implements FromCollection, WithHeadings, WithTitle
 {
     protected Collection $transactions;
 
     public function __construct(Collection $transactions)
     {
         $this->transactions = $transactions;
+    }
+
+    public function title(): string {
+        return "Transactions";
     }
 
     public function collection()

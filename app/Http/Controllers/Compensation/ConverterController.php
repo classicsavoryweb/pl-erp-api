@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Exports\Compensation\ConverterDetailsExport;
+use App\Exports\Compensation\ConverterExports;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessConverterDetailImport;
 use App\Jobs\SendTransactionToEmployeeJob;
@@ -85,7 +86,7 @@ class ConverterController extends Controller
                 )
                 ->get();
 
-                return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
+                return Excel::download(new ConverterExports($converters), "converter_details.xls");
             }
 
             if ($request->has(["converter_main_ids"])) {
