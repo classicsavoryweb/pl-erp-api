@@ -546,6 +546,7 @@ class Employee extends Model
                 "emergency_contact_number",
                 "emergency_contact_address",
                 "emergency_contact_relationship",
+                "oic_status",
                 "status",
             ])
             ->useLogName('Employee')
