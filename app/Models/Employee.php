@@ -281,6 +281,10 @@ class Employee extends Model
     public function current_position() {
         return $this->hasOne(Position::class,'id','position_id');
     }
+      public function uniformrequest()
+    {
+        return $this->belongsTo(RequestAndIssuance::class, 'employee_number', 'employee_id');
+    }
 
     public function current_branch() {
         return $this->hasOne(Branch::class,'id','branch_id');
