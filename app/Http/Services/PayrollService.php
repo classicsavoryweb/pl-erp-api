@@ -188,7 +188,7 @@ class PayrollService {
                 $philHealthAmount = $payrollDetails->employee_philhealth;
             }
 
-            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
+            $taxableIncome = $grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount;
 
             if ($payrollDetails->is_complete_documents == 1 && !$payrollDetails->is_manual_statutory_entry) {
                 if ($this->isNcrMinimum($employee) || $payrollDetails->is_on_maternity_leave == 1) {
@@ -203,7 +203,7 @@ class PayrollService {
                     $percentage = $tax->percentage ?? 0;
     
                     $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                        ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                        ? (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption
                         : 0;
                 }
             }
