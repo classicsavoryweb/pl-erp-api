@@ -226,4 +226,22 @@ class Controller extends BaseController
             'end_date' => $endDate
         ];
     }
+
+    function numeric($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+
+        return (float) str_replace(',', '', (string) $value);
+    }
+
+    function getTaxRefundPeriod(int $year): array
+    {
+        return [
+            "start" => Carbon::create($year - 1, 12, 26)->format("Y-m-d"),
+            "end" => Carbon::create($year, 12, 25)->format("Y-m-d"),
+        ];
+    }
+
 }
