@@ -167,6 +167,7 @@ class LastPayControllerV2 extends Controller
                 ];
 
                 $lastPay = $this->lastPayService->computeLastPay($employee, $lastPayDetails);
+                $lastPay["payrolls"] = $this->lastPayService->getThirteenthMonthPayrollRows($employee);
 
                 return $this->sendResponse($lastPay);
             }
