@@ -93,6 +93,19 @@ class LastPayService {
     }
 
     public function getThirteenthMonthPayAmount (Employee $employee) {
+        $annualSalary = 0;
+        $payrolls = $this->getThirteenthMonthPayrollRows($employee);
+
+        foreach ($payrolls as $payroll) {
+            $salary = $this->numeric($payroll->salary) - ($this->numeric($payroll->undertime_amount) + $this->numeric($payroll->tardiness_amount));
+            $annualSalary += $salary;
+        }
+
+        return $annualSalary > 0 ? round(($annualSalary / 12), 2) : 0;
+    }
+
+    public function getThirteenthMonthPayrollRows(Employee $employee)
+    {
         $source = $employee->separation_date ? Carbon::parse($employee->separation_date) : Carbon::now();
         $yearHolded = (int) $source->year;
         $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
@@ -102,18 +115,21 @@ class LastPayService {
 
         $thirteenthMonthPeriodStart = Carbon::create($yearHolded - 1, 12, 11)->format("Y-m-d");
         $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
-        $annualSalary = 0;
-        $payrolls = Payroll::where("employee_id", $employee->id)
+
+        return Payroll::where("employee_id", $employee->id)
             ->where("status", "final")
             ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
-            ->get();
-
-        foreach ($payrolls as $payroll) {
-            $salary = $this->numeric($payroll->salary) - ($this->numeric($payroll->undertime_amount) + $this->numeric($payroll->tardiness_amount));
-            $annualSalary += $salary;
-        }
-
-        return $annualSalary > 0 ? round(($annualSalary / 12), 2) : 0;
+            ->orderBy("end_date")
+            ->get([
+                "id",
+                "start_date",
+                "end_date",
+                "salary",
+                "tardiness_amount",
+                "undertime_amount",
+                "daily_rate",
+                "net_pay",
+            ]);
     }
 
     public function getLastPayTaxRefund (Employee $employee) {
