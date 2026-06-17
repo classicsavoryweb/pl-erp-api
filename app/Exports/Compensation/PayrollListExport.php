@@ -84,7 +84,7 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
 
             $dailyRate = $list->salary_amount / $divisor;
             $scheduleType = $this->normalizeValue($scheduleType);
-            $region = $list->employee->current_branch?->location ?? $list->employee->current_branch?->region ?? null;
+            $region = $list->employee->home_branch->location ?? null;
             $region = $this->normalizeValue($region);
             $separationDate = $this->normalizeValue($list->employee->separation_date ?? null);
 
