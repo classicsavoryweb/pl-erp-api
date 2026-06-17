@@ -528,7 +528,11 @@ class GenerateTimekeepingSummary implements ShouldQueue
                             ->where("employee_id", $employee->id)
                             ->first();
 
-                            if ($timeKeeping && $sched->timetable == "NO SCHEDULE" && ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes")) {
+                            if (
+                                $timeKeeping && $sched->timetable == "NO SCHEDULE" &&
+                                ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes") &&
+                                ($timeKeeping->legal_holiday_hours > 0 || $timeKeeping->special_holiday_hours)
+                            ) {
                                 continue;
                             }
 
@@ -639,6 +643,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $adjustment_amount = 0;
                     $lateDate = [];
                 }
+
+                Log::info($absent);
 
 
                 $timeKeepingSummary = TimeKeepingSummary::create([
