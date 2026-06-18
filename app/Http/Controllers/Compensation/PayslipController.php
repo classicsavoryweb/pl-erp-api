@@ -21,10 +21,8 @@ class PayslipController extends Controller
             "employee.current_branch",
             "timekeeping_summary",
             "timekeeping_branch",
-        ])->whereHas("payroll_list", function ($query) {
-            $query->where("is_hold", 0)
-                ->where("is_on_maternity_leave", 0);
-        });
+        ])->where("is_hold", 0)
+            ->where("is_maternity", 0);
 
         if ($request->type === "Branch") {
             if ($request->branch_id !== 0) {
