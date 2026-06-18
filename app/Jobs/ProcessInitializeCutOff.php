@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Services\PayrollService;
 use App\Models\Branch;
 use App\Models\Cutoff;
+use App\Models\Employee;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\PayrollDetail;
@@ -47,34 +48,39 @@ class ProcessInitializeCutOff implements ShouldQueue
         $branchId = $this->branchId;
         $cutOff = Cutoff::where("status", "active")->first();
 
-        $includedEmployees = PayrollList::with([
-            "employee",
-            "employee.schedule",
-            "employee.schedule.schedule_type"
+        $includedEmployees = Employee::with([
+            "payroll_list",
+            "schedule",
+            "schedule.schedule_type"
         ])
-        ->whereHas("employee", function ($query) use ($branchId) {
-            $query->where("branch_id", $branchId);
-        })
-        ->where("is_included", 1)
-        ->get();
+        ->where(function ($query) use ($branchId, $cutOff) {
+            $query->whereHas("payrolls", function ($q) use ($branchId, $cutOff) {
+                $q->where("pay_date", $cutOff->pay_date)
+                ->where("timekeeping_branch_id", $branchId);
+            })
+            ->orWhere("branch_id", $branchId);
+        })->whereHas("payroll_list", function ($query) {
+            $query->where("is_included", 1);
+        })->get();
 
-        // $payrollIds = Payroll::where("pay_date", $cutOff->pay_date)
-        // ->where("timekeeping_branch_id", $branchId)
-        // ->pluck("id");
+        $payrollIds = Payroll::where("pay_date", $cutOff->pay_date)
+        ->where("timekeeping_branch_id", $branchId)
+        ->pluck("id");
 
-        // Payroll::whereIn("id", $payrollIds)->delete();
-        // PayrollDetail::whereIn("payroll_id", $payrollIds)->delete();
+        Payroll::whereIn("id", $payrollIds)->delete();
+        PayrollDetail::whereIn("payroll_id", $payrollIds)->delete();
 
-        foreach ($includedEmployees as $payrollList) {
+        $hoBranch = Branch::where("short_name", "HO")->first();
+        foreach ($includedEmployees as $employee) {
+            $payrollList = $employee->payroll_list;
             $divisor = 13;
             $dayDivisor = 8;
             $salaryBaseAmount = $payrollList->salary_amount ?? 0;
-            $employee = $payrollList->employee;
-            $scheduleName = $payrollList->employee->schedule?->schedule_type?->name ?? "Normal Schedule";
+            // $employee = $payrollList->employee;
+            $scheduleName = $employee->schedule->schedule_type->name ?? "Normal Schedule";
             $branchIdToUse = $employee->branch_id;
 
             if ($payrollList->is_on_maternity_leave == 1 || $payrollList->is_mancom == 1) {
-                $hoBranch = Branch::where("short_name", "HO")->first();
                 $branchIdToUse = $hoBranch->id;
             }
 
@@ -200,14 +206,6 @@ class ProcessInitializeCutOff implements ShouldQueue
                 ]);
             }
         }
-
-        // TO BE DISCUSSED
-        // if ($cutOff->part == 1) {
-        //     Incentives::where("pay_date", $cutOff->start_date)
-        //     ->update([
-        //         "pay_date" => $cutOff->pay_date
-        //     ]);
-        // }
 
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
