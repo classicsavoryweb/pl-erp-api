@@ -47,7 +47,7 @@ class ConverterSampleExport implements FromCollection, WithHeadings, WithTitle, 
                 $sheet->setCellValue('A4', 'Date Sent');
 
                 $sheet->setCellValue('B2', $converter->batch_number);
-                $sheet->setCellValue('B3', $converter->total_amount);
+                $sheet->setCellValue('B3', number_format($converter->total_amount, 2));
                 $sheet->setCellValue('B4', Carbon::parse($converter->sent_at)->toDateString());
             },
         ];
