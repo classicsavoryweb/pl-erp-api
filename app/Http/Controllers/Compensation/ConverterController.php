@@ -171,6 +171,12 @@ class ConverterController extends Controller
                 return $this->getAllConverterDetails($request);
             }
 
+            $summaryQuery = clone $converters;
+            $summary = [
+                "total_count" => $summaryQuery->sum("count"),
+                "total_amount" => $summaryQuery->sum(DB::raw("CAST(total_amount AS DECIMAL(15,2))")),
+            ];
+
             $converters = $converters->with([
                 "added_by",
                 "posted_by",
@@ -189,7 +195,10 @@ class ConverterController extends Controller
             ->orderBy("created_at", "DESC")
             ->paginate($perPage);
 
-            return $this->sendResponse($converters);
+            return $this->sendResponse([
+                "converters" => $converters,
+                "summary" => $summary,
+            ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
