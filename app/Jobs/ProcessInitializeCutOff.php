@@ -48,35 +48,32 @@ class ProcessInitializeCutOff implements ShouldQueue
         $branchId = $this->branchId;
         $cutOff = Cutoff::where("status", "active")->first();
 
-        $includedEmployees = Employee::with([
-            "payroll_list",
-            "schedule",
-            "schedule.schedule_type"
+        $includedEmployees = PayrollList::with([
+            "employee",
+            "employee.schedule",
+            "employee.schedule.schedule_type"
         ])
-        ->where(function ($query) use ($branchId, $cutOff) {
-            $query->whereHas("payrolls", function ($q) use ($branchId, $cutOff) {
-                $q->where("pay_date", $cutOff->pay_date)
-                ->where("timekeeping_branch_id", $branchId);
-            })
-            ->orWhere("branch_id", $branchId);
-        })->whereHas("payroll_list", function ($query) {
-            $query->where("is_included", 1);
-        })->get();
+        ->whereHas("employee", function ($query) use ($branchId) {
+            $query->where("branch_id", $branchId);
+        })
+        ->where("is_included", 1)
+        ->get();
+
+        $employeeIds = $includedEmployees->pluck("employee_id");
 
         $payrollIds = Payroll::where("pay_date", $cutOff->pay_date)
-        ->where("timekeeping_branch_id", $branchId)
+        ->whereIn("employee_id", $employeeIds)
         ->pluck("id");
 
         Payroll::whereIn("id", $payrollIds)->delete();
         PayrollDetail::whereIn("payroll_id", $payrollIds)->delete();
 
         $hoBranch = Branch::where("short_name", "HO")->first();
-        foreach ($includedEmployees as $employee) {
-            $payrollList = $employee->payroll_list;
+        foreach ($includedEmployees as $payrollList) {
             $divisor = 13;
             $dayDivisor = 8;
             $salaryBaseAmount = $payrollList->salary_amount ?? 0;
-            // $employee = $payrollList->employee;
+            $employee = $payrollList->employee;
             $scheduleName = $employee->schedule->schedule_type->name ?? "Normal Schedule";
             $branchIdToUse = $employee->branch_id;
 
