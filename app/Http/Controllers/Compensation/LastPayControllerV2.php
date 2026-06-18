@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Exports\Compensation\LastPayExport;
 use App\Jobs\GenerateLastPayEntry;
 use App\Models\AnnualTax;
+use App\Models\Cutoff;
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
 use App\Models\Incentives;
@@ -150,8 +151,13 @@ class LastPayControllerV2 extends Controller
             if ($employee) {
                 $cutOff = $this->getCutOffForDate($employee->separation_date);
                 $year = Carbon::parse($employee->separation_date)->year;
-                $payroll = Payroll::where("start_date", $cutOff['start_time'])->first();
-                $payrollPayDate = $payroll?->pay_date;
+                $payrollPayDate = Cutoff::where("start_date", $cutOff['start_time'])
+                    ->value("pay_date");
+
+                if (!$payrollPayDate) {
+                    $payrollPayDate = Payroll::where("start_date", $cutOff['start_time'])
+                        ->value("pay_date");
+                }
 
                 $lastPayDetails = (object) [
                     'year' => $year,
