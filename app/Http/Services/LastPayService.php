@@ -52,7 +52,7 @@ class LastPayService {
         $deductions = EmployeeDeduction::with("deduction")
         ->where("employee_id", $employee->id)
         ->where("balance", ">=", 1)
-        ->where("end_loan_status", "!=", "Yes")
+        ->where("end_loan_status", "No")
         ->whereHas("deduction", function ($query) use ($deductionType) {
             $query->whereIn("category", $deductionType);
         });
