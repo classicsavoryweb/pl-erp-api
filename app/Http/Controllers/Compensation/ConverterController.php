@@ -86,7 +86,11 @@ class ConverterController extends Controller
                 )
                 ->get();
 
-                return Excel::download(new ConverterExports($converters), "converter_details.xls");
+                if ($converters->first()->status == "Sent") {
+                    return Excel::download(new ConverterExports($converters, $request->converter_main_id), "converter_details.xls");
+                }
+
+                return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
             }
 
             if ($request->has(["converter_main_ids"])) {

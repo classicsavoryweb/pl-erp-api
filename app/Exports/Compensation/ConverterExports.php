@@ -9,17 +9,19 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 class ConverterExports implements WithMultipleSheets
 {
     protected Collection $transactions;
+    protected $converterMainId;
 
-    public function __construct(Collection $transactions)
+    public function __construct(Collection $transactions, $converterMainId)
     {
         $this->transactions = $transactions;
+        $this->converterMainId = $converterMainId;
     }
     
     public function sheets(): array
     {
         return [
             new ConverterDetailsExport($this->transactions),
-            new ConverterSampleExport($this->transactions)
+            new ConverterSampleExport($this->transactions, $this->converterMainId)
         ];
     }
 }
