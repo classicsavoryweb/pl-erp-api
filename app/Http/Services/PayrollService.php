@@ -261,7 +261,7 @@ class PayrollService {
             }
 
             // $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
-            $netPayAmount = $grossPayAmount - ($sssEmployeeAmount + $pagibigEmployee + $philHealthAmount + $taxAmount + $totalDeductions) + $nonTaxableAmount;
+            $netPayAmount = round($grossPayAmount, 2) - ($sssEmployeeAmount + $pagibigEmployee + $philHealthAmount + round($taxAmount, 2) + round($totalDeductions, 2)) + $nonTaxableAmount;
 
             $payroll = [
                 "salary" => round($salary,2),
