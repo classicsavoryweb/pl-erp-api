@@ -165,9 +165,9 @@ class LastPayControllerV2 extends Controller
                     'incentives' => $this->lastPayService->getAllHoldedIncentivesAmount($employee, $payrollPayDate),
                     'tax_refund' => $this->lastPayService->getLastPayTaxRefund($employee),
                     'thirteenth_month' => $this->lastPayService->getThirteenthMonthPayAmount($employee),
-                    'sl_vl' => $this->lastPayService->getLastPaySlVlAmount($employee),
-                    'sales' => $this->lastPayService->getLastPaySalesAmount($employee),
-                    'meal_allowance' => $this->lastPayService->getLastPayMealAllowanceAmount($employee),
+                    'sl_vl' => 0,
+                    'sales' => 0,
+                    'meal_allowance' => 0,
                     'company_deductions'    => $this->lastPayService->getDeductions($employee, ['Company']),
                     'government_deductions' => $this->lastPayService->getDeductions($employee, ['Pag-ibig', 'SSS']),
                 ];
