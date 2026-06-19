@@ -5,6 +5,7 @@ use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\OvertimeController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Transactions\TimeKeepingController;
+use App\Http\Controllers\Transactions\TravelOvertimeController;
 use Illuminate\Support\Facades\Route;
 
 //TRANSACTIONS MODULE
@@ -73,4 +74,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware("permission:perform_transactions_adjustments")->post("/create-adjustments", [AdjustmentController::class, "createAdjustments"]);
     Route::middleware("permission:perform_transactions_adjustments")->post("/edit-adjustments/{id}", [AdjustmentController::class, "editAdjustments"]);
 
+    // travel time
+    Route::get("/get-all-travel-overtimes", [TravelOvertimeController::class, "getAllTravelOvertime"]);
+    Route::get("/export-all-travel-overtimes", [TravelOvertimeController::class, "exportAllTravelOvertime"]);
+    Route::middleware(["permission:perform_transactions_travel_overtime"])->post("/create-travel-overtime", [TravelOvertimeController::class, "createTravelOvertime"]);
+    Route::middleware(["permission:perform_transactions_travel_overtime"])->post("/edit-travel-overtime/{id}", [TravelOvertimeController::class, "editTravelOvertime"]);  
 });

@@ -192,6 +192,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "unapprove_all_transactions_overtime"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "void_all_transactions_overtime"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "force_adjust_all_transactions_overtime"], ["module" => "transactions"]);
+        Permission::updateOrCreate(["name" => "view_transactions_travel_overtime"], ["module" => "transactions"]);
+        Permission::updateOrCreate(["name" => "perform_transactions_travel_overtime"], ["module" => "transactions"]);
 
         //compensation modules
         Permission::updateOrCreate(["name" => "view_compensation_module"], ["module" => "compensation"]);
