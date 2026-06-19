@@ -142,7 +142,7 @@ class PayrollService {
                         $totalDeductions += $ded["deducted_amount"];
                     }
                 }
-            }
+            } 
 
             $grossPayAmount = ( $salary +
                 $overtimeAmount +
@@ -260,7 +260,8 @@ class PayrollService {
                 }
             }
 
-            $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
+            // $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
+            $netPayAmount = $grossPayAmount - ($sssEmployeeAmount + $pagibigEmployee + $philHealthAmount + $taxAmount + $totalDeductions) + $nonTaxableAmount;
 
             $payroll = [
                 "salary" => round($salary,2),
