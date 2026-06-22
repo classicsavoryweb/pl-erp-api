@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Transactions;
 
 use App\Exports\Transactions\TravelOvertimeExport;
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessTravelTimeImport;
 use App\Models\Employee;
 use App\Models\TravelOvertime;
 use Carbon\Carbon;
@@ -11,6 +12,8 @@ use DB;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Str;
 
 class TravelOvertimeController extends Controller
@@ -147,6 +150,43 @@ class TravelOvertimeController extends Controller
             }
 
             return $this->sendError(["message" => "Travel overtime not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function importTravelTime(Request $request) {
+        try {
+            $request->validate([
+                "travel_time_file" => "required",
+            ]);
+
+            $filePath = null;
+
+            if ($request->hasFile("travel_time_file")) {
+                $storage = Storage::disk("hr_system_folder");
+                $directory = "/imports";
+                $file = $request->file("travel_time_file");
+
+                if (!$storage->exists($directory)) {
+                    $storage->makeDirectory($directory);
+                }
+
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = $directory . '/' . $fileName;
+                $storage->put($filePath, file_get_contents($file));
+
+            } elseif ($request->has("file_path")) {
+                $filePath = $request->file_path;
+            }
+
+            if ($filePath) {
+                ProcessTravelTimeImport::dispatch($filePath, Auth::id());
+                $user = Auth::user();
+                activity()->causedBy($user)->useLog("Import Travel Time")->log('User imported travelTime');
+            }
+
+            return $this->sendResponse(["message" => "Excel file imported successfully"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }

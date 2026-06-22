@@ -79,4 +79,5 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-travel-overtimes", [TravelOvertimeController::class, "exportAllTravelOvertime"]);
     Route::middleware(["permission:perform_transactions_travel_overtime"])->post("/create-travel-overtime", [TravelOvertimeController::class, "createTravelOvertime"]);
     Route::middleware(["permission:perform_transactions_travel_overtime"])->post("/edit-travel-overtime/{id}", [TravelOvertimeController::class, "editTravelOvertime"]);  
+    Route::middleware(["permission:perform_transactions_travel_overtime"])->post("/import-travel-overtime", [TravelOvertimeController::class, "importTravelTime"]);
 });
