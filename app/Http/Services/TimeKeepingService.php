@@ -11,6 +11,7 @@ use App\Models\ScheduleMasterlist;
 use App\Models\ScheduleTime;
 use App\Models\TimeKeeping;
 use App\Models\TimeKeepingPayment;
+use App\Models\TravelOvertime;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -444,30 +445,6 @@ class TimeKeepingService
             }
         }
 
-        //holiday computation
-        if ($holiday) {
-            $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";
-            $specialHoliday = $holiday->holiday_type === "SH" ? "Yes" : "No";
-            $holidayWorkingHours = $scheduleStart->diffInSeconds($parsedLastPunch);
-            $holidayWorkedHours = $holidayWorkingHours - ($scheduledBreakInMinutes * 60);
-            $totalHolidayWorkedHours = $holidayWorkedHours / 3600;
-
-            if ($legalHoliday === "Yes") {
-                $legalHolidayHours = $totalHolidayWorkedHours;
-                $legalHolidayOvertime = $overtime;
-            }
-
-            if ($specialHoliday === "Yes") {
-                $specialHolidayHours = $totalHolidayWorkedHours;
-                if ($totalHolidayWorkedHours < $hours) {
-                    $specialHolidayHours = $hours; 
-                }
-                $specialHolidayOvertime = $overtime;
-            }
-
-            $overtime = 0;
-        }
-
         if (
             $sameDaySixAM->greaterThan($scheduleStart) &&
             $sameDaySixAM->greaterThan($parsedFirstPunch) &&
@@ -498,12 +475,17 @@ class TimeKeepingService
             $shouldBeHalfDay = true;
         }
 
+        $hasTravelOvertime = TravelOvertime::where("employee_id", $employee->id)
+        ->where("date", $log->date)
+        ->first();
+
         if (
             $schedule->selection === "Spot Audit" ||
             $schedule->selection === "MEI 08:00 TO 06:30" ||
             $schedule->selection === "MEI 09:00 TO 19:30" ||
             $schedule->selection === "Flex 1" ||
-            $schedule->selection === "Flex 2"
+            $schedule->selection === "Flex 2" ||
+            $hasTravelOvertime
         ) {
             $punches = $biotimePunches;
             $firstPunch = $punches[0];
@@ -528,6 +510,10 @@ class TimeKeepingService
                 }
             }
 
+            if ($hasTravelOvertime) {
+                $travel_time = $hasTravelOvertime->travel_time;
+            }
+
             $workHours += (int)$travel_time;
             $undertime = 0;
             $tardiness = 0;
@@ -545,18 +531,30 @@ class TimeKeepingService
             if ($totalWorkedHours > $totalDurationHOurs) {
                 $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
+        }
 
-            // if ($overtime >= 1 && $holiday && $legalHoliday === "Yes") {
-            //     $legalHolidayHours = $totalHolidayWorkedHours;
-            //     $legalHolidayOvertime = $overtime;
-            //     $overtime = 0;
-            // }
+        //holiday computation
+        if ($holiday) {
+            $legalHoliday = $holiday->holiday_type === "LH" ? "Yes" : "No";
+            $specialHoliday = $holiday->holiday_type === "SH" ? "Yes" : "No";
+            $holidayWorkingHours = $scheduleStart->diffInSeconds($parsedLastPunch);
+            $holidayWorkedHours = $holidayWorkingHours - ($scheduledBreakInMinutes * 60);
+            $totalHolidayWorkedHours = $holidayWorkedHours / 3600;
 
-            // if ($overtime >= 1 && $holiday && $specialHoliday === "Yes") {
-            //     $specialHolidayHours = $totalHolidayWorkedHours;
-            //     $specialHolidayOvertime = $overtime;
-            //     $overtime = 0;
-            // }
+            if ($legalHoliday === "Yes") {
+                $legalHolidayHours = $totalHolidayWorkedHours;
+                $legalHolidayOvertime = $overtime;
+            }
+
+            if ($specialHoliday === "Yes") {
+                $specialHolidayHours = $totalHolidayWorkedHours;
+                if ($totalHolidayWorkedHours < $hours) {
+                    $specialHolidayHours = $hours; 
+                }
+                $specialHolidayOvertime = $overtime;
+            }
+
+            $overtime = 0;
         }
 
         if ($biotimePunches->count() > 1 && $schedule->selection != "INCENTIVE LEAVE") {
