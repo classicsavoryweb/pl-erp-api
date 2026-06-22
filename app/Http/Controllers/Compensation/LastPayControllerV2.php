@@ -256,7 +256,7 @@ class LastPayControllerV2 extends Controller
                 }
 
                 $lastPay->company_deductions =  $companyDeductions;
-
+                $lastPay["payrolls"] = $this->lastPayService->getThirteenthMonthPayrollRows($employee);
                 $lastPay->government_deductions = $this->lastPayService->getDeductions($employee, ['Pag-ibig', 'SSS'])["deductions"];
 
                 return $this->sendResponse($lastPay);
