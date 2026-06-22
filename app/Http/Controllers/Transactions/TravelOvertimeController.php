@@ -183,7 +183,7 @@ class TravelOvertimeController extends Controller
             if ($filePath) {
                 ProcessTravelTimeImport::dispatch($filePath, Auth::id());
                 $user = Auth::user();
-                activity()->causedBy($user)->useLog("Import Travel Time")->log('User imported travelTime');
+                activity()->causedBy($user)->useLog("Import Travel Time")->log('User imported travel time');
             }
 
             return $this->sendResponse(["message" => "Excel file imported successfully"]);
