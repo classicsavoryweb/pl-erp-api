@@ -175,6 +175,8 @@ class ConverterController extends Controller
             $summary = [
                 "total_count" => $summaryQuery->sum("count"),
                 "total_amount" => $summaryQuery->sum(DB::raw("CAST(total_amount AS DECIMAL(15,2))")),
+                "total_pending" => ConverterMain::where('status', 'Pending')->count(),
+                "total_generated" => ConverterMain::where('status', 'Generated')->count(),
             ];
 
             $converters = $converters->with([
