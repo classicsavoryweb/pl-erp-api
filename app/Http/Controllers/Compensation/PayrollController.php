@@ -321,6 +321,7 @@ class PayrollController extends Controller
                 $details->regular_days = $request->regular_days;
                 $details->special_leave = $request->special_leave;
                 $details->cancelled_off = $request->cancelled_off;
+                $details->cancelled_off_overtime = $request->cancelled_off_overtime;
                 $details->special_holiday = $request->special_holiday;
                 $details->legal_holiday = $request->legal_holiday;
                 $details->regular_overtime = $request->regular_overtime;
@@ -387,6 +388,7 @@ class PayrollController extends Controller
                             "regular_days" => $request->regular_days,
                             "special_leave" => $request->special_leave,
                             "cancelled_off" => $request->cancelled_off,
+                            "cancelled_off_overtime" => $request->cancelled_off_overtime,
                             "special_holiday" => $request->special_holiday,
                             "legal_holiday" => $request->legal_holiday,
                             "regular_overtime" => $request->regular_overtime,
@@ -432,6 +434,7 @@ class PayrollController extends Controller
                             "total_deductions" => $payrollComp->total_deductions,
                             "manual_deductions" => $payrollComp->manual_deductions,
                             "cancelled_off" => $payrollComp->cancelled_off,
+                            "cancelled_off_overtime_amount" => $payrollComp->cancelled_off_overtime_amount,
                             "net_pay" => $payrollComp->net_pay,
                             "taxable_income" => $payrollComp->taxable_income,
                             "contribution_total" => $payrollComp->contribution_total,

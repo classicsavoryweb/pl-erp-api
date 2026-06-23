@@ -30,6 +30,7 @@ class TimeKeepingSummary extends Model
         "tardiness",
         "branch_id",
         "position_id",
+        "cancelled_off_overtime"
     ];
 
     public function lates() {

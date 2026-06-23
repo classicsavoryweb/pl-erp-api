@@ -89,6 +89,7 @@ class GenerateBranchPayroll implements ShouldQueue
                     "regular_days" => $tkSummary->regular_days,
                     "special_leave" => $tkSummary->special_leave,
                     "cancelled_off"=> $tkSummary->cancelled_off,
+                    "cancelled_off_overtime" => $tkSummary->cancelled_off_overtime,
                     "special_holiday" => $tkSummary->special_holiday,
                     "legal_holiday" => $tkSummary->legal_holiday,
                     "regular_overtime" => $tkSummary->regular_overtime,

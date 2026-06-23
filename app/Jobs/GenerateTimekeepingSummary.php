@@ -221,6 +221,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $regular_days = 0;
             $special_leave= 0;
             $cancelled_off= 0;
+            $cancelled_off_overtime= 0;
             $special_holiday= 0;
             $legal_holiday= 0;
             $regular_overtime= 0;
@@ -383,6 +384,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                     if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0 && $totalOT > 0) {
                         $cancelled_off += $timeKeep->cancelled_off_hours < $timeKeep->approved_overtime ? $timeKeep->cancelled_off_hours : $totalOT;
+                        $cancelled_off_overtime += $timeKeep->cancelled_off_overtime;
                     }
                     
                     if ($timeKeep->legal_holiday === "Yes" && $holidayIsPaid) {
@@ -644,15 +646,13 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $lateDate = [];
                 }
 
-                Log::info($absent);
-
-
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut_off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
                     "regular_days" => $regular_days,
                     "special_leave" => $special_leave,
                     "cancelled_off" => $cancelled_off,
+                    "cancelled_off_overtime" => $cancelled_off_overtime,
                     "special_holiday" => $special_holiday,
                     "legal_holiday" => $legal_holiday,
                     "regular_overtime" => $regular_overtime,

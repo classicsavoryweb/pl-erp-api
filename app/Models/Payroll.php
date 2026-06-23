@@ -60,7 +60,8 @@ class Payroll extends Model
         "is_hold",
         "position_id",
         "special_leave",
-        "is_manual_statutory_entry"
+        "is_manual_statutory_entry",
+        "cancelled_off_overtime_amount"
     ];
 
     protected $casts = [

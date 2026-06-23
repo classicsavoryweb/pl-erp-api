@@ -41,7 +41,8 @@ class TimeKeeping extends Model
         "is_manual_override",
         "manual_tag",
         "manual_undertime_minutes",
-        "manual_tardiness_minutes"
+        "manual_tardiness_minutes",
+        "cancelled_off_overtime"
     ];
 
     public function employee() {

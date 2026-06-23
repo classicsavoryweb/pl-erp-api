@@ -108,6 +108,7 @@ class TimeKeepingService
         $nightDiffHours = 0;
         $nightDiffOt = 0;
         $overtime = 0;
+        $cancelledOffOt = 0;
 
         if (strtolower($schedule->selection) !== "flex") {
             $tardiness += $scheduleStart->diffInMinutes($parsedFirstPunch, false) > 0
@@ -706,6 +707,15 @@ class TimeKeepingService
                 $nightDiffOt = 0;
                 $nightDiffHours = 0;
                 $cancelled_off_hours = round($decimalHours, 2);
+                $overtimeComputed = $cancelled_off_hours - $hours;
+
+                if ($cancelled_off_hours > $hours) {
+                    $cancelled_off_hours = $hours;
+                    $overtimeComputed = $approvedOvertime - $hours;
+                    if ($overtimeComputed >= 1) {
+                        $cancelledOffOt = $overtimeComputed;
+                    }
+                }
             }
 
             if (
@@ -757,6 +767,7 @@ class TimeKeepingService
                 "remarks" => $remarks,
                 "final_worked_hours" => $finalWorkHours,
                 "cancelled_off_hours" => $this->formatHours($cancelled_off_hours),
+                "cancelled_off_overtime" => $this->formatHours($cancelledOffOt)
             ]);
 
             if ($manualOverride) {
@@ -838,6 +849,7 @@ class TimeKeepingService
         $legal_holiday_overtime = 0;
         $special_holiday_overtime = 0;
         $cancelled_off = 0;
+        $cancelled_off_overtime = 0;
         $isHolidayPaid = $timeKeeping->paid_holiday == 'Yes' ? true : false;
         $paymentPerDay = $employee->dailySalary();
         $paymentPerHour =  $employee->schedule->schedule_type->name === "Compressed Schedule" ? $paymentPerDay / 9.5 : $paymentPerDay / 8;
@@ -915,9 +927,13 @@ class TimeKeepingService
 
         if ($timeKeeping->cancelled_off_hours > 0) {
             if ($timeKeeping->cancelled_off_hours <= $timeKeeping->approved_overtime) {
-                $cancelled_off = $timeKeeping->cancelled_off_hours * ($paymentPerHour * 1.69);
+                $cancelled_off = $timeKeeping->cancelled_off_hours * ($paymentPerHour * 1.3);
             } else {
-                $cancelled_off = $timeKeeping->approved_overtime * ($paymentPerHour * 1.69);
+                $cancelled_off = $timeKeeping->approved_overtime * ($paymentPerHour * 1.3);
+            }
+
+            if ($timeKeeping->cancelled_off_overtime <= $timeKeeping->approved_overtime) {
+                $cancelled_off_overtime = $timeKeeping->cancelled_off_overtime * ($paymentPerHour * 1.69);
             }
         }
 
@@ -930,7 +946,8 @@ class TimeKeepingService
             $special_holiday + 
             $legal_holiday_overtime + 
             $special_holiday_overtime + 
-            $cancelled_off
+            $cancelled_off +
+            $cancelled_off_overtime
         ) - ($tardinessDeduction + $undertimeDeduction);
 
         $timeKeepingPayment = [
@@ -946,6 +963,7 @@ class TimeKeepingService
             "special_holiday_overtime" => round($special_holiday_overtime, 2),
             "cancelled_off" => round($cancelled_off, 2),
             "total_amount" => round($totalAmount, 2),
+            "cancelled_off_overtime" => round($cancelled_off_overtime, 2),
             "type" => $isAdjustment ? "adjustment_timekeeping" : "timekeeping"
         ];
 

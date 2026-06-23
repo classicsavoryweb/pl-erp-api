@@ -48,6 +48,8 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
                 $this->formatNumber($timekeeping?->final_worked_hours),
                 $this->formatNumber($timekeeping?->tardiness),
                 $this->formatNumber($timekeeping?->undertime),
+                $this->formatNumber($timekeeping?->cancelled_off_hours),
+                $this->formatNumber($timekeeping?->cancelled_off_overtime),
                 $this->formatNumber($timekeeping?->regular_overtime),
                 $this->formatNumber($timekeeping?->night_diff_hours),
                 $this->formatNumber($timekeeping?->night_diff_overtime),
@@ -80,12 +82,14 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
             'Final Worked Hours',
             'Tardiness',
             'Undertime',
+            'Cancelled Off Hours',
+            'Cancelled Off Overtime',
             'Overtime',
             'Night Diff Hours',
             'Night Diff Overtime',
             'Legal Holiday Hours',
             'Legal Holiday Overtime',
-            'Speical Holiday Hours',
+            'Special Holiday Hours',
             'Special Holiday Overtime',
             'Approved Overtime',
             'Travel Time',
@@ -108,15 +112,17 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
             'R' => NumberFormat::FORMAT_NUMBER_0,
             'S' => NumberFormat::FORMAT_NUMBER_0,
             'T' => NumberFormat::FORMAT_NUMBER_0,
+            'U' => NumberFormat::FORMAT_NUMBER_0,
+            'V' => NumberFormat::FORMAT_NUMBER_0,
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         $headings = $this->headings();
-        $columns = range('A', 'T');
+        $columns = range('A', 'V');
         $rowCount = $this->timekeeping->count() + 1;
-        $sheet->getStyle('A1:T' . $rowCount)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:V' . $rowCount)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $sheet->freezePane('C2');
 
@@ -155,6 +161,8 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
                 $timekeeping?->final_worked_hours,
                 $timekeeping?->tardiness,
                 $timekeeping?->undertime,
+                $timekeeping?->cancelled_off_hours,
+                $timekeeping?->cancelled_off_overtime,
                 $timekeeping?->regular_overtime,
                 $timekeeping?->night_diff_hours,
                 $timekeeping?->night_diff_overtime,
@@ -187,7 +195,7 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
                 ]);
             }
 
-            $sheet->getStyle('A' . $rowNumber . ':T' . $rowNumber)->applyFromArray([
+            $sheet->getStyle('A' . $rowNumber . ':V' . $rowNumber)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -197,7 +205,7 @@ class TimeKeepingExport implements FromCollection, WithHeadings, WithStyles, Wit
             ]);
         }
 
-        $sheet->getStyle('A1:T1')->applyFromArray([
+        $sheet->getStyle('A1:V1')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
