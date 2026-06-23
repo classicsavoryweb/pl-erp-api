@@ -124,8 +124,6 @@ class GenerateLastPayEntry implements ShouldQueue
         $taxrefundDebit  = $lastPaySetups['taxrefund']->debit_id;
         $taxrefundCredit = $lastPaySetups['taxrefund']->credit_id;
 
-        $incentivesCredit = $lastPaySetups['incentives']->credit_id;
-
         $salesDebit  = $lastPaySetups['sales']->debit_id;
         $salesCredit = $lastPaySetups['sales']->credit_id;
 
@@ -147,6 +145,9 @@ class GenerateLastPayEntry implements ShouldQueue
         $branchHOId = $branchHO->id;
         $branchHOName = $branchHO->name;
         $branchHONumber = $branchHO->branch_number;
+        $vendorHO = Vendor::where("ven_name", "HO")->firstOrFail();
+        $vendorHONo = $vendorHO->ven_no;
+        $vendorHOName = $vendorHO->ven_name;
 
         $employee = Employee::where('id', $lastPay->employee_id)->first();
         $employeeFullName = $employee->full_name;
@@ -315,7 +316,7 @@ class GenerateLastPayEntry implements ShouldQueue
                     'ven_no'              => $employeeNumber,
                     'ven_name'            => $employeeFullName,
                     'amount'              => $lastPay->incentives,
-                    'acc_no'              => $incentivesCredit,
+                    'acc_no'              => $branch->advance_credit,
                     'description_per_acc' => 'Last Pay|Incentives',
                     'balance_type'        => 'Credit',
                     'is_block_payment'    => 0,
@@ -336,8 +337,8 @@ class GenerateLastPayEntry implements ShouldQueue
                     'branch_id'           => $branchId,
                     'branch_number'       => $branchNumber,
                     'branch_name'         => $branchName,
-                    'ven_no'              => $employeeNumber,
-                    'ven_name'            => $employeeFullName,
+                    'ven_no'              => $vendorHONo,
+                    'ven_name'            => $vendorHOName,
                     'amount'              => $lastPay->incentives,
                     'acc_no'              => $storeIncentivesDebit,
                     'description_per_acc' => 'Last Pay|Incentives',
@@ -352,8 +353,8 @@ class GenerateLastPayEntry implements ShouldQueue
                     'branch_id'           => $branchId,
                     'branch_number'       => $branchNumber,
                     'branch_name'         => $branchName,
-                    'ven_no'              => $employeeNumber,
-                    'ven_name'            => $employeeFullName,
+                    'ven_no'              => $vendorHONo,
+                    'ven_name'            => $vendorHOName,
                     'amount'              => $lastPay->incentives,
                     'acc_no'              => $storeIncentivesCredit,
                     'description_per_acc' => 'Last Pay|Incentives',
