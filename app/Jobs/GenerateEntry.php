@@ -3701,64 +3701,11 @@ class GenerateEntry implements ShouldQueue
                 DB::beginTransaction();
                 $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
 
-                foreach ($entries as $entry) {
-
-                    Entry::create([
-                        'entry_id'                   => $entry['entry_id'],
-                        'pay_date'                   => $this->pay_date,
-                        'document_no'                => $entry['document_no'],
-                        'branch_id'                  => $entry['branch_id'],
-                        'branch_number'              => $entry['branch_number'],
-                        'vendor_no'                  => $entry['ven_no'],
-                        'amount'                     => round($entry['amount'],2),
-                        'account_no'                 => $entry['acc_no'],
-                        'description'                => $entry['description_per_acc'],
-                        'balance_type'               => $entry['balance_type'],
-                        'is_block_payment'           => $entry['is_block_payment'],
-                        'status'                     => 'Unapplied',
-                        'generated_at'               => now(),
-                        'generated_by'               => $employee_id,
-                    ]);
-
-                    if ($this->apsysAvailable) {
-                        ApsysEntry::create([
-                            'ent_tran_no'       => $entry['apsys_entry_id'],
-                            'ent_post_date'     => $this->pay_date,
-                            'ven_no'            => $entry['ven_no'],
-                            'ent_doc_date'      => $this->pay_date,
-                            'branch_id'         => $entry['branch_number'],
-                            'ent_doc_no'        => $entry['document_no'],
-                            'ent_due_date'      => $this->pay_date,
-                            'ent_header'        => $entry['document_no'],
-                            'ent_crf_no'        => '',
-                            'ent_trans_amt'     => round($entry['amount'],2),
-                            'ent_amt_due'       => round($entry['amount'],2),
-                            'ent_module'        => 'Payroll',
-                            'acc_no'            => $entry['acc_no'],
-                            'ent_amt_per_acc'    => round($entry['amount'],2),
-                            'ent_desc_per_acc'  => $entry['description_per_acc'],
-                            'ent_norm_bal'      => $entry['balance_type'],
-                            'ent_total'         => round($entry['amount'],2),
-                            'ent_module_type'   => 'Single',
-                            'ent_app_amt'       => round($entry['amount'],2),
-                            'ent_unapp_amt'     => 0,
-                            'ent_vat_amt'       => 0,
-                            'ent_nonvat_amt'    => 0,
-                            'ent_na_amt'        => round($entry['amount'],2),
-                            'ent_inp_tax_amt'   => 0,
-                            'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
-                            'ent_status'        => 'Unapplied',
-                            'ent_chk'           => 'No',
-                            'date_added'        => $this->pay_date,
-                        ]);
-                    }
-                }
-
                 if ($this->apsysAvailable) {
                     $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
                     foreach ($groupedEntries as $mainId => $groupedEntry) {
                         $entry = $groupedEntry->first();
-                        ApsysEntryMain::create([
+                        $entryMain = ApsysEntryMain::create([
                             'ent_tran_no'       => $mainId,
                             'ven_no'            => $entry['ven_no'],
                             'ven_name'          => $entry['ven_name'],
@@ -3779,6 +3726,56 @@ class GenerateEntry implements ShouldQueue
                             'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
                             'ent_due_date'      => $this->pay_date,
                         ]);
+
+                        foreach ($groupedEntry as $ent) {
+                            Entry::create([
+                                'entry_id'                   => $entryMain->ent_tran_no,
+                                'pay_date'                   => $this->pay_date,
+                                'document_no'                => $ent['document_no'],
+                                'branch_id'                  => $ent['branch_id'],
+                                'branch_number'              => $ent['branch_number'],
+                                'vendor_no'                  => $ent['ven_no'],
+                                'amount'                     => round($ent['amount'],2),
+                                'account_no'                 => $ent['acc_no'],
+                                'description'                => $ent['description_per_acc'],
+                                'balance_type'               => $ent['balance_type'],
+                                'is_block_payment'           => $ent['is_block_payment'],
+                                'status'                     => 'Unapplied',
+                                'generated_at'               => now(),
+                                'generated_by'               => $employee_id,
+                            ]);
+
+                            ApsysEntry::create([
+                                'ent_tran_no'       => $entryMain->ent_tran_no,
+                                'ent_post_date'     => $this->pay_date,
+                                'ven_no'            => $ent['ven_no'],
+                                'ent_doc_date'      => $this->pay_date,
+                                'branch_id'         => $ent['branch_number'],
+                                'ent_doc_no'        => $ent['document_no'],
+                                'ent_due_date'      => $this->pay_date,
+                                'ent_header'        => $ent['document_no'],
+                                'ent_crf_no'        => '',
+                                'ent_trans_amt'     => round($ent['amount'],2),
+                                'ent_amt_due'       => round($ent['amount'],2),
+                                'ent_module'        => 'Payroll',
+                                'acc_no'            => $ent['acc_no'],
+                                'ent_amt_per_acc'    => round($ent['amount'],2),
+                                'ent_desc_per_acc'  => $ent['description_per_acc'],
+                                'ent_norm_bal'      => $ent['balance_type'],
+                                'ent_total'         => round($ent['amount'],2),
+                                'ent_module_type'   => 'Single',
+                                'ent_app_amt'       => round($ent['amount'],2),
+                                'ent_unapp_amt'     => 0,
+                                'ent_vat_amt'       => 0,
+                                'ent_nonvat_amt'    => 0,
+                                'ent_na_amt'        => round($ent['amount'],2),
+                                'ent_inp_tax_amt'   => 0,
+                                'ent_block_payment' => ($ent['is_block_payment'] == 1) ? 'Yes' : 'No',
+                                'ent_status'        => 'Unapplied',
+                                'ent_chk'           => 'No',
+                                'date_added'        => $this->pay_date,
+                            ]);
+                        }
                     }
                 }
 
