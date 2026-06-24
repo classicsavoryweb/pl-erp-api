@@ -1256,15 +1256,22 @@ class TimeKeepingService
     }
 
     public function deductPreviousPaidHoliday($currentCutOff, $employee) {
-        if ($employee->schedule->schedule_type->name === "Normal Schedule") {
-            return;
-        }
 
         $deductSpecial = 0;
         $deductLegal = 0;
         $deductSpecialOt = 0;
         $deductLegalOt = 0;
         $dates = [];
+
+        if ($employee->schedule->schedule_type->name == "Normal Schedule") {
+            return [
+                "special_holiday_hours_deduction" => $deductSpecial,
+                "special_holiday_overtime_deduction" => $deductSpecialOt,
+                "legal_holiday_hours_deduction" => $deductLegal,
+                "legal_holiday_overtime_deduction" => $deductLegalOt,
+                "dates" => $dates
+            ];
+        }
 
         $weekRange = $this->getPreviousCutOff($currentCutOff["start_time"]);
 
