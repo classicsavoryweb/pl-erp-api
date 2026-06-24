@@ -127,10 +127,10 @@ class PayrollService {
                             "type" => $deduction->deduction->description,
                             "monthly_amortization" => $deduction->monthly_amortization,
                             "balance" => $deduction->balance,
-                            "deducted_amount" => $amountToDeduct,
+                            "deducted_amount" => round($amountToDeduct, 2),
                             "payslip_description" => $deduction->deduction->payslip_description
                         ];
-                        $totalDeductions += $amountToDeduct;
+                        $totalDeductions += round($amountToDeduct, 2);
                     }
                 } else {
                     $totalDeductions = 0;
@@ -141,7 +141,7 @@ class PayrollService {
                     }
     
                     foreach ($deductions as $ded) {
-                        $totalDeductions += $ded["deducted_amount"];
+                        $totalDeductions += round($ded["deducted_amount"], 2);
                     }
                 }
             } 

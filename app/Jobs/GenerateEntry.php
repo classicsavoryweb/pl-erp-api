@@ -287,7 +287,7 @@ class GenerateEntry implements ShouldQueue
             ];
         }
 
-        $groups[$groupKey]['amount'] += $amount;
+        $groups[$groupKey]['amount'] += round($amount, 2);
 
         if (empty($groups[$groupKey]['ven_name']) && !empty($vendorName)) {
             $groups[$groupKey]['ven_name'] = $vendorName;
@@ -309,7 +309,7 @@ class GenerateEntry implements ShouldQueue
 
         foreach ($deductionGroups as $group) {
             $deduction = $group['deduction'] ?? null;
-            $amount = (float) ($group['amount'] ?? 0);
+            $amount = round($group['amount'] ?? 0, 2);
 
             if (!$deduction || $amount <= 0) {
                 continue;
