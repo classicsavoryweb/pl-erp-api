@@ -21,6 +21,7 @@ class PayslipController extends Controller
             "employee.current_branch",
             "timekeeping_summary",
             "timekeeping_branch",
+            "details",
         ])->where("is_hold", 0)
             ->where("is_maternity", 0);
 
