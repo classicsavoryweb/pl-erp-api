@@ -1256,6 +1256,10 @@ class TimeKeepingService
     }
 
     public function deductPreviousPaidHoliday($currentCutOff, $employee) {
+        if ($employee->schedule->schedule_type->name === "Normal Schedule") {
+            return;
+        }
+
         $deductSpecial = 0;
         $deductLegal = 0;
         $deductSpecialOt = 0;
