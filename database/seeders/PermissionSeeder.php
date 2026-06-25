@@ -277,6 +277,15 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_uniform_replenishment_request"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_receiving_stocks"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_receiving_stocks"], ["module" => "uniform"]);
-
+        Permission::updateOrCreate(["name" => "view_uniform_weighted_average"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_weighted_average"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_physical_count"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_physical_count"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_variance_report"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_variance_report"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_period_lock_issuance"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_period_lock_issuance"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_uniform_period_lock_receiving"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_period_lock_receiving"], ["module" => "maintenance"]);
     }
 }
