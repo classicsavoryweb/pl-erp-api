@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Uniform;
 
 use App\Http\Controllers\Controller;
 use App\Exports\Maintenance\RequestAndIssuanceExport;
+use App\Exports\Uniform\RequestAndIssuanceDetailedExport;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Log;
 use App\Models\RequestAndIssuance;
 use App\Models\RequestAndIssuanceItems;
 use App\Models\UniformItem;
+use App\Models\Employee;
+use App\Models\UniformPeriodLock;
+use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -38,7 +42,7 @@ class RequestAndIssuanceController extends Controller
                 $issuance = $issuance->get();
                 return Excel::download(
                     new RequestAndIssuanceExport($issuance),
-                    "suppliers.xls"
+                    "issuance.xls"
                 );
             }
 
@@ -51,6 +55,21 @@ class RequestAndIssuanceController extends Controller
                 "message" => $e->getMessage()
             ]);
         }
+    }
+    public function exportRequestandIssuance (Request $request) {
+        $request["export"] = true;
+
+        return $this->getUniformRequestAndIssuance($request);
+    }
+
+    public function exportRequestAndIssuanceDetails($id)
+    {
+        $issuance = RequestAndIssuance::with('items')->findOrFail($id);
+
+        return Excel::download(
+            new RequestAndIssuanceDetailedExport($issuance),
+            'request-and-issuance-detailed-' . $issuance->request_number . '.xlsx'
+        );
     }
     public function updateStatus(Request $request, $id)
     {
@@ -85,6 +104,7 @@ class RequestAndIssuanceController extends Controller
 
             if ($next === 'Posted' && !$issuance->date_posted) {
                 $issuance->load('items');
+                UniformPeriodLock::ensureDateIsOpen($issuance->date_request ?? now(), UniformPeriodLock::TYPE_ISSUANCE);
 
                 if ($issuance->items->isEmpty()) {
                     throw ValidationException::withMessages([
@@ -93,26 +113,11 @@ class RequestAndIssuanceController extends Controller
                 }
 
                 foreach ($issuance->items as $item) {
-                    $quantityToDeduct = (int) $item->requested_quantity;
-
-                    if ($quantityToDeduct < 1) {
+                    if ((int) $item->requested_quantity < 1) {
                         throw ValidationException::withMessages([
                             'items' => "Invalid requested quantity for {$item->description}.",
                         ]);
                     }
-
-                    $uniformItem = UniformItem::where('item_no', $item->uniform_item_no)
-                        ->lockForUpdate()
-                        ->firstOrFail();
-
-                    if ($uniformItem->stock_on_hand < $quantityToDeduct) {
-                        throw ValidationException::withMessages([
-                            'items' => "Insufficient stock for {$uniformItem->description}. "
-                                . "Available: {$uniformItem->stock_on_hand}.",
-                        ]);
-                    }
-
-                    $uniformItem->decrement('stock_on_hand', $quantityToDeduct);
                 }
 
                 $updateData['date_posted'] = now();
@@ -135,23 +140,157 @@ class RequestAndIssuanceController extends Controller
         'cancel_reason' => ['required', 'string', 'max:1000'],
     ]);
 
-    $issuance = RequestAndIssuance::findOrFail($id);
+    $issuance = DB::transaction(function () use ($request, $id) {
+        $issuance = RequestAndIssuance::with('items')->lockForUpdate()->findOrFail($id);
 
-    if (in_array($issuance->status, ['Posted', 'Cancelled'])) {
-        return $this->sendError([
-            'message' => 'This request cannot be cancelled.'
+        if (in_array($issuance->status, ['Posted', 'Cancelled'])) {
+            throw ValidationException::withMessages([
+                'status' => 'This request cannot be cancelled.',
+            ]);
+        }
+
+        foreach ($issuance->items as $item) {
+            UniformItem::where('item_no', $item->uniform_item_no)
+                ->lockForUpdate()
+                ->increment('stock_on_hand', (int) $item->requested_quantity);
+        }
+
+        $issuance->update([
+            'status' => 'Cancelled',
+            'cancel_reason' => $request->cancel_reason,
+            'date_cancelled' => now(),
+            'cancelled_by' => optional($request->user())->proper_full_name,
         ]);
-    }
 
-    $issuance->update([
-        'status' => 'Cancelled',
-        'cancel_reason' => $request->cancel_reason,
-        'date_cancelled' => now(),
-        'cancelled_by' => optional($request->user())->proper_full_name,
-    ]);
+        return $issuance->fresh('items');
+    });
 
     return $this->sendResponse($issuance, 'Request cancelled successfully.');
 }
+
+   public function reviewUniformRequestAndIssuance(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'employee_id' => ['required', 'string', 'max:100'],
+                'employee_name' => ['required', 'string', 'max:255'],
+                'issuance_type' => ['required', Rule::in(['Authority To Deduct', 'Free Uniform'])],
+                'branch' => ['required', 'string', 'max:255'],
+                'position' => ['required', 'string', 'max:255'],
+                'date_hired' => ['required', 'date'],
+                'confirm_free_uniform_duplicate' => ['sometimes', 'boolean'],
+                'items' => ['required', 'array', 'min:1', 'max:20'],
+                'items.*.item_no' => [
+                    'nullable',
+                    'string',
+                    'distinct',
+                    'exists:uniform_items,item_no',
+                ],
+                'items.*.uniform_item_no' => [
+                    'nullable',
+                    'string',
+                    'distinct',
+                    'exists:uniform_items,item_no',
+                ],
+                'items.*.requested_quantity' => ['required', 'integer', 'min:1'],
+                'items.*.item_remarks' => ['nullable', 'string', 'max:1000'],
+            ]);
+
+            $validated['items'] = collect($validated['items'])->map(function ($item) {
+                $item['item_no'] = $item['item_no'] ?? $item['uniform_item_no'] ?? null;
+                return $item;
+            })->all();
+
+            if (collect($validated['items'])->contains(fn ($item) => empty($item['item_no']))) {
+                throw ValidationException::withMessages([
+                    'items' => 'Each request item must have a valid item number.',
+                ]);
+            }
+
+            if (collect($validated['items'])->pluck('item_no')->duplicates()->isNotEmpty()) {
+                throw ValidationException::withMessages([
+                    'items' => 'Duplicate request items are not allowed.',
+                ]);
+            }
+
+            $duplicateFreeUniform = $this->getDuplicateFreeUniformRequest($validated, (int) $id);
+
+            if ($duplicateFreeUniform && empty($validated['confirm_free_uniform_duplicate'])) {
+                return $this->sendError([
+                    'requires_confirmation' => true,
+                    'confirmation_type' => 'free_uniform_duplicate',
+                    'message' => 'This employee has already availed his/her free uniform for the current year. Do you want to continue?',
+                    'previous_request_number' => $duplicateFreeUniform->request_number,
+                    'previous_request_date' => $duplicateFreeUniform->date_requested,
+                ], 422);
+            }
+
+            $issuance = DB::transaction(function () use ($request, $id, $validated) {
+                $issuance = RequestAndIssuance::with('items')->lockForUpdate()->findOrFail($id);
+
+                if (!in_array($issuance->status, ['Unposted', 'Reviewing'], true)) {
+                    throw ValidationException::withMessages([
+                        'status' => 'Only unposted or reviewing requests can be reviewed.',
+                    ]);
+                }
+
+                $oldItems = $issuance->items;
+                $itemNumbers = collect($validated['items'])
+                    ->pluck('item_no')
+                    ->merge($oldItems->pluck('uniform_item_no'))
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $uniformItems = UniformItem::with(['size', 'gender'])
+                    ->whereIn('item_no', $itemNumbers)
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('item_no');
+
+                foreach ($oldItems as $oldItem) {
+                    $uniformItem = $uniformItems->get($oldItem->uniform_item_no);
+
+                    if ($uniformItem) {
+                        $uniformItem->increment('stock_on_hand', (int) $oldItem->requested_quantity);
+                        $uniformItem->refresh();
+                    }
+                }
+
+                $employeeGender = Employee::where('employee_number', $validated['employee_id'])->value('gender');
+                $grandTotal = $this->replaceRequestItems(
+                    $issuance,
+                    $validated['items'],
+                    $uniformItems,
+                    $employeeGender
+                );
+
+                $issuance->update([
+                    'employee_id' => $validated['employee_id'],
+                    'employee_name' => $validated['employee_name'],
+                    'issuance_type' => $validated['issuance_type'],
+                    'branch' => $validated['branch'],
+                    'position' => $validated['position'],
+                    'date_hired' => $validated['date_hired'],
+                    'total_amount' => $grandTotal,
+                    'status' => 'Reviewing',
+                    'date_reviewed' => now(),
+                    'reviewed_by' => optional($request->user())->proper_full_name,
+                ]);
+
+                return $issuance->fresh('items');
+            });
+
+            return $this->sendResponse([
+                'message' => 'Uniform request reviewed successfully.',
+                'record' => $issuance,
+            ]);
+        } catch (\Exception $e) {
+            return $this->sendError([
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
         
    public function createUniformRequestAndIssuance(Request $request)
     {
@@ -163,6 +302,7 @@ class RequestAndIssuanceController extends Controller
                 'branch' => ['required', 'string', 'max:255'],
                 'position' => ['required', 'string', 'max:255'],
                 'date_hired' => ['required', 'date'],
+                'confirm_free_uniform_duplicate' => ['sometimes', 'boolean'],
                 'items' => ['required', 'array', 'min:1', 'max:20'],
                 'items.*.item_no' => [
                     'required',
@@ -174,6 +314,18 @@ class RequestAndIssuanceController extends Controller
                 'items.*.item_remarks' => ['nullable', 'string', 'max:1000'],
             ]);
 
+            $duplicateFreeUniform = $this->getDuplicateFreeUniformRequest($validated);
+
+            if ($duplicateFreeUniform && empty($validated['confirm_free_uniform_duplicate'])) {
+                return $this->sendError([
+                    'requires_confirmation' => true,
+                    'confirmation_type' => 'free_uniform_duplicate',
+                    'message' => 'This employee has already availed his/her free uniform for the current year. Do you want to continue?',
+                    'previous_request_number' => $duplicateFreeUniform->request_number,
+                    'previous_request_date' => $duplicateFreeUniform->date_requested,
+                ], 422);
+            }
+
             $issuance = DB::transaction(function () use ($request, $validated) {
                 $itemNumbers = collect($validated['items'])->pluck('item_no');
                 $uniformItems = UniformItem::with(['size', 'gender'])
@@ -181,6 +333,7 @@ class RequestAndIssuanceController extends Controller
                     ->lockForUpdate()
                     ->get()
                     ->keyBy('item_no');
+                $employeeGender = Employee::where('employee_number', $validated['employee_id'])->value('gender');
 
                 $issuance = RequestAndIssuance::create([
                     'employee_id' => $validated['employee_id'],
@@ -197,45 +350,12 @@ class RequestAndIssuanceController extends Controller
                     'request_number' => $this->generateItemNo($validated['issuance_type']),
                 ]);
 
-                $grandTotal = 0;
-
-                foreach ($validated['items'] as $itemData) {
-                    $uniformItem = $uniformItems->get($itemData['item_no']);
-                    $requestedQuantity = (int) $itemData['requested_quantity'];
-
-                    if (!$uniformItem || strtolower((string) $uniformItem->status) !== 'active') {
-                        throw ValidationException::withMessages([
-                            'items' => "Uniform item {$itemData['item_no']} is not active.",
-                        ]);
-                    }
-
-                    if ($uniformItem->stock_on_hand < $requestedQuantity) {
-                        throw ValidationException::withMessages([
-                            'items' => "Insufficient stock for {$uniformItem->description}. "
-                                . "Available: {$uniformItem->stock_on_hand}.",
-                        ]);
-                    }
-
-                    $unitPrice = (float) $uniformItem->standard_unit_price;
-                    $totalAmount = $requestedQuantity * $unitPrice;
-                    $originalStock = (int) $uniformItem->stock_on_hand;
-                    $grandTotal += $totalAmount;
-
-                    RequestAndIssuanceItems::create([
-                        'requested_number_id' => $issuance->request_number,
-                        'description' => $uniformItem->description,
-                        'size' => $uniformItem->size?->description ?? '',
-                        'gender' => $uniformItem->gender?->code ?? '',
-                        'stock_on_hand' => $originalStock,
-                        'requested_quantity' => $requestedQuantity,
-                        'remaining_quantity' => $originalStock - $requestedQuantity,
-                        'uom' => $uniformItem->standard_unit,
-                        'unit_price' => $unitPrice,
-                        'total_amount' => $totalAmount,
-                        'item_remarks' => $itemData['item_remarks'] ?? null,
-                        'uniform_item_no' => $uniformItem->item_no,
-                    ]);
-                }
+                $grandTotal = $this->replaceRequestItems(
+                    $issuance,
+                    $validated['items'],
+                    $uniformItems,
+                    $employeeGender
+                );
 
                 $issuance->update(['total_amount' => $grandTotal]);
 
@@ -277,6 +397,120 @@ class RequestAndIssuanceController extends Controller
             ? ((int) substr($last->request_number, -8)) + 1
             : 1;
         return $prefix . '-URN' . str_pad($next, 8, '0', STR_PAD_LEFT);
+    }
+
+    private function replaceRequestItems(
+        RequestAndIssuance $issuance,
+        array $items,
+        $uniformItems,
+        ?string $employeeGender
+    ): float {
+        RequestAndIssuanceItems::where('requested_number_id', $issuance->request_number)->delete();
+
+        $grandTotal = 0;
+
+        foreach ($items as $itemData) {
+            $itemNo = $itemData['item_no'];
+            $uniformItem = $uniformItems->get($itemNo);
+            $requestedQuantity = (int) $itemData['requested_quantity'];
+
+            if (!$uniformItem || strtolower((string) $uniformItem->status) !== 'active') {
+                throw ValidationException::withMessages([
+                    'items' => "Uniform item {$itemNo} is not active.",
+                ]);
+            }
+
+            if ($uniformItem->stock_on_hand < $requestedQuantity) {
+                throw ValidationException::withMessages([
+                    'items' => "Insufficient stock for {$uniformItem->description}. "
+                        . "Available: {$uniformItem->stock_on_hand}.",
+                ]);
+            }
+
+            if (!$this->isItemAllowedForEmployeeGender($uniformItem, $employeeGender)) {
+                throw ValidationException::withMessages([
+                    'items' => "{$uniformItem->description} is not allowed for {$employeeGender} employees.",
+                ]);
+            }
+
+            $unitPrice = (float) $uniformItem->standard_unit_price;
+            $totalAmount = $requestedQuantity * $unitPrice;
+            $originalStock = (int) $uniformItem->stock_on_hand;
+            $grandTotal += $totalAmount;
+
+            RequestAndIssuanceItems::create([
+                'requested_number_id' => $issuance->request_number,
+                'description' => $uniformItem->description,
+                'size' => $uniformItem->size?->description ?? '',
+                'gender' => $uniformItem->gender?->code ?? '',
+                'stock_on_hand' => $originalStock,
+                'requested_quantity' => $requestedQuantity,
+                'remaining_quantity' => $originalStock - $requestedQuantity,
+                'uom' => $uniformItem->standard_unit,
+                'unit_price' => $unitPrice,
+                'total_amount' => $totalAmount,
+                'item_remarks' => $itemData['item_remarks'] ?? null,
+                'uniform_item_no' => $uniformItem->item_no,
+            ]);
+
+            $uniformItem->decrement('stock_on_hand', $requestedQuantity);
+            $uniformItem->refresh();
+        }
+
+        return $grandTotal;
+    }
+
+    private function getDuplicateFreeUniformRequest(array $validated, ?int $excludeId = null): ?RequestAndIssuance
+    {
+        if (($validated['issuance_type'] ?? null) !== 'Free Uniform') {
+            return null;
+        }
+
+        $dateRequested = Carbon::now();
+        $dateHired = Carbon::parse($validated['date_hired']);
+        $cycleStart = $dateHired->copy()->year($dateRequested->year);
+
+        if ($cycleStart->greaterThan($dateRequested)) {
+            $cycleStart->subYear();
+        }
+
+        $cycleEnd = $cycleStart->copy()->addYear()->subDay();
+
+        return RequestAndIssuance::where('employee_id', $validated['employee_id'])
+            ->where('status', '<>', 'Cancelled')
+            ->where('issuance_type', 'Free Uniform')
+            ->where('request_number', 'LIKE', 'FR-URN%')
+            ->when($excludeId, fn ($query) => $query->where('id', '<>', $excludeId))
+            ->whereBetween('date_requested', [
+                $cycleStart->startOfDay(),
+                $cycleEnd->endOfDay(),
+            ])
+            ->latest('id')
+            ->first();
+    }
+
+    private function isItemAllowedForEmployeeGender(UniformItem $uniformItem, ?string $employeeGender): bool
+    {
+        $employeeGender = $this->normalizeGender($employeeGender);
+        $itemGender = $this->normalizeGender($uniformItem->gender?->code ?? $uniformItem->gender?->description);
+
+        if ($employeeGender === '' || $itemGender === '') {
+            return true;
+        }
+
+        return $itemGender === 'unisex' || $itemGender === $employeeGender;
+    }
+
+    private function normalizeGender(?string $gender): string
+    {
+        $gender = strtolower(trim((string) $gender));
+
+        return match ($gender) {
+            'm', 'male' => 'male',
+            'f', 'female' => 'female',
+            'n/a', 'na', 'unisex' => 'unisex',
+            default => $gender,
+        };
     }
 }
  
