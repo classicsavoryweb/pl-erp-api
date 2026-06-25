@@ -3,12 +3,8 @@
 namespace App\Http\Controllers\Uniform;
 
 use App\Http\Controllers\Controller;
-use App\Exports\Uniform\ReceivingDetailedExport;
-use App\Exports\Uniform\ReplenishmentDetailedExport;
 use App\Models\Supplier;
 use App\Models\UniformItem;
-use App\Models\UniformItemSupplier;
-use App\Models\UniformPeriodLock;
 use App\Models\UniformReceiving;
 use App\Models\UniformReplenishment;
 use App\Models\UniformReplenishmentItem;
@@ -17,8 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class StockReplenishmentController extends Controller
 {
@@ -56,128 +50,6 @@ class StockReplenishmentController extends Controller
                 ->paginate($request->integer('per_page', 10));
 
             return $this->sendResponse($records);
-        } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
-        }
-    }
-
-    public function exportReplenishmentDetails(int $id)
-    {
-        $record = UniformReplenishment::with(['supplier', 'items.item'])
-            ->findOrFail($id);
-
-        return Excel::download(
-            new ReplenishmentDetailedExport($record),
-            'uniform-replenishment-detailed-' . $record->request_no . '.xlsx'
-        );
-    }
-
-    public function generateReplenishmentList(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
-            ]);
-
-            $supplier = Supplier::findOrFail($validated['supplier_id']);
-            $items = UniformItem::with(['size', 'gender', 'suppliers'])
-                ->where('status', 'active')
-                ->whereHas('suppliers', fn ($query) => $query->where('vendor_no', $supplier->vendor_number))
-                ->orderBy('description')
-                ->get();
-
-            if ($items->isEmpty()) {
-                throw ValidationException::withMessages([
-                    'supplier_id' => 'No active uniform items are linked to the selected supplier.',
-                ]);
-            }
-
-            return $this->sendResponse([
-                'message' => 'Replenishment list generated successfully',
-                'items' => $this->formatReplenishmentLines($supplier, $items),
-            ]);
-        } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
-        }
-    }
-
-    public function importReplenishmentItems(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
-                'supplier_item_file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt'],
-            ]);
-
-            $supplier = Supplier::findOrFail($validated['supplier_id']);
-            $rows = $this->sheetRows($request->file('supplier_item_file')->getRealPath());
-            if (count($rows) < 2) {
-                throw ValidationException::withMessages([
-                    'supplier_item_file' => 'The imported supplier/item list has no item rows.',
-                ]);
-            }
-
-            $headers = array_map(fn ($value) => $this->normalizeHeader($value), $rows[0]);
-            $itemNoIndex = array_search('itemno', $headers, true);
-            if ($itemNoIndex === false) {
-                throw ValidationException::withMessages([
-                    'supplier_item_file' => 'The imported file must include an Item No column.',
-                ]);
-            }
-
-            $requestedIndex = $this->firstHeaderIndex($headers, ['requestedqty', 'requestedquantity', 'quantity', 'qty']);
-            $approvedIndex = $this->firstHeaderIndex($headers, ['approvedqty', 'approvedquantity']);
-            $unitPriceIndex = $this->firstHeaderIndex($headers, ['unitprice', 'price']);
-            $remarksIndex = $this->firstHeaderIndex($headers, ['remarks', 'itemremarks']);
-
-            $itemNos = collect(array_slice($rows, 1))
-                ->map(fn ($row) => trim((string) ($row[$itemNoIndex] ?? '')))
-                ->filter()
-                ->unique()
-                ->values();
-
-            $items = UniformItem::with(['size', 'gender', 'suppliers'])
-                ->whereIn('item_no', $itemNos)
-                ->where('status', 'active')
-                ->get()
-                ->keyBy('item_no');
-
-            $lines = collect(array_slice($rows, 1))
-                ->map(function ($row) use ($itemNoIndex, $requestedIndex, $approvedIndex, $unitPriceIndex, $remarksIndex, $items, $supplier) {
-                    $itemNo = trim((string) ($row[$itemNoIndex] ?? ''));
-                    $item = $items->get($itemNo);
-                    if (!$item) {
-                        return null;
-                    }
-
-                    $supplierPrice = $this->supplierPrice($item, $supplier);
-                    $requestedQty = $this->numericCell($row, $requestedIndex, $item->minimum_rpl ?? 1);
-                    $approvedQty = $this->numericCell($row, $approvedIndex, $requestedQty);
-                    $unitPrice = $this->numericCell($row, $unitPriceIndex, $supplierPrice ?? $item->standard_unit_price ?? 0);
-
-                    return [
-                        'uniform_item_id' => $item->id,
-                        'item' => $item,
-                        'requested_qty' => $requestedQty,
-                        'approved_qty' => $approvedQty,
-                        'unit_price' => $unitPrice,
-                        'remarks' => $remarksIndex !== null ? trim((string) ($row[$remarksIndex] ?? '')) : '',
-                    ];
-                })
-                ->filter()
-                ->unique('uniform_item_id')
-                ->values();
-
-            if ($lines->isEmpty()) {
-                throw ValidationException::withMessages([
-                    'supplier_item_file' => 'No matching active uniform items were found in the imported file.',
-                ]);
-            }
-
-            return $this->sendResponse([
-                'message' => 'Supplier/item list imported successfully',
-                'items' => $lines,
-            ]);
         } catch (Exception $e) {
             return $this->sendError(['message' => $e->getMessage()]);
         }
@@ -271,90 +143,6 @@ class StockReplenishmentController extends Controller
         }
     }
 
-    public function replaceReplenishmentSupplier(Request $request, int $id)
-    {
-        try {
-            $validated = $request->validate([
-                'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
-            ]);
-
-            $record = DB::transaction(function () use ($validated, $id) {
-                $record = UniformReplenishment::with(['items.item.suppliers'])
-                    ->lockForUpdate()
-                    ->findOrFail($id);
-
-                if (!in_array($record->status, ['Unposted', 'Reviewed'], true)) {
-                    throw ValidationException::withMessages([
-                        'status' => 'Only unposted or reviewed requests can replace supplier.',
-                    ]);
-                }
-
-                if ($record->items()->where('received_qty', '>', 0)->exists()) {
-                    throw ValidationException::withMessages([
-                        'status' => 'A request with received stock cannot replace supplier.',
-                    ]);
-                }
-
-                $supplier = Supplier::findOrFail($validated['supplier_id']);
-                $totalAmount = 0;
-
-                foreach ($record->items as $line) {
-                    $unitPrice = $this->supplierPrice($line->item, $supplier);
-                    if ($unitPrice === null) {
-                        throw ValidationException::withMessages([
-                            'supplier_id' => "{$line->item->item_no} is not linked to the selected supplier.",
-                        ]);
-                    }
-
-                    $line->update(['unit_price' => $unitPrice]);
-                    $totalAmount += (float) $line->approved_qty * (float) $unitPrice;
-                }
-
-                $record->update([
-                    'supplier_id' => $supplier->id,
-                    'total_amount' => $totalAmount,
-                ]);
-
-                return $record->fresh(['supplier', 'items.item.size', 'items.item.gender']);
-            });
-
-            return $this->sendResponse([
-                'message' => 'Replenishment supplier replaced successfully',
-                'record' => $record,
-            ]);
-        } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
-        }
-    }
-
-    public function closeReplenishment(Request $request, int $id)
-    {
-        try {
-            $validated = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
-
-            DB::transaction(function () use ($request, $validated, $id) {
-                $record = UniformReplenishment::lockForUpdate()->findOrFail($id);
-
-                if (!in_array($record->status, ['Posted', 'Partially Received'], true)) {
-                    throw ValidationException::withMessages([
-                        'status' => 'Only posted or partially received requests can be closed.',
-                    ]);
-                }
-
-                $record->update([
-                    'status' => 'Closed',
-                    'closed_by' => $this->userName($request),
-                    'closed_at' => now(),
-                    'closed_reason' => $validated['reason'],
-                ]);
-            });
-
-            return $this->sendResponse(['message' => 'Replenishment request closed']);
-        } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
-        }
-    }
-
     public function receivableReplenishments()
     {
         try {
@@ -399,17 +187,6 @@ class StockReplenishmentController extends Controller
         } catch (Exception $e) {
             return $this->sendError(['message' => $e->getMessage()]);
         }
-    }
-
-    public function exportReceivingDetails(int $id)
-    {
-        $record = UniformReceiving::with(['supplier', 'replenishment', 'items.item'])
-            ->findOrFail($id);
-
-        return Excel::download(
-            new ReceivingDetailedExport($record),
-            'uniform-receiving-detailed-' . $record->receiving_no . '.xlsx'
-        );
     }
 
     public function storeReceiving(Request $request)
@@ -510,11 +287,10 @@ class StockReplenishmentController extends Controller
     {
         try {
             DB::transaction(function () use ($request, $id) {
-                $receiving = UniformReceiving::with(['items.item', 'supplier'])
+                $receiving = UniformReceiving::with(['items.item'])
                     ->where('status', 'Reviewed')
                     ->lockForUpdate()
                     ->findOrFail($id);
-                UniformPeriodLock::ensureDateIsOpen($receiving->date_received, UniformPeriodLock::TYPE_RECEIVING);
                 $replenishment = UniformReplenishment::lockForUpdate()
                     ->findOrFail($receiving->replenishment_id);
 
@@ -532,17 +308,6 @@ class StockReplenishmentController extends Controller
                     UniformItem::whereKey($receivingItem->uniform_item_id)
                         ->lockForUpdate()
                         ->increment('stock_on_hand', $receivingItem->quantity);
-
-                    UniformItemSupplier::updateOrCreate(
-                        [
-                            'uniform_item_id' => $receivingItem->uniform_item_id,
-                            'vendor_no' => $receiving->supplier?->vendor_number,
-                        ],
-                        [
-                            'vendor_name' => $receiving->supplier?->vendor_name,
-                            'unit_price' => $receivingItem->unit_price,
-                        ]
-                    );
                 }
 
                 $hasRemaining = $replenishment->items()
@@ -587,13 +352,12 @@ class StockReplenishmentController extends Controller
     private function transitionReplenishment(Request $request, int $id, string $from, string $to)
     {
         try {
-            $record = UniformReplenishment::where('status', $from)->lockForUpdate()->findOrFail($id);
+            $record = UniformReplenishment::where('status', $from)->findOrFail($id);
             $values = ['status' => $to];
             if ($to === 'Reviewed') {
                 $values['reviewed_by'] = $this->userName($request);
                 $values['reviewed_at'] = now();
             } else {
-                UniformPeriodLock::ensureDateIsOpen($record->date_requested, UniformPeriodLock::TYPE_RECEIVING);
                 $values['posted_by'] = $this->userName($request);
                 $values['posted_at'] = now();
             }
@@ -603,71 +367,6 @@ class StockReplenishmentController extends Controller
         } catch (Exception $e) {
             return $this->sendError(['message' => $e->getMessage()]);
         }
-    }
-
-    private function formatReplenishmentLines(Supplier $supplier, $items)
-    {
-        return $items->map(function (UniformItem $item) use ($supplier) {
-            $quantity = (float) ($item->minimum_rpl ?? 1);
-
-            return [
-                'uniform_item_id' => $item->id,
-                'item' => $item,
-                'requested_qty' => $quantity,
-                'approved_qty' => $quantity,
-                'unit_price' => $this->supplierPrice($item, $supplier) ?? (float) ($item->standard_unit_price ?? 0),
-                'remarks' => '',
-            ];
-        })->values();
-    }
-
-    private function supplierPrice(UniformItem $item, Supplier $supplier): ?float
-    {
-        $price = $item->suppliers
-            ->firstWhere('vendor_no', $supplier->vendor_number)
-            ?->unit_price;
-
-        return $price === null ? null : (float) $price;
-    }
-
-    private function sheetRows(string $path): array
-    {
-        $sheet = IOFactory::load($path)->getActiveSheet();
-        $rows = [];
-
-        foreach ($sheet->toArray(null, true, true, false) as $row) {
-            if (collect($row)->filter(fn ($value) => trim((string) $value) !== '')->isNotEmpty()) {
-                $rows[] = $row;
-            }
-        }
-
-        return $rows;
-    }
-
-    private function normalizeHeader($value): string
-    {
-        return preg_replace('/[^a-z0-9]/', '', strtolower((string) $value));
-    }
-
-    private function firstHeaderIndex(array $headers, array $names): ?int
-    {
-        foreach ($names as $name) {
-            $index = array_search($name, $headers, true);
-            if ($index !== false) {
-                return $index;
-            }
-        }
-
-        return null;
-    }
-
-    private function numericCell(array $row, ?int $index, $default): float
-    {
-        if ($index === null || !isset($row[$index]) || trim((string) $row[$index]) === '') {
-            return (float) $default;
-        }
-
-        return (float) str_replace(',', '', (string) $row[$index]);
     }
 
     private function nextNumber(string $model, string $column, string $prefix): string

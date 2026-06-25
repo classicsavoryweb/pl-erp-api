@@ -10,8 +10,7 @@ class UniformReplenishment extends Model
         'request_no', 'supplier_id', 'replenishment_type', 'requested_date',
         'status', 'total_amount', 'remarks', 'prepared_by', 'reviewed_by',
         'reviewed_at', 'posted_by', 'posted_at', 'cancelled_by',
-        'cancelled_at', 'cancelled_reason', 'closed_by', 'closed_at',
-        'closed_reason',
+        'cancelled_at', 'cancelled_reason',
     ];
 
     protected $casts = [
@@ -20,7 +19,6 @@ class UniformReplenishment extends Model
         'reviewed_at' => 'datetime',
         'posted_at' => 'datetime',
         'cancelled_at' => 'datetime',
-        'closed_at' => 'datetime',
     ];
 
     public function supplier()
