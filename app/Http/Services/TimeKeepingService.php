@@ -205,49 +205,7 @@ class TimeKeepingService
             $secondPunch = $biotimePunches[1];
             $parsedSecondPunch = Carbon::parse($secondPunch->punch_time)->seconds(0);
 
-            $breakOutGap = $scheduleStart->diffInMinutes($parsedSecondPunch);
-            $breakInGap = $parsedSecondPunch->diffInMinutes($scheduleEnd);
-
-            // NO CLOCK IN
-            if (
-                $scheduleStart->diffInHours($parsedFirstPunch) > 3 &&
-                $parsedFirstPunch->diffInHours($parsedSecondPunch) <= 2 &&
-                $workHours < $schedule->total_hours
-            ) {
-                $tardiness = $scheduleStart->diffInMinutes($parsedFirstPunch);
-            }
-
-            // NO BREAK OUT
-            if (
-                $scheduleStart->diffInHours($parsedFirstPunch) <= 3 &&
-                $parsedFirstPunch->diffInHours($parsedSecondPunch) > 3 &&
-                $scheduleEnd->diffInHours($parsedLastPunch) < 3 &&
-                $breakOutGap > $breakInGap &&
-                $workHours >= $schedule->total_hours
-            ) {
-                $tardiness = $scheduleStart->diffInMinutes($parsedSecondPunch) - $scheduledBreakInMinutes;
-            }
-
-            // NO BREAK IN
-            if (
-                $parsedSecondPunch->diffInHours($parsedLastPunch) > 3 &&
-                $parsedSecondPunch->diffInMinutes($parsedLastPunch) > $scheduledBreakInMinutes &&
-                $scheduleEnd->diffInHours($parsedLastPunch) < 3 &&
-                $breakInGap > $breakOutGap &&
-                $workHours >= $schedule->total_hours
-            ) {
-                $tardiness = $parsedSecondPunch->diffInMinutes($scheduleEnd) - $scheduledBreakInMinutes;
-            }
-
-            // NO CLOCK OUT
-            if (
-                $scheduleStart->diffInHours($parsedFirstPunch) <= 3 &&
-                $parsedSecondPunch->diffInHours($parsedLastPunch) < 3 &&
-                $workHours < $schedule->total_hours
-            ) {
-                $underTimeInMinutes = $scheduleEnd->diffInMinutes($parsedLastPunch);
-                $undertime = $underTimeInMinutes;
-            }
+            $tardiness += $parsedSecondPunch->diffInMinutes($parsedLastPunch) - $scheduledBreakInMinutes;
         }
 
         if (
@@ -654,7 +612,6 @@ class TimeKeepingService
                 !$shouldBeHalfDay
             ) {
                 $finalWorkHours = $hours;
-                // Log::info("CONDITION 1");
             } else if (
                 $workHours >= 4 &&
                 $undertime >= $halfDayBasis &&
@@ -662,14 +619,12 @@ class TimeKeepingService
                 $workHours > 0
             ) {
                 $finalWorkHours = $hours;
-                // Log::info("CONDITION 2");
             } else if (
                 $workHours >= $schedule->total_hours / 2 &&
                 $undertime <= $halfDayBasis &&
                 !$shouldBeHalfDay
             ) {
                 $finalWorkHours = $hours;
-                // Log::info("CONDITION 3");
             } else if (
                 (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
                 !$isCancelledOff &&
@@ -677,7 +632,6 @@ class TimeKeepingService
                 $undertime < ($halfDayBasis / 2)
             ) {
                 $finalWorkHours = $hours / 2;
-                // Log::info("CONDITION 4");
             }
             
             if ($finalWorkHours == $hours / 2) {
