@@ -593,7 +593,7 @@ class StockReplenishmentController extends Controller
                 $values['reviewed_by'] = $this->userName($request);
                 $values['reviewed_at'] = now();
             } else {
-                UniformPeriodLock::ensureDateIsOpen($record->date_requested, UniformPeriodLock::TYPE_RECEIVING);
+                UniformPeriodLock::ensureDateIsOpen($record->requested_date, UniformPeriodLock::TYPE_RECEIVING);
                 $values['posted_by'] = $this->userName($request);
                 $values['posted_at'] = now();
             }

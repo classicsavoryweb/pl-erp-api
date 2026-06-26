@@ -28,7 +28,15 @@ class UniformPeriodLock extends Model
 
     public static function ensureDateIsOpen(mixed $date, string $lockType = self::TYPE_ISSUANCE): void
     {
-        $targetDate = date('Y-m-d', strtotime((string) $date));
+        $timestamp = strtotime((string) $date);
+
+        if (!$timestamp) {
+            throw ValidationException::withMessages([
+                'period' => "Uniform {$lockType} period date is invalid or not defined.",
+            ]);
+        }
+
+        $targetDate = date('Y-m-d', $timestamp);
 
         $isOpen = static::where('status', 'active')
             ->where('lock_type', $lockType)
