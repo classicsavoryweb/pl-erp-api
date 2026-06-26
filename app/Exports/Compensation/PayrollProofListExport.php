@@ -55,6 +55,8 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                     $fmt($transaction->salary),
                     $fmt($transaction->cancelled_off_hours ?? $transaction->timekeeping_summary?->cancelled_off_hours ?? null),
                     $fmt($transaction->cancelled_off_amount ?? null),
+                    $fmt($transaction->cancelled_off_overtime ?? $transaction->timekeeping_summary?->cancelled_off_overtime ?? null),
+                    $fmt($transaction->cancelled_off_overtime_amount ?? null),
                     $fmt($transaction->special_holiday ?? $transaction->timekeeping_summary?->special_holiday ?? null),
                     $fmt($transaction->special_holiday_amount ?? null),
                     $fmt($transaction->legal_holiday ?? $transaction->timekeeping_summary?->legal_holiday ?? null),
