@@ -132,6 +132,8 @@ class PayrollProofListExport implements FromCollection, WithHeadings, WithStrict
                 "Salary",
                 "Cancelled Off Hours",
                 "Cancelled Off Amount",
+                "Cancelled Off Overtime Hours",
+                "Cancelled Off Overtime Amount",
                 "Special Holiday Hours",
                 "Special Holiday Amount",
                 "Legal Holiday Hours",
