@@ -205,7 +205,7 @@ class TimeKeepingService
             $secondPunch = $biotimePunches[1];
             $parsedSecondPunch = Carbon::parse($secondPunch->punch_time)->seconds(0);
 
-            $tardiness = $parsedSecondPunch->diffInMinutes($parsedLastPunch) - $scheduledBreakInMinutes;
+            $tardiness += $parsedSecondPunch->diffInMinutes($parsedLastPunch) - $scheduledBreakInMinutes;
         }
 
         if (
