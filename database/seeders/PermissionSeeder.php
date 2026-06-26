@@ -283,9 +283,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_uniform_physical_count"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_variance_report"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_variance_report"], ["module" => "uniform"]);
-        Permission::updateOrCreate(["name" => "view_uniform_period_lock_issuance"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_uniform_period_lock_issuance"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_uniform_period_lock_receiving"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_uniform_period_lock_receiving"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_uniform_period_lock"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_period_lock"], ["module" => "maintenance"]);
     }
 }

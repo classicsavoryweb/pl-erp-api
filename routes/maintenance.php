@@ -289,8 +289,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-uniform-supplier", [SupplierController::class, "getUniformSupplier"]);
     Route::get("/export-uniform-supplier", [SupplierController::class, "exportSupplier"]);
     Route::middleware(["permission:perform_maintenance_suppliers"])->post("/create-uniform-supplier", [SupplierController::class, "createUniformSupplier"]);
-    Route::middleware(["permission:view_uniform_period_lock_issuance|view_uniform_period_lock_receiving"])->get("/get-uniform-period-locks", [UniformPeriodLockController::class, "getUniformPeriodLocks"]);
-    Route::middleware(["permission:perform_uniform_period_lock_issuance|perform_uniform_period_lock_receiving"])->post("/create-uniform-period-lock", [UniformPeriodLockController::class, "createUniformPeriodLock"]);
-    Route::middleware(["permission:perform_uniform_period_lock_issuance|perform_uniform_period_lock_receiving"])->post("/edit-uniform-period-lock/{id}", [UniformPeriodLockController::class, "editUniformPeriodLock"]);
+    Route::middleware(["permission:view_uniform_period_lock"])->get("/get-uniform-period-locks", [UniformPeriodLockController::class, "getUniformPeriodLocks"]);
+    Route::middleware(["permission:perform_uniform_period_lock"])->post("/save-uniform-period-lock-period", [UniformPeriodLockController::class, "saveUniformPeriodLockPeriod"]);
 
 });

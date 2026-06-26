@@ -38,7 +38,7 @@ class UniformPeriodLock extends Model
 
         if (!$isOpen) {
             throw ValidationException::withMessages([
-                'period' => "Uniform {$lockType} period is inactive or not defined for {$targetDate}.",
+                'period' => "Uniform {$lockType} period is locked or not defined for {$targetDate}.",
             ]);
         }
     }
