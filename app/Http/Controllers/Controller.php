@@ -139,54 +139,175 @@ class Controller extends BaseController
         return $excelDate;
     }
 
-    function writeCell(DOMDocument $dom, DOMElement $sheetData, string $cellRef, string $value)
-    {
+    function writeCell(
+        DOMDocument $dom,
+        DOMElement $sheetData,
+        string $cellRef,
+        string $value
+    ) {
         preg_match('/\d+/', $cellRef, $matches);
+
+        if (!$matches) {
+            return;
+        }
+
         $rowNumber = (int)$matches[0];
 
+
+        /*
+        * Find row
+        */
         $rowNode = null;
-        foreach ($sheetData->getElementsByTagName('row') as $row) {
-            if ((int)$row->getAttribute('r') === $rowNumber) {
-                $rowNode = $row;
+
+        foreach ($sheetData->childNodes as $node) {
+
+            if (
+                $node instanceof DOMElement &&
+                $node->tagName === 'row' &&
+                (int)$node->getAttribute('r') === $rowNumber
+            ) {
+                $rowNode = $node;
                 break;
             }
         }
 
+
+        /*
+        * Create row
+        */
         if (!$rowNode) {
+
             $rowNode = $dom->createElement('row');
-            $rowNode->setAttribute('r', $rowNumber);
-            $sheetData->appendChild($rowNode);
+
+            $rowNode->setAttribute(
+                'r',
+                $rowNumber
+            );
+
+
+            // append row in order
+            $inserted = false;
+
+            foreach ($sheetData->childNodes as $existingRow) {
+
+                if (
+                    $existingRow instanceof DOMElement &&
+                    (int)$existingRow->getAttribute('r') > $rowNumber
+                ) {
+
+                    $sheetData->insertBefore(
+                        $rowNode,
+                        $existingRow
+                    );
+
+                    $inserted = true;
+                    break;
+                }
+            }
+
+
+            if (!$inserted) {
+                $sheetData->appendChild($rowNode);
+            }
         }
 
+
+
+        /*
+        * Find cell
+        */
         $cellNode = null;
-        foreach ($rowNode->getElementsByTagName('c') as $cell) {
-            if ($cell->getAttribute('r') === $cellRef) {
-                $cellNode = $cell;
+
+
+        foreach ($rowNode->childNodes as $node) {
+
+            if (
+                $node instanceof DOMElement &&
+                $node->tagName === 'c' &&
+                $node->getAttribute('r') === $cellRef
+            ) {
+
+                $cellNode = $node;
                 break;
             }
         }
 
+
+
+        /*
+        * Create cell
+        */
         if (!$cellNode) {
-            $cellNode = $dom->createElement('c');
-            $cellNode->setAttribute('r', $cellRef);
-            $cellNode->setAttribute('t', 'str');
-            $rowNode->appendChild($cellNode);
+
+            $cellNode =
+                $dom->createElement('c');
+
+
+            $cellNode->setAttribute(
+                'r',
+                $cellRef
+            );
+
+
+            $cellNode->setAttribute(
+                't',
+                'inlineStr'
+            );
+
+
+            $rowNode->appendChild(
+                $cellNode
+            );
+
         } else {
-            $cellNode->setAttribute('t', 'str');
+
+            // preserve style attribute
+            $style = $cellNode->getAttribute('s');
+
+            while ($cellNode->hasChildNodes()) {
+                $cellNode->removeChild(
+                    $cellNode->firstChild
+                );
+            }
+
+            $cellNode->setAttribute(
+                't',
+                'inlineStr'
+            );
+
+
+            if ($style !== '') {
+                $cellNode->setAttribute(
+                    's',
+                    $style
+                );
+            }
         }
 
-        $vNode = null;
-        foreach ($cellNode->getElementsByTagName('v') as $v) {
-            $vNode = $v;
-            break;
-        }
 
-        if (!$vNode) {
-            $vNode = $dom->createElement('v');
-            $cellNode->appendChild($vNode);
-        }
 
-        $vNode->nodeValue = htmlspecialchars($value);
+        /*
+        * Write inline string
+        */
+        $isNode =
+            $dom->createElement('is');
+
+
+        $textNode =
+            $dom->createElement('t');
+
+
+        $textNode->nodeValue = $value;
+
+
+        $isNode->appendChild(
+            $textNode
+        );
+
+
+        $cellNode->appendChild(
+            $isNode
+        );
     }
 
     function hashExcelPassword($password)
