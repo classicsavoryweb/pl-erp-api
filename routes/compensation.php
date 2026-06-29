@@ -99,6 +99,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-initial-last-pay/{employeeNumber}", [LastPayControllerV2::class, "getEmployeeInitialLastPayDetails"]);
     Route::get("/get-last-pay/{employeeNumber}", [LastPayControllerV2::class, "getLastPay"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->post("/preview-last-pay-computation/{employeeNumber}", [LastPayControllerV2::class, "computeLastPay"]);
+    Route::middleware(["permission:perform_compensation_last_pay"])->post("/update-last-pay-remarks/{lastPayId}", [LastPayControllerV2::class, "updateLastPayRemarks"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->get("/post-last-pay/{lastPayId}", [LastPayControllerV2::class, "postLastPay"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->get("/preview-last-pay/{lastPayId}", [LastPayControllerV2::class, "previewLastPay"]);
     Route::middleware(["permission:perform_compensation_last_pay"])->get("/tax-refund-computation/{lastPayId}", [LastPayControllerV2::class, "taxRefundComputation"]);

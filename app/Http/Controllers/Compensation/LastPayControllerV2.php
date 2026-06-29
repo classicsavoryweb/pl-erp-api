@@ -168,6 +168,7 @@ class LastPayControllerV2 extends Controller
                     'sl_vl' => 0,
                     'sales' => 0,
                     'meal_allowance' => 0,
+                    'remarks' => null,
                     'company_deductions'    => $this->lastPayService->getDeductions($employee, ['Company']),
                     'government_deductions' => $this->lastPayService->getDeductions($employee, ['Pag-ibig', 'SSS']),
                 ];
@@ -318,6 +319,7 @@ class LastPayControllerV2 extends Controller
                     'sl_vl' => $request->sl_vl,
                     'sales' => $request->sales,
                     'meal_allowance' => $request->meal_allowance,
+                    'remarks' => $request->remarks,
                     'company_deductions'    => [
                         "deductions" => $companyDeductions,
                         "total_deductions" => $totalDeductions
@@ -344,6 +346,7 @@ class LastPayControllerV2 extends Controller
                         "meal" => $lastPay["meal_allowance"],
                         "last_pay" => $lastPay["last_pay"],
                         "status" => "Unposted",
+                        "remarks" => $lastPay["remarks"],
                     ]);
 
                     foreach ($lastPay["company_deductions"] as $deduction) {
@@ -364,6 +367,31 @@ class LastPayControllerV2 extends Controller
                 return $this->sendResponse($lastPay);
             }
             return $this->sendError(["message" => "Employee not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function updateLastPayRemarks(Request $request, $lastPayId) {
+        try {
+            $lastPay = LastPay::find($lastPayId);
+
+            if (!$lastPay) {
+                return $this->sendError(["message" => "Last pay not found"]);
+            }
+
+            $request->validate([
+                "remarks" => ["nullable", "string"],
+            ]);
+
+            $lastPay->update([
+                "remarks" => $request->remarks,
+            ]);
+
+            return $this->sendResponse([
+                "message" => "Remarks updated successfully",
+                "remarks" => $lastPay->remarks,
+            ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
