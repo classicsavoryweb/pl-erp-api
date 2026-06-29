@@ -475,7 +475,7 @@ class TimeKeepingService
                 $travel_time = $hasTravelOvertime->travel_time;
             }
 
-            $workHours += (int)$travel_time;
+            $workHours += $travel_time;
             $undertime = 0;
             $tardiness = 0;
             $shouldBeHalfDay = false;
