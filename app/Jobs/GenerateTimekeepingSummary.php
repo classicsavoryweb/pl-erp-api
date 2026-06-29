@@ -511,7 +511,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                         $biotimeLog = $sched->timekeeping->biotime_log ?? null;
                         if (
-                            !in_array($sched->timetable,["REST DAY", "NO SCHEDULE"]) &&
+                            !in_array($sched->timetable,["REST DAY", "NO SCHEDULE", "SUSPENSION"]) &&
                             $employee->schedule->schedule_type->name === "Compressed Schedule"
                         ) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
