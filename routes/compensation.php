@@ -59,6 +59,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:perform_compensation_incentives"])->post("/update-payroll-incentive/{payrollId}", [PayrollController::class, "updatePayrollIncentive"]);
     Route::middleware(["permission:perform_compensation_payroll"])->post("/preview-payroll-compution/{id}", [PayrollController::class, "showPayrollComputation"]);
     Route::get("/get-branches-to-regenerate-payroll", [PayrollController::class, "getAllBranchesToRegeneratePayroll"]);
+    Route::get("/get-employee-monthly-tardiness/{employee_number}", [PayrollController::class, "getEmployeeMonthlyTardiness"]);
 
     //converter transactions
     Route::get("/get-all-converter-details", [ConverterController::class, "getAllConverterDetails"]);

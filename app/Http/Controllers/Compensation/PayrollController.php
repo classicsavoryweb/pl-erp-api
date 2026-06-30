@@ -102,22 +102,27 @@ class PayrollController extends Controller
                     $payroll->deductions = json_decode($payroll->deductions) ?? [];
                 }
 
-                $year = Carbon::parse($payroll->pay_date)->year;
+                $activeCutOff = CutOff::where("pay_date", $payroll->pay_date)->first();
+                $payroll["cut_off"] = $activeCutOff;
 
-                $incentives = Incentives::where("employee_id", $payroll->employee_id)
-                ->where("pay_date", $payroll->pay_date)
-                ->first();
-
-                $tardinessOffenses = Tardiness::with(["tardiness_sanction"])
-                ->where("employee_id", $payroll->employee_id)
-                ->where("status", "Approved")
-                ->whereIn("year", [$year - 1, $year])
-                ->orderBy("id", "DESC")
-                ->limit(5)
-                ->get();
-
+                $incentives = null;
+                if ($activeCutOff->part == 1) {
+                    $incentives = Incentives::where("employee_id", $payroll->employee_id)
+                    ->where("pay_date", $payroll->pay_date)
+                    ->first();
+                }
                 $payroll["incentives"] = $incentives;
-                $payroll["tardiness_offenses"] = $tardinessOffenses;
+
+                // $year = Carbon::parse($payroll->pay_date)->year;
+                // $tardinessOffenses = Tardiness::with(["tardiness_sanction"])
+                // ->where("employee_id", $payroll->employee_id)
+                // ->where("status", "Approved")
+                // ->whereIn("year", [$year - 1, $year])
+                // ->orderBy("id", "DESC")
+                // ->limit(5)
+                // ->get();
+                // $payroll["tardiness_offenses"] = $tardinessOffenses;
+                
                 return $this->sendResponse($payroll);
             }
 
@@ -496,6 +501,34 @@ class PayrollController extends Controller
             ->values();
 
             return $this->sendResponse(["branches" => $branches]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getEmployeeMonthlyTardiness(Request $request, $employeeNumber) {
+        try {
+            $request->validate([
+                "date" => "required"
+            ]);
+
+            $employee = Employee::where("employee_number", $employeeNumber)->first();
+
+            if (!$employee) {
+                return $this->sendError(["message" => "Employee not found"]);
+            }
+
+            $month = Carbon::parse($request->date)->month;
+            $year = Carbon::parse($request->date)->year;
+
+            $payrolls = PayrollDetail::where("employee_id", $employee->id)
+            ->whereMonth("pay_date", $month)
+            ->whereYear("pay_date", $year)
+            ->orderBy("pay_date", "ASC")
+            ->get()
+            ->pluck("tardiness");
+
+            return $this->sendResponse($payrolls);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
