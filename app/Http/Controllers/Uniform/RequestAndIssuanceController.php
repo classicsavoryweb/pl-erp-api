@@ -28,7 +28,7 @@ class RequestAndIssuanceController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $issuance = RequestAndIssuance::with('items','employee')->latest("id");
+            $issuance = RequestAndIssuance::with('items','branches')->latest("id");
 
             if ($request->has(["column_type", "key_word"])) {
                 $issuance = $issuance->where(
@@ -74,7 +74,7 @@ class RequestAndIssuanceController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => ['required', 'in:Unposted,Reviewing,Posted,Cancelled'],
+            'status' => ['required', 'in:Unposted,Reviewed,Posted,Cancelled'],
         ]);
         $next = $request->status;
 
@@ -83,8 +83,8 @@ class RequestAndIssuanceController extends Controller
             $current = $issuance->status;
 
             $allowedTransitions = [
-                'Unposted' => ['Reviewing', 'Cancelled'],
-                'Reviewing' => ['Posted', 'Cancelled'],
+                'Unposted' => ['Reviewed', 'Cancelled'],
+                'Reviewed' => ['Posted', 'Cancelled'],
                 'Posted' => [],
                 'Cancelled' => [],
             ];
@@ -97,7 +97,7 @@ class RequestAndIssuanceController extends Controller
 
             $updateData = ['status' => $next];
 
-            if ($next === 'Reviewing' && !$issuance->date_reviewed) {
+            if ($next === 'Reviewed' && !$issuance->date_reviewed) {
                 $updateData['date_reviewed'] = now();
                 $updateData['reviewed_by'] = optional($request->user())->proper_full_name;
             }
@@ -228,7 +228,7 @@ class RequestAndIssuanceController extends Controller
             $issuance = DB::transaction(function () use ($request, $id, $validated) {
                 $issuance = RequestAndIssuance::with('items')->lockForUpdate()->findOrFail($id);
 
-                if (!in_array($issuance->status, ['Unposted', 'Reviewing'], true)) {
+                if (!in_array($issuance->status, ['Unposted', 'Reviewed'], true)) {
                     throw ValidationException::withMessages([
                         'status' => 'Only unposted or reviewing requests can be reviewed.',
                     ]);
@@ -273,7 +273,7 @@ class RequestAndIssuanceController extends Controller
                     'position' => $validated['position'],
                     'date_hired' => $validated['date_hired'],
                     'total_amount' => $grandTotal,
-                    'status' => 'Reviewing',
+                    'status' => 'Reviewed',
                     'date_reviewed' => now(),
                     'reviewed_by' => optional($request->user())->proper_full_name,
                 ]);
@@ -320,7 +320,7 @@ class RequestAndIssuanceController extends Controller
                 return $this->sendError([
                     'requires_confirmation' => true,
                     'confirmation_type' => 'free_uniform_duplicate',
-                    'message' => 'This employee has already availed his/her free uniform for the current year. Do you want to continue?',
+                    'message' => 'This employee has already availed his/her free uniform for the current year',
                     'previous_request_number' => $duplicateFreeUniform->request_number,
                     'previous_request_date' => $duplicateFreeUniform->date_requested,
                 ], 422);

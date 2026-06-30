@@ -41,6 +41,7 @@ use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
 use App\Http\Controllers\Maintenance\SizesController;
 use App\Http\Controllers\Maintenance\SupplierController;
+use App\Http\Controllers\Maintenance\UniformFreeUniformLimitController;
 use App\Http\Controllers\Maintenance\UniformPeriodLockController;
 use Illuminate\Support\Facades\Route;
 
@@ -289,6 +290,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/get-uniform-supplier", [SupplierController::class, "getUniformSupplier"]);
     Route::get("/export-uniform-supplier", [SupplierController::class, "exportSupplier"]);
     Route::middleware(["permission:perform_maintenance_suppliers"])->post("/create-uniform-supplier", [SupplierController::class, "createUniformSupplier"]);
+    Route::middleware(["permission:view_uniform_free_uniform_limit"])->get("/get-uniform-free-uniform-limits", [UniformFreeUniformLimitController::class, "getUniformFreeUniformLimits"]);
+    Route::middleware(["permission:perform_uniform_free_uniform_limit"])->post("/create-uniform-free-uniform-limit", [UniformFreeUniformLimitController::class, "createUniformFreeUniformLimit"]);
+    Route::middleware(["permission:perform_uniform_free_uniform_limit"])->post("/edit-uniform-free-uniform-limit/{id}", [UniformFreeUniformLimitController::class, "editUniformFreeUniformLimit"]);
     Route::middleware(["permission:view_uniform_period_lock"])->get("/get-uniform-period-locks", [UniformPeriodLockController::class, "getUniformPeriodLocks"]);
     Route::middleware(["permission:perform_uniform_period_lock"])->post("/save-uniform-period-lock-period", [UniformPeriodLockController::class, "saveUniformPeriodLockPeriod"]);
 

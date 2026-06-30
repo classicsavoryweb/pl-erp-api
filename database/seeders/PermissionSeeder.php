@@ -285,5 +285,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_uniform_variance_report"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_period_lock"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_uniform_period_lock"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_uniform_free_uniform_limit"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_free_uniform_limit"], ["module" => "maintenance"]);
     }
 }
