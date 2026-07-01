@@ -39,17 +39,71 @@
                 
                 <tr>
                     <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
-                        Total Days
+                        Working Days
                     </td>
                 </tr>
-
                 <tr>
                     <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
                         <table width="100%" style="margin-top:5px; font-size:12px;">
                             <tr>
-                                <td width="33%">Regular Days</td>
-                                <td width="33%">{{ number_format($timekeeping->regular_days, 2) }}</td>
-                                <td width="33%">{{ number_format($payroll->salary, 2) }}</td>
+                                <td width="50%">Regular Days</td>
+                                <td width="50%">{{ number_format($timekeeping->regular_days, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%">Special Leave</td>
+                                <td width="50%">{{ number_format($timekeeping->special_leave, 2) }}</td>
+                                {{-- <td width="33%">{{ number_format($payroll->salary, 2) }}</td> --}}
+                            </tr>
+                            
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;"> Total Working Days</span>
+                        {{ number_format($payroll->salary, 2) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
+                        Working Hours Deductions
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
+                        <table width="100%" style="margin-top:5px; font-size:12px;">
+                            <tr>
+                                <td>Tardiness</td>
+                                <td>{{ number_format($timekeeping->tardiness, 2) }}</td>
+                                <td>{{ number_format($payroll->tardiness_amount, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Undertime</td>
+                                <td>{{ number_format($timekeeping->undertime, 2) }}</td>
+                                <td>{{ number_format($payroll->undertime_amount, 2) }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;"> Total Working Hours Deductions </span>
+                        {{ number_format($payroll->working_hours_deduction_total, 2) }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
+                        Additional Working Hours
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
+                        <table width="100%" style="margin-top:5px; font-size:12px;">
+                            <tr>
+                                <td width="33%">Regular Overtime</td>
+                                <td width="33%">{{ number_format($timekeeping->regular_overtime, 2) }}</td>
+                                <td width="33%">{{ number_format($payroll->overtime_amount, 2) }}</td>
                             </tr>
                             <tr>
                                 <td>Special Holiday</td>
@@ -65,23 +119,6 @@
                                 <td>Cancelled Off</td>
                                 <td>{{ number_format($timekeeping->cancelled_off, 2) }}</td>
                                 <td>{{ number_format($payroll->cancelled_off, 2) }}</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
-                        Total Overtime
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
-                        <table width="100%" style="margin-top:5px; font-size:12px;">
-                            <tr>
-                                <td width="33%">Regular Overtime</td>
-                                <td width="33%">{{ number_format($timekeeping->regular_overtime, 2) }}</td>
-                                <td width="33%">{{ number_format($payroll->overtime_amount, 2) }}</td>
                             </tr>
                             <tr>
                                 <td>Cancelled Off OT</td>
@@ -108,17 +145,13 @@
                                 <td>{{ number_format($timekeeping->night_differential_overtime, 2) }}</td>
                                 <td>{{ number_format($payroll->night_differential_overtime_amount, 2) }}</td>
                             </tr>
-                            <tr>
-                                <td>Tardiness</td>
-                                <td>{{ number_format($timekeeping->tardiness, 2) }}</td>
-                                <td>{{ number_format($payroll->tardiness_amount, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Undertime</td>
-                                <td>{{ number_format($timekeeping->undertime, 2) }}</td>
-                                <td>{{ number_format($payroll->undertime_amount, 2) }}</td>
-                            </tr>
                         </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;"> Total Additional Working Hours </span>
+                        {{ number_format($payroll->additional_working_hours_total, 2) }}
                     </td>
                 </tr>
                 
@@ -168,7 +201,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="bg-smoke-grey" style="padding: 6px;" colspan="3">
+                    <td style="padding: 6px;" colspan="3">
                         <span class="semibold" style="padding-right: 7px;"> Total Deductions </span>
                         {{ number_format($payroll->total_deductions, 2) }}
                     </td>
