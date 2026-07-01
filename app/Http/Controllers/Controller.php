@@ -155,10 +155,6 @@ class Controller extends BaseController
 
         $rowNumber = (int)$matches[0];
 
-
-        /*
-        * Find row
-        */
         $rowNode = null;
 
         foreach ($sheetData->childNodes as $node) {
@@ -174,33 +170,15 @@ class Controller extends BaseController
         }
 
 
-        /*
-        * Create row
-        */
         if (!$rowNode) {
-
             $rowNode = $dom->createElement('row');
-
-            $rowNode->setAttribute(
-                'r',
-                $rowNumber
-            );
-
-
-            // append row in order
+            $rowNode->setAttribute('r',$rowNumber);
             $inserted = false;
 
             foreach ($sheetData->childNodes as $existingRow) {
-
                 if (
-                    $existingRow instanceof DOMElement &&
-                    (int)$existingRow->getAttribute('r') > $rowNumber
-                ) {
-
-                    $sheetData->insertBefore(
-                        $rowNode,
-                        $existingRow
-                    );
+                    $existingRow instanceof DOMElement &&(int)$existingRow->getAttribute('r') > $rowNumber) {
+                    $sheetData->insertBefore($rowNode, $existingRow);
 
                     $inserted = true;
                     break;
@@ -213,103 +191,42 @@ class Controller extends BaseController
             }
         }
 
-
-
-        /*
-        * Find cell
-        */
         $cellNode = null;
 
-
         foreach ($rowNode->childNodes as $node) {
-
-            if (
-                $node instanceof DOMElement &&
-                $node->tagName === 'c' &&
-                $node->getAttribute('r') === $cellRef
-            ) {
-
+            if ($node instanceof DOMElement && $node->tagName === 'c' && $node->getAttribute('r') === $cellRef) {
                 $cellNode = $node;
                 break;
             }
         }
 
-
-
-        /*
-        * Create cell
-        */
         if (!$cellNode) {
 
-            $cellNode =
-                $dom->createElement('c');
-
-
-            $cellNode->setAttribute(
-                'r',
-                $cellRef
-            );
-
-
-            $cellNode->setAttribute(
-                't',
-                'inlineStr'
-            );
-
-
-            $rowNode->appendChild(
-                $cellNode
-            );
-
+            $cellNode = $dom->createElement('c');
+            $cellNode->setAttribute('r',$cellRef);
+            $cellNode->setAttribute('t','inlineStr');
+            $rowNode->appendChild($cellNode);
         } else {
-
-            // preserve style attribute
             $style = $cellNode->getAttribute('s');
 
             while ($cellNode->hasChildNodes()) {
-                $cellNode->removeChild(
-                    $cellNode->firstChild
-                );
+                $cellNode->removeChild($cellNode->firstChild);
             }
 
-            $cellNode->setAttribute(
-                't',
-                'inlineStr'
-            );
-
+            $cellNode->setAttribute('t','inlineStr');
 
             if ($style !== '') {
-                $cellNode->setAttribute(
-                    's',
-                    $style
-                );
+                $cellNode->setAttribute('s', $style);
             }
         }
 
 
-
-        /*
-        * Write inline string
-        */
-        $isNode =
-            $dom->createElement('is');
-
-
-        $textNode =
-            $dom->createElement('t');
-
-
+        $isNode =  $dom->createElement('is');
+        $textNode = $dom->createElement('t');
         $textNode->nodeValue = $value;
 
-
-        $isNode->appendChild(
-            $textNode
-        );
-
-
-        $cellNode->appendChild(
-            $isNode
-        );
+        $isNode->appendChild($textNode);
+        $cellNode->appendChild($isNode);
     }
 
     function hashExcelPassword($password)
