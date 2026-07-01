@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Reports;
 
-use App\Exports\Reports\ReportsphilhealthContributionsExport;
+use App\Exports\Reports\ReportsPhilhealthContributionsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Payroll;
 use Illuminate\Http\Request;
@@ -18,7 +18,7 @@ class ReportsPhilhealthController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $query = Payroll::with(['employee', 'employee.employee_status']);
+            $query = Payroll::with(['employee', 'employee.employee_status', 'payroll_list']);
 
             if ($request->has('year')) {
                 $query->whereYear('pay_date', $request->year);

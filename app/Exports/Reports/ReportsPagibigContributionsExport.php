@@ -118,7 +118,6 @@ class ReportsPagibigContributionsExport implements FromCollection, WithHeadings,
             $columns[] = $this->getExcelColumnLetter($i);
         }
 
-        $maxLengths = array_fill_keys($columns, 0);
         $rows = $this->payrollEmployee->groupBy('employee_id');
 
         $dataCount     = $rows->count();
@@ -154,59 +153,8 @@ class ReportsPagibigContributionsExport implements FromCollection, WithHeadings,
             ],
         ]);
 
-        foreach ($rows as $index => $employeePayrolls) {
-            $employee_pagibig_first_cutoff = 0;
-            $employee_pagibig_second_cutoff = 0;
-            $employer_pagibig_first_cutoff = 0;
-            $employer_pagibig_second_cutoff = 0;
-
-            $unique_payrollEmployee = $employeePayrolls->first();
-
-            foreach ($employeePayrolls as $payroll) {
-                $start_date_day = Carbon::parse($payroll->start_date)->day;
-
-                if ($start_date_day == 26) {
-                    $employee_pagibig_first_cutoff = $payroll->employee_pagibig;
-                    $employer_pagibig_first_cutoff = $payroll->employer_pagibig;
-                } elseif ($start_date_day == 11) {
-                    $employee_pagibig_second_cutoff = $payroll->employee_pagibig;
-                    $employer_pagibig_second_cutoff = $payroll->employer_pagibig;
-                }
-            }
-
-            $pagibigId = $unique_payrollEmployee->employee->pagibig;
-            $sssId = $unique_payrollEmployee->employee->sss;
-
-            if ($this->withDash == 0) {
-                $pagibigId = (string) str_replace('-', '', $pagibigId);
-                $sssId = (string) str_replace('-', '', $sssId);
-            }
-
-            $data = [
-                $index + 1,
-                $unique_payrollEmployee->employee->employee_number,
-                $pagibigId,
-                $sssId,
-                $unique_payrollEmployee->employee->last_name,
-                $unique_payrollEmployee->employee->first_name,
-                $unique_payrollEmployee->employee->middle_name,
-                $this->formatNumber($employee_pagibig_first_cutoff + $employee_pagibig_second_cutoff),
-                $this->formatNumber($employer_pagibig_first_cutoff + $employer_pagibig_second_cutoff),
-                $unique_payrollEmployee->employee->birthday
-            ];
-
-            foreach ($columns as $colIndex => $col) {
-                if (isset($data[$colIndex])) {
-                    $headerCell = $sheet->getCell($col . $headerRow);
-                    $headerLength = strlen((string) $headerCell->getValue());
-                    $maxContentLength = max($maxLengths[$col], $headerLength);
-
-                    $cellValue = (string) $data[$colIndex];
-                    $maxLengths[$col] = max($maxLengths[$col], strlen($cellValue));
-
-                    $sheet->getColumnDimension($col)->setWidth($maxContentLength + 2)->setAutoSize(true);
-                }
-            }
+        foreach ($columns as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
         }
     }
 }
