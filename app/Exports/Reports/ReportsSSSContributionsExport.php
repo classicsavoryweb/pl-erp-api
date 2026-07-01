@@ -53,15 +53,11 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
             $sssId = $unique_payrollEmployee->employee->sss;
 
             $middleInitial = strtoupper(substr($unique_payrollEmployee->employee->middle_name, 0, 1));
+            $monthlySalary = $unique_payrollEmployee->payroll_list?->salary_amount ?? 0;
 
             if ($this->withDash == 0) {
                 $sssId = (string) str_replace('-', '', $sssId);
             }
-
-            $concatenate = '03-92068417'. ';' .$unique_payrollEmployee->employee->current_branch->short_name. ';' .$sssId. ';' .$unique_payrollEmployee->employee->employee_number
-            . ';' .$unique_payrollEmployee->employee->last_name. ';' .$unique_payrollEmployee->employee->first_name. ';' .$middleInitial. ';' .
-            $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()). ';' .$unique_payrollEmployee->employee->employee_status->description. ';' .$unique_payrollEmployee->employee->date_hired
-            . ';' .$unique_payrollEmployee->employee->current_position->description;
 
             return [
                 '03-92068417',
@@ -71,11 +67,10 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
                 $middleInitial,
-                $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()),
+                $this->formatNumber($monthlySalary),
                 $unique_payrollEmployee->employee->employee_status->description,
                 $unique_payrollEmployee->employee->date_hired,
                 $unique_payrollEmployee->employee->current_position->description,
-                $concatenate,
                 $this->formatNumber($employee_sss_first_cutoff),
                 $this->formatNumber($employee_sss_second_cutoff),
                 $this->formatNumber($employer_sss_first_cutoff),
@@ -101,11 +96,10 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
             'Last Name',
             'First Name',
             'Middle Initial',
-            'Monthly Compensation',
+            'Monthly Salary',
             'Remarks/Status',
             'Date Hired',
             'Position',
-            'Concatenate',
             '1st Cutoff (EE Share)',
             '2nd Cutoff (EE Share)',
             '1st Cutoff (ER Share)',
@@ -141,7 +135,6 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
             $columns[] = $this->getExcelColumnLetter($i);
         }
 
-        $maxLengths = array_fill_keys($columns, 0);
         $rows = $this->payrollEmployee->groupBy('employee_id');
 
         $dataCount     = $rows->count();
@@ -177,73 +170,8 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
             ],
         ]);
 
-        foreach ($rows as $index => $employeePayrolls) {
-            $employee_sss_first_cutoff = 0;
-            $employee_sss_second_cutoff = 0;
-            $employer_sss_first_cutoff = 0;
-            $employer_sss_second_cutoff = 0;
-
-            $unique_payrollEmployee = $employeePayrolls->first();
-
-            foreach ($employeePayrolls as $payroll) {
-                $start_date_day = Carbon::parse($payroll->start_date)->day;
-
-                if ($start_date_day == 26) {
-                    $employee_sss_first_cutoff = $payroll->employee_sss;
-                    $employer_sss_first_cutoff = $payroll->employer_sss;
-                } elseif ($start_date_day == 11) {
-                    $employee_sss_second_cutoff = $payroll->employee_sss;
-                    $employer_sss_second_cutoff = $payroll->employer_sss;
-                }
-            }
-
-            $sssId = $unique_payrollEmployee->employee->sss;
-
-            $middleInitial = strtoupper(substr($unique_payrollEmployee->employee->middle_name, 0, 1));
-
-            if ($this->withDash == 0) {
-                $sssId = (string) str_replace('-', '', $sssId);
-            }
-
-            $concatenate = '03-92068417'. ';' .$unique_payrollEmployee->employee->current_branch->short_name. ';' .$sssId. ';' .$unique_payrollEmployee->employee->employee_number
-            . ';' .$unique_payrollEmployee->employee->last_name. ';' .$unique_payrollEmployee->employee->first_name. ';' .$middleInitial. ';' .
-            $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()). ';' .$unique_payrollEmployee->employee->employee_status->description. ';' .$unique_payrollEmployee->employee->date_hired
-            . ';' .$unique_payrollEmployee->employee->current_position->description;
-
-            $data = [
-                $index + 1,
-                '03-92068417',
-                $unique_payrollEmployee->employee->current_branch->short_name,
-                $sssId,
-                $unique_payrollEmployee->employee->employee_number,
-                $unique_payrollEmployee->employee->last_name,
-                $unique_payrollEmployee->employee->first_name,
-                $middleInitial,
-                $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()),
-                $unique_payrollEmployee->employee->employee_status->description,
-                $unique_payrollEmployee->employee->date_hired,
-                $unique_payrollEmployee->employee->current_position->description,
-                $concatenate,
-                $this->formatNumber($employee_sss_first_cutoff),
-                $this->formatNumber($employee_sss_second_cutoff),
-                $this->formatNumber($employer_sss_first_cutoff),
-                $this->formatNumber($employer_sss_second_cutoff),
-                $this->formatNumber($employee_sss_first_cutoff + $employee_sss_second_cutoff),
-                $this->formatNumber($employer_sss_first_cutoff + $employer_sss_second_cutoff),
-            ];
-
-            foreach ($columns as $colIndex => $col) {
-                if (isset($data[$colIndex])) {
-                    $headerCell = $sheet->getCell($col . $headerRow);
-                    $headerLength = strlen((string) $headerCell->getValue());
-                    $maxContentLength = max($maxLengths[$col], $headerLength);
-
-                    $cellValue = (string) $data[$colIndex];
-                    $maxLengths[$col] = max($maxLengths[$col], strlen($cellValue));
-
-                    $sheet->getColumnDimension($col)->setWidth($maxContentLength + 2)->setAutoSize(true);
-                }
-            }
+        foreach ($columns as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
         }
     }
 }
