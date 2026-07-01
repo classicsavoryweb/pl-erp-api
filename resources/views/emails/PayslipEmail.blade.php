@@ -202,27 +202,11 @@
                                 <td>Pag-ibig</td>
                                 <td>{{ number_format($payroll->employee_pagibig, 2) }}</td>
                             </tr>
+                            <tr>
+                                <td>Withholding Tax</td>
+                                <td>{{ number_format($payroll->withholding_tax, 2) }}</td>
+                            </tr>
                         </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;">Total Contributions </span>
-                        {{ number_format($payroll->contribution_total, 2) }}
-                    </td>
-                </tr>
-
-                <tr class="bg-smoke-grey">
-                    <td style="padding: 6px; text-align: left;" colspan="3">
-                        <span class="semibold" style="padding-right: 10px;">Taxable Income</span>
-                        {{ number_format($payroll->taxable_income, 2) }}
-                    </td>
-                </tr>
-
-                <tr>
-                    <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;">Withholding Tax </span>
-                        {{ number_format($payroll->withholding_tax, 2) }}
                     </td>
                 </tr>
 
@@ -246,7 +230,7 @@
                 <tr>
                     <td style="padding: 6px;" colspan="3">
                         <span class="semibold" style="padding-right: 7px;">Total Deductions </span>
-                        {{ number_format($payroll->total_deductions, 2) }}
+                        {{ number_format(($payroll->total_deductions + $payroll->contribution_total + $payroll->withholding_tax), 2) }}
                     </td>
                 </tr>
 
