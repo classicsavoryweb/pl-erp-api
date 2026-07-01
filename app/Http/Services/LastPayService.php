@@ -43,6 +43,7 @@ class LastPayService {
             "total_deductions" => $totalDeductions,
             "last_pay" => round($lastPayAmount, 2),
             "date_holded" => $employee->separation_date,
+            "remarks" => $lastPayDetails->remarks ?? null,
         ];
     }
 
@@ -328,6 +329,7 @@ class LastPayService {
                 "year" => $lastPay->year,
                 "created_at" => $lastPay->created_at,
                 "updated_at" => $lastPay->updated_at,
+                "remarks" => $lastPay->remarks,
             ],
             "employee" => [
                 "id" => $lastPay->employee?->id,
