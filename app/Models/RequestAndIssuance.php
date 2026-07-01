@@ -43,4 +43,9 @@ class RequestAndIssuance extends Model
     {
         return $this->hasMany(Employee::class, 'employee_number', 'request_number');
     }
+    
+    public function branches()
+    {
+        return $this->hasOne(Branch::class, 'name' , 'branch');
+    }
 }
