@@ -151,6 +151,8 @@ class Controller extends BaseController
             return;
         }
 
+        $value = htmlspecialchars($value);
+
         $rowNumber = (int)$matches[0];
 
 
