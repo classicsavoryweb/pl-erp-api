@@ -60,7 +60,7 @@
                 </tr>
                 <tr>
                     <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;"> Total Working Days</span>
+                        <span class="semibold" style="padding-right: 7px;">Total Working Days</span>
                         {{ number_format($payroll->salary, 2) }}
                     </td>
                 </tr>
@@ -87,7 +87,7 @@
                 </tr>
                 <tr>
                     <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;"> Total Working Hours Deductions </span>
+                        <span class="semibold" style="padding-right: 7px;">Total Working Hours Deductions </span>
                         {{ number_format($payroll->working_hours_deduction_total, 2) }}
                     </td>
                 </tr>
@@ -150,60 +150,8 @@
                 </tr>
                 <tr>
                     <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;"> Total Additional Working Hours </span>
+                        <span class="semibold" style="padding-right: 7px;">Total Additional Working Hours </span>
                         {{ number_format($payroll->additional_working_hours_total, 2) }}
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
-                        Statutory Deductions
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
-                        <table width="100%" style="margin-top:5px; font-size:12px;">
-                            <tr>
-                                <td width="50%">SSS</td>
-                                <td width="50%">{{ number_format($payroll->employee_sss, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Philhealth</td>
-                                <td>{{ number_format($payroll->employee_philhealth, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Pag-ibig</td>
-                                <td>{{ number_format($payroll->employee_pagibig, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Withholding Tax</td>
-                                <td>{{ number_format($payroll->withholding_tax, 2) }}</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
-                        Deductions
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
-                        <table width="100%" style="margin-top:5px; font-size:12px;">
-                            @foreach ($payroll->deductions as $deduction)
-                            <tr>
-                                <td width="50%">{{ $deduction["payslip_description"] ?? $deduction["type"]  }}</td>
-                                <td width="50%">{{ number_format($deduction["deducted_amount"], 2) }}</td>
-                            </tr>
-                            @endforeach
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;"> Total Deductions </span>
-                        {{ number_format($payroll->total_deductions, 2) }}
                     </td>
                 </tr>
 
@@ -227,12 +175,83 @@
                     </td>
                 </tr>
 
-                <tr class="bg-smoke-grey">
-                    <td style="padding: 6px; text-align: left;" colspan="1">
+                <tr>
+                    <td style="padding: 6px; text-align: left;" colspan="3">
                         <span class="semibold" style="padding-right: 10px;">Gross Pay</span>
                         {{ number_format($payroll->gross_pay, 2) }}
                     </td>
-                    <td style="padding: 6px; text-align: left;" colspan="2">
+                </tr>
+
+                <tr>
+                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
+                        Contributions
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
+                        <table width="100%" style="margin-top:5px; font-size:12px;">
+                            <tr>
+                                <td width="50%">SSS</td>
+                                <td width="50%">{{ number_format($payroll->employee_sss, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Philhealth</td>
+                                <td>{{ number_format($payroll->employee_philhealth, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Pag-ibig</td>
+                                <td>{{ number_format($payroll->employee_pagibig, 2) }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;">Total Contributions </span>
+                        {{ number_format($payroll->contribution_total, 2) }}
+                    </td>
+                </tr>
+
+                <tr class="bg-smoke-grey">
+                    <td style="padding: 6px; text-align: left;" colspan="3">
+                        <span class="semibold" style="padding-right: 10px;">Taxable Income</span>
+                        {{ number_format($payroll->taxable_income, 2) }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding: 6px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;">Withholding Tax </span>
+                        {{ number_format($payroll->withholding_tax, 2) }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
+                        Deductions
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
+                        <table width="100%" style="margin-top:5px; font-size:12px;">
+                            @foreach ($payroll->deductions as $deduction)
+                            <tr>
+                                <td width="50%">{{ $deduction["payslip_description"] ?? $deduction["type"]  }}</td>
+                                <td width="50%">{{ number_format($deduction["deducted_amount"], 2) }}</td>
+                            </tr>
+                            @endforeach
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 6px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;">Total Deductions </span>
+                        {{ number_format($payroll->total_deductions, 2) }}
+                    </td>
+                </tr>
+
+                <tr class="bg-smoke-grey">
+                    <td style="padding: 6px; text-align: left;" colspan="3">
                         <span class="semibold" style="padding-right: 10px;">Net Pay</span>
                         {{ number_format($payroll->net_pay, 2) }}
                     </td>
