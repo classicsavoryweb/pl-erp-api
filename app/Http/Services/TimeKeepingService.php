@@ -570,14 +570,16 @@ class TimeKeepingService
                 }
 
                 $remainingHours = $overtimeApplied->total_hours - $totalHoursPaid;
-                $payrollStatus = $remainingHours >= 1 ? "unpaid" : "paid";
+                $status = $remainingHours >= 1 ? "Partialy Paid" : "Paid";
 
-                $overtimeApplied->update([
-                    "hours_paid" => $totalHoursPaid,
-                    "cutoff_paid" => $cutOffPaid,
-                    "payment_type" => $paymentType,
-                    "status" => $remainingHours >= 1 ? "Partialy Paid" : "Paid"
-                ]);
+                if ($overtimeApplied->status != $status || $overtimeApplied->hours_paid != $totalHoursPaid) {
+                    $overtimeApplied->update([
+                        "hours_paid" => $totalHoursPaid,
+                        "cutoff_paid" => $cutOffPaid,
+                        "payment_type" => $paymentType,
+                        "status" => $remainingHours >= 1 ? "Partialy Paid" : "Paid"
+                    ]);
+                }
             }
 
             $isExisting = $model->where("employee_id", $employee->id)
@@ -636,6 +638,16 @@ class TimeKeepingService
                 $finalWorkHours = $hours / 2;
             }
             
+            if ($shouldBeHalfDay || $finalWorkHours == $hours / 2) {
+                $approvedOvertime = 0;
+                $overtime = 0;
+                $nightDiffOt = 0;
+                $legalHolidayOvertime = 0;
+                $specialHolidayOvertime = 0;
+                $approvedOvertime = 0;
+                $cancelledOffOt = 0;
+            }
+            
             if ($finalWorkHours == $hours / 2) {
                 if ($undertime >= $halfDayBasis) {
                     $undertime = $undertime - $halfDayBasis;
@@ -692,6 +704,7 @@ class TimeKeepingService
                 $undertime = 0;
                 $approvedOvertime = 0;
                 $cancelled_off_hours = 0;
+                $cancelledOffOt = 0;
             }
 
             if ($tardiness > ($hours * 60)) {
