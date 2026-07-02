@@ -59,7 +59,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;" colspan="3">
+                    <td style="padding: 6px; font-size:13px;" colspan="3">
                         <span class="semibold" style="padding-right: 7px;">Total Working Days</span>
                         {{ number_format($payroll->salary, 2) }}
                     </td>
@@ -86,7 +86,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;" colspan="3">
+                    <td style="padding: 6px; font-size:13px;" colspan="3">
                         <span class="semibold" style="padding-right: 7px;">Total Working Hours Deductions </span>
                         {{ number_format($payroll->working_hours_deduction_total, 2) }}
                     </td>
@@ -149,7 +149,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;" colspan="3">
+                    <td style="padding: 6px; font-size:13px;" colspan="3">
                         <span class="semibold" style="padding-right: 7px;">Total Additional Working Hours </span>
                         {{ number_format($payroll->additional_working_hours_total, 2) }}
                     </td>
@@ -176,7 +176,7 @@
                 </tr>
 
                 <tr>
-                    <td style="padding: 6px; text-align: left;" colspan="3">
+                    <td style="padding: 6px; text-align: left; font-size:13px;" colspan="3">
                         <span class="semibold" style="padding-right: 10px;">Gross Pay</span>
                         {{ number_format($payroll->gross_pay, 2) }}
                     </td>
@@ -228,7 +228,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;" colspan="3">
+                    <td style="padding: 6px; font-size:13px;" colspan="3">
                         <span class="semibold" style="padding-right: 7px;">Total Deductions </span>
                         {{ number_format(($payroll->total_deductions + $payroll->contribution_total + $payroll->withholding_tax), 2) }}
                     </td>
