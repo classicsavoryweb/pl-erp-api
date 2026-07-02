@@ -51,6 +51,7 @@ class ReportsPhilhealthContributionsExport implements FromCollection, WithHeadin
             }
 
             $philhealthId = $unique_payrollEmployee->employee->philhealth;
+            $monthlySalary = $unique_payrollEmployee->payroll_list?->salary_amount ?? 0;
 
             if ($this->withDash == 0) {
                 $philhealthId = (string) str_replace('-', '', $philhealthId);
@@ -60,7 +61,7 @@ class ReportsPhilhealthContributionsExport implements FromCollection, WithHeadin
                 $unique_payrollEmployee->employee->employee_number,
                 $unique_payrollEmployee->employee->full_name,
                 $philhealthId,
-                $this->formatNumber($unique_payrollEmployee->employee->monthlySalary()),
+                $this->formatNumber($monthlySalary),
                 $unique_payrollEmployee->employee->birthday,
                 $this->formatNumber($employee_philhealth_first_cutoff),
                 $this->formatNumber($employee_philhealth_second_cutoff),
@@ -124,7 +125,6 @@ class ReportsPhilhealthContributionsExport implements FromCollection, WithHeadin
             $columns[] = $this->getExcelColumnLetter($i);
         }
 
-        $maxLengths = array_fill_keys($columns, 0);
         $rows = $this->payrollEmployee->groupBy('employee_id');
 
         $dataCount     = $rows->count();
@@ -160,61 +160,8 @@ class ReportsPhilhealthContributionsExport implements FromCollection, WithHeadin
             ],
         ]);
 
-        foreach ($rows as $index => $employeePayrolls) {
-            $employee_philhealth_first_cutoff = 0;
-            $employee_philhealth_second_cutoff = 0;
-            $employer_philhealth_first_cutoff = 0;
-            $employer_philhealth_second_cutoff = 0;
-
-            $unique_payrollEmployee = $employeePayrolls->first();
-
-            foreach ($employeePayrolls as $payroll) {
-                $start_date_day = Carbon::parse($payroll->start_date)->day;
-
-                if ($start_date_day == 26) {
-                    $employee_philhealth_first_cutoff = $payroll->employee_philhealth;
-                    $employer_philhealth_first_cutoff = $payroll->employer_philhealth;
-                } elseif ($start_date_day == 11) {
-                    $employee_philhealth_second_cutoff = $payroll->employee_philhealth;
-                    $employer_philhealth_second_cutoff = $payroll->employer_philhealth;
-                }
-            }
-
-            $philhealthId = $unique_payrollEmployee->employee->philhealth;
-
-            if ($this->withDash == 0) {
-                $philhealthId = (string) str_replace('-', '', $philhealthId);
-            }
-
-            $data = [
-                $index + 1,
-                $unique_payrollEmployee->employee->employee_number,
-                $unique_payrollEmployee->employee->full_name,
-                $philhealthId,
-                $unique_payrollEmployee->employee->monthlySalary(),
-                $unique_payrollEmployee->employee->birthday,
-                $this->formatNumber($employee_philhealth_first_cutoff),
-                $this->formatNumber($employee_philhealth_second_cutoff),
-                $this->formatNumber($employer_philhealth_first_cutoff),
-                $this->formatNumber($employer_philhealth_second_cutoff),
-                $this->formatNumber($employee_philhealth_first_cutoff + $employee_philhealth_second_cutoff),
-                $this->formatNumber($employer_philhealth_first_cutoff + $employer_philhealth_second_cutoff),
-                $unique_payrollEmployee->employee->date_hired,
-                $unique_payrollEmployee->employee->employee_status->description
-            ];
-
-            foreach ($columns as $colIndex => $col) {
-                if (isset($data[$colIndex])) {
-                    $headerCell = $sheet->getCell($col . $headerRow);
-                    $headerLength = strlen((string) $headerCell->getValue());
-                    $maxContentLength = max($maxLengths[$col], $headerLength);
-
-                    $cellValue = (string) $data[$colIndex];
-                    $maxLengths[$col] = max($maxLengths[$col], strlen($cellValue));
-
-                    $sheet->getColumnDimension($col)->setWidth($maxContentLength + 2)->setAutoSize(true);
-                }
-            }
+        foreach ($columns as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
         }
     }
 }

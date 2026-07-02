@@ -21,7 +21,7 @@ class ReportsSSSController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $query = Payroll::with(['employee', 'employee.current_branch', 'employee.current_position']);
+            $query = Payroll::with(['employee', 'employee.employee_status', 'employee.current_branch', 'employee.current_position', 'payroll_list']);
 
             if ($request->has('year')) {
                 $query->whereYear('pay_date', $request->year);
