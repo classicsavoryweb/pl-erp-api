@@ -292,15 +292,15 @@ class LastPayControllerV2 extends Controller
                         ->whereHas("deduction", function ($query) {
                             $query->where("category", "Company");
                         })
-                        ->where("balance", ">", 0)
+                        ->where("balance", ">=", 0.1)
                         ->get();
 
                     foreach ($additionalDeductions as $deduction) {
                         $companyDeductions[] = [
                             "deduction_type" => $deduction->deduction->description,
                             "employee_deduction_id" => $deduction->id,
-                            "balance" => $deduction->amount,
-                            "amount" => $deduction->amount,
+                            "balance" => $deduction->balance,
+                            "amount" => $deduction->balance,
                             "category" => $deduction->deduction->category,
                         ];
                     }
