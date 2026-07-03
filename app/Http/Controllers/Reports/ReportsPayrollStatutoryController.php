@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use Carbon\Carbon;
 
 class ReportsPayrollStatutoryController extends Controller
@@ -57,6 +58,46 @@ class ReportsPayrollStatutoryController extends Controller
                 ->filter()
                 ->unique()
                 ->values();
+            $sssContributions = SSS::all()->keyBy(function ($sss) {
+                return round((float) $sss->employee_ss, 2) . '|' . round((float) ($sss->employer_ss + $sss->employer_cc), 2);
+            });
+            $separationPeriods = $payrollGroups
+                ->map(function ($employeePayrolls) {
+                    $employee = $employeePayrolls->first()?->employee;
+
+                    if (!$employee || empty($employee->separation_date)) {
+                        return null;
+                    }
+
+                    $separationDate = Carbon::parse($employee->separation_date);
+                    $yearHolded = (int) $separationDate->year;
+                    $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
+
+                    if ($separationDate->greaterThanOrEqualTo($dec11)) {
+                        $yearHolded += 1;
+                    }
+
+                    return [
+                        'employee_id' => $employee->id,
+                        'start' => Carbon::create($yearHolded - 1, 12, 11)->format('Y-m-d'),
+                        'end' => Carbon::create($yearHolded, 12, 10)->format('Y-m-d'),
+                    ];
+                })
+                ->filter()
+                ->values();
+            $thirteenthPayrollsByEmployee = collect();
+
+            if ($separationPeriods->isNotEmpty()) {
+                $thirteenthPayrollsByEmployee = Payroll::query()
+                    ->whereIn('employee_id', $separationPeriods->pluck('employee_id')->unique())
+                    ->where('status', 'final')
+                    ->whereBetween('end_date', [
+                        $separationPeriods->min('start'),
+                        $separationPeriods->max('end'),
+                    ])
+                    ->get()
+                    ->groupBy('employee_id');
+            }
 
             $spreadsheet = IOFactory::load($templatePath);
             $sheet = $spreadsheet->getActiveSheet();
@@ -148,12 +189,15 @@ class ReportsPayrollStatutoryController extends Controller
                 'P', 'Q', 'R', 'T', 'U', 'W', 'X',
                 'AA', 'AB',
             ];
+            $summaryColumns = ['AF', 'AG', 'AH', 'AI', 'AJ'];
 
             for ($row = $startRow; $row <= $maxRow; $row++) {
                 foreach ($inputColumns as $col) {
                     $sheet->setCellValue($col . $row, null);
                 }
-                $sheet->setCellValue('AF' . $row, null);
+                foreach ($summaryColumns as $col) {
+                    $sheet->setCellValue($col . $row, null);
+                }
             }
 
             $row = $startRow;
@@ -232,9 +276,7 @@ class ReportsPayrollStatutoryController extends Controller
                 $sssBasis = null;
 
                 if ($employeeSss > 0 || $employerSssTotal > 0) {
-                    $sssBasis = SSS::where('employee_ss', round($employeeSss, 2))
-                        ->whereRaw('ROUND(employer_ss + employer_cc, 2) = ?', [round($employerSssTotal, 2)])
-                        ->first();
+                    $sssBasis = $sssContributions->get(round($employeeSss, 2) . '|' . round($employerSssTotal, 2));
                 }
 
                 if ($sssBasis) {
@@ -260,10 +302,8 @@ class ReportsPayrollStatutoryController extends Controller
                     $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
 
                     $annualSalary = 0;
-                    $thirteenthPayrolls = Payroll::where("employee_id", $employee->id)
-                        ->where("status", "final")
-                        ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
-                        ->get();
+                    $thirteenthPayrolls = collect($thirteenthPayrollsByEmployee->get($employee->id))
+                        ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd]);
 
                     foreach ($thirteenthPayrolls as $thirteenthPayroll) {
                         $salary = ($thirteenthPayroll->salary ?? 0)
@@ -382,6 +422,22 @@ class ReportsPayrollStatutoryController extends Controller
                     ->setBold(true);
             }
 
+            for ($clearRow = $summaryTotalRow + 1; $clearRow <= $keepThroughRow; $clearRow++) {
+                foreach ($summaryColumns as $col) {
+                    $sheet->setCellValue($col . $clearRow, null);
+                }
+            }
+            if ($summaryTotalRow + 1 <= $keepThroughRow) {
+                $sheet->getStyle("AF" . ($summaryTotalRow + 1) . ":AJ{$keepThroughRow}")
+                    ->applyFromArray([
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_NONE,
+                            ],
+                        ],
+                    ]);
+            }
+
             $totalsRow = $templateTotalsRow;
             if ($totalsRow <= $keepThroughRow) {
                 $totalsRow = $keepThroughRow + 1;
@@ -411,6 +467,7 @@ class ReportsPayrollStatutoryController extends Controller
 
             return response()->streamDownload(function () use ($spreadsheet) {
                 $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+                $writer->setPreCalculateFormulas(false);
                 $writer->save('php://output');
             }, $filename, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
