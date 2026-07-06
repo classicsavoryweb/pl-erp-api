@@ -360,15 +360,15 @@ class GenerateThirteenthMonthPayJob implements ShouldQueue
                     }
                 }    
 
-                $scheduleTypeName = optional($employee->schedule?->schedule_type)->name;
+                // $scheduleTypeName = optional($employee->schedule?->schedule_type)->name;
 
-                $baseRegularDays = $scheduleTypeName === "Compressed Schedule" ? 11 : 13;
+                // $baseRegularDays = $scheduleTypeName === "Compressed Schedule" ? 11 : 13;
 
-                $december1stCutoff = "{$currentYear}-11-26-{$currentYear}-12-10";
+                // $december1stCutoff = "{$currentYear}-11-26-{$currentYear}-12-10";
 
-                $december_1st_cutoff = in_array($december1stCutoff, $holdedCutoffs, true) 
-                ? ($keepPay ? $baseRegularDays * $daily_rate : 0)
-                : $baseRegularDays * $daily_rate;
+                // $december_1st_cutoff = in_array($december1stCutoff, $holdedCutoffs, true) 
+                // ? ($keepPay ? $baseRegularDays * $daily_rate : 0)
+                // : $baseRegularDays * $daily_rate;
 
                 $total = 
                     $december_2nd_cutoff +
