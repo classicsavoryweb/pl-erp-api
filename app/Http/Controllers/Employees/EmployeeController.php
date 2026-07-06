@@ -111,15 +111,10 @@ class EmployeeController extends Controller
             if ($request->type === "Agency") {
                 $agency = Agency::find($request->agency_id);
 
-                if ($agency->name === "MSC") {
-                    $biometricsNumber = "50".$employeeNumber;
-                } else if ($agency->name === "GMI") {
-                    $biometricsNumber = "70".$employeeNumber;
-                } else if ($agency->name === "CNT") {
-                    $biometricsNumber = "11".$employeeNumber;
-                } else {
-                    $biometricsNumber = "12".$employeeNumber;
+                if ($agency) {
+                    $biometricsNumber = $agency->employee_code.$employeeNumber;
                 }
+
                 $employeeNumber = "A".$employeeNumber;
                 $employeeNumber2 = $company."-".$agency->name."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             }
