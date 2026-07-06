@@ -144,66 +144,36 @@ class EmployeeController extends Controller
             ]);
 
             if ($request->type === "Direct" && $position->rank == 2) {
-
                 $baseIncentive = 0;
 
-                $positionIncentive = IncentivePosition::where(
-                    "position_id",
-                    $position->id
-                )->first();
-
-                if ($positionIncentive) {
-                    $baseIncentive = $positionIncentive->amount;
-                }
-
                 if ($position->description == "Senior Staff") {
-
-                    $months = Carbon::parse($employee->date_hired)->diffInMonths(now());
-
-                    if ($months < 1) {
-                        $months = 1;
-                    }
-
-                    $bracket = IncentivesBracket::whereRaw(
-                        'CAST(month AS UNSIGNED) <= ?',
-                        [$months]
-                    )
-                    ->whereHas('positions', function ($query) use ($position) {
-                        $query->where('positions.id', $position->id);
-                    })
-                    ->orderByRaw('CAST(month AS UNSIGNED) DESC')
-                    ->first();
-
-                    if ($bracket) {
-                        $baseIncentive = $bracket->amount;
-                    }
-
                     $employeeIncentive = IncentivesPerEmployee::where(
                         "employee_id",
                         $employee->id
                     )->first();
+                    $baseIncentive = 2750;
 
                     if ($employeeIncentive) {
                         $baseIncentive = $employeeIncentive->amount;
                     }
+                } else {
+                    $positionIncentive = IncentivePosition::where(
+                        "position_id",
+                        $position->id
+                    )->first();
 
-                    if ($baseIncentive < 2750) {
-                        $baseIncentive = 2750;
+                    if ($positionIncentive) {
+                        $baseIncentive = $positionIncentive->amount;
                     }
                 }
 
                 if ($baseIncentive > 0) {
-                    IncentivesManagement::updateOrCreate(
-                        [
-                            "employee_id" => $employee->id,
-                        ],
-                        [
-                            "amount" => $baseIncentive,
-                            "max_amount" => $baseIncentive,
-                        ]
-                    );
+                    IncentivesManagement::create([
+                        "employee_id" => $employee->id,
+                        "amount" => $baseIncentive,
+                        "max_amount" => $baseIncentive,
+                    ]);
                 }
-
             }
 
             $startDate = Carbon::parse($request->date_hired);
