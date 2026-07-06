@@ -266,7 +266,8 @@ class ReportsPayrollStatutoryController extends Controller
                     + $payrollsForDisplay->sum('legal_holiday_overtime_amount')
                     + $payrollsForDisplay->sum('special_holiday_overtime_amount')
                     + $payrollsForDisplay->sum('night_differential_overtime_amount')
-                    + $payrollsForDisplay->sum('cancelled_off');
+                    + $payrollsForDisplay->sum('cancelled_off')
+                    + $payrollsForDisplay->sum('taxable_adjustment');
                 $nightDiffAmount = $payrollsForDisplay->sum('night_differential_amount');
                 $withholdingTax = $payrollsForDisplay->sum('withholding_tax');
                 $employeeSss = $employeePayrolls->sum('employee_sss');
