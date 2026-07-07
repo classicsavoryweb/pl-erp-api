@@ -207,10 +207,7 @@ class ReportsPayrollStatutoryController extends Controller
                 }
 
                 $nonMaternityPayrolls = $employeePayrolls->filter(function ($employeePayroll) {
-                    return !(bool) ($employeePayroll?->details?->is_on_maternity_leave
-                        ?? $employeePayroll?->is_maternity
-                        ?? $employeePayroll?->payroll_list?->is_on_maternity_leave
-                        ?? false);
+                    return !(bool) ($employeePayroll->is_maternity ?? false);
                 });
                 $payrollsForDisplay = $nonMaternityPayrolls->isNotEmpty()
                     ? $nonMaternityPayrolls
