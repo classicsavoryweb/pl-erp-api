@@ -24,6 +24,7 @@ class ReportsPayrollStatutoryController extends Controller
                 'month' => ['required', 'integer', 'min:1', 'max:12'],
             ]);
 
+            $yearHolded = 0;
             $templateRelativePath = 'templates/statutory-payroll-template.xlsx';
             if (!Storage::disk('hr_system_folder')->exists($templateRelativePath)) {
                 return $this->sendError(['message' => 'Statutory payroll template not found.']);
@@ -86,8 +87,8 @@ class ReportsPayrollStatutoryController extends Controller
                 ->filter()
                 ->values();
             $thirteenthPayrollsByEmployee = collect();
-
-            if ($separationPeriods->isNotEmpty()) {
+                
+            if ($separationPeriods->isNotEmpty() && $yearHolded == $request->year) {
                 $thirteenthPayrollsByEmployee = Payroll::query()
                     ->whereIn('employee_id', $separationPeriods->pluck('employee_id')->unique())
                     ->where('status', 'final')
