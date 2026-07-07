@@ -145,7 +145,6 @@ class EmployeeController extends Controller
 
             if ($request->type === "Direct" && $position->rank == 2) {
                 $baseIncentive = 0;
-
                 if ($position->description == "Senior Staff") {
                     $baseIncentive = 2750;
                 } else {
