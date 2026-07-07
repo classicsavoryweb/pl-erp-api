@@ -140,7 +140,7 @@ class ReportsPagibigController extends Controller
             $withDash = $request->with_dash ?? 0;
 
             if ($request->has('export') && $request->export) { 
-                $payrollEmployee = $query->get()->unique('employee_id');
+                $payrollEmployee = $query->get();
                 return Excel::download(new ReportsPagibigLoansExport($payrollEmployee, $withDash), "pagibig_loans.xlsx"); 
             }
 

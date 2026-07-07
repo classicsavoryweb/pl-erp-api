@@ -36,6 +36,7 @@ class ReportsPhilhealthContributionsExport implements FromCollection, WithHeadin
             $employer_philhealth_first_cutoff = 0;
             $employer_philhealth_second_cutoff = 0;
 
+            $monthlySalary = 0;
             $unique_payrollEmployee = $employeePayrolls->first();
 
             foreach ($employeePayrolls as $payroll) {
@@ -48,10 +49,11 @@ class ReportsPhilhealthContributionsExport implements FromCollection, WithHeadin
                     $employee_philhealth_second_cutoff = $payroll->employee_philhealth;
                     $employer_philhealth_second_cutoff = $payroll->employer_philhealth;
                 }
+
+                $monthlySalary += ($payroll->salary - $payroll->working_hours_deduction_total); 
             }
 
             $philhealthId = $unique_payrollEmployee->employee->philhealth;
-            $monthlySalary = $unique_payrollEmployee->payroll_list?->salary_amount ?? 0;
 
             if ($this->withDash == 0) {
                 $philhealthId = (string) str_replace('-', '', $philhealthId);
