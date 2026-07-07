@@ -95,6 +95,7 @@ class ReportsPayrollStatutoryController extends Controller
                         $separationPeriods->min('start'),
                         $separationPeriods->max('end'),
                     ])
+                    ->where("is_maternity", 0)
                     ->get()
                     ->groupBy('employee_id');
             }
