@@ -280,30 +280,9 @@ class LastPayControllerV2 extends Controller
                 $totalDeductions = 0;
 
                 $companyDeductions = $request->company_deductions ?? [];
-                $deductionIds = [];
-
-                foreach ($companyDeductions as $deduction) {
-                    $deductionIds[] = $deduction["employee_deduction_id"];
-                }
 
                 if ($request->reload_deductions) {
-                    $additionalDeductions = EmployeeDeduction::whereNotIn("id", $deductionIds)
-                        ->where("employee_id", $employee->id)
-                        ->whereHas("deduction", function ($query) {
-                            $query->where("category", "Company");
-                        })
-                        ->where("balance", ">=", 0.1)
-                        ->get();
-
-                    foreach ($additionalDeductions as $deduction) {
-                        $companyDeductions[] = [
-                            "deduction_type" => $deduction->deduction->description,
-                            "employee_deduction_id" => $deduction->id,
-                            "balance" => $deduction->balance,
-                            "amount" => $deduction->balance,
-                            "category" => $deduction->deduction->category,
-                        ];
-                    }
+                    $companyDeductions = $this->lastPayService->getDeductions($employee, ["Company"])["deductions"];
                 }
 
                 foreach ($companyDeductions as $deduction) {
