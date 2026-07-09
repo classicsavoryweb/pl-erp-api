@@ -328,6 +328,8 @@ class LastPayControllerV2 extends Controller
                         "remarks" => $lastPay["remarks"],
                     ]);
 
+                    $lastPayDetails->deductions()->delete();
+
                     foreach ($lastPay["company_deductions"] as $deduction) {
                         $employeeDeductions = EmployeeDeduction::find($deduction["employee_deduction_id"]);
 
