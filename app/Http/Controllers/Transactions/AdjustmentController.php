@@ -236,7 +236,7 @@ class AdjustmentController extends Controller
                     if ($oldTimeKeeping) {
                         if ($oldTimeKeeping->final_worked_hours == $hours / 2) {
                             $originalDays = 0.5;
-                        } else {
+                        } else if ($oldTimeKeeping->final_worked_hours == $hours) {
                             $originalDays = 1;
                         }
                     }
