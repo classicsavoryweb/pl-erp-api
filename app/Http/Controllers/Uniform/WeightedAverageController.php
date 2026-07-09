@@ -118,7 +118,9 @@ class WeightedAverageController extends Controller
                 $totalQuantity = (float) $item->total_quantity;
                 $totalAmount = (float) $item->total_amount;
                 $currentPrice = (float) $item->standard_unit_price;
-                $newStandardPrice = $totalQuantity > 0 ? $totalAmount / $totalQuantity : 0;
+                $newStandardPrice = $totalQuantity > 0
+                ? round($totalAmount / $totalQuantity, 2)
+                : null;
 
                 return [
                     'item_no' => $item->item_no,
@@ -131,7 +133,9 @@ class WeightedAverageController extends Controller
                     'total_amount' => round($totalAmount, 2),
                     'new_standard_price' => round($newStandardPrice, 2),
                     'other_charges' => 0,
-                    'standard_difference' => round($newStandardPrice - $currentPrice, 2),
+                    'standard_difference' => $newStandardPrice === null
+                        ? '-'
+                        : round($newStandardPrice - $currentPrice, 2),
                     'reason' => '',
                 ];
             })->values(),
@@ -191,6 +195,32 @@ class WeightedAverageController extends Controller
         return $this->sendResponse([
             'message' => 'Status updated successfully.',
             'record' => $weighted,
+        ]);
+    }
+
+
+   public function updatePrice(Request $request)
+    {
+        $request->validate([
+            'item_no' => 'required',
+            'standard_unit_price' => 'required|numeric',
+        ]);
+
+        $item = UniformItem::where('item_no', $request->item_no)->first();
+
+        if (!$item) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item not found.'
+            ], 404);
+        }
+
+        $item->standard_unit_price = $request->standard_unit_price;
+        $item->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Price updated successfully.'
         ]);
     }
 
@@ -320,19 +350,21 @@ class WeightedAverageController extends Controller
         }
     }
 
-private function generateItemNo(): string
-{
-    $last = WeightedAverage::where('weighted_id', 'LIKE', 'WA%')
-        ->orderByDesc('weighted_id')
-        ->lockForUpdate()
-        ->first();
+    private function generateItemNo(): string
+    {
+        $last = WeightedAverage::where('weighted_id', 'LIKE', 'WA%')
+            ->orderByDesc('weighted_id')
+            ->lockForUpdate()
+            ->first();
 
-    $next = $last
-        ? ((int) substr($last->weighted_id, 2)) + 1
-        : 1;
+        $next = $last
+            ? ((int) substr($last->weighted_id, 2)) + 1
+            : 1;
 
-    return 'WA' . str_pad($next, 5, '0', STR_PAD_LEFT);
-}
+        return 'WA' . str_pad($next, 5, '0', STR_PAD_LEFT);
+    }
+
+
 
 
 }
