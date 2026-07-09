@@ -361,7 +361,7 @@ class WeightedAverageController extends Controller
             ? ((int) substr($last->weighted_id, 2)) + 1
             : 1;
 
-        return 'WA' . str_pad($next, 5, '0', STR_PAD_LEFT);
+        return 'WA' . str_pad($next, 7, '0', STR_PAD_LEFT);
     }
 
 
