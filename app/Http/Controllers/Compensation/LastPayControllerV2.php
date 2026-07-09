@@ -221,6 +221,7 @@ class LastPayControllerV2 extends Controller
             DB::rollBack();
             return $this->sendError(["message" => "Last pay not found"]);
         } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
