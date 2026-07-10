@@ -144,6 +144,9 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                     $second_cutoff = "{$last->start_date}-{$last->end_date}";
 
                     foreach ($employeePayrolls as $payroll) {
+                        if ($payroll->salary == 0) {
+                            continue;
+                        }
 
                         $salary    = (float) str_replace(',', '', $payroll->salary);
                         $tardiness = (float) str_replace(',', '', $payroll->tardiness_amount);
