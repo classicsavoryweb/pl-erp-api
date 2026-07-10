@@ -100,7 +100,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                 $basic_pay_1st_cutoff = 0;
                 $basic_pay_2nd_cutoff = 0;
 
-                $payrollList = $employeePayrolls->payroll_list;
+                $payrollList = $employee->payroll_list;
 
                 $holdedCutoffs = [];
 
