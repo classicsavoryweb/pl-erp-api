@@ -777,7 +777,7 @@ class PayrollService {
         return $incentive;
     }
 
-    private function isNcrMinimum(Employee $employee): bool
+    public function isNcrMinimum(Employee $employee): bool
     {
         $ncrRate = Rate::where("code", "E")->first();
         $divisor = 26;
