@@ -233,7 +233,10 @@ class ReportsThirteenthMonthController extends Controller
             $user = Auth::user();
 
             $payrollIds = Payroll::whereIn('cut_off', [$first_cutoff, $second_cutoff])
-            ->where("is_maternity", 0)    
+            ->whereHas("details", function ($query) {
+                $query->where("is_mancom", 0);
+            })
+            ->where("is_maternity", 0)
             ->pluck('id')
             ->toArray();
 
