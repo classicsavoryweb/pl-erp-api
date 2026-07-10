@@ -81,5 +81,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['permission:perform_uniform_weighted_average'])->post('/weight-average-items', [WeightedAverageController::class, 'getReceivingItems']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/weighted-average/{id}', [WeightedAverageItemsController::class, 'getWeightAverageById']);       
     Route::middleware(['permission:perform_uniform_weighted_average'])->post('/weighted/{id}/status', [WeightedAverageController::class, 'updateWeightedStatus']);
+    Route::middleware(['permission:perform_uniform_weighted_average'])->post('update-item-price' , [WeightedAverageController::class,'updatePrice']);
 
 });

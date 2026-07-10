@@ -90,7 +90,7 @@ class RequestAndIssuanceController extends Controller
             ];
 
             if (!in_array($next, $allowedTransitions[$current] ?? [], true)) {
-                throw ValidationException::withMessages([
+                throw ValidationException::withMessages([ 
                     'status' => "Invalid status transition from {$current} to {$next}.",
                 ]);
             }
@@ -409,10 +409,17 @@ class RequestAndIssuanceController extends Controller
 
         $grandTotal = 0;
 
+        $oldItems = $issuance->items->keyBy('uniform_item_no');
         foreach ($items as $itemData) {
             $itemNo = $itemData['item_no'];
             $uniformItem = $uniformItems->get($itemNo);
             $requestedQuantity = (int) $itemData['requested_quantity'];
+            $oldItem = $oldItems->get($itemNo);
+            $unitPrice = $oldItem
+                ? (float) $oldItem->unit_price
+                : (float) $uniformItem->standard_unit_price;
+
+            $totalAmount = $requestedQuantity * $unitPrice;
 
             if (!$uniformItem || strtolower((string) $uniformItem->status) !== 'active') {
                 throw ValidationException::withMessages([
@@ -433,8 +440,8 @@ class RequestAndIssuanceController extends Controller
                 ]);
             }
 
-            $unitPrice = (float) $uniformItem->standard_unit_price;
-            $totalAmount = $requestedQuantity * $unitPrice;
+            // $unitPrice = (float) $uniformItem->standard_unit_price;
+            // $totalAmount = $requestedQuantity * $unitPrice;
             $originalStock = (int) $uniformItem->stock_on_hand;
             $grandTotal += $totalAmount;
 

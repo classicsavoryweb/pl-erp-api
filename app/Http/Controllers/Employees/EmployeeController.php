@@ -12,6 +12,10 @@ use App\Models\EducationHistory;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
+use App\Models\IncentivePosition;
+use App\Models\IncentivesBracket;
+use App\Models\IncentivesManagement;
+use App\Models\IncentivesPerEmployee;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\Region;
@@ -133,6 +137,25 @@ class EmployeeController extends Controller
                 "region" => $region,
                 ...$fields
             ]);
+
+            if ($request->type === "Direct" && $position->rank == 2) {
+                $baseIncentive = 0;
+                if ($position->description == "Senior Staff") {
+                    $baseIncentive = 2750;
+                } else {
+                    $positionIncentive = IncentivePosition::where(
+                        "position_id",
+                        $position->id
+                    )->first();
+                        $baseIncentive = $positionIncentive->amount;
+                }
+
+                IncentivesManagement::create([
+                    "employee_id" => $employee->id,
+                    "amount" => $baseIncentive,
+                    "max_amount" => $baseIncentive,
+                ]);
+            }
 
             $startDate = Carbon::parse($request->date_hired);
             $contractEndDate = $startDate->addMonths($request->contract_duration)->toDateString();
