@@ -43,7 +43,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
         $user = User::find($this->user);
         $userId = $user->id;
 
-        $payrolls = Payroll::with(["payroll_list"])->whereIn('id', $this->payroll)->get();
+        $payrolls = Payroll::with(["employee", "employee.payroll_list" ,"payroll_list"])->whereIn('id', $this->payroll)->get();
 
         $months = [
             1 => 'JANUARY',
