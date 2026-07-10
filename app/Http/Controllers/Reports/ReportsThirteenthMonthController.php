@@ -236,6 +236,7 @@ class ReportsThirteenthMonthController extends Controller
             ->whereHas("details", function ($query) {
                 $query->where("is_mancom", 0);
             })
+            ->where("salary" , ">", 0)
             ->where("is_maternity", 0)
             ->pluck('id')
             ->toArray();

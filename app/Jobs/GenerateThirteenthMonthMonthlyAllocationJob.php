@@ -114,7 +114,6 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                 || in_array($employee->employee_number, ['948', '0007413']);
 
                 if ($sorted->count() === 1) {
-
                     $payroll = $sorted->first();
 
                     $salary    = (float) str_replace(',', '', $payroll->salary);
@@ -132,11 +131,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                     $branchShortName = optional(
                         Branch::find($payroll->timekeeping_branch_id)
                     )->short_name;
-
-                    // Log::info("1st branch". $branchShortName);
-
                 } else {
-
                     $first = $sorted->first();
                     $last  = $sorted->last();
 
@@ -168,11 +163,11 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                                 $basic_pay_2nd_cutoff += $keepPay ? $computedPay : 0;
                             }
                         }
-
-                        $branchShortName = optional(
-                            Branch::find($payroll->timekeeping_branch_id)
-                        )->short_name;
                     }
+
+                    $branchShortName = optional(
+                        Branch::find($last->timekeeping_branch_id)
+                    )->short_name;
                 }
 
                 $total = $basic_pay_1st_cutoff + $basic_pay_2nd_cutoff;
