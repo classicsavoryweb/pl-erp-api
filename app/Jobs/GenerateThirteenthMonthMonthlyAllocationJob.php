@@ -168,22 +168,14 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                                 $basic_pay_2nd_cutoff += $keepPay ? $computedPay : 0;
                             }
                         }
+
+                        $branchShortName = optional(
+                            Branch::find($payroll->timekeeping_branch_id)
+                        )->short_name;
                     }
-
-                    $branchShortName = optional(
-                        Branch::find($last->timekeeping_branch_id)
-                    )->short_name;
-
-                    // Log::info("2nd branch". $branchShortName);
                 }
 
                 $total = $basic_pay_1st_cutoff + $basic_pay_2nd_cutoff;
-
-                // $branchShortName = $last
-                //     ? optional(Branch::find($last->timekeeping_branch_id))->short_name
-                //     : optional(Branch::find($sorted->first()->timekeeping_branch_id))->short_name;
-
-                    // Log::info("3rd branch". $branchShortName);
 
                 $record = EmployeesMonthlyAllocation::create([
                     'thirteenth_month_file_id' => $thirteenthMonthFile->id,
