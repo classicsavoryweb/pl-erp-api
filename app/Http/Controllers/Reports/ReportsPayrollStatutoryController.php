@@ -24,6 +24,7 @@ class ReportsPayrollStatutoryController extends Controller
                 'month' => ['required', 'integer', 'min:1', 'max:12'],
             ]);
 
+            $yearHolded = 0;
             $templateRelativePath = 'templates/statutory-payroll-template.xlsx';
             if (!Storage::disk('hr_system_folder')->exists($templateRelativePath)) {
                 return $this->sendError(['message' => 'Statutory payroll template not found.']);
@@ -86,8 +87,8 @@ class ReportsPayrollStatutoryController extends Controller
                 ->filter()
                 ->values();
             $thirteenthPayrollsByEmployee = collect();
-
-            if ($separationPeriods->isNotEmpty()) {
+                
+            if ($separationPeriods->isNotEmpty() && $yearHolded == $request->year) {
                 $thirteenthPayrollsByEmployee = Payroll::query()
                     ->whereIn('employee_id', $separationPeriods->pluck('employee_id')->unique())
                     ->where('status', 'final')
@@ -95,6 +96,7 @@ class ReportsPayrollStatutoryController extends Controller
                         $separationPeriods->min('start'),
                         $separationPeriods->max('end'),
                     ])
+                    ->where("is_maternity", 0)
                     ->get()
                     ->groupBy('employee_id');
             }
@@ -207,10 +209,7 @@ class ReportsPayrollStatutoryController extends Controller
                 }
 
                 $nonMaternityPayrolls = $employeePayrolls->filter(function ($employeePayroll) {
-                    return !(bool) ($employeePayroll?->details?->is_on_maternity_leave
-                        ?? $employeePayroll?->is_maternity
-                        ?? $employeePayroll?->payroll_list?->is_on_maternity_leave
-                        ?? false);
+                    return !(bool) ($employeePayroll->is_maternity ?? false);
                 });
                 $payrollsForDisplay = $nonMaternityPayrolls->isNotEmpty()
                     ? $nonMaternityPayrolls

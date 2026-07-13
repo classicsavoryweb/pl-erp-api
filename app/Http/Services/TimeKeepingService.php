@@ -907,7 +907,7 @@ class TimeKeepingService
         }
 
         $totalAmount = (
-            $paymentPerDay + 
+            // $paymentPerDay + 
             $regular_overtime + 
             $night_differential + 
             $night_differential_overtime + 
@@ -920,7 +920,7 @@ class TimeKeepingService
         ) - ($tardinessDeduction + $undertimeDeduction);
 
         $timeKeepingPayment = [
-            "base_amount" => round($paymentPerDay, 2),
+            // "base_amount" => round($paymentPerDay, 2),
             "tardiness_deduction" => round($tardinessDeduction, 2),
             "undertime_deduction" => round($undertimeDeduction, 2),
             "regular_overtime" => round($regular_overtime, 2),

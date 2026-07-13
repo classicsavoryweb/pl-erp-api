@@ -29,11 +29,18 @@ class ReportsSSSLoansExport implements FromCollection, WithHeadings, WithColumnF
 
     public function collection()
     {
-        return $this->payrollEmployee->map(function ($unique_payrollEmployee) {
+        return $this->payrollEmployee->groupBy("employee_id")->map(function ($sssDeductions) {
+
+            $unique_payrollEmployee = $sssDeductions->first();
             $sssId = $unique_payrollEmployee->employee->sss;
+            $amount = 0;
 
             if ($this->withDash == 0) {
                 $sssId = (string) str_replace('-', '', $sssId);
+            }
+
+            foreach ($sssDeductions as $deductions) {
+                $amount += $deductions->amount;
             }
 
             return [
@@ -42,7 +49,7 @@ class ReportsSSSLoansExport implements FromCollection, WithHeadings, WithColumnF
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
                 $unique_payrollEmployee->employee->middle_name,
-                $this->formatNumber($unique_payrollEmployee->amount),
+                $this->formatNumber($amount),
                 $unique_payrollEmployee->employee->birthday
             ];
         });

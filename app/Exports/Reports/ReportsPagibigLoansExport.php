@@ -29,13 +29,20 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
 
     public function collection()
     {
-        return $this->payrollEmployee->map(function ($unique_payrollEmployee) {
+        return $this->payrollEmployee->groupBy("employee_id")->map(function ($deductions) {
+            $unique_payrollEmployee = $deductions->first();
+            
             $pagibigId = $unique_payrollEmployee->employee->pagibig;
             $sssId = $unique_payrollEmployee->employee->sss;
+            $amount = 0;
 
             if ($this->withDash == 0) {
                 $pagibigId = (string) str_replace('-', '', $pagibigId);
                 $sssId = (string) str_replace('-', '', $sssId);
+            }
+
+            foreach ($deductions as $deduction) {
+                $amount += $deduction->amount;
             }
 
             return [
@@ -45,7 +52,7 @@ class ReportsPagibigLoansExport implements FromCollection, WithHeadings, WithCol
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
                 $unique_payrollEmployee->employee->middle_name,
-                $this->formatNumber($unique_payrollEmployee->amount),
+                $this->formatNumber($amount),
                 $unique_payrollEmployee->employee->birthday
             ];
         });

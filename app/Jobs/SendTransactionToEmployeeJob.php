@@ -50,15 +50,15 @@ class SendTransactionToEmployeeJob implements ShouldQueue
         $this->isResend = $isResend;
     }
 
-    public function middleware()
-    {
-        return [
-            (new WithoutOverlapping('accounting_psd_sequence'))
-                ->shared()
-                ->releaseAfter(1200)
-                ->expireAfter(7200)
-        ];
-    }
+    // public function middleware()
+    // {
+    //     return [
+    //         (new WithoutOverlapping('accounting_psd_sequence'))
+    //             ->shared()
+    //             ->releaseAfter(1200)
+    //             ->expireAfter(7200)
+    //     ];
+    // }
 
     private function generateEntryId(&$counterEntry)
     {

@@ -37,6 +37,7 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
             $employer_sss_second_cutoff = 0;
 
             $unique_payrollEmployee = $employeePayrolls->first();
+            $monthlySalary = 0;
 
             foreach ($employeePayrolls as $payroll) {
                 $start_date_day = Carbon::parse($payroll->start_date)->day;
@@ -48,12 +49,13 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
                     $employee_sss_second_cutoff = $payroll->employee_sss;
                     $employer_sss_second_cutoff = $payroll->employer_sss;
                 }
+
+                $monthlySalary += $payroll->gross_pay;
             }
 
             $sssId = $unique_payrollEmployee->employee->sss;
 
             $middleInitial = strtoupper(substr($unique_payrollEmployee->employee->middle_name, 0, 1));
-            $monthlySalary = $unique_payrollEmployee->payroll_list?->salary_amount ?? 0;
 
             if ($this->withDash == 0) {
                 $sssId = (string) str_replace('-', '', $sssId);
