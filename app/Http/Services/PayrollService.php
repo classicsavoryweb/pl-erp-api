@@ -571,6 +571,7 @@ class PayrollService {
         $addedDays = 0;
         $undertimeDeductionDays = 0;
         $totalDays = 0;
+        $additionalDailyRate = 0;
 
         $firstCutOffDays = ($firstTimeKeeping->regular_days ?? 0) + ($firstTimeKeeping->special_leave ?? 0);
         $secondCutOffDays = ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0);
@@ -603,7 +604,7 @@ class PayrollService {
                 "days" => $adjustment->days
             ];
             $addedDays += $adjustment->days;
-            $firstCutOffDays += $adjustment->days;
+            // $firstCutOffDays += $adjustment->days;
         }
 
         foreach ($secondCutOffAdjustments as $adjustment) {
@@ -612,7 +613,7 @@ class PayrollService {
                 "days" => $adjustment->days
             ];
             $addedDays += $adjustment->days;
-            $secondCutOffDays += $adjustment->days;
+            // $secondCutOffDays += $adjustment->days;
         }
 
         $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
@@ -633,14 +634,6 @@ class PayrollService {
             if (trim($employee->oic_status) == "OIC") {
                 $baseAdditional = $incentivePosition->oic_additional_amount;
                 $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
-                $additionalIncentive = $additionalDailyRate * (
-                    ($firstTimeKeeping->regular_days ?? 0) + ($firstTimeKeeping->special_leave ?? 0) +
-                    ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0)
-                );
-
-                if ($additionalIncentive > $baseAdditional) {
-                    $additionalIncentive = $baseAdditional;
-                }
             }
         }
 
@@ -740,6 +733,19 @@ class PayrollService {
                         $remarks = $totalUndertimeForMonth." UNDERTIME DEDUCTION - ".round($deductionAmount, 2);
                     }
                 }
+            }
+        }
+
+        if (trim($employee->oic_status) == "OIC") {
+            $additionalIncentive = $additionalDailyRate * (
+                (
+                    ($firstTimeKeeping->regular_days  ?? 0) + ($firstTimeKeeping->special_leave ?? 0) +
+                    ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0)
+                ) - $addedDays
+            );
+    
+            if ($additionalIncentive > $baseAdditional) {
+                $additionalIncentive = $baseAdditional;
             }
         }
 
