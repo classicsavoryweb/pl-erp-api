@@ -638,7 +638,7 @@ class TimeKeepingService
                 $finalWorkHours = $hours / 2;
             }
             
-            if (($shouldBeHalfDay || $finalWorkHours == $hours / 2) && $schedule->selection !== "NO SCHEDULE") {
+            if (($shouldBeHalfDay || $finalWorkHours == $hours / 2) && !in_array($schedule->selection, ["NO SCHEDULE", "REST DAY"])) {
                 $approvedOvertime = 0;
                 $overtime = 0;
                 $nightDiffOt = 0;
