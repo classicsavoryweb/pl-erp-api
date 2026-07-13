@@ -147,7 +147,10 @@ class EmployeeController extends Controller
                         "position_id",
                         $position->id
                     )->first();
+
+                    if ($positionIncentive) {
                         $baseIncentive = $positionIncentive->amount;
+                    }
                 }
 
                 IncentivesManagement::create([
