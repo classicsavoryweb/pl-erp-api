@@ -229,6 +229,12 @@ class ActualTimeController extends Controller
                         activity()
                             ->causedBy($user)
                             ->performedOn($biotime)
+                            ->withProperties([
+                                "punch_id" => $punch->id,
+                                "punch_time" => $punch->punch_time,
+                                "branch_id" => $punch->branch_id,
+                                "branch" => $punch->branch?->name,
+                            ])
                             ->useLog("Biotime Punch Deletion")
                             ->log("User deleted biotime punch");
                     }
