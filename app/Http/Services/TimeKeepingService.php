@@ -609,52 +609,54 @@ class TimeKeepingService
             }
 
             $halfDayBasis = $hours == 9.5 ? 285 : 240;
-
-            if (
-                ($workHours >= $schedule->total_hours - 3.5 && $undertime < $halfDayBasis ) &&
-                !$isCancelledOff &&
-                !$shouldBeHalfDay
-            ) {
-                $finalWorkHours = $hours;
-            } else if (
-                $workHours >= 4 &&
-                $undertime >= $halfDayBasis &&
-                !$isCancelledOff &&
-                $workHours > 0
-            ) {
-                $finalWorkHours = $hours;
-            } else if (
-                $workHours >= $schedule->total_hours / 2 &&
-                $undertime <= $halfDayBasis &&
-                !$shouldBeHalfDay
-            ) {
-                $finalWorkHours = $hours;
-            } else if (
-                (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
-                !$isCancelledOff &&
-                $workHours > 0 &&
-                $undertime < ($halfDayBasis / 2)
-            ) {
-                $finalWorkHours = $hours / 2;
-            }
             
-            if (($shouldBeHalfDay || $finalWorkHours == $hours / 2) && !in_array($schedule->selection, ["NO SCHEDULE", "REST DAY"])) {
-                $approvedOvertime = 0;
-                $overtime = 0;
-                $nightDiffOt = 0;
-                $legalHolidayOvertime = 0;
-                $specialHolidayOvertime = 0;
-                $approvedOvertime = 0;
-                $cancelledOffOt = 0;
-            }
-            
-            if ($finalWorkHours == $hours / 2) {
-                if ($undertime >= $halfDayBasis) {
-                    $undertime = $undertime - $halfDayBasis;
+            if (!in_array($schedule->selection, ["NO SCHEDULE", "REST DAY"])) {
+                if (
+                    ($workHours >= $schedule->total_hours - 3.5 && $undertime < $halfDayBasis ) &&
+                    !$isCancelledOff &&
+                    !$shouldBeHalfDay
+                ) {
+                    $finalWorkHours = $hours;
+                } else if (
+                    $workHours >= 4 &&
+                    $undertime >= $halfDayBasis &&
+                    !$isCancelledOff &&
+                    $workHours > 0
+                ) {
+                    $finalWorkHours = $hours;
+                } else if (
+                    $workHours >= $schedule->total_hours / 2 &&
+                    $undertime <= $halfDayBasis &&
+                    !$shouldBeHalfDay
+                ) {
+                    $finalWorkHours = $hours;
+                } else if (
+                    (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
+                    !$isCancelledOff &&
+                    $workHours > 0 &&
+                    $undertime < ($halfDayBasis / 2)
+                ) {
+                    $finalWorkHours = $hours / 2;
+                }
+                
+                if ($shouldBeHalfDay || $finalWorkHours == $hours / 2) {
+                    $approvedOvertime = 0;
+                    $overtime = 0;
+                    $nightDiffOt = 0;
+                    $legalHolidayOvertime = 0;
+                    $specialHolidayOvertime = 0;
+                    $approvedOvertime = 0;
+                    $cancelledOffOt = 0;
                 }
 
-                if ($tardiness >= $halfDayBasis) {
-                    $tardiness = $tardiness - $halfDayBasis;
+                if ($finalWorkHours == $hours / 2) {
+                    if ($undertime >= $halfDayBasis) {
+                        $undertime = $undertime - $halfDayBasis;
+                    }
+
+                    if ($tardiness >= $halfDayBasis) {
+                        $tardiness = $tardiness - $halfDayBasis;
+                    }
                 }
             }
 
