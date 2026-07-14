@@ -477,7 +477,7 @@ class TimeKeepingService
 
             $workHours += $travel_time;
             $undertime = 0;
-            $tardiness = 0;
+            // $tardiness = 0;
             $shouldBeHalfDay = false;
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
 
