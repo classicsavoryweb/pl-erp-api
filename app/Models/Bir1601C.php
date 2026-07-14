@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Bir1601C extends Model
 {
+    use LogsActivity;
+
     protected $table = "bir_1601c";
 
     public const STATUS_DRAFT = 'draft';
@@ -75,5 +79,40 @@ class Bir1601C extends Model
     public function finalized_by_user()
     {
         return $this->hasOne(User::class, "id", "finalized_by");
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                "year",
+                "month",
+                "de_minimis_benefits",
+                "other_non_taxable_compensation",
+                "add_less_adjustment",
+                "previous_month_1_period",
+                "previous_month_1_date_paid",
+                "previous_month_1_bank",
+                "previous_month_1_ror_number",
+                "previous_month_1_tax_paid",
+                "previous_month_1_tax_due",
+                "previous_month_2_period",
+                "previous_month_2_date_paid",
+                "previous_month_2_bank",
+                "previous_month_2_ror_number",
+                "previous_month_2_tax_paid",
+                "previous_month_2_tax_due",
+                "previous_month_3_period",
+                "previous_month_3_date_paid",
+                "previous_month_3_bank",
+                "previous_month_3_ror_number",
+                "previous_month_3_tax_paid",
+                "previous_month_3_tax_due",
+                "status",
+                "remarks",
+            ])
+            ->useLogName('BIR 1601-C')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

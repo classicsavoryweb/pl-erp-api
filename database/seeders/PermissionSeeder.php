@@ -252,6 +252,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_reports_bir"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_bir_1601c"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_bir_1601c"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_bir_2316"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_bir_2316"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_deductions"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_deductions"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_incentive_attendance"], ["module" => "reports"]);
