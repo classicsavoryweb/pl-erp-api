@@ -15,6 +15,8 @@ class UniformFreeUniformLimit extends Model
         'status',
         'created_by',
         'updated_by',
+        'date_from',
+        'date_to'
     ];
 
     protected $casts = [

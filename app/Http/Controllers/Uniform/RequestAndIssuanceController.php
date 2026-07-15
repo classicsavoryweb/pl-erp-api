@@ -16,6 +16,7 @@ use App\Models\RequestAndIssuanceItems;
 use App\Models\UniformItem;
 use App\Models\Employee;
 use App\Models\UniformPeriodLock;
+use App\Models\UniformFreeUniformLimit;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -468,33 +469,55 @@ class RequestAndIssuanceController extends Controller
     }
 
     private function getDuplicateFreeUniformRequest(array $validated, ?int $excludeId = null): ?RequestAndIssuance
-    {
-        if (($validated['issuance_type'] ?? null) !== 'Free Uniform') {
-            return null;
-        }
+{
+    if (($validated['issuance_type'] ?? null) !== 'Free Uniform') {
+        return null;
+    }
 
-        $dateRequested = Carbon::now();
-        $dateHired = Carbon::parse($validated['date_hired']);
-        $cycleStart = $dateHired->copy()->year($dateRequested->year);
+    $limit = UniformFreeUniformLimit::where('status', 'active')
+        ->whereDate('date_from', '<=', now())
+        ->whereDate('date_to', '>=', now())
+        ->latest('id')
+        ->first();
 
-        if ($cycleStart->greaterThan($dateRequested)) {
-            $cycleStart->subYear();
-        }
+    if (!$limit) {
+        return null;
+    }
+    
+    $count = RequestAndIssuance::where('request_and_issuances.employee_id', $validated['employee_id'])
+    ->where('request_and_issuances.status', '<>', 'Cancelled')
+    ->where('request_and_issuances.issuance_type', 'Free Uniform')
+    ->where('request_and_issuances.request_number', 'LIKE', 'FR-URN%')
+    ->when($excludeId, fn ($query) => $query->where('request_and_issuances.id', '<>', $excludeId))
+    ->whereDate('request_and_issuances.date_requested', '>=', $limit->date_from)
+    ->whereDate('request_and_issuances.date_requested', '<=', $limit->date_to)
+        ->join(
+        'request_and_issuance_items',
+        'request_and_issuances.request_number',
+        '=',
+        'request_and_issuance_items.requested_number_id'
+    )
+    ->sum('request_and_issuance_items.requested_quantity');
 
-        $cycleEnd = $cycleStart->copy()->addYear()->subDay();
+    Log::info('Free Uniform Limit Check', [
+    'employee_id' => $validated['employee_id'],
+    'limit' => $limit?->allowed_count,
+    'date_from' => $limit?->date_from,
+    'date_to' => $limit?->date_to,
+    'count' => $count,
+    ]);
 
+    if ($count >= $limit->allowed_count) {
         return RequestAndIssuance::where('employee_id', $validated['employee_id'])
             ->where('status', '<>', 'Cancelled')
             ->where('issuance_type', 'Free Uniform')
             ->where('request_number', 'LIKE', 'FR-URN%')
-            ->when($excludeId, fn ($query) => $query->where('id', '<>', $excludeId))
-            ->whereBetween('date_requested', [
-                $cycleStart->startOfDay(),
-                $cycleEnd->endOfDay(),
-            ])
             ->latest('id')
             ->first();
     }
+
+    return null;
+}
 
     private function isItemAllowedForEmployeeGender(UniformItem $uniformItem, ?string $employeeGender): bool
     {

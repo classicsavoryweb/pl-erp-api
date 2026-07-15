@@ -364,7 +364,4 @@ class WeightedAverageController extends Controller
         return 'WA' . str_pad($next, 7, '0', STR_PAD_LEFT);
     }
 
-
-
-
 }
