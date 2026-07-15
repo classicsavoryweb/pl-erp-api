@@ -18,6 +18,7 @@ use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
+use App\Models\Rate;
 use App\Models\Region;
 use App\Models\ScheduleDetail;
 use App\Models\ScheduleType;
@@ -626,6 +627,8 @@ class EmployeeController extends Controller
                 $pathName = $filePath;
             }
 
+            $homeBranchUpdated = $employee->home_branch_id != $request->home_branch_id ? true : false;
+
             $employee->update([
                 "image" => $pathName,
                 "first_name" => $request->first_name,
@@ -681,6 +684,33 @@ class EmployeeController extends Controller
                             "birthday" => $dependant["birthday"],
                         ]);
                     }
+                }
+            }
+
+            if ($request->type === "Direct" && $homeBranchUpdated) {
+                $position = Position::find($employee->position_id);
+                $salary = $position->salary;
+                $payrollList = $employee->payroll_list;
+    
+                $monthlyRate = 0;
+                $minimum = 0;
+                $multiplier = 26;
+                if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                    $multiplier = 22;
+                }
+    
+                if ($salary->rate_category === "MINIMUM") {
+                    $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
+                    $minimum = $rate->minimum ?? 0;
+                    $monthlyRate = $minimum * $multiplier;
+                } else {
+                    $monthlyRate = $salary->basic_salary;
+                }
+    
+                if ($payrollList) {
+                    $payrollList->update([
+                        "salary_amount" => $monthlyRate
+                    ]);
                 }
             }
 
