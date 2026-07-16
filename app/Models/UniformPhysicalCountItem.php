@@ -23,6 +23,7 @@ class UniformPhysicalCountItem extends Model
         'physical_count',
         'standard_cost',
         'item_remarks',
+        'total_amount'
     ];
 
     protected $casts = [

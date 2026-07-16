@@ -330,7 +330,9 @@ class StockReplenishmentController extends Controller
     public function closeReplenishment(Request $request, int $id)
     {
         try {
-            $validated = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
+            $validated = $request->validate([
+                'reason' => ['required', 'string', 'max:2000']
+            ]);
 
             DB::transaction(function () use ($request, $validated, $id) {
                 $record = UniformReplenishment::lockForUpdate()->findOrFail($id);
@@ -340,18 +342,25 @@ class StockReplenishmentController extends Controller
                         'status' => 'Only posted or partially received requests can be closed.',
                     ]);
                 }
-
                 $record->update([
                     'status' => 'Closed',
                     'closed_by' => $this->userName($request),
                     'closed_at' => now(),
                     'closed_reason' => $validated['reason'],
                 ]);
+                UniformReceiving::where('replenishment_id', $record->id)
+                    ->update([
+                        'status' => 'Closed',
+                    ]);
             });
 
-            return $this->sendResponse(['message' => 'Replenishment request closed']);
+            return $this->sendResponse([
+                'message' => 'Replenishment request closed'
+            ]);
         } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
+            return $this->sendError([
+                'message' => $e->getMessage()
+            ]);
         }
     }
 
