@@ -107,8 +107,16 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_last_pay_setup"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_tardiness_sanctions"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_tardiness_sanctions"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_expense_type"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_expense_type"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_petty_cash_approver"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_petty_cash_approver"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_petty_cash_custodian"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_petty_cash_custodian"], ["module" => "maintenance"]);
 
-        
+        //petty cash module
+        Permission::updateOrCreate(["name" => "view_petty_cash_module"], ["module" => "petty_cash"]);
+        Permission::updateOrCreate(["name" => "view_department_fund"], ["module" => "petty_cash"]);
 
         //employees module
         

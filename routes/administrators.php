@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:perform_roles_and_permissions"])->get("/delete-role/{id}", [RolesPermissionController::class,"deleteRolesAndPermissions"]);
     //users
     Route::get('/get-all-users', [UserController::class, "getAllUsers"]);
+    Route::get('/get-users', [UserController::class, "getUsers"]);
     Route::middleware(["permission:perform_users"])->post('/create-user', [AuthController::class, 'createUser']);
     Route::middleware(["permission:perform_users"])->post("/edit-user/{id}", [UserController::class,"editUser"]);
     Route::get("/export-admin-users", [UserController::class,"exportUsers"]);

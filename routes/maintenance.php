@@ -39,6 +39,9 @@ use App\Http\Controllers\Maintenance\TermsController;
 use App\Http\Controllers\Maintenance\LastPaySetupController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
+use App\Http\Controllers\Maintenance\ExpenseTypeController;
+use App\Http\Controllers\Maintenance\PettyCashApproverController;
+use App\Http\Controllers\Maintenance\PettyCashCustodianController;
 use Illuminate\Support\Facades\Route;
 
 // MAINTENANCE MODULE
@@ -279,4 +282,23 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-tardiness-sanctions", [TardinessSanctionController::class, "exportAllTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/create-tardiness-sanction", [TardinessSanctionController::class, "createTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/edit-tardiness-sanction/{id}", [TardinessSanctionController::class, "editTardinessSanctions"]);
+
+    //expense types
+    Route::get("/get-all-expense-types", [ExpenseTypeController::class, "getAllExpenseTypes"]);
+    Route::get("/get-expense-types", [ExpenseTypeController::class, "getExpenseTypes"]);
+    Route::get("/export-all-expense-types", [ExpenseTypeController::class, "exportAllExpenseTypes"]);
+    Route::middleware(["permission:perform_expense_type"])->post("/create-expense-type", [ExpenseTypeController::class, "createExpenseType"]);
+    Route::middleware(["permission:perform_expense_type"])->post("/edit-expense-type/{id}", [ExpenseTypeController::class, "editExpenseType"]);
+
+    //petty cash approvers
+    Route::get("/get-all-petty-cash-approvers", [PettyCashApproverController::class, "getAllApprovers"]);
+    Route::get("/export-all-petty-cash-approvers", [PettyCashApproverController::class, "exportAllApprovers"]);
+    Route::middleware(["permission:perform_petty_cash_approver"])->post("/create-petty-cash-approver", [PettyCashApproverController::class, "createApprover"]);
+    Route::middleware(["permission:perform_petty_cash_approver"])->post("/edit-petty-cash-approver/{id}", [PettyCashApproverController::class, "editApprover"]);
+
+    //petty cash custodians
+    Route::get("/get-all-petty-cash-custodians", [PettyCashCustodianController::class, "getAllCustodians"]);
+    Route::get("/export-all-petty-cash-custodians", [PettyCashCustodianController::class, "exportAllCustodians"]);
+    Route::middleware(["permission:perform_petty_cash_custodian"])->post("/create-petty-cash-custodian", [PettyCashCustodianController::class, "createCustodian"]);
+    Route::middleware(["permission:perform_petty_cash_custodian"])->post("/edit-petty-cash-custodian/{id}", [PettyCashCustodianController::class, "editCustodian"]);
 });

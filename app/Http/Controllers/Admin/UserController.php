@@ -72,6 +72,32 @@ class UserController extends Controller
         return $this->getAllUsers($request);
     }
     
+    public function getUsers(Request $request)
+    {
+        try {
+            $users = User::with('employee')
+                ->whereHas('employee');
+
+            if ($request->has('keyWord') && $request->keyWord) {
+                $keyword = $request->keyWord;
+                $users = $users->where(function ($query) use ($keyword) {
+                    $query->whereAny(['first_name', 'last_name', 'middle_name'], 'LIKE', "%$keyword%")
+                        ->orWhere('employee_number', 'LIKE', "%$keyword%")
+                        ->orWhere(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                });
+            }
+
+            if ($request->has('status') && $request->status && $request->status !== 'all') {
+                $users = $users->where('status', $request->status);
+            }
+
+            $users = $users->get();
+            return $this->sendResponse($users->values());
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function editUser (Request $request, $id) {
         try {
             $user = User::find($id);
