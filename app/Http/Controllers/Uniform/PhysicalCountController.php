@@ -21,9 +21,13 @@ class PhysicalCountController extends Controller
     public function physicalCounts(Request $request)
     {
         $query = $this->physicalCountQuery($request)
-        ->with('items.item.size', 'items.item.gender')->latest('id');
+            ->with('items.item.size', 'items.item.gender')
+            ->withSum('items', 'total_amount')
+            ->latest('id');
 
-        return response()->json($query->paginate((int) $request->input('per_page', 10)));
+        return response()->json(
+            $query->paginate((int) $request->input('per_page', 10))
+        );
     }
 
     public function exportPhysicalCounts(Request $request)
