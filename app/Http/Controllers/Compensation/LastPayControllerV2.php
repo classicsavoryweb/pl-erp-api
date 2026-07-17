@@ -43,6 +43,7 @@ class LastPayControllerV2 extends Controller
                 "deductions.deduction",
                 "employee.government_deductions",
                 "employee.government_deductions.deduction",
+                "additional_fields.transaction_type",
                 "activities" => function ($query) {
                     $query->with("causer")->orderBy("id", "desc");
                 }
@@ -168,6 +169,7 @@ class LastPayControllerV2 extends Controller
                     'sl_vl' => 0,
                     'sales' => 0,
                     'meal_allowance' => 0,
+                    'additional_fields' => [],
                     'remarks' => null,
                     'company_deductions'    => $this->lastPayService->getDeductions($employee, ['Company']),
                     'government_deductions' => $this->lastPayService->getDeductions($employee, ['Pag-ibig', 'SSS']),
@@ -189,7 +191,7 @@ class LastPayControllerV2 extends Controller
     public function postLastPay($lastPayId) {
         try {
             DB::beginTransaction();
-            $lastPay = LastPay::find($lastPayId);
+            $lastPay = LastPay::with("additional_fields.transaction_type")->find($lastPayId);
 
             if ($lastPay && $lastPay->status === "Unposted") {
                 if ($this->numeric($lastPay->last_pay) < 0) {
@@ -258,6 +260,7 @@ class LastPayControllerV2 extends Controller
                 }
 
                 $lastPay->company_deductions =  $companyDeductions;
+                $lastPay["additional_fields"] = $this->lastPayService->getAdditionalFields($employee);
                 $lastPay["payrolls"] = $this->lastPayService->getThirteenthMonthPayrollRows($employee);
                 $lastPay->government_deductions = $this->lastPayService->getDeductions($employee, ['Pag-ibig', 'SSS'])["deductions"];
 
@@ -307,6 +310,7 @@ class LastPayControllerV2 extends Controller
                     'government_deductions' => [
                         "deductions" => $request->government_deductions
                     ],
+                    'additional_fields' => $request->additional_fields
                 ];
 
                 $lastPay = $this->lastPayService->computeLastPay($employee, $lastPayDetails);
@@ -330,6 +334,15 @@ class LastPayControllerV2 extends Controller
                     ]);
 
                     $lastPayDetails->deductions()->delete();
+                    $lastPayDetails->additional_fields()->delete();
+
+                    foreach ($lastPay["additional_fields"] as $additional) {
+                        $lastPayDetails->additional_fields()->updateOrCreate([
+                            "transaction_type_id" => $additional["transaction_type_id"]
+                        ],[
+                            "amount" => $additional["amount"],
+                        ]);
+                    }
 
                     foreach ($lastPay["company_deductions"] as $deduction) {
                         $employeeDeductions = EmployeeDeduction::find($deduction["employee_deduction_id"]);
