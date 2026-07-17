@@ -22,6 +22,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use Log;
 use App\Http\Services\LastPayService;
+use App\Models\ConverterDetail;
 
 class LastPayControllerV2 extends Controller
 {
@@ -160,6 +161,19 @@ class LastPayControllerV2 extends Controller
                         ->value("pay_date");
                 }
 
+                $additionalFields = [];
+
+                $converterDetails = ConverterDetail::where("employee_id", $employee->id)
+                ->where("status", "Pending")
+                ->get();
+
+                foreach ($converterDetails as $converter) {
+                    $additionalFields[] = [
+                        "transaction_type_id" => $converter->transaction_type_id,
+                        "amount" => $converter->amount
+                    ];
+                }
+
                 $lastPayDetails = (object) [
                     'year' => $year,
                     'total_payroll' => $this->lastPayService->getAllHoldedPayrollsAmount($employee, $payrollPayDate),
@@ -169,7 +183,7 @@ class LastPayControllerV2 extends Controller
                     'sl_vl' => 0,
                     'sales' => 0,
                     'meal_allowance' => 0,
-                    'additional_fields' => [],
+                    'additional_fields' => $additionalFields,
                     'remarks' => null,
                     'company_deductions'    => $this->lastPayService->getDeductions($employee, ['Company']),
                     'government_deductions' => $this->lastPayService->getDeductions($employee, ['Pag-ibig', 'SSS']),
