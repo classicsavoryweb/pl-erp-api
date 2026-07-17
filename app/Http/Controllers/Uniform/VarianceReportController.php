@@ -45,52 +45,90 @@ class VarianceReportController extends Controller
     public function previewVariance(Request $request)
     {
         $data = $request->validate([
-            'physical_count_id' => ['required', 'integer', 'exists:uniform_physical_counts,id'],
+            'begin_date' => ['required', 'date'],
+            'ending_date' => ['required', 'date', 'after_or_equal:begin_date'],
             'items' => ['sometimes', 'array'],
             'items.*.uniform_item_id' => ['required_with:items', 'integer', 'exists:uniform_items,id'],
             'items.*.adjustment' => ['nullable', 'numeric'],
             'items.*.reason_of_adjustment' => ['nullable', 'string'],
         ]);
 
-        $physicalCount = $this->postedPhysicalCount($data['physical_count_id']);
+        $physicalCount = UniformPhysicalCount::with('items')
+            ->where('status', 'Posted')
+            ->whereDate('begin_date', $data['begin_date'])
+            ->whereDate('ending_date', $data['ending_date'])
+            ->first();
+
+        if (!$physicalCount) {
+            return response()->json([
+                'message' => 'No posted physical count found for the selected date range.'
+            ], 422);
+        }
 
         return response()->json([
-            'physical_count' => $physicalCount,
-            'items' => $this->varianceLines($physicalCount, $data['items'] ?? []),
+            'items' => $this->varianceLines(
+                $physicalCount,
+                $data['items'] ?? []
+            ),
         ]);
     }
-
     public function storeVariance(Request $request)
-    {
-        $data = $request->validate([
-            'physical_count_id' => ['required', 'integer', 'exists:uniform_physical_counts,id'],
-            'remarks' => ['nullable', 'string'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.uniform_item_id' => ['required', 'integer', 'distinct', 'exists:uniform_items,id'],
-            'items.*.adjustment' => ['nullable', 'numeric'],
-            'items.*.reason_of_adjustment' => ['nullable', 'string'],
+{
+    $data = $request->validate([
+        'begin_date' => ['required', 'date'],
+        'ending_date' => ['required', 'date', 'after_or_equal:begin_date'],
+        'remarks' => ['nullable', 'string'],
+        'items' => ['required', 'array', 'min:1'],
+        'items.*.uniform_item_id' => ['required', 'integer', 'distinct', 'exists:uniform_items,id'],
+        'items.*.adjustment' => ['nullable', 'numeric'],
+        'items.*.reason_of_adjustment' => ['nullable', 'string'],
+    ]);
+
+    return DB::transaction(function () use ($data) {
+
+        $physicalCount = UniformPhysicalCount::where('status', 'Posted')
+            ->whereDate('begin_date', $data['begin_date'])
+            ->whereDate('ending_date', $data['ending_date'])
+            ->first();
+
+        if (!$physicalCount) {
+            abort(422, 'No posted physical count found for the selected date range.');
+        }
+
+        $this->ensureNoPendingVariance();
+        $this->ensureNoVarianceForPhysicalCount($physicalCount->id);
+
+        $variance = UniformVariance::create([
+            'variance_no' => $this->nextNumber(
+                'uniform_variances',
+                'variance_no',
+                'VR',
+                7
+            ),
+            'physical_count_id' => $physicalCount->id,
+            'begin_date' => $physicalCount->begin_date,
+            'ending_date' => $physicalCount->ending_date,
+            'status' => 'Unposted',
+            'remarks' => $data['remarks'] ?? null,
+            'prepared_by' => $this->userName(),
         ]);
 
-        return DB::transaction(function () use ($data) {
-            $physicalCount = $this->postedPhysicalCount($data['physical_count_id'], true);
-            $this->ensureNoPendingVariance();
-            $this->ensureNoVarianceForPhysicalCount($physicalCount->id);
+        $this->replaceVarianceItems(
+            $variance,
+            $physicalCount,
+            $data['items']
+        );
 
-            $variance = UniformVariance::create([
-                'variance_no' => $this->nextNumber('uniform_variances', 'variance_no', 'VR', 7),
-                'physical_count_id' => $physicalCount->id,
-                'begin_date' => $physicalCount->begin_date,
-                'ending_date' => $physicalCount->ending_date,
-                'status' => 'Unposted',
-                'remarks' => $data['remarks'] ?? null,
-                'prepared_by' => $this->userName(),
-            ]);
-
-            $this->replaceVarianceItems($variance, $physicalCount, $data['items']);
-
-            return response()->json($variance->load('physicalCount', 'items.item.size', 'items.item.gender'), 201);
-        });
-    }
+        return response()->json(
+            $variance->load(
+                'physicalCount',
+                'items.item.size',
+                'items.item.gender'
+            ),
+            201
+        );
+    });
+}
 
     public function reviewVariance(Request $request, int $id)
     {
