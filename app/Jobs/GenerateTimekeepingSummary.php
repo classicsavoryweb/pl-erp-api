@@ -598,10 +598,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
 
                 //checking adjustments
-                $adjustments_tardiness_amount = 0;
-                $adjustments_undertime = 0;
                 $adjustments_days = 0;
-                $adjustments_cancelled_off = 0;
 
                 $deductions = $this->timeKeepingService->deductPreviousPaidHoliday($cutOff, $employee);
                 $remarks = "";
@@ -679,26 +676,36 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 foreach($adjustments as $adjustment) {                      
                     if ($adjustment->taxable_amount != 0) {
                         $adjustment_amount += $adjustment->taxable_amount;
-                        $adjustment->update([
-                            "status" => "Adjusted",
-                            "timekeeping_summary_id" => $timeKeepingSummary->id
-                        ]);
-    
-                        $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-
-                        if ($adjustment->status == "Manual Taxable Adjustment") {
-                            $adjustment_amount = $adjustment->taxable_amount;
-                            $adjustmentRemarks = $remarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-                            break;
-                        }
-
-                        $withAdjustments = true;
                     }
+
+                    $adjustment->update([
+                        "status" => "Adjusted",
+                        "timekeeping_summary_id" => $timeKeepingSummary->id
+                    ]);
+
+                    $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount;
+
+                    if ($adjustment->days > 0) {
+                        $adjustments_days += $adjustment->days;
+                        $adjustmentRemarks = $adjustmentRemarks . " Days Added - ". $adjustment->days;
+                    }
+
+                    $adjustmentRemarks = $adjustmentRemarks." | ";
+
+                    if ($adjustment->status == "Manual Taxable Adjustment") {
+                        $adjustment_amount = $adjustment->taxable_amount;
+                        $adjustmentRemarks = $remarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
+                        break;
+                    }
+
+                    $withAdjustments = true;
                 }
 
                 if ($withAdjustments) {
+                    $regular_days += $adjustments_days;
                     $remarks = $adjustmentRemarks;
                     $timeKeepingSummary->update([
+                        "regular_days" => $regular_days,
                         "adjustment_amount" => $adjustment_amount,
                         "remarks" => $remarks,
                     ]);

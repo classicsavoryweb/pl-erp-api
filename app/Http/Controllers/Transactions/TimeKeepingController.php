@@ -385,6 +385,7 @@ class TimeKeepingController extends Controller
             $request->validate([
                 "timekeeping_summary_id" => "required|integer",
                 "amount" => "required|numeric",
+                "remarks" => "required"
             ]);
 
             DB::beginTransaction();
@@ -440,12 +441,9 @@ class TimeKeepingController extends Controller
 
             $adjustmentAmount = $amount;
 
-            $remarks = trim($summary->remarks ?? "");
-            $remarks = trim($remarks . " " . $remarksEntry);
-
             $summary->update([
                 "adjustment_amount" => round($adjustmentAmount, 2),
-                "remarks" => trim($remarks),
+                "remarks" => $request->remarks,
             ]);
 
             DB::commit();

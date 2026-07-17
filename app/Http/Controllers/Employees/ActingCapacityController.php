@@ -514,7 +514,7 @@ class ActingCapacityController extends Controller
                 }
 
                 if ($salary->rate_category === "MINIMUM") {
-                    $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
+                    $rate = Rate::where("code", $actingEmployee->home_branch->rate_code)->first();
                     $minimum = $rate->minimum ?? 0;
                     $monthlyRate = $minimum * $multiplier;
                 } else {
@@ -536,7 +536,7 @@ class ActingCapacityController extends Controller
                     }
 
                     if ($position->description == "Senior Staff") {
-                        $months = Carbon::now()->diffInMonths($employee->date_hired);
+                        $months = Carbon::now()->diffInMonths($actingEmployee->date_hired);
                         if ($months < 1) {
                             $months = 1;
                         }
@@ -552,7 +552,7 @@ class ActingCapacityController extends Controller
                             $baseIncentive = $bracket->amount;
                         }
                         
-                        $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $employee->id)->first();
+                        $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $actingEmployee->id)->first();
 
                         if ($rankAndFileIncentive) {
                             $baseIncentive = $rankAndFileIncentive->amount;

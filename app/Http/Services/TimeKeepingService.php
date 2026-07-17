@@ -477,7 +477,7 @@ class TimeKeepingService
 
             $workHours += $travel_time;
             $undertime = 0;
-            $tardiness = 0;
+            // $tardiness = 0;
             $shouldBeHalfDay = false;
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
 
@@ -490,7 +490,10 @@ class TimeKeepingService
             }
 
             if ($totalWorkedHours > $totalDurationHOurs) {
-                $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
+                $firstPunchToScheduledOutInSeconds = $parsedFirstPunch->diffInSeconds($scheduleEnd);
+                $firstPunchToScheduledOutInHours = $firstPunchToScheduledOutInSeconds / 3600;
+                $overtime = $workHours - $firstPunchToScheduledOutInHours < 1 ? 0 : $workHours - $firstPunchToScheduledOutInHours;
+                // $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
         }
 
@@ -570,14 +573,16 @@ class TimeKeepingService
                 }
 
                 $remainingHours = $overtimeApplied->total_hours - $totalHoursPaid;
-                $payrollStatus = $remainingHours >= 1 ? "unpaid" : "paid";
+                $status = $remainingHours >= 1 ? "Partialy Paid" : "Paid";
 
-                $overtimeApplied->update([
-                    "hours_paid" => $totalHoursPaid,
-                    "cutoff_paid" => $cutOffPaid,
-                    "payment_type" => $paymentType,
-                    "status" => $remainingHours >= 1 ? "Partialy Paid" : "Paid"
-                ]);
+                if ($overtimeApplied->status != $status || $overtimeApplied->hours_paid != $totalHoursPaid) {
+                    $overtimeApplied->update([
+                        "hours_paid" => $totalHoursPaid,
+                        "cutoff_paid" => $cutOffPaid,
+                        "payment_type" => $paymentType,
+                        "status" => $remainingHours >= 1 ? "Partialy Paid" : "Paid"
+                    ]);
+                }
             }
 
             $isExisting = $model->where("employee_id", $employee->id)
@@ -607,42 +612,54 @@ class TimeKeepingService
             }
 
             $halfDayBasis = $hours == 9.5 ? 285 : 240;
-
-            if (
-                ($workHours >= $schedule->total_hours - 3.5 && $undertime < $halfDayBasis ) &&
-                !$isCancelledOff &&
-                !$shouldBeHalfDay
-            ) {
-                $finalWorkHours = $hours;
-            } else if (
-                $workHours >= 4 &&
-                $undertime >= $halfDayBasis &&
-                !$isCancelledOff &&
-                $workHours > 0
-            ) {
-                $finalWorkHours = $hours;
-            } else if (
-                $workHours >= $schedule->total_hours / 2 &&
-                $undertime <= $halfDayBasis &&
-                !$shouldBeHalfDay
-            ) {
-                $finalWorkHours = $hours;
-            } else if (
-                (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
-                !$isCancelledOff &&
-                $workHours > 0 &&
-                $undertime < ($halfDayBasis / 2)
-            ) {
-                $finalWorkHours = $hours / 2;
-            }
             
-            if ($finalWorkHours == $hours / 2) {
-                if ($undertime >= $halfDayBasis) {
-                    $undertime = $undertime - $halfDayBasis;
+            if (!in_array($schedule->selection, ["NO SCHEDULE", "REST DAY"])) {
+                if (
+                    ($workHours >= $schedule->total_hours - 3.5 && $undertime < $halfDayBasis ) &&
+                    !$isCancelledOff &&
+                    !$shouldBeHalfDay
+                ) {
+                    $finalWorkHours = $hours;
+                } else if (
+                    $workHours >= 4 &&
+                    $undertime >= $halfDayBasis &&
+                    !$isCancelledOff &&
+                    $workHours > 0
+                ) {
+                    $finalWorkHours = $hours;
+                } else if (
+                    $workHours >= $schedule->total_hours / 2 &&
+                    $undertime <= $halfDayBasis &&
+                    !$shouldBeHalfDay
+                ) {
+                    $finalWorkHours = $hours;
+                } else if (
+                    (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
+                    !$isCancelledOff &&
+                    $workHours > 0 &&
+                    $undertime < ($halfDayBasis / 2)
+                ) {
+                    $finalWorkHours = $hours / 2;
+                }
+                
+                if ($shouldBeHalfDay || $finalWorkHours == $hours / 2) {
+                    $approvedOvertime = 0;
+                    $overtime = 0;
+                    $nightDiffOt = 0;
+                    $legalHolidayOvertime = 0;
+                    $specialHolidayOvertime = 0;
+                    $approvedOvertime = 0;
+                    $cancelledOffOt = 0;
                 }
 
-                if ($tardiness >= $halfDayBasis) {
-                    $tardiness = $tardiness - $halfDayBasis;
+                if ($finalWorkHours == $hours / 2) {
+                    if ($undertime >= $halfDayBasis) {
+                        $undertime = $undertime - $halfDayBasis;
+                    }
+
+                    if ($tardiness >= $halfDayBasis) {
+                        $tardiness = $tardiness - $halfDayBasis;
+                    }
                 }
             }
 
@@ -692,6 +709,7 @@ class TimeKeepingService
                 $undertime = 0;
                 $approvedOvertime = 0;
                 $cancelled_off_hours = 0;
+                $cancelledOffOt = 0;
             }
 
             if ($tardiness > ($hours * 60)) {
@@ -894,7 +912,7 @@ class TimeKeepingService
         }
 
         $totalAmount = (
-            $paymentPerDay + 
+            // $paymentPerDay + 
             $regular_overtime + 
             $night_differential + 
             $night_differential_overtime + 
@@ -907,7 +925,7 @@ class TimeKeepingService
         ) - ($tardinessDeduction + $undertimeDeduction);
 
         $timeKeepingPayment = [
-            "base_amount" => round($paymentPerDay, 2),
+            // "base_amount" => round($paymentPerDay, 2),
             "tardiness_deduction" => round($tardinessDeduction, 2),
             "undertime_deduction" => round($undertimeDeduction, 2),
             "regular_overtime" => round($regular_overtime, 2),

@@ -93,6 +93,8 @@ class RecomputeIncentives implements ShouldQueue
                 $additionalIncentive = 0;
                 $adjustmentPercent = 0;
                 $baseAdditional = 0;
+                $additionalDailyRate = 0;
+                $additionalIncentive = 0;
                 $status = "initial";
 
                 $monthWorkedDays = $incentive->total_days;
@@ -114,11 +116,6 @@ class RecomputeIncentives implements ShouldQueue
                     if (trim($employee->oic_status) == "OIC") {
                         $baseAdditional = $incentivePosition->oic_additional_amount;
                         $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
-                        $additionalIncentive = $additionalDailyRate * $actualWorkedDays;
-
-                        if ($additionalIncentive > $baseAdditional) {
-                            $additionalIncentive = $baseAdditional;
-                        }
                     }
                 }
 
@@ -163,6 +160,14 @@ class RecomputeIncentives implements ShouldQueue
 
                         $tardiness->deduction_status = 1;
                         $tardiness->save();
+                    }
+                }
+
+                if (trim($employee->oic_status) == "OIC") {
+                    $additionalIncentive = $additionalDailyRate * ($actualWorkedDays - $incentive->added_days);
+
+                    if ($additionalIncentive > $baseAdditional) {
+                        $additionalIncentive = $baseAdditional;
                     }
                 }
 

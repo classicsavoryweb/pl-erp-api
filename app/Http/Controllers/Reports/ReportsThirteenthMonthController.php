@@ -137,7 +137,9 @@ class ReportsThirteenthMonthController extends Controller
                         $q->whereYear('start_date', $previousYear)
                             ->whereMonth('start_date', 12);
                     });
-            })->pluck('id')->toArray();
+            })
+            ->where("is_maternity", 0)
+            ->pluck('id')->toArray();
 
             GenerateThirteenthMonthPayJob::dispatch($user->id, $currentYear, $payrollIds);
 
@@ -231,8 +233,13 @@ class ReportsThirteenthMonthController extends Controller
             $user = Auth::user();
 
             $payrollIds = Payroll::whereIn('cut_off', [$first_cutoff, $second_cutoff])
-                ->pluck('id')
-                ->toArray();
+            ->whereHas("details", function ($query) {
+                $query->where("is_mancom", 0);
+            })
+            ->where("salary" , ">", 0)
+            ->where("is_maternity", 0)
+            ->pluck('id')
+            ->toArray();
 
             GenerateThirteenthMonthMonthlyAllocationJob::dispatch($user->id, $month, $selectedYear, $payrollIds);
 

@@ -270,7 +270,8 @@ class PhysicalCountController extends Controller
             $totalOutgoing = $atd + $freeUniform;
             $shouldBe = $beginning + $totalPurchases - $totalOutgoing;
 
-            $totalAmount = $totalPurchases * $item->standard_unit_price;
+            $physicalCount = (float) ($input['physical_count'] ?? 0);
+            $totalAmount = $physicalCount * $item->standard_unit_price;
 
             return [
                 'uniform_item_id' => $item->id,
@@ -285,7 +286,7 @@ class PhysicalCountController extends Controller
                 'total_purchases' => $totalPurchases,
                 'total_outgoing' => $totalOutgoing,
                 'should_be_inventory' => $shouldBe,
-                'physical_count' => (float) ($input['physical_count'] ?? 0),
+                'physical_count' => $physicalCount,
                 'standard_cost' => (float) $item->standard_unit_price,
                 'item_remarks' => $input['item_remarks'] ?? null,
                 'total_amount' => $totalAmount,

@@ -38,7 +38,7 @@ class GenerateThirteenthMonthPayJob implements ShouldQueue
     {
         $userId = User::find($this->user);
 
-        $payrolls = Payroll::whereIn('id', $this->payroll)->get();
+        $payrolls = Payroll::with(["employee", "payroll_list"])->whereIn('id', $this->payroll)->get();
         $selectedYear = $this->year;
 
         $fileName = "13TH-MONTH-PAY-{$selectedYear}--" . now()->format('Y-m-d_His') .".xlsx";
@@ -110,7 +110,8 @@ class GenerateThirteenthMonthPayJob implements ShouldQueue
                     $start_date = $payroll['start_date'];
                     $end_date   = $payroll['end_date'];
 
-                    $payrollList = PayrollList::where('employee_id', $employeeId)->first();
+                    $payrollList = $payroll["payroll_list"];
+
                     $keepPay = str_starts_with($employee->employee_number, 'M') 
                     || in_array($employee->employee_number, ['948', '0007413']);
 
@@ -360,15 +361,15 @@ class GenerateThirteenthMonthPayJob implements ShouldQueue
                     }
                 }    
 
-                $scheduleTypeName = optional($employee->schedule?->schedule_type)->name;
+                // $scheduleTypeName = optional($employee->schedule?->schedule_type)->name;
 
-                $baseRegularDays = $scheduleTypeName === "Compressed Schedule" ? 11 : 13;
+                // $baseRegularDays = $scheduleTypeName === "Compressed Schedule" ? 11 : 13;
 
-                $december1stCutoff = "{$currentYear}-11-26-{$currentYear}-12-10";
+                // $december1stCutoff = "{$currentYear}-11-26-{$currentYear}-12-10";
 
-                $december_1st_cutoff = in_array($december1stCutoff, $holdedCutoffs, true) 
-                ? ($keepPay ? $baseRegularDays * $daily_rate : 0)
-                : $baseRegularDays * $daily_rate;
+                // $december_1st_cutoff = in_array($december1stCutoff, $holdedCutoffs, true) 
+                // ? ($keepPay ? $baseRegularDays * $daily_rate : 0)
+                // : $baseRegularDays * $daily_rate;
 
                 $total = 
                     $december_2nd_cutoff +

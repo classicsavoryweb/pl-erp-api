@@ -20,14 +20,20 @@ class LastPayService {
         $meal_allowance = $lastPayDetails->meal_allowance;
         $sales = $lastPayDetails->sales;
         $year = $lastPayDetails->year;
+        $additional_fields = $lastPayDetails->additional_fields;
         $totalDeductions = 0;
+        $additionalFieldsTotal = 0;
 
         $companyDeductions = $lastPayDetails->company_deductions;
         $governmentDeductions = $lastPayDetails->government_deductions;
 
         $totalDeductions = $companyDeductions["total_deductions"];
 
-        $lastPayAmount = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $sales) - $totalDeductions;
+        foreach ($additional_fields as $additional) {
+            $additionalFieldsTotal += $additional["amount"];
+        }
+
+        $lastPayAmount = ($totalPayroll + $month13th + $incentives + $sl_vl + $meal_allowance + $taxRefund + $sales + $additionalFieldsTotal) - $totalDeductions;
 
         return [
             "company_deductions" => $companyDeductions["deductions"],
@@ -43,6 +49,7 @@ class LastPayService {
             "total_deductions" => $totalDeductions,
             "last_pay" => round($lastPayAmount, 2),
             "date_holded" => $employee->separation_date,
+            "additional_fields" => $additional_fields,
             "remarks" => $lastPayDetails->remarks ?? null,
         ];
     }
@@ -52,7 +59,7 @@ class LastPayService {
 
         $deductions = EmployeeDeduction::with("deduction")
         ->where("employee_id", $employee->id)
-        ->where("balance", ">=", 1)
+        ->where("balance", ">=", 0.1    )
         ->where("approved_status", "Yes")
         ->where("end_loan_status", "No")
         ->whereHas("deduction", function ($query) use ($deductionType) {
@@ -160,6 +167,22 @@ class LastPayService {
         }
 
         return round($taxRefund, 2);
+    }
+
+    public function getAdditionalFields(Employee $employee): array {
+        $additionalFields = [];
+        $lastPay = LastPay::with("additional_fields")
+        ->where("employee_id", $employee->id)
+        ->first();
+
+        if ($lastPay) {
+            // foreach () {
+
+            // }
+            $additionalFields = $lastPay->additional_fields;
+        }
+
+        return $additionalFields;
     }
 
     public function applyPostedLastPayDeductionBalances(LastPay $lastPay): void

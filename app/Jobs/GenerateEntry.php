@@ -55,15 +55,15 @@ class GenerateEntry implements ShouldQueue
         $this->sendToApsys = $sendToApsys;
     }
 
-    public function middleware()
-    {
-        return [
-            (new WithoutOverlapping('accounting_psd_sequence'))
-                ->shared()
-                ->releaseAfter(1200)
-                ->expireAfter(7200)
-        ];
-    }
+    // public function middleware()
+    // {
+    //     return [
+    //         (new WithoutOverlapping('accounting_psd_sequence'))
+    //             ->shared()
+    //             ->releaseAfter(1200)
+    //             ->expireAfter(7200)
+    //     ];
+    // }
 
     private function generateEntryId(&$counterEntry)
     {

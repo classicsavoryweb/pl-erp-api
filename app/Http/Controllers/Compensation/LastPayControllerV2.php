@@ -221,6 +221,7 @@ class LastPayControllerV2 extends Controller
             DB::rollBack();
             return $this->sendError(["message" => "Last pay not found"]);
         } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
@@ -280,30 +281,9 @@ class LastPayControllerV2 extends Controller
                 $totalDeductions = 0;
 
                 $companyDeductions = $request->company_deductions ?? [];
-                $deductionIds = [];
-
-                foreach ($companyDeductions as $deduction) {
-                    $deductionIds[] = $deduction["employee_deduction_id"];
-                }
 
                 if ($request->reload_deductions) {
-                    $additionalDeductions = EmployeeDeduction::whereNotIn("id", $deductionIds)
-                        ->where("employee_id", $employee->id)
-                        ->whereHas("deduction", function ($query) {
-                            $query->where("category", "Company");
-                        })
-                        ->where("balance", ">", 0)
-                        ->get();
-
-                    foreach ($additionalDeductions as $deduction) {
-                        $companyDeductions[] = [
-                            "deduction_type" => $deduction->deduction->description,
-                            "employee_deduction_id" => $deduction->id,
-                            "balance" => $deduction->amount,
-                            "amount" => $deduction->amount,
-                            "category" => $deduction->deduction->category,
-                        ];
-                    }
+                    $companyDeductions = $this->lastPayService->getDeductions($employee, ["Company"])["deductions"];
                 }
 
                 foreach ($companyDeductions as $deduction) {
@@ -348,6 +328,8 @@ class LastPayControllerV2 extends Controller
                         "status" => "Unposted",
                         "remarks" => $lastPay["remarks"],
                     ]);
+
+                    $lastPayDetails->deductions()->delete();
 
                     foreach ($lastPay["company_deductions"] as $deduction) {
                         $employeeDeductions = EmployeeDeduction::find($deduction["employee_deduction_id"]);

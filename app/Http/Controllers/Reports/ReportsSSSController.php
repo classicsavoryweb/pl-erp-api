@@ -21,7 +21,7 @@ class ReportsSSSController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $query = Payroll::with(['employee', 'employee.current_branch', 'employee.current_position']);
+            $query = Payroll::with(['employee', 'employee.employee_status', 'employee.current_branch', 'employee.current_position', 'payroll_list']);
 
             if ($request->has('year')) {
                 $query->whereYear('pay_date', $request->year);
@@ -130,7 +130,7 @@ class ReportsSSSController extends Controller
             $withDash = $request->with_dash ?? 0;
 
             if ($request->has('export') && $request->export) { 
-                $payrollEmployee = $query->get()->unique('employee_id');
+                $payrollEmployee = $query->get();
                 return Excel::download(new ReportsSSSLoansExport($payrollEmployee, $withDash), "sss_loans.xlsx"); 
             }
 

@@ -59,8 +59,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;"> Total Working Days</span>
+                    <td style="padding: 6px; font-size:13px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;">Total Working Days</span>
                         {{ number_format($payroll->salary, 2) }}
                     </td>
                 </tr>
@@ -86,8 +86,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;"> Total Working Hours Deductions </span>
+                    <td style="padding: 6px; font-size:13px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;">Total Working Hours Deductions </span>
                         {{ number_format($payroll->working_hours_deduction_total, 2) }}
                     </td>
                 </tr>
@@ -149,15 +149,42 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;"> Total Additional Working Hours </span>
+                    <td style="padding: 6px; font-size:13px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;">Total Additional Working Hours </span>
                         {{ number_format($payroll->additional_working_hours_total, 2) }}
                     </td>
                 </tr>
-                
+
                 <tr>
                     <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
-                        Statutory Deductions
+                        Adjustments
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
+                        <table width="100%" style="margin-top:5px; font-size:12px;">
+                            <tr>
+                                <td width="50%">Taxable Adjustment</td>
+                                <td width="50%">{{ number_format($payroll->taxable_adjustment, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Non-Taxable Adjustment</td>
+                                <td>{{ number_format($payroll->non_taxable_adjustment, 2) }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding: 6px; text-align: left; font-size:13px;" colspan="3">
+                        <span class="semibold" style="padding-right: 10px;">Gross Pay</span>
+                        {{ number_format($payroll->gross_pay, 2) }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
+                        Contributions
                     </td>
                 </tr>
                 <tr>
@@ -201,38 +228,14 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px;" colspan="3">
-                        <span class="semibold" style="padding-right: 7px;"> Total Deductions </span>
-                        {{ number_format($payroll->total_deductions, 2) }}
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="bg-smoke-grey items-left semibold" style="padding: 6px;" colspan="3">
-                        Adjustments
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px; text-align: left; vertical-align: top;" colspan="2">
-                        <table width="100%" style="margin-top:5px; font-size:12px;">
-                            <tr>
-                                <td width="50%">Taxable Adjustment</td>
-                                <td width="50%">{{ number_format($payroll->taxable_adjustment, 2) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Non-Taxable Adjustment</td>
-                                <td>{{ number_format($payroll->non_taxable_adjustment, 2) }}</td>
-                            </tr>
-                        </table>
+                    <td style="padding: 6px; font-size:13px;" colspan="3">
+                        <span class="semibold" style="padding-right: 7px;">Total Deductions </span>
+                        {{ number_format(($payroll->total_deductions + $payroll->contribution_total + $payroll->withholding_tax), 2) }}
                     </td>
                 </tr>
 
                 <tr class="bg-smoke-grey">
-                    <td style="padding: 6px; text-align: left;" colspan="1">
-                        <span class="semibold" style="padding-right: 10px;">Gross Pay</span>
-                        {{ number_format($payroll->gross_pay, 2) }}
-                    </td>
-                    <td style="padding: 6px; text-align: left;" colspan="2">
+                    <td style="padding: 6px; text-align: left;" colspan="3">
                         <span class="semibold" style="padding-right: 10px;">Net Pay</span>
                         {{ number_format($payroll->net_pay, 2) }}
                     </td>
