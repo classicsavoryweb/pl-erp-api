@@ -292,7 +292,7 @@ class PhysicalCountController extends Controller
                 'total_amount' => $totalAmount,
             ];
         })
-        ->filter(fn ($line) => $line['total_purchases'] > 0)
+        // ->filter(fn ($line) => $line['total_purchases'] > 0)
         ->values();
 
         return [

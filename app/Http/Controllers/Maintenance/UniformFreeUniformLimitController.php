@@ -36,7 +36,7 @@ class UniformFreeUniformLimitController extends Controller
                 'allowed_count' => ['required', 'integer', 'min:1', 'max:100'],
                 'status' => ['required', Rule::in(['active', 'inactive'])],
                 'date_from' => ['required','date'],
-                'date_to' => ['required','date','after_or_equal:date_from'],
+                // 'date_to' => ['required','date','after_or_equal:date_from'],
             ]);
 
             $limit = DB::transaction(function () use ($request, $validated) {
@@ -66,8 +66,8 @@ class UniformFreeUniformLimitController extends Controller
                 'description' => ['required', 'string', 'max:255', Rule::unique('uniform_free_uniform_limits', 'description')->ignore($id)],
                 'allowed_count' => ['required', 'integer', 'min:1', 'max:100'],
                 'status' => ['required', Rule::in(['active', 'inactive'])],
-                'date_from' => ['required', 'date'],
-                'date_to' => ['required', 'date', 'after_or_equal:date_from']
+            'date_from' => ['required', 'date'],
+                // 'date_to' => ['required', 'date', 'after_or_equal:date_from']
             ]);
 
             $limit = DB::transaction(function () use ($request, $id, $validated) {
