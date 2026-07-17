@@ -336,24 +336,24 @@ class RequestAndIssuanceController extends Controller
 
             $duplicateFreeUniform = $this->getDuplicateFreeUniformRequest($validated);
 
-            if ($validated['issuance_type'] === 'Free Uniform') {
+            // if ($validated['issuance_type'] === 'Free Uniform') {
 
-                $limit = UniformFreeUniformLimit::where('status', 'active')
-                    ->whereDate('date_from', '<=', now())
-                    ->whereDate('date_to', '>=', now())
-                    ->latest('id')
-                    ->first();
+            //     $limit = UniformFreeUniformLimit::where('status', 'active')
+            //         ->whereDate('date_from', '<=', now())
+            //         // ->whereDate('date_to', '>=', now())
+            //         ->latest('id')
+            //         ->first();
 
-                if ($limit) {
-                    $requestedQty = collect($validated['items'])->sum('requested_quantity');
+            //     if ($limit) {
+            //         $requestedQty = collect($validated['items'])->sum('requested_quantity');
 
-                    if ($requestedQty > $limit->allowed_count) {
-                        return $this->sendError([
-                            'message' => "The total requested quantity ({$requestedQty}) exceeds the allowed free uniform limit of {$limit->allowed_count} item(s).",
-                        ], 422);
-                    }
-                }
-            }
+            //         if ($requestedQty > $limit->allowed_count) {
+            //             return $this->sendError([
+            //                 'message' => "The total requested quantity ({$requestedQty}) exceeds the allowed free uniform limit of {$limit->allowed_count} item(s).",
+            //             ], 422);
+            //         }
+            //     }
+            // }
 
             if ($duplicateFreeUniform && empty($validated['confirm_free_uniform_duplicate'])) {
                 return $this->sendError([
@@ -514,7 +514,7 @@ class RequestAndIssuanceController extends Controller
 
         $limit = UniformFreeUniformLimit::where('status', 'active')
             ->whereDate('date_from', '<=', now())
-            ->whereDate('date_to', '>=', now())
+            // ->whereDate('date_to', '>=', now())
             ->latest('id')
             ->first();
 
@@ -524,9 +524,18 @@ class RequestAndIssuanceController extends Controller
 
         $employee = Employee::where('employee_number', $validated['employee_id'])->first();
 
-        $allowedCount = $limit->allowed_count;
+        $hireDate = \Carbon\Carbon::parse($employee->date_hired);
+        $yearsOfService = $hireDate->diffInYears(now());
+
+        if ($yearsOfService === 0) {
+            $allowedCount = 3;
+        } else {
+            $allowedCount = $limit->allowed_count;
+
+        }
         $periodStart = $limit->date_from;
-        $periodEnd = $limit->date_to;
+        // $periodEnd = $limit->date_to;
+        $periodEnd = now();
         $nextAnniversary = null;
         $remaining = null;
 
