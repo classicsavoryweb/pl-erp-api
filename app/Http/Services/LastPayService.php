@@ -20,7 +20,7 @@ class LastPayService {
         $meal_allowance = $lastPayDetails->meal_allowance;
         $sales = $lastPayDetails->sales;
         $year = $lastPayDetails->year;
-        $additional_fields = $lastPayDetails->additional_fields;
+        $additional_fields = $lastPayDetails->additional_fields ?? [];
         $totalDeductions = 0;
         $additionalFieldsTotal = 0;
 
@@ -171,15 +171,20 @@ class LastPayService {
 
     public function getAdditionalFields(Employee $employee): array {
         $additionalFields = [];
-        $lastPay = LastPay::with("additional_fields")
+        $lastPay = LastPay::with("additional_fields.transaction_type")
         ->where("employee_id", $employee->id)
         ->first();
 
         if ($lastPay) {
-            // foreach () {
-
-            // }
-            $additionalFields = $lastPay->additional_fields;
+            foreach ($lastPay->additional_fields as $field) {
+                $additionalFields[] = [
+                    "id" => $field->id,
+                    "last_pay_id" => $field->last_pay_id,
+                    "amount" => $field->amount,
+                    "transaction_type_id" => $field->transaction_type_id,
+                    "description" => $field->transaction_type->description
+                ];
+            }
         }
 
         return $additionalFields;
