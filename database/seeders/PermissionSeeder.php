@@ -209,6 +209,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "end_loan_compensation_deductions"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "edit_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "export_all_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "view_compensation_payroll"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_payroll"], ["module" => "compensation"]);
@@ -253,6 +254,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_reports_bir"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_bir_1601c"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_bir_1601c"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_bir_2316"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_bir_2316"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_deductions"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_deductions"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_incentive_attendance"], ["module" => "reports"]);

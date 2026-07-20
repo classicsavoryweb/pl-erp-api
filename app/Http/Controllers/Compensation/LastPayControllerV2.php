@@ -22,6 +22,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Str;
 use Log;
 use App\Http\Services\LastPayService;
+use App\Models\ConverterDetail;
 
 class LastPayControllerV2 extends Controller
 {
@@ -43,6 +44,7 @@ class LastPayControllerV2 extends Controller
                 "deductions.deduction",
                 "employee.government_deductions",
                 "employee.government_deductions.deduction",
+                "additional_fields.transaction_type",
                 "activities" => function ($query) {
                     $query->with("causer")->orderBy("id", "desc");
                 }
@@ -159,6 +161,19 @@ class LastPayControllerV2 extends Controller
                         ->value("pay_date");
                 }
 
+                $additionalFields = [];
+
+                $converterDetails = ConverterDetail::where("employee_id", $employee->id)
+                ->where("status", "Pending")
+                ->get();
+
+                foreach ($converterDetails as $converter) {
+                    $additionalFields[] = [
+                        "transaction_type_id" => $converter->transaction_type_id,
+                        "amount" => $converter->amount
+                    ];
+                }
+
                 $lastPayDetails = (object) [
                     'year' => $year,
                     'total_payroll' => $this->lastPayService->getAllHoldedPayrollsAmount($employee, $payrollPayDate),
@@ -168,6 +183,7 @@ class LastPayControllerV2 extends Controller
                     'sl_vl' => 0,
                     'sales' => 0,
                     'meal_allowance' => 0,
+                    'additional_fields' => $additionalFields,
                     'remarks' => null,
                     'company_deductions'    => $this->lastPayService->getDeductions($employee, ['Company']),
                     'government_deductions' => $this->lastPayService->getDeductions($employee, ['Pag-ibig', 'SSS']),
@@ -189,7 +205,7 @@ class LastPayControllerV2 extends Controller
     public function postLastPay($lastPayId) {
         try {
             DB::beginTransaction();
-            $lastPay = LastPay::find($lastPayId);
+            $lastPay = LastPay::with("additional_fields.transaction_type")->find($lastPayId);
 
             if ($lastPay && $lastPay->status === "Unposted") {
                 if ($this->numeric($lastPay->last_pay) < 0) {
@@ -258,6 +274,7 @@ class LastPayControllerV2 extends Controller
                 }
 
                 $lastPay->company_deductions =  $companyDeductions;
+                $lastPay["additional_fields"] = $this->lastPayService->getAdditionalFields($employee);
                 $lastPay["payrolls"] = $this->lastPayService->getThirteenthMonthPayrollRows($employee);
                 $lastPay->government_deductions = $this->lastPayService->getDeductions($employee, ['Pag-ibig', 'SSS'])["deductions"];
 
@@ -307,6 +324,7 @@ class LastPayControllerV2 extends Controller
                     'government_deductions' => [
                         "deductions" => $request->government_deductions
                     ],
+                    'additional_fields' => $request->additional_fields
                 ];
 
                 $lastPay = $this->lastPayService->computeLastPay($employee, $lastPayDetails);
@@ -330,6 +348,15 @@ class LastPayControllerV2 extends Controller
                     ]);
 
                     $lastPayDetails->deductions()->delete();
+                    $lastPayDetails->additional_fields()->delete();
+
+                    foreach ($lastPay["additional_fields"] as $additional) {
+                        $lastPayDetails->additional_fields()->updateOrCreate([
+                            "transaction_type_id" => $additional["transaction_type_id"]
+                        ],[
+                            "amount" => $additional["amount"],
+                        ]);
+                    }
 
                     foreach ($lastPay["company_deductions"] as $deduction) {
                         $employeeDeductions = EmployeeDeduction::find($deduction["employee_deduction_id"]);

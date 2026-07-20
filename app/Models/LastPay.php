@@ -47,6 +47,10 @@ class LastPay extends Model
         return $this->hasMany(LastPayDeduction::class, "last_pay_id", "id");
     }
 
+    public function additional_fields() {
+        return $this->hasMany(LastPayAdditionalField::class, "last_pay_id", "id");
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

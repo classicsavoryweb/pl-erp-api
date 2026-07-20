@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Accounting\Account;
 use App\Models\Accounting\ApsysEntry;
 use App\Models\Accounting\ApsysEntryMain;
 use App\Models\Accounting\Vendor;
@@ -145,6 +146,7 @@ class GenerateLastPayEntry implements ShouldQueue
         $branchHOId = $branchHO->id;
         $branchHOName = $branchHO->name;
         $branchHONumber = $branchHO->branch_number;
+
         $vendorHO = Vendor::where("ven_name", "HO")->firstOrFail();
         $vendorHONo = $vendorHO->ven_no;
         $vendorHOName = $vendorHO->ven_name;
@@ -157,6 +159,7 @@ class GenerateLastPayEntry implements ShouldQueue
         $branchId = $branch->id;
         $branchName = $branch->name;
         $branchNumber = $branch->branch_number;
+        $branchShortName = $branch->short_name;
 
         $lastPayDeductions = LastPayDeduction::where('last_pay_id', $lastPay->id)
             ->where('employee_id', $lastPay->employee_id)
@@ -402,6 +405,107 @@ class GenerateLastPayEntry implements ShouldQueue
                     'is_block_payment'    => 0,
                 ]
             ]);
+        }
+        
+        foreach ($lastPay->additional_fields as $fields) {
+            $transactionType = $fields->transaction_type;
+            if (!$transactionType) {
+                continue;
+            }
+            $accountHODebitId = null;
+
+            if ($transactionType->advances_debit == 'Yes') {
+                $accountHODebitId = Account::where('acc_name', 'Advances - ' . $branchShortName)
+                ->value('acc_no');
+            }
+
+            $entryId = $this->generateEntryId($counterEntry);
+            $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+            $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
+
+            $hoDebit = $transactionType->ho_debit;
+            $hoCredit = $transactionType->ho_credit;
+            $branchDebit = $transactionType->branch_debit;
+            $branchCredit = $transactionType->branch_credit;
+
+            $hoEntries = [
+                [
+                    'entry_id'            => $entryId,
+                    'apsys_entry_id'      => $apsysEntryId,
+                    'apsys_entry_main_id' => $apsysEntryMainId,
+                    'document_no'         => $lastPay->last_pay_number . '|Head Office',
+                    'branch_id'           => $branchHOId,
+                    'branch_number'       => $branchHONumber,
+                    'branch_name'         => $branchHOName,
+                    'ven_no'              => $employeeNumber,
+                    'ven_name'            => $employeeFullName,
+                    'amount'              => $fields->amount,
+                    'acc_no'              => $accountHODebitId ?? $hoDebit,
+                    'description_per_acc' => "Last Pay|".$transactionType->description,
+                    'balance_type'        => 'Debit',
+                    'is_block_payment'    => 0,
+                ],
+                [
+                    'entry_id'            => $entryId,
+                    'apsys_entry_id'      => $apsysEntryId,
+                    'apsys_entry_main_id' => $apsysEntryMainId,
+                    'document_no'         => $lastPay->last_pay_number . '|Head Office',
+                    'branch_id'           => $branchHOId,
+                    'branch_number'       => $branchHONumber,
+                    'branch_name'         => $branchHOName,
+                    'ven_no'              => $employeeNumber,
+                    'ven_name'            => $employeeFullName,
+                    'amount'              => $fields->amount,
+                    'acc_no'              => "4000000",
+                    'description_per_acc' => "Last Pay|".$transactionType->description,
+                    'balance_type'        => 'Credit',
+                    'is_block_payment'    => 0,
+                ]
+            ];
+
+            $entries = array_merge($entries, $hoEntries);
+
+            if ($branchDebit) {
+                $entryId2 = $this->generateEntryId($counterEntry);
+                $apsysEntryId2 = $this->generateApsysEntryId($counterApsysEntry);
+                $apsysEntryMainId2 = $this->generateApsysEntryMainId($counterApsysEntryMain);
+                $branchEntries = [
+                    [
+                        'entry_id'            => $entryId2,
+                        'apsys_entry_id'      => $apsysEntryId2,
+                        'apsys_entry_main_id' => $apsysEntryMainId2,
+                        'document_no'         => "Last Pay | ".$lastPay->last_pay_number . ' | ' . $employeeNumber . ' | ' . $branchName,
+                        'branch_id'           => $branchId,
+                        'branch_number'       => $branchNumber,
+                        'branch_name'         => $branchName,
+                        'ven_no'              => $vendorHONo,
+                        'ven_name'            => $vendorHOName,
+                        'amount'              => $fields->amount,
+                        'acc_no'              => $branchDebit,
+                        'description_per_acc' => "Last Pay | ".$transactionType->description,
+                        'balance_type'        => 'Debit',
+                        'is_block_payment'    => 0,
+                    ],
+                    [
+                        'entry_id'            => $entryId2,
+                        'apsys_entry_id'      => $apsysEntryId2,
+                        'apsys_entry_main_id' => $apsysEntryMainId2,
+                        'document_no'         => "Last Pay | ".$lastPay->last_pay_number . ' | ' . $employeeNumber . ' | ' . $branchName,
+                        'branch_id'           => $branchId,
+                        'branch_number'       => $branchNumber,
+                        'branch_name'         => $branchName,
+                        'ven_no'              => $vendorHONo,
+                        'ven_name'            => $vendorHOName,
+                        'amount'              => $fields->amount,
+                        'acc_no'              => $branchCredit,
+                        'description_per_acc' => "Last Pay | ".$transactionType->description,
+                        'balance_type'        => 'Credit',
+                        'is_block_payment'    => 0,
+                    ],
+                ];
+
+                $entries = array_merge($entries, $branchEntries);
+            }
         }
 
         if ($lastPay->meal > 0) {
