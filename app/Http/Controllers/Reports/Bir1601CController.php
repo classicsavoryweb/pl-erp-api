@@ -68,19 +68,28 @@ class Bir1601CController extends Controller
 
             $sectionA = $this->birService->computeSectionA((int) $validated['year'], (int) $validated['month']);
 
-            $bir = Bir1601C::updateOrCreate(
-                ['year' => $validated['year'], 'month' => $validated['month']],
-                array_merge($sectionA, [
-                    'generated_by' => Auth::id(),
-                    'generated_at' => now(),
-                ])
-            );
+            $bir = Bir1601C::firstOrNew(['year' => $validated['year'], 'month' => $validated['month']]);
+            $bir->disableLogging();
+
+            $bir->fill(array_merge($sectionA, [
+                'generated_by' => Auth::id(),
+                'generated_at' => now(),
+            ]))->save();
 
             $taxable = $this->birService->computeTaxableCompensation($bir->toArray());
             $bir->update($taxable);
 
             $remittance = $this->birService->computeDerivedRemittance($bir->toArray());
             $bir->update($remittance);
+
+            $bir->enableLogging();
+
+            activity()
+                ->performedOn($bir)
+                ->causedBy(Auth::user())
+                ->useLog('BIR 1601-C')
+                ->event('generated')
+                ->log('generated');
 
             return $this->sendResponse($bir->fresh());
         } catch (Exception $e) {
@@ -122,6 +131,10 @@ class Bir1601CController extends Controller
                 'remarks' => ['nullable', 'string'],
             ]);
 
+            $original = $bir->only(array_keys($validated));
+
+            $bir->disableLogging();
+
             $bir->update($validated);
 
             $taxable = $this->birService->computeTaxableCompensation($bir->toArray());
@@ -129,6 +142,27 @@ class Bir1601CController extends Controller
 
             $remittance = $this->birService->computeDerivedRemittance($bir->toArray());
             $bir->update($remittance);
+
+            $bir->enableLogging();
+
+            $updated = $bir->fresh()->only(array_keys($validated));
+            $changed = array_keys(array_diff_assoc(
+                array_map(fn ($value) => (string) $value, $updated),
+                array_map(fn ($value) => (string) $value, $original)
+            ));
+
+            if (!empty($changed)) {
+                activity()
+                    ->performedOn($bir)
+                    ->causedBy(Auth::user())
+                    ->useLog('BIR 1601-C')
+                    ->event('updated')
+                    ->withProperties([
+                        'old' => array_intersect_key($original, array_flip($changed)),
+                        'attributes' => array_intersect_key($updated, array_flip($changed)),
+                    ])
+                    ->log('edited');
+            }
 
             return $this->sendResponse($bir->fresh());
         } catch (Exception $e) {
