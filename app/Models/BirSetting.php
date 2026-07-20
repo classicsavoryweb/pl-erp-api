@@ -16,6 +16,7 @@ class BirSetting extends Model
         "address",
         "zip",
         "contact_number",
+        "signatory_name",
         "atc",
         "is_government",
         "is_amended_return",

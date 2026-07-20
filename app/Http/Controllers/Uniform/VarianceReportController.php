@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Uniform;
 use App\Exports\Uniform\VarianceReportDetailedExport;
 use App\Exports\Uniform\VarianceReportExport;
 use App\Http\Controllers\Controller;
-use App\Models\UniformPhysicalCount;
-use App\Models\UniformPhysicalCountItem;
+use App\Http\Services\UniformMovementService;
+use App\Models\UniformItem;
 use App\Models\UniformPeriodLock;
+use App\Models\UniformPhysicalCount;
 use App\Models\UniformVariance;
 use App\Models\UniformVarianceItem;
 use Illuminate\Http\Request;
@@ -17,6 +18,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class VarianceReportController extends Controller
 {
+    public function __construct(private UniformMovementService $movementService)
+    {
+    }
+
     public function variances(Request $request)
     {
         $query = $this->varianceQuery($request)->with('physicalCount', 'items.item.size', 'items.item.gender')->latest();
@@ -46,72 +51,47 @@ class VarianceReportController extends Controller
     {
         $data = $request->validate([
             'begin_date' => ['required', 'date'],
-            'ending_date' => ['required', 'date', 'after_or_equal:begin_date'],
+            'ending_date' => ['required', 'date', 'after:begin_date'],
             'items' => ['sometimes', 'array'],
             'items.*.uniform_item_id' => ['required_with:items', 'integer', 'exists:uniform_items,id'],
             'items.*.adjustment' => ['nullable', 'numeric'],
             'items.*.reason_of_adjustment' => ['nullable', 'string'],
         ]);
 
-        $physicalCount = UniformPhysicalCount::with('items')
-            ->where('status', 'Posted')
-            ->whereDate('begin_date', $data['begin_date'])
-            ->whereDate('ending_date', $data['ending_date'])
-            ->first();
-
-        if (!$physicalCount) {
-            return response()->json([
-                'message' => 'No posted physical count found for the selected date range.'
-            ], 422);
-        }
+        $physicalCount = $this->findPhysicalCount($data['begin_date'], $data['ending_date']);
 
         return response()->json([
-            'items' => $this->varianceLines(
-                $physicalCount,
-                $data['items'] ?? []
-            ),
+            'physical_count' => $physicalCount,
+            'items' => $this->varianceLines($data['begin_date'], $data['ending_date'], $physicalCount, $data['items'] ?? []),
         ]);
     }
     public function storeVariance(Request $request)
-{
-    $data = $request->validate([
-        'begin_date' => ['required', 'date'],
-        'ending_date' => ['required', 'date', 'after_or_equal:begin_date'],
-        'remarks' => ['nullable', 'string'],
-        'items' => ['required', 'array', 'min:1'],
-        'items.*.uniform_item_id' => ['required', 'integer', 'distinct', 'exists:uniform_items,id'],
-        'items.*.adjustment' => ['nullable', 'numeric'],
-        'items.*.reason_of_adjustment' => ['nullable', 'string'],
-    ]);
-
-    return DB::transaction(function () use ($data) {
-
-        $physicalCount = UniformPhysicalCount::where('status', 'Posted')
-            ->whereDate('begin_date', $data['begin_date'])
-            ->whereDate('ending_date', $data['ending_date'])
-            ->first();
-
-        if (!$physicalCount) {
-            abort(422, 'No posted physical count found for the selected date range.');
-        }
-
-        $this->ensureNoPendingVariance();
-        $this->ensureNoVarianceForPhysicalCount($physicalCount->id);
-
-        $variance = UniformVariance::create([
-            'variance_no' => $this->nextNumber(
-                'uniform_variances',
-                'variance_no',
-                'VR',
-                7
-            ),
-            'physical_count_id' => $physicalCount->id,
-            'begin_date' => $physicalCount->begin_date,
-            'ending_date' => $physicalCount->ending_date,
-            'status' => 'Unposted',
-            'remarks' => $data['remarks'] ?? null,
-            'prepared_by' => $this->userName(),
+    {
+        $data = $request->validate([
+            'begin_date' => ['required', 'date'],
+            'ending_date' => ['required', 'date', 'after:begin_date'],
+            'remarks' => ['required', 'string'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.uniform_item_id' => ['required', 'integer', 'distinct', 'exists:uniform_items,id'],
+            'items.*.adjustment' => ['nullable', 'numeric'],
+            'items.*.reason_of_adjustment' => ['nullable', 'string'],
         ]);
+
+        return DB::transaction(function () use ($data) {
+            $this->ensureNoPendingVariance();
+            $this->ensureNoPostedVarianceForDateRange($data['begin_date'], $data['ending_date']);
+
+            $physicalCount = $this->findPhysicalCount($data['begin_date'], $data['ending_date']);
+
+            $variance = UniformVariance::create([
+                'variance_no' => $this->nextNumber('uniform_variances', 'variance_no', 'VR', 7),
+                'physical_count_id' => $physicalCount?->id,
+                'begin_date' => $data['begin_date'],
+                'ending_date' => $data['ending_date'],
+                'status' => 'Unposted',
+                'remarks' => $data['remarks'],
+                'prepared_by' => $this->userName(),
+            ]);
 
         $this->replaceVarianceItems(
             $variance,
@@ -147,7 +127,8 @@ class VarianceReportController extends Controller
             }
 
             if (!empty($data['items'])) {
-                $physicalCount = $this->postedPhysicalCount($variance->physical_count_id, true);
+                $physicalCount = $this->findPhysicalCount($variance->begin_date->format('Y-m-d'), $variance->ending_date->format('Y-m-d'));
+                $variance->physical_count_id = $physicalCount?->id;
                 $this->replaceVarianceItems($variance, $physicalCount, $data['items']);
             }
 
@@ -169,6 +150,18 @@ class VarianceReportController extends Controller
             if ($variance->status !== 'Reviewed') {
                 throw ValidationException::withMessages(['status' => 'Only reviewed variances can be posted.']);
             }
+
+            $postedPhysicalCount = UniformPhysicalCount::where('begin_date', $variance->begin_date)
+                ->where('ending_date', $variance->ending_date)
+                ->where('status', 'Posted')
+                ->first();
+
+            if (!$postedPhysicalCount) {
+                throw ValidationException::withMessages(['status' => 'Selected date range is not posted in physical count.']);
+            }
+
+            $variance->physical_count_id = $postedPhysicalCount->id;
+
             UniformPeriodLock::ensureDateIsOpen($variance->ending_date, UniformPeriodLock::TYPE_RECEIVING);
 
             $variance->update([
@@ -238,9 +231,9 @@ class VarianceReportController extends Controller
         return $query;
     }
 
-    private function replaceVarianceItems(UniformVariance $variance, UniformPhysicalCount $physicalCount, array $items): void
+    private function replaceVarianceItems(UniformVariance $variance, ?UniformPhysicalCount $physicalCount, array $items): void
     {
-        $lines = $this->varianceLines($physicalCount, $items);
+        $lines = $this->varianceLines($variance->begin_date->format('Y-m-d'), $variance->ending_date->format('Y-m-d'), $physicalCount, $items);
 
         $variance->items()->delete();
         foreach ($lines as $line) {
@@ -251,35 +244,58 @@ class VarianceReportController extends Controller
         }
     }
 
-    private function varianceLines(UniformPhysicalCount $physicalCount, array $inputItems): array
+    /**
+     * Independently recomputes beginning/purchases/outgoing/should-be for every active
+     * item (same as Physical Count generation), then left-joins the physical count qty
+     * + standard cost for the matching (by date) physical count if one exists, matching
+     * the legacy system's behaviour of not requiring a physical count to exist yet.
+     */
+    private function varianceLines(string $beginDate, string $endingDate, ?UniformPhysicalCount $physicalCount, array $inputItems): array
     {
         $overrides = collect($inputItems)->keyBy('uniform_item_id');
         $itemIds = $overrides->keys()->filter()->values()->all();
+        $physicalCountItems = $physicalCount ? $physicalCount->items->keyBy('uniform_item_id') : collect();
 
-        $query = $physicalCount->items()->with('item.size', 'item.gender')->orderBy('description');
-        if (!empty($itemIds)) {
-            $query->whereIn('uniform_item_id', $itemIds);
-        }
+        $items = UniformItem::query()
+            ->with('size', 'gender')
+            ->when(!empty($itemIds), fn ($query) => $query->whereIn('id', $itemIds))
+            ->where('status', 'active')
+            ->orderBy('description')
+            ->get();
 
-        return $query->get()->map(function (UniformPhysicalCountItem $item) use ($overrides) {
-            $input = $overrides->get($item->uniform_item_id, []);
-            $variance = (float) $item->physical_count - (float) $item->should_be_inventory;
+        $movement = $this->movementService->movementTotals($beginDate, $endingDate);
+        $beginningByItem = $this->movementService->beginningInventoryBatch($items, $beginDate);
+
+        return $items->map(function (UniformItem $item) use ($movement, $beginningByItem, $physicalCountItems, $overrides) {
+            $input = $overrides->get($item->id, []);
+            $pcItem = $physicalCountItems->get($item->id);
+
+            $beginning = $beginningByItem[$item->id];
+            $purchasing = (float) ($movement['purchasing'][$item->id] ?? 0);
+            $madeToOrder = (float) ($movement['made_to_order'][$item->id] ?? 0);
+            $atd = (float) ($movement['atd'][$item->item_no] ?? 0);
+            $freeUniform = (float) ($movement['free_uniform'][$item->item_no] ?? 0);
+
+            $shouldBe = ($beginning + $purchasing + $madeToOrder) - ($atd + $freeUniform);
+            $physicalCountQty = $pcItem ? (float) $pcItem->physical_count : 0.0;
+            $standardCost = $pcItem ? (float) $pcItem->standard_cost : (float) $item->standard_unit_price;
+
+            $variance = $physicalCountQty - $shouldBe;
             $adjustment = (float) ($input['adjustment'] ?? 0);
             $finalVariance = $variance + $adjustment;
-            $standardCost = (float) $item->standard_cost;
 
             return [
-                'uniform_item_id' => $item->uniform_item_id,
+                'uniform_item_id' => $item->id,
                 'item_no' => $item->item_no,
                 'description' => $item->description,
-                'uom' => $item->uom,
-                'beginning_inventory' => (float) $item->beginning_inventory,
-                'purchasing_department' => (float) $item->purchasing_department,
-                'made_to_order' => (float) $item->made_to_order,
-                'atd' => (float) $item->atd,
-                'free_uniform' => (float) $item->free_uniform,
-                'should_be_inventory' => (float) $item->should_be_inventory,
-                'physical_count' => (float) $item->physical_count,
+                'uom' => $item->standard_unit,
+                'beginning_inventory' => $beginning,
+                'purchasing_department' => $purchasing,
+                'made_to_order' => $madeToOrder,
+                'atd' => $atd,
+                'free_uniform' => $freeUniform,
+                'should_be_inventory' => $shouldBe,
+                'physical_count' => $physicalCountQty,
                 'variance' => $variance,
                 'adjustment' => $adjustment,
                 'final_variance' => $finalVariance,
@@ -290,32 +306,32 @@ class VarianceReportController extends Controller
         })->values()->all();
     }
 
-    private function postedPhysicalCount(int $id, bool $lock = false): UniformPhysicalCount
+    /**
+     * Finds the physical count covering the exact same date range, matching the legacy
+     * system's date-equality linkage (no foreign key on that side). Any non-cancelled
+     * status qualifies here; postVariance() separately requires it to be Posted.
+     */
+    private function findPhysicalCount(string $beginDate, string $endingDate): ?UniformPhysicalCount
     {
-        $query = UniformPhysicalCount::with('items')->whereKey($id);
-        if ($lock) {
-            $query->lockForUpdate();
-        }
-
-        $physicalCount = $query->firstOrFail();
-        if ($physicalCount->status !== 'Posted') {
-            throw ValidationException::withMessages(['physical_count_id' => 'Variance requires a posted physical count.']);
-        }
-
-        return $physicalCount;
+        return UniformPhysicalCount::with('items')
+            ->where('begin_date', $beginDate)
+            ->where('ending_date', $endingDate)
+            ->where('status', '!=', 'Cancelled')
+            ->latest('id')
+            ->first();
     }
 
     private function ensureNoPendingVariance(): void
     {
         if (UniformVariance::whereIn('status', ['Unposted', 'Reviewed'])->lockForUpdate()->exists()) {
-            throw ValidationException::withMessages(['status' => 'There is already a pending variance report.']);
+            throw ValidationException::withMessages(['status' => 'Variance has pending transaction']);
         }
     }
 
-    private function ensureNoVarianceForPhysicalCount(int $physicalCountId): void
+    private function ensureNoPostedVarianceForDateRange(string $beginDate, string $endingDate): void
     {
-        if (UniformVariance::where('physical_count_id', $physicalCountId)->where('status', '!=', 'Cancelled')->exists()) {
-            throw ValidationException::withMessages(['physical_count_id' => 'A variance report already exists for this physical count.']);
+        if (UniformVariance::where('begin_date', $beginDate)->where('ending_date', $endingDate)->where('status', 'Posted')->exists()) {
+            throw ValidationException::withMessages(['begin_date' => 'Date Range is Already Selected.']);
         }
     }
 

@@ -5,10 +5,10 @@ namespace App\Http\Services;
 use App\Models\Bir1601C;
 use App\Models\BirSetting;
 use FPDF;
+use Illuminate\Support\Facades\Storage;
 
 class Bir1601CPdfService
 {
-    private const PX_TO_PT = 72 / 200;
     private const PAGE_W_PX = 1700;
     private const PAGE_H_PX = 2600;
 
@@ -25,11 +25,6 @@ class Bir1601CPdfService
         'centavoLeft' => 1567, 'centavoWidth' => 41,
     ];
 
-    private function px(float $px): float
-    {
-        return $px * self::PX_TO_PT;
-    }
-
     public function generate(Bir1601C $bir): string
     {
         $pdf = new FPDF('P', 'pt', [$this->px(self::PAGE_W_PX), $this->px(self::PAGE_H_PX)]);
@@ -42,21 +37,9 @@ class Bir1601CPdfService
         return $pdf->Output('S');
     }
 
-    private function background(FPDF $pdf, string $file): void
-    {
-        $pdf->AddPage();
-        $pdf->Image(
-            storage_path("app/bir-templates/{$file}"),
-            0,
-            0,
-            $this->px(self::PAGE_W_PX),
-            $this->px(self::PAGE_H_PX)
-        );
-    }
-
     private function renderPage1(FPDF $pdf, Bir1601C $bir): void
     {
-        $this->background($pdf, 'page-1.png');
+        $this->background($pdf, 'bir-1601c-page-1.png', self::PAGE_W_PX, self::PAGE_H_PX);
         $pdf->SetFont('Helvetica', '', 11);
 
         $this->drawDigitBoxes($pdf, (int) $bir->month, 207, 40, 2, 327);
@@ -113,7 +96,15 @@ class Bir1601CPdfService
         ];
 
         foreach ($fields as $item => $value) {
-            $this->drawAmount($pdf, (float) $value, self::AMOUNT_ROWS_PAGE1[$item]);
+            $this->drawAmount(
+                $pdf,
+                (float) $value,
+                self::AMOUNT_ROWS_PAGE1[$item],
+                self::AMOUNT_BOX_PAGE1['right'],
+                self::AMOUNT_BOX_PAGE1['width'],
+                self::AMOUNT_BOX_PAGE1['centavoLeft'],
+                self::AMOUNT_BOX_PAGE1['centavoWidth']
+            );
         }
     }
 
@@ -129,7 +120,7 @@ class Bir1601CPdfService
 
     private function renderPage2(FPDF $pdf, Bir1601C $bir): void
     {
-        $this->background($pdf, 'page-2.png');
+        $this->background($pdf, 'bir-1601c-page-2.png', self::PAGE_W_PX, self::PAGE_H_PX);
         $pdf->SetFont('Helvetica', '', 9);
 
         $scheduleRowY = [1 => 484, 2 => 529.5, 3 => 574.5];
@@ -169,10 +160,29 @@ class Bir1601CPdfService
         $this->drawAmount($pdf, (float) $bir->add_less_adjustment, 815.5, 1365, 40, 1405, 40);
     }
 
-    private function drawTextInBoxes(FPDF $pdf, string $text, array $line): void
+    protected function px(float $px): float
+    {
+        return $px * (72 / 200);
+    }
+
+    protected function background(FPDF $pdf, string $file, float $pageWidthPx, float $pageHeightPx): void
+    {
+        $pdf->AddPage();
+        $pdf->Image(
+            Storage::disk('hr_system_folder')->path("templates/{$file}"),
+            0,
+            0,
+            $this->px($pageWidthPx),
+            $this->px($pageHeightPx)
+        );
+    }
+
+    protected function drawTextInBoxes(FPDF $pdf, string $text, array $line): void
     {
         $uppercase = $line['uppercase'] ?? true;
-        $chars = str_split($uppercase ? strtoupper($text) : $text);
+        $normalized = $uppercase ? mb_strtoupper($text, 'UTF-8') : $text;
+        $encoded = $this->encodeForPdf($normalized);
+        $chars = str_split($encoded);
 
         foreach ($chars as $i => $char) {
             if ($i >= $line['maxChars']) {
@@ -188,7 +198,7 @@ class Bir1601CPdfService
         }
     }
 
-    private function drawWrappedTextInBoxes(FPDF $pdf, string $text, array $lines): void
+    protected function drawWrappedTextInBoxes(FPDF $pdf, string $text, array $lines): void
     {
         $remaining = trim($text);
 
@@ -217,26 +227,21 @@ class Bir1601CPdfService
         }
     }
 
-    private function checkBox(FPDF $pdf, array $xRangePx, float $centerYPx): void
+    protected function checkBox(FPDF $pdf, array $xRangePx, float $centerYPx): void
     {
         [$leftPx, $rightPx] = $xRangePx;
         $this->drawCenteredDigit($pdf, 'X', $leftPx, $rightPx - $leftPx, $centerYPx);
     }
 
-    private function drawAmount(
+    protected function drawAmount(
         FPDF $pdf,
         float $amount,
         float $centerYPx,
-        ?float $boxRightPx = null,
-        ?float $boxWidthPx = null,
-        ?float $centavoLeftPx = null,
-        ?float $centavoWidthPx = null
+        float $boxRightPx,
+        float $boxWidthPx,
+        float $centavoLeftPx,
+        float $centavoWidthPx
     ): void {
-        $boxRightPx ??= self::AMOUNT_BOX_PAGE1['right'];
-        $boxWidthPx ??= self::AMOUNT_BOX_PAGE1['width'];
-        $centavoLeftPx ??= self::AMOUNT_BOX_PAGE1['centavoLeft'];
-        $centavoWidthPx ??= self::AMOUNT_BOX_PAGE1['centavoWidth'];
-
         $amount = round(abs($amount), 2);
         $whole = (int) floor($amount + 0.0000001);
         $cents = (int) round(($amount - $whole) * 100);
@@ -250,7 +255,7 @@ class Bir1601CPdfService
         }
     }
 
-    private function drawDigitBoxes(FPDF $pdf, int $number, float $boxRightPx, float $boxWidthPx, ?int $minDigits, float $centerYPx): void
+    protected function drawDigitBoxes(FPDF $pdf, int $number, float $boxRightPx, float $boxWidthPx, ?int $minDigits, float $centerYPx): void
     {
         $digits = str_split((string) $number);
 
@@ -267,7 +272,7 @@ class Bir1601CPdfService
         }
     }
 
-    private function drawCenteredDigit(FPDF $pdf, string $digit, float $boxLeftPx, float $boxWidthPx, float $centerYPx): void
+    protected function drawCenteredDigit(FPDF $pdf, string $digit, float $boxLeftPx, float $boxWidthPx, float $centerYPx): void
     {
         $boxLeft = $this->px($boxLeftPx);
         $boxWidth = $this->px($boxWidthPx);
@@ -275,5 +280,92 @@ class Bir1601CPdfService
         $x = $boxLeft + ($boxWidth - $textWidth) / 2;
         $y = $this->px($centerYPx) + 3;
         $pdf->Text($x, $y, $digit);
+    }
+
+    protected function encodeForPdf(string $text): string
+    {
+        $encoded = @iconv('UTF-8', 'CP1252//TRANSLIT//IGNORE', $text);
+
+        return $encoded === false ? $text : $encoded;
+    }
+
+    protected function drawFittedText(FPDF $pdf, string $text, array $box): void
+    {
+        $uppercase = $box['uppercase'] ?? true;
+        $normalized = $uppercase ? mb_strtoupper($text, 'UTF-8') : $text;
+        $encoded = trim($this->encodeForPdf($normalized));
+
+        $restoreFontSize = $box['restoreFontSize'] ?? 11;
+
+        if ($encoded === '') {
+            return;
+        }
+
+        $maxFontSize = $box['maxFontSize'] ?? 9;
+        $minFontSize = $box['minFontSize'] ?? 5.5;
+        $boxWidthPt = $this->px($box['width']) - 4;
+        $boxLeftPt = $this->px($box['left']) + 2;
+        $centerYPt = $this->px($box['centerY']);
+        $centered = $box['align'] ?? 'left';
+
+        for ($size = $maxFontSize; $size >= $minFontSize; $size -= 0.5) {
+            $pdf->SetFont('Helvetica', '', $size);
+            $textWidth = $pdf->GetStringWidth($encoded);
+            if ($textWidth <= $boxWidthPt) {
+                $x = $centered === 'center' ? $boxLeftPt + ($boxWidthPt - $textWidth) / 2 : $boxLeftPt;
+                $pdf->Text($x, $centerYPt + ($size * 0.32), $encoded);
+                $pdf->SetFont('Helvetica', '', $restoreFontSize);
+
+                return;
+            }
+        }
+
+        $pdf->SetFont('Helvetica', '', $minFontSize);
+        [$line1, $line2] = $this->splitTextToTwoLines($pdf, $encoded, $boxWidthPt);
+
+        $lineGap = $minFontSize * 0.95;
+        $x1 = $centered === 'center' ? $boxLeftPt + ($boxWidthPt - $pdf->GetStringWidth($line1)) / 2 : $boxLeftPt;
+        $pdf->Text($x1, $centerYPt - $lineGap * 0.25, $line1);
+        if ($line2 !== '') {
+            $x2 = $centered === 'center' ? $boxLeftPt + ($boxWidthPt - $pdf->GetStringWidth($line2)) / 2 : $boxLeftPt;
+            $pdf->Text($x2, $centerYPt + $lineGap * 0.85, $line2);
+        }
+
+        $pdf->SetFont('Helvetica', '', $restoreFontSize);
+    }
+
+    private function splitTextToTwoLines(FPDF $pdf, string $text, float $maxWidthPt): array
+    {
+        $words = explode(' ', $text);
+        $line1 = '';
+        $line2 = '';
+        $onFirstLine = true;
+
+        foreach ($words as $word) {
+            if ($onFirstLine) {
+                $candidate = $line1 === '' ? $word : $line1 . ' ' . $word;
+
+                if ($pdf->GetStringWidth($candidate) <= $maxWidthPt || $line1 === '') {
+                    $line1 = $candidate;
+                } else {
+                    $onFirstLine = false;
+                    $line2 = $word;
+                }
+            } else {
+                $candidate = $line2 === '' ? $word : $line2 . ' ' . $word;
+
+                if ($pdf->GetStringWidth($candidate) <= $maxWidthPt || $line2 === '') {
+                    $line2 = $candidate;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        while ($line2 !== '' && $pdf->GetStringWidth($line2) > $maxWidthPt) {
+            $line2 = substr($line2, 0, -1);
+        }
+
+        return [$line1, $line2];
     }
 }

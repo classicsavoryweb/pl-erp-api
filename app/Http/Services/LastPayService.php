@@ -20,7 +20,7 @@ class LastPayService {
         $meal_allowance = $lastPayDetails->meal_allowance;
         $sales = $lastPayDetails->sales;
         $year = $lastPayDetails->year;
-        $additional_fields = $lastPayDetails->additional_fields;
+        $additional_fields = $lastPayDetails->additional_fields ?? [];
         $totalDeductions = 0;
         $additionalFieldsTotal = 0;
 
@@ -171,15 +171,20 @@ class LastPayService {
 
     public function getAdditionalFields(Employee $employee): array {
         $additionalFields = [];
-        $lastPay = LastPay::with("additional_fields")
+        $lastPay = LastPay::with("additional_fields.transaction_type")
         ->where("employee_id", $employee->id)
         ->first();
 
         if ($lastPay) {
-            // foreach () {
-
-            // }
-            $additionalFields = $lastPay->additional_fields;
+            foreach ($lastPay->additional_fields as $field) {
+                $additionalFields[] = [
+                    "id" => $field->id,
+                    "last_pay_id" => $field->last_pay_id,
+                    "amount" => $field->amount,
+                    "transaction_type_id" => $field->transaction_type_id,
+                    "description" => $field->transaction_type->description
+                ];
+            }
         }
 
         return $additionalFields;
@@ -310,6 +315,7 @@ class LastPayService {
             "employee.current_position",
             "deductions",
             "deductions.deduction",
+            "additional_fields.transaction_type"
         ]);
 
         $earnings = [
@@ -322,7 +328,18 @@ class LastPayService {
             "meal_allowance" => round($this->numeric($lastPay->meal), 2),
         ];
 
-        $grossPay = round(array_sum($earnings), 2);
+        $additional_fields = [];
+        $additional_total = 0;
+        foreach ($lastPay->additional_fields as $field) {
+            $additional_fields[] = [
+                "amount" => $field->amount,
+                "description" => $field->transaction_type->description
+            ];
+
+            $additional_total += $field->amount;
+        }
+
+        $grossPay = round(array_sum($earnings), 2) + round($additional_total, 2);
         $deductions = $lastPay->deductions->map(function ($deduction) {
             return [
                 "id" => $deduction->id,
@@ -362,6 +379,7 @@ class LastPayService {
                 "branch_name" => $lastPay->employee?->current_branch?->name,
                 "position" => $lastPay->employee?->current_position?->description,
             ],
+            "additional_fields" => $additional_fields,
             "earnings" => $earnings,
             "deductions" => [
                 "company" => $companyDeductions,
