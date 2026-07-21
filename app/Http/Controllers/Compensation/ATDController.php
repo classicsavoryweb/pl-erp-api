@@ -165,10 +165,22 @@ class ATDController extends Controller
                 return Excel::download(new ATDListExport($deductions), "deductions.xls");
             }
 
+            $summaryQuery = clone $deductions;
+            $summaryQuery = $summaryQuery->where("balance", ">", 0)
+            ->where("approved_status", "Yes")
+            ->where("end_loan_status", "No");
+            $summary = [
+                "deduction_count" => $summaryQuery->count(),
+                "total_balance" => $summaryQuery->sum("balance"),
+            ];
+
             $deductions = $deductions->orderBy("start_date", "desc")
             ->paginate($perPage);
 
-            return $this->sendResponse($deductions);
+            return $this->sendResponse([
+                "summary" => $summary,
+                "deductions" => $deductions
+            ]);
         } catch(Exception $e) {
 
             return $this->sendError(["message" => $e->getMessage() ]);
