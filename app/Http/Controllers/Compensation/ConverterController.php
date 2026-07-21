@@ -705,23 +705,27 @@ class ConverterController extends Controller
         }
     }
 
-    public function sendTransactionEmail ($batchId) {
+    public function sendTransactionEmail (Request $request, $batchId) {
         try {
+            $request->validate([
+                "crediting_date" => "required"
+            ]);
+
             $batch = ConverterMain::with(['converter_details'])->find($batchId);
 
             if ($batch) {
-                SendTransactionToEmployeeJob::dispatch($batch, Auth::user()->id, [], false);
-
                 $batch->update([
                     "status" => "Sent",
                     "sent_at" => now(),
-                    "sent_by" => Auth::user()->id
+                    "sent_by" => Auth::user()->id,
+                    "crediting_date" => $request->crediting_date
                 ]);
 
                 $batch->converter_details()->update([
                     "status" => "Sent"
                 ]);
 
+                SendTransactionToEmployeeJob::dispatch($batch, Auth::user()->id, [], false);
                 return $this->sendResponse(["message" => "Transaction email sending"]);
             }
 

@@ -235,6 +235,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
 
             $batchNumber = $transaction->converter_main->batch_number;
             $amount = $transaction->amount;
+            $transaction->crediting_date = $batch->crediting_date;
             $description = $transaction->transaction_type->description;
             $isBlockPayment = $transaction->transaction_type->is_block_payment;
             $hoDebit = $transaction->transaction_type->ho_debit;
