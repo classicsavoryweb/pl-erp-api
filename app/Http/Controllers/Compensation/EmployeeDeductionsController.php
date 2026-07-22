@@ -14,6 +14,7 @@ use App\Models\Deduction;
 use App\Models\Entry;
 use App\Support\EntryBranchNumber;
 use App\Imports\EmployeeDeductionsImport;
+use App\Models\DeductionHistory;
 use App\Models\Term;
 use Http;
 use Illuminate\Support\Facades\Auth;
@@ -1134,6 +1135,32 @@ class EmployeeDeductionsController extends Controller
             $this->createEntries($entries, $user);
 
             return $this->sendResponse(["message" => "End loan updated successfully"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getDeductionAmortizationHistory(Request $request) {
+        try {
+            $request->validate([
+                "employee_number" => "required",
+                "reference_number" => "required"
+            ]);
+
+            $perPage = $request->per_page ?? 10;
+
+            $employee = Employee::where("employee_number", $request->employee_number)
+            ->first();
+            if ($employee) {
+                $deductionHistory = DeductionHistory::where("employee_id", $employee->id)
+                ->where("reference_doc", $request->reference_number)
+                ->orderBy("pay_date", "DESC")
+                ->paginate($perPage);
+
+                return $this->sendResponse($deductionHistory);
+            }
+
+            return $this->sendError(["message" => "Employee not found"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
