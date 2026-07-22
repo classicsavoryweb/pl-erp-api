@@ -35,6 +35,26 @@ class RequestAndIssuance extends Model
         'cancel_reason',       
 
     ];
+
+    protected static function booted()
+    {
+        static::created(function ($model) {
+
+            $prefix = match ($model->issuance_type) {
+                'Authority To Deduct' => 'ATD',
+                'Free Uniform' => 'FR',
+                default => throw new \InvalidArgumentException(
+                    "Invalid issuance type: {$model->issuance_type}"
+                ),
+            };
+
+            $model->request_number =
+                $prefix . '-URN' . str_pad($model->id, 8, '0', STR_PAD_LEFT);
+
+            $model->saveQuietly();
+        });
+    }
+
     public function items()
     {
         return $this->hasMany(RequestAndIssuanceItems::class, 'requested_number_id', 'request_number');
@@ -49,3 +69,4 @@ class RequestAndIssuance extends Model
         return $this->hasOne(Branch::class, 'name' , 'branch');
     }
 }
+  

@@ -17,6 +17,7 @@ use App\Models\UniformItem;
 use App\Models\Employee;
 use App\Models\UniformPeriodLock;
 use App\Models\UniformFreeUniformLimit;
+use App\Models\Branch;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -24,23 +25,44 @@ use Illuminate\Validation\ValidationException;
 
 class RequestAndIssuanceController extends Controller
 {
-   public function getUniformRequestAndIssuance(Request $request)
+  public function getUniformRequestAndIssuance(Request $request)
     {
         try {
             $perPage = $request->per_page ?? 10;
 
             $issuance = RequestAndIssuance::with('items','branches')->latest("id");
 
-            if ($request->has(["column_type", "key_word"])) {
-                $issuance = $issuance->where(
-                    $request->column_type,
-                    "LIKE",
-                    "%" . $request->key_word . "%"
-                );
+    
+            if ($request->filled('column_type') && $request->filled('key_word')) {
+
+                if ($request->column_type === 'item_name') {
+                    $issuance->whereHas('items', function ($query) use ($request) {
+                        $query->where('description', 'LIKE', '%' . $request->key_word . '%');
+                    });
+                } else {
+                    $issuance->where(
+                        $request->column_type,
+                        'LIKE',
+                        '%' . $request->key_word . '%'
+                    );
+                }
+            }
+
+            if ($request->filled('status')) {
+                $issuance->where("status", $request->status);
+            }
+
+            if ($request->filled('branch_id')) {
+                $branch = Branch::find($request->branch_id);
+
+                if ($branch) {
+                    $issuance->where('branch', $branch->name);
+                }
             }
 
             if ($request->has("export") && $request->export) {
                 $issuance = $issuance->get();
+
                 return Excel::download(
                     new RequestAndIssuanceExport($issuance),
                     "issuance.xls"
@@ -336,25 +358,6 @@ class RequestAndIssuanceController extends Controller
 
             $duplicateFreeUniform = $this->getDuplicateFreeUniformRequest($validated);
 
-            // if ($validated['issuance_type'] === 'Free Uniform') {
-
-            //     $limit = UniformFreeUniformLimit::where('status', 'active')
-            //         ->whereDate('date_from', '<=', now())
-            //         // ->whereDate('date_to', '>=', now())
-            //         ->latest('id')
-            //         ->first();
-
-            //     if ($limit) {
-            //         $requestedQty = collect($validated['items'])->sum('requested_quantity');
-
-            //         if ($requestedQty > $limit->allowed_count) {
-            //             return $this->sendError([
-            //                 'message' => "The total requested quantity ({$requestedQty}) exceeds the allowed free uniform limit of {$limit->allowed_count} item(s).",
-            //             ], 422);
-            //         }
-            //     }
-            // }
-
             if ($duplicateFreeUniform && empty($validated['confirm_free_uniform_duplicate'])) {
                 return $this->sendError([
                     'requires_confirmation' => true,
@@ -386,7 +389,7 @@ class RequestAndIssuanceController extends Controller
                     'status' => 'Unposted',
                     'sent_email' => 'No',
                     'created_by' => optional($request->user())->proper_full_name,
-                    'request_number' => $this->generateItemNo($validated['issuance_type']),
+                    
                 ]);
 
                 $grandTotal = $this->replaceRequestItems(
@@ -413,31 +416,6 @@ class RequestAndIssuanceController extends Controller
         ]);
     }
     
-    private function generateItemNo(string $issuanceType): string
-    {
-        $prefix = match ($issuanceType) {
-            'Authority To Deduct' => 'ATD',
-            'Free Uniform' => 'FR',
-            default => throw new \InvalidArgumentException(
-                "Invalid issuance type: {$issuanceType}"
-            ),
-        };
-
-        $last = RequestAndIssuance::where(
-                'request_number',
-                'LIKE',
-                "{$prefix}-URN%"
-            )
-            ->orderByDesc('id')
-            ->lockForUpdate()
-            ->first();
-
-        $next = $last
-            ? ((int) substr($last->request_number, -8)) + 1
-            : 1;
-        return $prefix . '-URN' . str_pad($next, 8, '0', STR_PAD_LEFT);
-    }
-
     private function replaceRequestItems(
         RequestAndIssuance $issuance,
         array $items,
@@ -514,7 +492,6 @@ class RequestAndIssuanceController extends Controller
 
         $limit = UniformFreeUniformLimit::where('status', 'active')
             ->whereDate('date_from', '<=', now())
-            // ->whereDate('date_to', '>=', now())
             ->latest('id')
             ->first();
 
@@ -534,7 +511,6 @@ class RequestAndIssuanceController extends Controller
 
         }
         $periodStart = $limit->date_from;
-        // $periodEnd = $limit->date_to;
         $periodEnd = now();
         $nextAnniversary = null;
         $remaining = null;
@@ -542,8 +518,7 @@ class RequestAndIssuanceController extends Controller
         if ($employee && $employee->date_hired) {
             $hireDate = \Carbon\Carbon::parse($employee->date_hired);
             $today = now();
-
-            // Current anniversary period
+           
             $periodStart = $hireDate->copy()->year($today->year);
 
             if ($periodStart->gt($today)) {
@@ -552,7 +527,6 @@ class RequestAndIssuanceController extends Controller
 
             $periodEnd = $periodStart->copy()->addYear()->subDay();
 
-            // Next anniversary
             $nextAnniversary = $periodStart->copy()->addYear();
 
             $remaining = $today->diffForHumans($nextAnniversary, [

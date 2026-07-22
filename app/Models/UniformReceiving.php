@@ -21,6 +21,14 @@ class UniformReceiving extends Model
         'cancelled_at' => 'datetime',
     ];
 
+     protected static function booted()
+     {
+        static::created(function ($model) {
+            $model->receiving_no = 'RCV' . str_pad($model->id, 8, '0', STR_PAD_LEFT);
+            $model->saveQuietly();
+        });
+    }
+
     public function replenishment()
     {
         return $this->belongsTo(UniformReplenishment::class, 'replenishment_id');

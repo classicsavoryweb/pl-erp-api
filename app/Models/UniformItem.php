@@ -31,6 +31,16 @@ class UniformItem extends Model
         'updated_by',
     ];
 
+    
+
+    protected static function booted()
+     {
+        static::created(function ($model) {
+            $model->item_no = 'UNI' . str_pad($model->id, 8, '0', STR_PAD_LEFT);
+            $model->saveQuietly();
+        });
+    }
+
     protected $casts = [
         'free_uniform' => 'boolean',
         'made_to_order' => 'boolean',
@@ -59,4 +69,6 @@ class UniformItem extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
+
 }

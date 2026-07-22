@@ -132,6 +132,7 @@ class WeightedAverageController extends Controller
                     'total_quantity' => round($totalQuantity, 2),
                     'total_amount' => round($totalAmount, 2),
                     'new_standard_price' => round($newStandardPrice, 2),
+                    'final_standard_price' => round($newStandardPrice),
                     'other_charges' => 0,
                     'standard_difference' => $newStandardPrice === null
                         ? '-'
@@ -145,9 +146,14 @@ class WeightedAverageController extends Controller
     {
         $request->validate([
             'status' => ['required', 'in:Unposted,Reviewed,Posted,Cancelled'],
+            'items' => ['nullable', 'array'],
+            'items.*.id' => ['nullable', 'integer'],
+            'items.*.other_charges' => ['nullable', 'numeric'],
+            'items.*.final_standard_price' => ['nullable', 'numeric'],
+            'items.*.standard_difference' => ['nullable', 'numeric'],
+            'items.*.reason' => ['nullable', 'string'],
         ]);
         $next = $request->status;
-
         $weighted = DB::transaction(function () use ($request, $id, $next) {
             $weighted = WeightedAverage::lockForUpdate()->findOrFail($id);
             $current = $weighted->status;
@@ -158,40 +164,72 @@ class WeightedAverageController extends Controller
                 'Posted' => [],
                 'Cancelled' => [],
             ];
+
             if (!in_array($next, $allowedTransitions[$current] ?? [], true)) {
                 throw ValidationException::withMessages([
                     'status' => "Invalid status transition from {$current} to {$next}.",
                 ]);
             }
-            $updateData = ['status' => $next];
+            if ($request->has('items')) {
+                foreach ($request->items as $itemData) {
+
+                    if (!isset($itemData['id'])) {
+                        continue;
+                    }
+                    WeightedAverageItems::where('id', $itemData['id'])
+                        ->update([
+                            'other_charges' => $itemData['other_charges'] ?? 0,
+                            'final_standard_price' =>
+                                $itemData['final_standard_price']
+                                ?? $itemData['new_standard_price'],
+
+                            'standard_difference' =>
+                                $itemData['standard_difference'],
+
+                            'reason' => $itemData['reason'] ?? null,
+                        ]);
+                }
+            }
+            $updateData = [
+                'status' => $next
+            ];
+
+
             if ($next === 'Reviewed' && !$weighted->reviewed_at) {
+
                 $updateData['reviewed_at'] = now();
-                $updateData['reviewed_by'] = optional($request->user())->proper_full_name;
+                $updateData['reviewed_by'] =
+                    optional($request->user())->proper_full_name;
             }
             if ($next === 'Posted' && !$weighted->posted_at) {
                 $weighted->load('items');
-                UniformPeriodLock::ensureDateIsOpen($weighted->date_posted, UniformPeriodLock::TYPE_RECEIVING);
-
+                UniformPeriodLock::ensureDateIsOpen(
+                    $weighted->date_posted,
+                    UniformPeriodLock::TYPE_RECEIVING
+                );
                 if ($weighted->items->isEmpty()) {
                     throw ValidationException::withMessages([
                         'items' => 'A request must contain at least one item before posting.',
                     ]);
                 }
-
                 foreach ($weighted->items as $item) {
+
                     UniformItem::where('item_no', $item->uniform_item_no)
                         ->lockForUpdate()
-                        ->update(['standard_unit_price' => $item->new_standard_price]);
+                        ->update([
+                            'standard_unit_price' =>
+                                $item->final_standard_price
+                                ?? $item->new_standard_price
+                        ]);
                 }
-
                 $updateData['posted_at'] = now();
-                $updateData['posted_by'] = optional($request->user())->proper_full_name;
+
+                $updateData['posted_by'] =
+                    optional($request->user())->proper_full_name;
             }
             $weighted->update($updateData);
-
             return $weighted->fresh('items');
         });
-
         return $this->sendResponse([
             'message' => 'Status updated successfully.',
             'record' => $weighted,
@@ -202,25 +240,29 @@ class WeightedAverageController extends Controller
    public function updatePrice(Request $request)
     {
         $request->validate([
-            'item_no' => 'required',
-            'standard_unit_price' => 'required|numeric',
+            'items' => ['required','array'],
+            'items.*.item_no' => ['required'],
+            'items.*.standard_unit_price' => ['required','numeric'],
         ]);
 
-        $item = UniformItem::where('item_no', $request->item_no)->first();
+        DB::transaction(function () use ($request) {
 
-        if (!$item) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Item not found.'
-            ], 404);
-        }
+            foreach ($request->items as $itemData) {
 
-        $item->standard_unit_price = $request->standard_unit_price;
-        $item->save();
+                $item = UniformItem::where('item_no', $itemData['item_no'])
+                    ->first();
+
+                if ($item) {
+                    $item->standard_unit_price = $itemData['standard_unit_price'];
+                    $item->save();
+                }
+            }
+
+        });
 
         return response()->json([
             'success' => true,
-            'message' => 'Price updated successfully.'
+            'message' => 'All prices updated successfully.'
         ]);
     }
 
@@ -249,6 +291,7 @@ class WeightedAverageController extends Controller
                 'items.*.other_charges' => ['nullable', 'numeric', 'min:0'],
                 'items.*.standard_difference' => ['required', 'numeric'],
                 'items.*.new_standard_price' => ['required', 'numeric', 'min:0'],
+                'items.*.final_standard_price' => ['numeric', 'min:0']
             ]);
 
             $weighted = DB::transaction(function () use ($request, $validated) {
@@ -277,7 +320,6 @@ class WeightedAverageController extends Controller
                     ->keyBy('item_no');
 
                 $weighted = WeightedAverage::create([
-                    'weighted_id' => $this->generateItemNo(),
                     'tag' => $validated['tag'],
                     'date_posted' => $validated['date_posted'],
                     'date_from' => $validated['date_from'],
@@ -322,6 +364,7 @@ class WeightedAverageController extends Controller
                         'new_standard_price' => $newStandardPrice,
                         'other_charges' => $otherCharges,
                         'standard_difference' => $standardDifference,
+                        'final_standard_price' => $itemData['final_standard_price'],
                         'reason' => $itemData['item_remarks'] ?? $itemData['reason'] ?? null,
                     ]);
                 }
@@ -350,18 +393,5 @@ class WeightedAverageController extends Controller
         }
     }
 
-    private function generateItemNo(): string
-    {
-        $last = WeightedAverage::where('weighted_id', 'LIKE', 'WA%')
-            ->orderByDesc('weighted_id')
-            ->lockForUpdate()
-            ->first();
-
-        $next = $last
-            ? ((int) substr($last->weighted_id, 2)) + 1
-            : 1;
-
-        return 'WA' . str_pad($next, 7, '0', STR_PAD_LEFT);
-    }
 
 }

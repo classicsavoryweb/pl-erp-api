@@ -201,7 +201,6 @@ class StockReplenishmentController extends Controller
 
             $record = DB::transaction(function () use ($request, $validated) {
                 $record = UniformReplenishment::create([
-                    'request_no' => $this->nextNumber(UniformReplenishment::class, 'request_no', 'RPL'),
                     'supplier_id' => $validated['supplier_id'],
                     'replenishment_type' => $validated['replenishment_type'],
                     'requested_date' => $validated['requested_date'],
@@ -335,6 +334,7 @@ class StockReplenishmentController extends Controller
             ]);
 
             DB::transaction(function () use ($request, $validated, $id) {
+
                 $record = UniformReplenishment::lockForUpdate()->findOrFail($id);
 
                 if (!in_array($record->status, ['Posted', 'Partially Received'], true)) {
@@ -348,15 +348,17 @@ class StockReplenishmentController extends Controller
                     'closed_at' => now(),
                     'closed_reason' => $validated['reason'],
                 ]);
+
                 UniformReceiving::where('replenishment_id', $record->id)
+                    ->where('status', '!=', 'Posted')
                     ->update([
                         'status' => 'Closed',
                     ]);
             });
-
             return $this->sendResponse([
                 'message' => 'Replenishment request closed'
             ]);
+
         } catch (Exception $e) {
             return $this->sendError([
                 'message' => $e->getMessage()
@@ -463,7 +465,6 @@ class StockReplenishmentController extends Controller
                 }
 
                 $record = UniformReceiving::create([
-                    'receiving_no' => $this->nextNumber(UniformReceiving::class, 'receiving_no', 'RCV'),
                     'replenishment_id' => $replenishment->id,
                     'supplier_id' => $replenishment->supplier_id,
                     'date_received' => $validated['date_received'],
@@ -677,17 +678,6 @@ class StockReplenishmentController extends Controller
         }
 
         return (float) str_replace(',', '', (string) $row[$index]);
-    }
-
-    private function nextNumber(string $model, string $column, string $prefix): string
-    {
-        $latest = $model::where($column, 'LIKE', "{$prefix}%")
-            ->lockForUpdate()
-            ->get([$column])
-            ->map(fn ($record) => (int) substr($record->{$column}, strlen($prefix)))
-            ->max() ?? 0;
-
-        return $prefix . str_pad((string) ($latest + 1), 6, '0', STR_PAD_LEFT);
     }
 
     private function userName(Request $request): ?string

@@ -23,6 +23,7 @@ class WeightedAverageItems extends Model
         'new_standard_price',
         'other_charges',
         'standard_difference',
+        'final_standard_price',
         'reason',
     ];
 

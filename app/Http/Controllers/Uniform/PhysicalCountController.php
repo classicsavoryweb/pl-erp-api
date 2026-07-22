@@ -87,7 +87,6 @@ class PhysicalCountController extends Controller
             $this->ensureNoPhysicalCountForPeriod($data['begin_date'], $data['ending_date']);
 
             $physicalCount = UniformPhysicalCount::create([
-                'physical_count_no' => $this->nextNumber('uniform_physical_counts', 'physical_count_no', 'PC', 7),
                 'begin_date' => $data['begin_date'],
                 'ending_date' => $data['ending_date'],
                 'counted_by' => $data['counted_by'] ?? null,

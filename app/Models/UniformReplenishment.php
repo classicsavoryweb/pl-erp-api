@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
 
 class UniformReplenishment extends Model
 {
@@ -23,6 +24,14 @@ class UniformReplenishment extends Model
         'closed_at' => 'datetime',
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($model) {
+            $model->request_no = 'RPL' . str_pad($model->id, 8, '0', STR_PAD_LEFT);
+            $model->saveQuietly();
+        });
+    }
+
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
@@ -36,5 +45,12 @@ class UniformReplenishment extends Model
     public function receivings()
     {
         return $this->hasMany(UniformReceiving::class, 'replenishment_id');
+    }
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+         
+            ->dontLogIfAttributesChangedOnly(["request_no"]);
+
     }
 }
