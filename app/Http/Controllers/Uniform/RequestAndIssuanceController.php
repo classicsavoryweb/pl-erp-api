@@ -416,12 +416,7 @@ class RequestAndIssuanceController extends Controller
         ]);
     }
     
-    private function replaceRequestItems(
-        RequestAndIssuance $issuance,
-        array $items,
-        $uniformItems,
-        ?string $employeeGender
-    ): float {
+    private function replaceRequestItems(RequestAndIssuance $issuance,array $items,$uniformItems,?string $employeeGender): float {
         RequestAndIssuanceItems::where('requested_number_id', $issuance->request_number)->delete();
 
         $grandTotal = 0;
@@ -450,15 +445,6 @@ class RequestAndIssuanceController extends Controller
                         . "Available: {$uniformItem->stock_on_hand}.",
                 ]);
             }
-
-            if (!$this->isItemAllowedForEmployeeGender($uniformItem, $employeeGender)) {
-                throw ValidationException::withMessages([
-                    'items' => "{$uniformItem->description} is not allowed for {$employeeGender} employees.",
-                ]);
-            }
-
-            // $unitPrice = (float) $uniformItem->standard_unit_price;
-            // $totalAmount = $requestedQuantity * $unitPrice;
             $originalStock = (int) $uniformItem->stock_on_hand;
             $grandTotal += $totalAmount;
 
@@ -578,28 +564,5 @@ class RequestAndIssuanceController extends Controller
         return null;
     }
 
-    private function isItemAllowedForEmployeeGender(UniformItem $uniformItem, ?string $employeeGender): bool
-    {
-        $employeeGender = $this->normalizeGender($employeeGender);
-        $itemGender = $this->normalizeGender($uniformItem->gender?->code ?? $uniformItem->gender?->description);
-
-        if ($employeeGender === '' || $itemGender === '') {
-            return true;
-        }
-
-        return $itemGender === 'unisex' || $itemGender === $employeeGender;
-    }
-
-    private function normalizeGender(?string $gender): string
-    {
-        $gender = strtolower(trim((string) $gender));
-
-        return match ($gender) {
-            'm', 'male' => 'male',
-            'f', 'female' => 'female',
-            'n/a', 'na', 'unisex' => 'unisex',
-            default => $gender,
-        };
-    }
 }
  
