@@ -62,16 +62,17 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
             }
 
             return [
-                '03-92068417',
-                $unique_payrollEmployee->employee->current_branch->short_name,
+                '0392068417',
+                '000',
                 $sssId,
                 $unique_payrollEmployee->employee->employee_number,
                 $unique_payrollEmployee->employee->last_name,
                 $unique_payrollEmployee->employee->first_name,
+                'NULL',
                 $middleInitial,
                 $this->formatNumber($monthlySalary),
-                $unique_payrollEmployee->employee->employee_status->description,
-                $unique_payrollEmployee->employee->date_hired,
+                'N',
+                'NULL',
                 $unique_payrollEmployee->employee->current_position->description,
                 $this->formatNumber($employee_sss_first_cutoff),
                 $this->formatNumber($employee_sss_second_cutoff),
@@ -79,6 +80,7 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
                 $this->formatNumber($employer_sss_second_cutoff),
                 $this->formatNumber($employee_sss_first_cutoff + $employee_sss_second_cutoff),
                 $this->formatNumber($employer_sss_first_cutoff + $employer_sss_second_cutoff),
+                $unique_payrollEmployee->employee->date_hired,  
             ];
         });
     }
@@ -97,6 +99,7 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
             'Employee Number',
             'Last Name',
             'First Name',
+            'Suffix',
             'Middle Initial',
             'Monthly Salary',
             'Remarks/Status',
@@ -108,6 +111,7 @@ class ReportsSSSContributionsExport implements FromCollection, WithHeadings, Wit
             '2nd Cutoff (ER Share)',
             'Total (EE Share)',
             'Total (ER Share)',
+            'Date Hired'
         ];
 
         return $headings;
