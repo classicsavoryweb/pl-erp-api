@@ -330,6 +330,14 @@ class LastPayControllerV2 extends Controller
                 $lastPay = $this->lastPayService->computeLastPay($employee, $lastPayDetails);
 
                 if ($request->save_changes) {
+                    $isExisting = LastPay::where("employee_id", $employee->id)
+                    ->where("status", "Posted")
+                    ->first();
+
+                    if ($isExisting) {
+                        return $this->sendError(["message" => "Last pay already existing"]);
+                    }
+
                     $lastPayDetails = LastPay::updateOrCreate([
                         "employee_id" => $employee->id,
                     ], [
