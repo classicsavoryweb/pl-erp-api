@@ -32,7 +32,7 @@ class DeductionHistory extends Model
         return $this->hasOne(EmployeeDeduction::class, 'reference_doc', 'reference_doc')
         ->whereColumn(
             'employee_deductions.employee_id',
-            $this->getTable() . '.employee_id'
+            'employee_id'
         );
     }
 
