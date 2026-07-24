@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Awobaz\Compoships\Compoships;
 
 class DeductionHistory extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, Compoships;
 
     protected $table = "deduction_history";
     protected $fillable = ["employee_id", "reference_doc", "deduction_id", "amount", "pay_date", "date_time", "old_balance", "new_balance"];
@@ -29,10 +30,10 @@ class DeductionHistory extends Model
 
     public function actual_deduction()
     {
-        return $this->hasOne(EmployeeDeduction::class, 'reference_doc', 'reference_doc')
-        ->whereColumn(
-            'employee_deductions.employee_id',
-            'employee_id'
+        return $this->hasOne(
+            EmployeeDeduction::class,
+            ['reference_doc', 'employee_id'],
+            ['reference_doc', 'employee_id']
         );
     }
 
