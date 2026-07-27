@@ -441,11 +441,7 @@ class TimeKeepingService
         ->first();
 
         if (
-            $schedule->selection === "Spot Audit" ||
-            $schedule->selection === "MEI 08:00 TO 06:30" ||
-            $schedule->selection === "MEI 09:00 TO 19:30" ||
-            $schedule->selection === "Flex 1" ||
-            $schedule->selection === "Flex 2" ||
+            in_array($schedule->selection, ["Flex 1", "Flex 2", "Spot Audit", "MEI 08:00 TO 06:30", "MEI 09:00 TO 19:30"]) ||
             $hasTravelOvertime
         ) {
             $punches = $biotimePunches;
@@ -477,7 +473,11 @@ class TimeKeepingService
 
             $workHours += $travel_time;
             $undertime = 0;
-            // $tardiness = 0;
+            if (
+                in_array($schedule->selection, ["Flex 1", "Flex 2", "Spot Audit", "MEI 08:00 TO 06:30", "MEI 09:00 TO 19:30"])
+            ) {
+                $tardiness = 0;
+            }
             $shouldBeHalfDay = false;
             $totalWorkedHours = $workHours - ($scheduledBreakInMinutes / 60);
 
@@ -713,9 +713,10 @@ class TimeKeepingService
             }
 
             if ($tardiness > ($hours * 60)) {
+                Log::info($tardiness);
                 return $timeKeeping;
             }
-
+            
             $timeKeeping = $model->create([
                 "employee_id" => $employee->id,
                 "biometric_number" => $employee->biometric_number,
