@@ -441,7 +441,7 @@ class TimeKeepingService
         ->first();
 
         if (
-            in_array($schedule->selection, ["Flex 1", "Flex 2", "Spot Audit", "MEI 08:00 TO 06:30", "MEI 09:00 TO 19:30"]) ||
+            in_array($schedule->selection, ["Flex", "Flex 1", "Flex 2", "Spot Audit", "MEI 08:00 TO 06:30", "MEI 09:00 TO 19:30"]) ||
             $hasTravelOvertime
         ) {
             $punches = $biotimePunches;
@@ -451,9 +451,8 @@ class TimeKeepingService
                 return $punch->branch && $punch->branch->travel_time;
             });
 
-            if (($schedule->selection === "Spot Audit" ||
-                $schedule->selection === "MEI 08:00 TO 06:30" ||
-                $schedule->selection === "MEI 09:00 TO 19:30") && 
+            if (
+                in_array($schedule->selection, ["Spot Audit", "MEI 08:00 TO 06:30","MEI 09:00 TO 19:30"]) &&
                 $punchWithTravelTime 
             ) {
                 if ($firstPunch->branch_id !== null) {
@@ -474,7 +473,7 @@ class TimeKeepingService
             $workHours += $travel_time;
             $undertime = 0;
             if (
-                in_array($schedule->selection, ["Flex 1", "Flex 2", "Spot Audit", "MEI 08:00 TO 06:30", "MEI 09:00 TO 19:30"])
+                in_array($schedule->selection, ["Flex", "Flex 1", "Flex 2", "Spot Audit", "MEI 08:00 TO 06:30", "MEI 09:00 TO 19:30"])
             ) {
                 $tardiness = 0;
             }
@@ -494,6 +493,10 @@ class TimeKeepingService
                 $firstPunchToScheduledOutInHours = $firstPunchToScheduledOutInSeconds / 3600;
                 $overtime = $workHours - $firstPunchToScheduledOutInHours < 1 ? 0 : $workHours - $firstPunchToScheduledOutInHours;
                 // $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
+            }
+
+            if (in_array($schedule->selection, ["Flex", "Flex 1", "Flex 2"])) {
+                $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
         }
 
