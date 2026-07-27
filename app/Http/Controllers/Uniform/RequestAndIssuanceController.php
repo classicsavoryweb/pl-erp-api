@@ -358,11 +358,15 @@ class RequestAndIssuanceController extends Controller
 
             $duplicateFreeUniform = $this->getDuplicateFreeUniformRequest($validated);
 
-            if ($duplicateFreeUniform && empty($validated['confirm_free_uniform_duplicate'])) {
+            if ($duplicateFreeUniform) {
+
+                Log::warning('Free Uniform Request Blocked', [
+                    'request_number' => $duplicateFreeUniform->request_number,
+                    'employee_id' => $validated['employee_id'],
+                ]);
+
                 return $this->sendError([
-                    'requires_confirmation' => true,
-                    'confirmation_type' => 'free_uniform_duplicate',
-                    'message' => 'This employee has already availed his/her free uniform for the current year',
+                    'message' => 'This employee has already reached the allowed free uniform limit for the current period.',
                     'previous_request_number' => $duplicateFreeUniform->request_number,
                     'previous_request_date' => $duplicateFreeUniform->date_requested,
                 ], 422);
@@ -477,79 +481,84 @@ class RequestAndIssuanceController extends Controller
         }
 
         $limit = UniformFreeUniformLimit::where('status', 'active')
-            ->whereDate('date_from', '<=', now())
+            ->whereDate('date_from', '<=', today())
             ->latest('id')
             ->first();
+
+        Log::info('Limit Result', [
+            'limit' => $limit,
+        ]);
 
         if (!$limit) {
             return null;
         }
+       
+        $allowedCount = $limit->allowed_count;
 
-        $employee = Employee::where('employee_number', $validated['employee_id'])->first();
+        $employee = Employee::where('employee_number', $validated['employee_id'])
+            ->first();
+
+        if (!$employee || !$employee->date_hired) {
+            return null;
+        }
 
         $hireDate = \Carbon\Carbon::parse($employee->date_hired);
+
         $yearsOfService = $hireDate->diffInYears(now());
+
 
         if ($yearsOfService === 0) {
             $allowedCount = 3;
-        } else {
-            $allowedCount = $limit->allowed_count;
-
         }
-        $periodStart = $limit->date_from;
-        $periodEnd = now();
-        $nextAnniversary = null;
-        $remaining = null;
 
-        if ($employee && $employee->date_hired) {
-            $hireDate = \Carbon\Carbon::parse($employee->date_hired);
-            $today = now();
-           
-            $periodStart = $hireDate->copy()->year($today->year);
+        $periodStart = $hireDate->copy()->year(now()->year);
 
-            if ($periodStart->gt($today)) {
-                $periodStart->subYear();
-            }
-
-            $periodEnd = $periodStart->copy()->addYear()->subDay();
-
-            $nextAnniversary = $periodStart->copy()->addYear();
-
-            $remaining = $today->diffForHumans($nextAnniversary, [
-                'parts' => 3,
-                'short' => false,
-                'syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW,
-            ]);
+        if ($periodStart->gt(now())) {
+            $periodStart->subYear();
         }
+
+
+        $periodEnd = $periodStart->copy()
+            ->addYear()
+            ->subDay();
 
         $count = RequestAndIssuance::where('request_and_issuances.employee_id', $validated['employee_id'])
             ->where('request_and_issuances.status', '<>', 'Cancelled')
             ->where('request_and_issuances.issuance_type', 'Free Uniform')
             ->where('request_and_issuances.request_number', 'LIKE', 'FR-URN%')
-            ->when($excludeId, fn ($query) => $query->where('request_and_issuances.id', '<>', $excludeId))
-            ->whereBetween('request_and_issuances.date_requested', [$periodStart, $periodEnd])
+
+            ->when(
+                $excludeId,
+                fn($query) => $query->where('request_and_issuances.id', '<>', $excludeId)
+            )
+
+            ->whereBetween(
+                'request_and_issuances.date_requested',
+                [$periodStart, $periodEnd]
+            )
+
             ->join(
                 'request_and_issuance_items',
                 'request_and_issuances.request_number',
                 '=',
                 'request_and_issuance_items.requested_number_id'
             )
+
             ->sum('request_and_issuance_items.requested_quantity');
 
-        $currentRequestQty = collect($validated['items'])->sum('requested_quantity');
+        $currentRequestQty = collect($validated['items'])
+            ->sum('requested_quantity');
+
         $totalQty = $count + $currentRequestQty;
 
         Log::info('Free Uniform Limit Check', [
-            'employee_id'      => $validated['employee_id'],
-            'date_hired'       => $employee?->date_hired,
-            'allowed_count'    => $allowedCount,
-            'period_start'     => $periodStart,
-            'period_end'       => $periodEnd,
-            'already_availed'  => $count,
-            'current_request'  => $currentRequestQty,
-            'total_quantity'   => $totalQty,
-            'next_anniversary' => $nextAnniversary?->toDateString(),
-            'eligible_in'      => $remaining,
+            'employee_id' => $validated['employee_id'],
+            'allowed_count' => $allowedCount,
+            'already_availed' => $count,
+            'current_request' => $currentRequestQty,
+            'total_quantity' => $totalQty,
+            'period_start' => $periodStart->toDateString(),
+            'period_end' => $periodEnd->toDateString(),
         ]);
 
         if ($totalQty > $allowedCount) {
@@ -560,6 +569,7 @@ class RequestAndIssuanceController extends Controller
                 ->latest('id')
                 ->first();
         }
+
 
         return null;
     }
