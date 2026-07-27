@@ -266,6 +266,8 @@ class WeightedAverageController extends Controller
 
             if ($weightedAverage) {
                 $weightedAverage->status = 'Updated';
+                $weightedAverage->price_updated_by = optional($request->user())->proper_full_name;
+                $weightedAverage->price_updated_at = now();
                 $weightedAverage->save();
             }
 
