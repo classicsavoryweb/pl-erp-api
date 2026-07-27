@@ -353,6 +353,8 @@ class StockReplenishmentController extends Controller
                     ->where('status', '!=', 'Posted')
                     ->update([
                         'status' => 'Closed',
+                        'closed_by' => $this->userName($request),
+                        'closed_at' => now(),
                     ]);
             });
             return $this->sendResponse([
@@ -367,24 +369,65 @@ class StockReplenishmentController extends Controller
     }
 
     public function receivableReplenishments()
-    {
-        try {
-            $records = UniformReplenishment::with([
-                'supplier',
-                'items' => fn ($query) => $query->whereColumn('received_qty', '<', 'approved_qty'),
-                'items.item.size',
-                'items.item.gender',
-            ])
-                ->whereIn('status', ['Posted', 'Partially Received'])
-                ->whereHas('items', fn ($query) => $query->whereColumn('received_qty', '<', 'approved_qty'))
-                ->latest('id')
-                ->get();
+{
+    try {
+        $records = UniformReplenishment::with([
+            'supplier',
+            'items' => function ($query) {
+                $query
+                    ->withSum([
+                        'receivingItems as pending_received_qty' => function ($q) {
+                            $q->whereHas('receiving', function ($r) {
+                                $r->where('status', 'Unposted');
+                            });
+                        }
+                    ], 'quantity');
+            },
+            'items.item.size',
+            'items.item.gender',
+        ])
+        ->whereIn('status', ['Posted', 'Partially Received'])
+        ->latest('id')
+        ->get();
 
-            return $this->sendResponse($records);
-        } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
-        }
+        $records->each(function ($record) {
+
+            $record->items = $record->items
+                ->map(function ($item) {
+
+                    $pending = (float) ($item->pending_received_qty ?? 0);
+
+                    $item->remaining_qty =
+                        max(
+                            0,
+                            (float)$item->approved_qty -
+                            (float)$item->received_qty -
+                            $pending
+                        );
+
+                    return $item;
+                })
+                ->filter(function ($item) {
+                    return $item->remaining_qty > 0;
+                })
+                ->values();
+
+        });
+
+        // remove replenishments with no remaining items
+        $records = $records->filter(function ($record) {
+            return $record->items->count() > 0;
+        })->values();
+
+
+        return $this->sendResponse($records);
+
+    } catch (Exception $e) {
+        return $this->sendError([
+            'message' => $e->getMessage()
+        ]);
     }
+}
 
     public function receivings(Request $request)
     {

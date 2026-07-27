@@ -240,6 +240,7 @@ class WeightedAverageController extends Controller
    public function updatePrice(Request $request)
     {
         $request->validate([
+            'weighted_average_id' => ['required'],
             'items' => ['required','array'],
             'items.*.item_no' => ['required'],
             'items.*.standard_unit_price' => ['required','numeric'],
@@ -256,6 +257,16 @@ class WeightedAverageController extends Controller
                     $item->standard_unit_price = $itemData['standard_unit_price'];
                     $item->save();
                 }
+            }
+
+            $weightedAverage = WeightedAverage::where(
+                'weighted_id',
+                $request->weighted_average_id
+            )->first();
+
+            if ($weightedAverage) {
+                $weightedAverage->status = 'Updated';
+                $weightedAverage->save();
             }
 
         });

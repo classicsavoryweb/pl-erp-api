@@ -29,6 +29,10 @@ class UniformReplenishmentItem extends Model
     {
         return max(0, (float) $this->approved_qty - (float) $this->received_qty);
     }
+    public function receivingItems()
+    {
+        return $this->hasMany(UniformReceivingItem::class, 'replenishment_item_id');
+    }
 
     public function getTotalAmountAttribute(): float
     {

@@ -28,6 +28,8 @@ class UniformReceivingItem extends Model
         return $this->belongsTo(UniformReceiving::class, 'receiving_id');
     }
 
+    
+
     public function getTotalAmountAttribute(): float
     {
         return (float) $this->quantity * (float) $this->unit_price;
