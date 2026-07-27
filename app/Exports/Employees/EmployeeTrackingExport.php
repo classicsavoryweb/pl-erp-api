@@ -117,7 +117,7 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
                 if ($column === 'separation_reason') {
                     $value = $employee->separation?->description ?? $value;
                 }
-                if (in_array($column, ['date_hired', 'regularization_date', 'separation_date']) && $value) {
+                if (in_array($column, ['date_hired', 'regularization_date', 'separation_date', 'birthday']) && $value) {
                     $value = Carbon::parse($value)->format('m/d/Y');
                 }
                 $value = $this->appendOicToPosition($employee, $column, $value);
