@@ -474,105 +474,100 @@ class RequestAndIssuanceController extends Controller
         return $grandTotal;
     }
 
-    private function getDuplicateFreeUniformRequest(array $validated, ?int $excludeId = null): ?RequestAndIssuance
-    {
-        if (($validated['issuance_type'] ?? null) !== 'Free Uniform') {
-            return null;
-        }
+   private function getDuplicateFreeUniformRequest(array $validated, ?int $excludeId = null): ?RequestAndIssuance
+{
+    if (($validated['issuance_type'] ?? null) !== 'Free Uniform') {
+        return null;
+    }
 
-        $limit = UniformFreeUniformLimit::where('status', 'active')
-            ->whereDate('date_from', '<=', today())
-            ->latest('id')
-            ->first();
+    // Default allowed count before the effectivity date
+    $allowedCount = 1;
 
-        Log::info('Limit Result', [
-            'limit' => $limit,
-        ]);
+    // Get the latest active limit
+    $limit = UniformFreeUniformLimit::where('status', 'active')
+        ->latest('id')
+        ->first();
 
-        if (!$limit) {
-            return null;
-        }
-       
+    Log::info('Limit Result', [
+        'limit' => $limit,
+    ]);
+
+    $employee = Employee::where('employee_number', $validated['employee_id'])
+        ->first();
+
+    if (!$employee || !$employee->date_hired) {
+        return null;
+    }
+
+    $hireDate = \Carbon\Carbon::parse($employee->date_hired);
+    $yearsOfService = $hireDate->diffInYears(now());
+
+    // Apply the configured limit only when the effectivity date is reached
+    if ($limit && today()->gte($limit->date_from)) {
         $allowedCount = $limit->allowed_count;
 
-        $employee = Employee::where('employee_number', $validated['employee_id'])
-            ->first();
-
-        if (!$employee || !$employee->date_hired) {
-            return null;
-        }
-
-        $hireDate = \Carbon\Carbon::parse($employee->date_hired);
-
-        $yearsOfService = $hireDate->diffInYears(now());
-
-
+        // Employees with less than 1 year of service get 3
         if ($yearsOfService === 0) {
             $allowedCount = 3;
         }
-
-        $periodStart = $hireDate->copy()->year(now()->year);
-
-        if ($periodStart->gt(now())) {
-            $periodStart->subYear();
-        }
-
-
-        $periodEnd = $periodStart->copy()
-            ->addYear()
-            ->subDay();
-
-        $count = RequestAndIssuance::where('request_and_issuances.employee_id', $validated['employee_id'])
-            ->where('request_and_issuances.status', '<>', 'Cancelled')
-            ->where('request_and_issuances.issuance_type', 'Free Uniform')
-            ->where('request_and_issuances.request_number', 'LIKE', 'FR-URN%')
-
-            ->when(
-                $excludeId,
-                fn($query) => $query->where('request_and_issuances.id', '<>', $excludeId)
-            )
-
-            ->whereBetween(
-                'request_and_issuances.date_requested',
-                [$periodStart, $periodEnd]
-            )
-
-            ->join(
-                'request_and_issuance_items',
-                'request_and_issuances.request_number',
-                '=',
-                'request_and_issuance_items.requested_number_id'
-            )
-
-            ->sum('request_and_issuance_items.requested_quantity');
-
-        $currentRequestQty = collect($validated['items'])
-            ->sum('requested_quantity');
-
-        $totalQty = $count + $currentRequestQty;
-
-        Log::info('Free Uniform Limit Check', [
-            'employee_id' => $validated['employee_id'],
-            'allowed_count' => $allowedCount,
-            'already_availed' => $count,
-            'current_request' => $currentRequestQty,
-            'total_quantity' => $totalQty,
-            'period_start' => $periodStart->toDateString(),
-            'period_end' => $periodEnd->toDateString(),
-        ]);
-
-        if ($totalQty > $allowedCount) {
-            return RequestAndIssuance::where('employee_id', $validated['employee_id'])
-                ->where('status', '<>', 'Cancelled')
-                ->where('issuance_type', 'Free Uniform')
-                ->where('request_number', 'LIKE', 'FR-URN%')
-                ->latest('id')
-                ->first();
-        }
-
-
-        return null;
     }
+
+    $periodStart = $hireDate->copy()->year(now()->year);
+
+    if ($periodStart->gt(now())) {
+        $periodStart->subYear();
+    }
+
+    $periodEnd = $periodStart->copy()
+        ->addYear()
+        ->subDay();
+
+    $count = RequestAndIssuance::where('request_and_issuances.employee_id', $validated['employee_id'])
+        ->where('request_and_issuances.status', '<>', 'Cancelled')
+        ->where('request_and_issuances.issuance_type', 'Free Uniform')
+        ->where('request_and_issuances.request_number', 'LIKE', 'FR-URN%')
+        ->when(
+            $excludeId,
+            fn ($query) => $query->where('request_and_issuances.id', '<>', $excludeId)
+        )
+        ->whereBetween(
+            'request_and_issuances.date_requested',
+            [$periodStart, $periodEnd]
+        )
+        ->join(
+            'request_and_issuance_items',
+            'request_and_issuances.request_number',
+            '=',
+            'request_and_issuance_items.requested_number_id'
+        )
+        ->sum('request_and_issuance_items.requested_quantity');
+
+    $currentRequestQty = collect($validated['items'])
+        ->sum('requested_quantity');
+
+    $totalQty = $count + $currentRequestQty;
+
+    Log::info('Free Uniform Limit Check', [
+        'employee_id' => $validated['employee_id'],
+        'allowed_count' => $allowedCount,
+        'already_availed' => $count,
+        'current_request' => $currentRequestQty,
+        'total_quantity' => $totalQty,
+        'period_start' => $periodStart->toDateString(),
+        'period_end' => $periodEnd->toDateString(),
+    ]);
+
+    if ($totalQty > $allowedCount) {
+        return RequestAndIssuance::where('employee_id', $validated['employee_id'])
+            ->where('status', '<>', 'Cancelled')
+            ->where('issuance_type', 'Free Uniform')
+            ->where('request_number', 'LIKE', 'FR-URN%')
+            ->latest('id')
+            ->first();
+    }
+
+    return null;
+}
 
 }
  
