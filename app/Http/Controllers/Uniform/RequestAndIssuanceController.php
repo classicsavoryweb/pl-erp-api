@@ -479,11 +479,8 @@ class RequestAndIssuanceController extends Controller
     if (($validated['issuance_type'] ?? null) !== 'Free Uniform') {
         return null;
     }
-
-    // Default allowed count before the effectivity date
     $allowedCount = 1;
 
-    // Get the latest active limit
     $limit = UniformFreeUniformLimit::where('status', 'active')
         ->latest('id')
         ->first();
@@ -501,12 +498,8 @@ class RequestAndIssuanceController extends Controller
 
     $hireDate = \Carbon\Carbon::parse($employee->date_hired);
     $yearsOfService = $hireDate->diffInYears(now());
-
-    // Apply the configured limit only when the effectivity date is reached
     if ($limit && today()->gte($limit->date_from)) {
         $allowedCount = $limit->allowed_count;
-
-        // Employees with less than 1 year of service get 3
         if ($yearsOfService === 0) {
             $allowedCount = 3;
         }
