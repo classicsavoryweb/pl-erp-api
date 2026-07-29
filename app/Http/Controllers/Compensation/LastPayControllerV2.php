@@ -223,6 +223,20 @@ class LastPayControllerV2 extends Controller
                 ]);
                 $lastPay->enableLogging();
 
+                foreach ($lastPay->additional_fields as $additionalField) {
+                    $fieldOnConverter = ConverterDetail::where("employee_id", $lastPay->employee_id)
+                    ->where("amount", $additionalField->amount)
+                    ->where("transaction_type_id", $additionalField->transaction_type_id)
+                    ->where("status", "Pending")
+                    ->first();
+
+                    if (!$fieldOnConverter) {
+                        continue;
+                    }
+
+                    $fieldOnConverter->update(["status" => "Last Pay"]);
+                }
+
                 activity()
                     ->performedOn($lastPay)
                     ->causedBy(Auth::user())
