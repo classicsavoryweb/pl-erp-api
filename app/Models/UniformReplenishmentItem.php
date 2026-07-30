@@ -18,7 +18,7 @@ class UniformReplenishmentItem extends Model
         'unit_price' => 'decimal:2',
     ];
 
-    protected $appends = ['remaining_qty', 'total_amount'];
+    protected $appends = [ 'total_amount'];
 
     public function item()
     {

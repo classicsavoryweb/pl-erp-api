@@ -53,6 +53,21 @@ class PhysicalCountController extends Controller
         );
     }
 
+    public function dropdownPhysicalCounts()
+    {
+        return response()->json(
+            UniformPhysicalCount::select(
+                'id',
+                'begin_date',
+                'ending_date',
+                'physical_count_no'
+            )
+            ->where('status', 'posted')
+            ->orderByDesc('begin_date')
+            ->get()
+        );
+    }
+
     public function previewPhysicalCount(Request $request)
     {
         $data = $request->validate([
