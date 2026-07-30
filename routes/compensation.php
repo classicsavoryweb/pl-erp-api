@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::middleware(["permission:export_compensation_atd"])->get("/export-all-atds", [ATDController::class, "exportAllEmployeeDeductions"]);
     Route::get("/get-all-healthcare-for-salary-deductions", [EmployeeDeductionsController::class, "getHealthCareForSalaryDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/create-healthcare-for-salary-deductions", [EmployeeDeductionsController::class, "createHealthCareSalaryDeductions"]);
+    Route::get("/get-employee-deduction-amortization-history", [EmployeeDeductionsController::class, "getDeductionAmortizationHistory"]);
 
     //payroll
     Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);

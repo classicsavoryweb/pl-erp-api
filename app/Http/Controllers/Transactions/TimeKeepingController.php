@@ -681,6 +681,44 @@ class TimeKeepingController extends Controller
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
+    }
 
+    public function updateTimeKeepingSummary(Request $request, $id) {
+        try {
+            $request->validate([
+                "regular_days" => "required",
+                "special_leave" => "required",
+                "cancelled_off" => "required",
+                "special_holiday" => "required",
+                "legal_holiday" => "required",
+                "adjustment_amount" => "required",
+            ]);
+
+            $tkSummary = TimeKeepingSummary::find($id);
+
+            if ($tkSummary) {
+                $cutOff = Cutoff::where("cut_off", $tkSummary->cut_off)->first();
+
+                if ($cutOff->is_cutoff_locked == 1) {
+                    return $this->sendError(["message" => "Cannot edit finalized timekeeping"]);
+                }
+
+                $tkSummary->update([
+                    "regular_days" => $request->regular_days,
+                    "special_leave" => $request->special_leave,
+                    "cancelled_off" => $request->cancelled_off,
+                    "special_holiday" => $request->special_holiday,
+                    "legal_holiday" => $request->legal_holiday,
+                    "adjustment_amount" => $request->adjustment_amount,
+                    "remarks" => $request->remarks ?? ""
+                ]);
+
+                return $this->sendResponse(["message" => "Timekeeping summary updated successfully"]);
+            }
+
+            return $this->sendError(["message" => "Timekeeping not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
     }
 }

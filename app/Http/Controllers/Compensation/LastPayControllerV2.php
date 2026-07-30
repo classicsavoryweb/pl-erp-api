@@ -223,6 +223,20 @@ class LastPayControllerV2 extends Controller
                 ]);
                 $lastPay->enableLogging();
 
+                foreach ($lastPay->additional_fields as $additionalField) {
+                    $fieldOnConverter = ConverterDetail::where("employee_id", $lastPay->employee_id)
+                    ->where("amount", $additionalField->amount)
+                    ->where("transaction_type_id", $additionalField->transaction_type_id)
+                    ->where("status", "Pending")
+                    ->first();
+
+                    if (!$fieldOnConverter) {
+                        continue;
+                    }
+
+                    $fieldOnConverter->update(["status" => "Last Pay"]);
+                }
+
                 activity()
                     ->performedOn($lastPay)
                     ->causedBy(Auth::user())
@@ -330,6 +344,14 @@ class LastPayControllerV2 extends Controller
                 $lastPay = $this->lastPayService->computeLastPay($employee, $lastPayDetails);
 
                 if ($request->save_changes) {
+                    $isExisting = LastPay::where("employee_id", $employee->id)
+                    ->where("status", "Posted")
+                    ->first();
+
+                    if ($isExisting) {
+                        return $this->sendError(["message" => "Last pay already existing"]);
+                    }
+
                     $lastPayDetails = LastPay::updateOrCreate([
                         "employee_id" => $employee->id,
                     ], [
