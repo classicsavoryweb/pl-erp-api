@@ -604,15 +604,10 @@ class StockReplenishmentController extends Controller
     try {
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
-            'items.*.id' => [
-                'required',
-                'exists:uniform_receiving_items,id'
-            ],
-            'items.*.quantity' => [
-                'required',
-                'numeric',
-                'gt:0'
-            ],
+            'items.*.id' => ['required','exists:uniform_receiving_items,id'],
+            'items.*.quantity' => ['required','numeric','gt:0'],
+            'items.*.unit_price' => ['required','numeric',],
+            'items.*.remarks' => ['string','max:200','nullable']
         ]);
 
         DB::transaction(function () use ($request, $validated, $id) {
@@ -631,6 +626,8 @@ class StockReplenishmentController extends Controller
 
                 $receivingItem->update([
                     'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'remarks' => $item['remarks'] ?? null,
                 ]);
             }
             $record->update([
