@@ -2,6 +2,7 @@
 namespace App\Http\Services;
 
 use App\Models\AnnualTax;
+use App\Models\DeductionHistory;
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
 use App\Models\Incentives;
@@ -208,6 +209,17 @@ class LastPayService {
 
             $currentBalance = $this->numeric($employeeDeduction->balance);
             $deductionAmount = $this->numeric($lastPayDeduction->amount);
+
+            DeductionHistory::create([
+                "employee_id" => $lastPayDeduction->employee_id,
+                "reference_doc" => $lastPayDeduction->reference_doc,
+                "amount" => $lastPayDeduction->amount,
+                "deduction_id" => $employeeDeduction->deduction_id,
+                "pay_date" => now()->toDateString(),
+                "date_time" => now(),
+                "old_balance" => $currentBalance,
+                "new_balance" => max(0, $currentBalance - $deductionAmount)
+            ]);
 
             $employeeDeduction->update([
                 "balance" => max(0, $currentBalance - $deductionAmount),

@@ -28,11 +28,11 @@
 
                 <tr>
                     <td style="padding: 6px; font-size:13px;" colspan="1">
-                        <span class="semibold" style="padding-right: 7px;">Date Created</span>
+                        <span class="semibold" style="padding-right: 7px;">Date Credited</span>
                     </td>
 
                     <td style="padding: 6px; font-size:13px;" colspan="2">
-                        <span>{{ Carbon::parse($transaction->date_created)->format('F j, Y') }}</span>
+                        <span>{{ Carbon::parse($transaction->crediting_date ?? $transaction->date_created)->format('F j, Y') }}</span>
                     </td>
                 </tr>
 

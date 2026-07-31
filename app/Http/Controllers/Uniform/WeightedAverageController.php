@@ -135,7 +135,7 @@ class WeightedAverageController extends Controller
                     'final_standard_price' => round($newStandardPrice),
                     'other_charges' => 0,
                     'standard_difference' => $newStandardPrice === null
-                        ? '-'
+                        ? 0
                         : round($newStandardPrice - $currentPrice, 2),
                     'reason' => '',
                 ];
