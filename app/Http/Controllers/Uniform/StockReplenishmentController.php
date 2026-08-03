@@ -600,55 +600,60 @@ class StockReplenishmentController extends Controller
     }
 
     public function reviewReceiving(Request $request, int $id)
-{
-    try {
-        $validated = $request->validate([
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.id' => ['required','exists:uniform_receiving_items,id'],
-            'items.*.quantity' => ['required','numeric','gt:0'],
-            'items.*.unit_price' => ['required','numeric',],
-            'items.*.remarks' => ['string','max:200','nullable']
-        ]);
-
-        DB::transaction(function () use ($request, $validated, $id) {
-
-            $record = UniformReceiving::with('items')
-                ->where('status', 'Unposted')
-                ->lockForUpdate()
-                ->findOrFail($id);
-
-
-            foreach ($validated['items'] as $item) {
-
-                $receivingItem = $record->items()
-                    ->where('id', $item['id'])
-                    ->firstOrFail();
-
-                $receivingItem->update([
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'remarks' => $item['remarks'] ?? null,
-                ]);
-            }
-            $record->update([
-                'status' => 'Reviewed',
-                'reviewed_by' => $this->userName($request),
-                'reviewed_at' => now(),
+    {
+        try {
+            $validated = $request->validate([
+                'items' => ['required', 'array', 'min:1'],
+                'items.*.id' => ['required','exists:uniform_receiving_items,id'],
+                'items.*.quantity' => ['required','numeric','gt:0'],
+                'items.*.unit_price' => ['required','numeric',],
+                'items.*.remarks' => ['string','max:200','nullable']
             ]);
-        });
+
+            DB::transaction(function () use ($request, $validated, $id) {
+
+                $record = UniformReceiving::with('items')
+                    ->where('status', 'Unposted')
+                    ->lockForUpdate()
+                    ->findOrFail($id);
 
 
-        return $this->sendResponse([
-            'message' => 'Receiving transaction reviewed'
-        ]);
+               foreach ($validated['items'] as $item) {
 
-    } catch (Exception $e) {
+                    $receivingItem = $record->items()
+                        ->where('id', $item['id'])
+                        ->firstOrFail();
 
-        return $this->sendError([
-            'message' => $e->getMessage()
-        ]);
+                    $receivingItem->update([
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'remarks' => $item['remarks'] ?? null,
+                    ]);
+                }
+
+                $totalAmount = $record->items()
+                    ->sum(DB::raw('quantity * unit_price'));
+
+                $record->update([
+                    'status' => 'Reviewed',
+                    'total_amount' => $totalAmount,
+                    'reviewed_by' => $this->userName($request),
+                    'reviewed_at' => now(),
+                ]);
+            });
+
+
+            return $this->sendResponse([
+                'message' => 'Receiving transaction reviewed'
+            ]);
+
+        } catch (Exception $e) {
+
+            return $this->sendError([
+                'message' => $e->getMessage()
+            ]);
+        }
     }
-}
 
     public function postReceiving(Request $request, int $id)
     {

@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\RequestAndIssuanceItems;
+
 
 class VarianceReportController extends Controller
 {
@@ -65,6 +67,65 @@ class VarianceReportController extends Controller
             'items' => $this->varianceLines($data['begin_date'], $data['ending_date'], $physicalCount, $data['items'] ?? []),
         ]);
     }
+
+    public function getVarianceItemById($id)
+    {
+        try {
+            $varianceItem = UniformVarianceItem::with('varianceHeader', 'item')
+                ->find($id);
+
+            if (!$varianceItem) {
+                return $this->sendError([
+                    'message' => 'Variance Item not found'
+                ], 404);
+            }
+
+            $dateFrom = $varianceItem->varianceHeader?->begin_date;
+            $dateTo   = $varianceItem->varianceHeader?->ending_date;
+
+            $requestDetails = collect();
+
+            if ($varianceItem->item && $dateFrom && $dateTo) {
+
+                $requestDetails = RequestAndIssuanceItems::with('issuance')
+                    ->where('uniform_item_no', $varianceItem->item_no)
+                    ->whereHas('issuance', function ($query) use ($dateFrom, $dateTo) {
+                        $query->where('status', 'Posted')
+                            ->whereBetween('date_posted', [
+                                $dateFrom . ' 00:00:00',
+                                $dateTo . ' 23:59:59',
+                            ]);
+                    })
+                    ->get()
+                    ->map(function ($item) {
+                        return [
+                            'request_number'    => $item->issuance?->request_number,
+                            'date_requested'    => $item->issuance?->date_requested,
+                            'date_posted'       => $item->issuance?->date_posted,
+                            'employee_name'     => $item->issuance?->employee_name,
+                            'issuance_type'     => $item->issuance?->issuance_type,
+                            'branch'            => $item->issuance?->branch,
+                            'quantity'          => (float) $item->requested_quantity,
+                            'unit_price'        => (float) $item->unit_price,
+                            'total_amount'      => (float) $item->total_amount,
+                            'uom'               => $item->uom,
+                            'remarks'           => $item->item_remarks,
+                            'position'          => $item->issuance?->position,
+                        ];
+                    });
+            }
+
+            $varianceItem->setAttribute('request_details', $requestDetails);
+
+            return $this->sendResponse($varianceItem);
+
+        } catch (\Exception $e) {
+            return $this->sendError([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    
     public function storeVariance(Request $request)
     {
         $data = $request->validate([
