@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Carbon\Carbon;
+use Log;
 
 class ReportsPayrollStatutoryController extends Controller
 {
@@ -290,15 +291,6 @@ class ReportsPayrollStatutoryController extends Controller
                 $totalDeductions = $employeePayrolls->sum('total_deductions');
                 $thirteenthMonthPay = 0;
                 $remarks = '';
-                
-                if ($isContributionOnly) {
-                    $basicPay = 0;
-                    $legalHolidayAmount = 0;
-                    $overtimeAmount = 0;
-                    $nightDiffAmount = 0;
-                    $withholdingTax = 0;
-                    $thirteenthMonthPay = 0;
-                }
 
                 if (!empty($employee->separation_date)) {
                     $separationDate = Carbon::parse($employee->separation_date);
@@ -311,10 +303,10 @@ class ReportsPayrollStatutoryController extends Controller
                     $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
 
                     $annualSalary = 0;
-                    $thirteenthPayrolls = collect($thirteenthPayrollsByEmployee->get($employee->id))
-                        ->where("is_maternity", 0)
-                        ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
-                        ->values();
+                    $thirteenthPayrolls = Payroll::where("employee_id", $employee->id)
+                    ->where("is_maternity", 0)
+                    ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
+                    ->get();
 
                     foreach ($thirteenthPayrolls as $thirteenthPayroll) {
                         $salary = ($thirteenthPayroll->salary ?? 0)
@@ -322,8 +314,17 @@ class ReportsPayrollStatutoryController extends Controller
                         $annualSalary += $salary;
                     }
 
-                    $thirteenthMonthPay = $annualSalary / 12;
+                    $thirteenthMonthPay = round(($annualSalary / 12), 2);
                     $remarks = 'Resign Date : ' . $separationDate->format('F d Y');
+                }
+
+                if ($isContributionOnly) {
+                    $basicPay = 0;
+                    $legalHolidayAmount = 0;
+                    $overtimeAmount = 0;
+                    $nightDiffAmount = 0;
+                    $withholdingTax = 0;
+                    $thirteenthMonthPay = 0;
                 }
 
                 if ($hideContributions) {
