@@ -290,8 +290,17 @@ class ReportsPayrollStatutoryController extends Controller
                 $totalDeductions = $employeePayrolls->sum('total_deductions');
                 $thirteenthMonthPay = 0;
                 $remarks = '';
+                
+                if ($isContributionOnly) {
+                    $basicPay = 0;
+                    $legalHolidayAmount = 0;
+                    $overtimeAmount = 0;
+                    $nightDiffAmount = 0;
+                    $withholdingTax = 0;
+                    $thirteenthMonthPay = 0;
+                }
 
-                if (!empty($employee?->separation_date)) {
+                if (empty($employee->separation_date)) {
                     $separationDate = Carbon::parse($employee->separation_date);
                     $yearHolded = (int) $separationDate->year;
                     $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
@@ -303,6 +312,7 @@ class ReportsPayrollStatutoryController extends Controller
 
                     $annualSalary = 0;
                     $thirteenthPayrolls = collect($thirteenthPayrollsByEmployee->get($employee->id))
+                        ->where("is_maternity", 0)
                         ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd]);
 
                     foreach ($thirteenthPayrolls as $thirteenthPayroll) {
@@ -313,15 +323,6 @@ class ReportsPayrollStatutoryController extends Controller
 
                     $thirteenthMonthPay = $annualSalary / 12;
                     $remarks = 'Resign Date : ' . $separationDate->format('F d Y');
-                }
-
-                if ($isContributionOnly) {
-                    $basicPay = 0;
-                    $legalHolidayAmount = 0;
-                    $overtimeAmount = 0;
-                    $nightDiffAmount = 0;
-                    $withholdingTax = 0;
-                    $thirteenthMonthPay = 0;
                 }
 
                 if ($hideContributions) {
