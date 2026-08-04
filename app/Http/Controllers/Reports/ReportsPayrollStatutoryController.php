@@ -313,7 +313,8 @@ class ReportsPayrollStatutoryController extends Controller
                     $annualSalary = 0;
                     $thirteenthPayrolls = collect($thirteenthPayrollsByEmployee->get($employee->id))
                         ->where("is_maternity", 0)
-                        ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd]);
+                        ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
+                        ->values();
 
                     foreach ($thirteenthPayrolls as $thirteenthPayroll) {
                         $salary = ($thirteenthPayroll->salary ?? 0)
