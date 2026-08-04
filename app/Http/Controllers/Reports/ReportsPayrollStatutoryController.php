@@ -300,7 +300,7 @@ class ReportsPayrollStatutoryController extends Controller
                     $thirteenthMonthPay = 0;
                 }
 
-                if (empty($employee->separation_date)) {
+                if (!empty($employee->separation_date)) {
                     $separationDate = Carbon::parse($employee->separation_date);
                     $yearHolded = (int) $separationDate->year;
                     $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
