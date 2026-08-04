@@ -129,6 +129,7 @@ class LastPayService {
         return Payroll::where("employee_id", $employee->id)
             ->where("status", "final")
             ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
+            ->where("is_maternity", 0)
             ->orderBy("end_date")
             ->get([
                 "id",
