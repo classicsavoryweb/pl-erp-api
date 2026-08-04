@@ -79,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/get-weight-average', [WeightedAverageController::class, 'getWeightAverage']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/get-weight-average-export', [WeightedAverageController::class, 'exportAllWeightAverage']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/export-weight-average/{id}/details', [WeightedAverageController::class, 'exportWeightAverageDetails']);
+    Route::middleware(['permission:perform_uniform_weighted_average'])->post('/uniform-weighted/{id}/cancel',[WeightedAverageController::class, 'cancelWeightedAverage']);
     Route::middleware(['permission:perform_uniform_weighted_average'])->post('/create-weight-average',[WeightedAverageController::class,'createWeightedAverage']);
     Route::middleware(['permission:perform_uniform_weighted_average'])->post('/weight-average-items', [WeightedAverageController::class, 'getReceivingItems']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/weighted-average/{id}', [WeightedAverageItemsController::class, 'getWeightAverageById']);       

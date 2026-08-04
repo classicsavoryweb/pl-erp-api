@@ -142,6 +142,33 @@ class WeightedAverageController extends Controller
             })->values(),
         ]);
     }
+
+     public function cancelWeightedAverage(Request $request, int $id)
+    {
+        $data = $request->validate([
+            'cancel_reason' => ['required', 'string'],
+        ]);
+
+        return DB::transaction(function () use ($request,$data, $id) {
+            $weighted = WeightedAverage::whereKey($id)->lockForUpdate()->firstOrFail();
+
+            if (!in_array($weighted->status, ['Unposted', 'Reviewed'], true)) {
+                throw ValidationException::withMessages(['status' => 'Only unposted or reviewed Weighted Average can be cancelled.']);
+            }
+
+            $weighted->update([
+                'status' => 'Cancelled',
+                'cancelled_by' => optional($request->user())->proper_full_name,
+                'cancelled_at' => now(),
+                'cancel_reason' => $data['cancel_reason'],
+            ]);
+
+            return response()->json([
+                'message' => 'Weighted average cancelled successfully.',
+                'data' => $weighted,
+            ]);
+        });
+    }
     public function updateWeightedStatus(Request $request, $id)
     {
         $request->validate([
@@ -301,7 +328,7 @@ class WeightedAverageController extends Controller
                 'items.*.total_amount' => ['required','numeric'],
                 'items.*.total_quantity' => ['required','numeric'],
                 'items.*.current_price' => ['required' , 'numeric'],
-                'items.*.other_charges' => ['nullable', 'numeric', 'min:0'],
+                'items.*.other_charges' => ['nullable', 'numeric', 'min:0'], 
                 'items.*.standard_difference' => ['required', 'numeric'],
                 'items.*.new_standard_price' => ['required', 'numeric', 'min:0'],
                 'items.*.final_standard_price' => ['numeric', 'min:0']
