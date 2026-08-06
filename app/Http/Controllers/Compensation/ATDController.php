@@ -403,6 +403,9 @@ class ATDController extends Controller
                 }
 
                 $atdBranch = Branch::where("branch_number", $transaction["branch_number"])->first();
+                if (!$atdBranch) {
+                    $atdBranch = Branch::where("branch_number", $transaction["branch_name"])->first();
+                }
 
                 $employeeDeduction = EmployeeDeduction::updateOrCreate([
                     "employee_id" => $employee->id,
