@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\RequestAndIssuanceItems;
+use Log;
+use Carbon\Carbon;
 
 
 class VarianceReportController extends Controller
@@ -82,19 +84,18 @@ class VarianceReportController extends Controller
 
             $dateFrom = $varianceItem->varianceHeader?->begin_date;
             $dateTo   = $varianceItem->varianceHeader?->ending_date;
-
             $requestDetails = collect();
 
             if ($varianceItem->item && $dateFrom && $dateTo) {
+                $dateFrom = Carbon::parse($dateFrom)->startOfDay();
+                $dateTo   = Carbon::parse($dateTo)->endOfDay();
 
                 $requestDetails = RequestAndIssuanceItems::with('issuance')
                     ->where('uniform_item_no', $varianceItem->item_no)
                     ->whereHas('issuance', function ($query) use ($dateFrom, $dateTo) {
                         $query->where('status', 'Posted')
-                            ->whereBetween('date_posted', [
-                                $dateFrom . ' 00:00:00',
-                                $dateTo . ' 23:59:59',
-                            ]);
+                            ->whereBetween('date_posted', [$dateFrom,$dateTo]);
+           
                     })
                     ->get()
                     ->map(function ($item) {
