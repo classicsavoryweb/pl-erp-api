@@ -292,7 +292,10 @@ class ReportsPayrollStatutoryController extends Controller
                 $thirteenthMonthPay = 0;
                 $remarks = '';
 
-                if (!empty($employee->separation_date)) {
+                $parsedSeparated = Carbon::parse($employee->separation_date);
+//                 $rangeEnd = Carbon::createFromDate($validated['year'], $validated['month'], 25)->startOfDay();
+                // $rangeStart = $rangeEnd->copy()->subMonth()->day(26)->startOfDay();
+                if (!empty($employee->separation_date) && $parsedSeparated->isBetween($rangeStart, $rangeEnd) ) {
                     $separationDate = Carbon::parse($employee->separation_date);
                     $yearHolded = (int) $separationDate->year;
                     $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
