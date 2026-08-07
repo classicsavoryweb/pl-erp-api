@@ -57,16 +57,28 @@ class VarianceReportController extends Controller
             'begin_date' => ['required', 'date'],
             'ending_date' => ['required', 'date', 'after:begin_date'],
             'items' => ['sometimes', 'array'],
-            'items.*.uniform_item_id' => ['required_with:items', 'integer', 'exists:uniform_items,id'],
+            'items.*.uniform_item_id' => [
+                'required_with:items',
+                'integer',
+                'exists:uniform_items,id'
+            ],
             'items.*.adjustment' => ['nullable', 'numeric'],
             'items.*.reason_of_adjustment' => ['nullable', 'string'],
         ]);
 
-        $physicalCount = $this->findPhysicalCount($data['begin_date'], $data['ending_date']);
+        $physicalCounts = $this->findPhysicalCounts(
+            $data['begin_date'],
+            $data['ending_date']
+        );
 
         return response()->json([
-            'physical_count' => $physicalCount,
-            'items' => $this->varianceLines($data['begin_date'], $data['ending_date'], $physicalCount, $data['items'] ?? []),
+            'physical_counts' => $physicalCounts,
+            'items' => $this->varianceLines(
+                $data['begin_date'],
+                $data['ending_date'],
+                $physicalCounts,
+                $data['items'] ?? []
+            ),
         ]);
     }
 
@@ -312,11 +324,29 @@ class VarianceReportController extends Controller
      * + standard cost for the matching (by date) physical count if one exists, matching
      * the legacy system's behaviour of not requiring a physical count to exist yet.
      */
-    private function varianceLines(string $beginDate, string $endingDate, ?UniformPhysicalCount $physicalCount, array $inputItems): array
+    private function varianceLines(
+        string $beginDate,
+        string $endingDate,
+        $physicalCounts,
+        array $inputItems
+    ): array
     {
         $overrides = collect($inputItems)->keyBy('uniform_item_id');
+
         $itemIds = $overrides->keys()->filter()->values()->all();
-        $physicalCountItems = $physicalCount ? $physicalCount->items->keyBy('uniform_item_id') : collect();
+
+       
+        $physicalCountItems = collect();
+
+        foreach ($physicalCounts as $physicalCount) {
+            foreach ($physicalCount->items as $item) {
+                $physicalCountItems->put(
+                    $item->uniform_item_id,
+                    $item
+                );
+            }
+        }
+
 
         $items = UniformItem::query()
             ->with('size', 'gender')
@@ -325,26 +355,51 @@ class VarianceReportController extends Controller
             ->orderBy('description')
             ->get();
 
+
         $movement = $this->movementService->movementTotals($beginDate, $endingDate);
         $beginningByItem = $this->movementService->beginningInventoryBatch($items, $beginDate);
 
-        return $items->map(function (UniformItem $item) use ($movement, $beginningByItem, $physicalCountItems, $overrides) {
+
+        return $items->map(function (UniformItem $item) use (
+            $movement,
+            $beginningByItem,
+            $physicalCountItems,
+            $overrides
+        ) {
+
             $input = $overrides->get($item->id, []);
+
             $pcItem = $physicalCountItems->get($item->id);
 
+
             $beginning = $beginningByItem[$item->id];
+
             $purchasing = (float) ($movement['purchasing'][$item->id] ?? 0);
             $madeToOrder = (float) ($movement['made_to_order'][$item->id] ?? 0);
             $atd = (float) ($movement['atd'][$item->item_no] ?? 0);
             $freeUniform = (float) ($movement['free_uniform'][$item->item_no] ?? 0);
 
-            $shouldBe = ($beginning + $purchasing + $madeToOrder) - ($atd + $freeUniform);
-            $physicalCountQty = $pcItem ? (float) $pcItem->physical_count : 0.0;
-            $standardCost = $pcItem ? (float) $pcItem->standard_cost : (float) $item->standard_unit_price;
+
+            $shouldBe = ($beginning + $purchasing + $madeToOrder)
+                - ($atd + $freeUniform);
+
+
+            $physicalCountQty = $pcItem
+                ? (float) $pcItem->physical_count
+                : 0.0;
+
+
+            $standardCost = $pcItem
+                ? (float) $pcItem->standard_cost
+                : (float) $item->standard_unit_price;
+
 
             $variance = $physicalCountQty - $shouldBe;
+
             $adjustment = (float) ($input['adjustment'] ?? 0);
+
             $finalVariance = $variance + $adjustment;
+
 
             return [
                 'uniform_item_id' => $item->id,
@@ -365,22 +420,29 @@ class VarianceReportController extends Controller
                 'total_variance_cost' => $finalVariance * $standardCost,
                 'reason_of_adjustment' => $input['reason_of_adjustment'] ?? null,
             ];
+
         })->values()->all();
     }
-
     /**
      * Finds the physical count covering the exact same date range, matching the legacy
      * system's date-equality linkage (no foreign key on that side). Any non-cancelled
      * status qualifies here; postVariance() separately requires it to be Posted.
      */
-    private function findPhysicalCount(string $beginDate, string $endingDate): ?UniformPhysicalCount
+    private function findPhysicalCounts(string $beginDate, string $endingDate)
     {
         return UniformPhysicalCount::with('items')
-            ->where('begin_date', $beginDate)
-            ->where('ending_date', $endingDate)
             ->where('status', '!=', 'Cancelled')
-            ->latest('id')
-            ->first();
+            ->where(function ($query) use ($beginDate, $endingDate) {
+                $query
+                    ->whereBetween('begin_date', [$beginDate, $endingDate])
+                    ->orWhereBetween('ending_date', [$beginDate, $endingDate])
+                    ->orWhere(function ($q) use ($beginDate, $endingDate) {
+                        $q->where('begin_date', '<=', $beginDate)
+                        ->where('ending_date', '>=', $endingDate);
+                    });
+            })
+            ->orderBy('begin_date')
+            ->get();
     }
 
     private function ensureNoPendingVariance(): void
