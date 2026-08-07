@@ -604,25 +604,43 @@ class StockReplenishmentController extends Controller
         try {
             $validated = $request->validate([
                 'items' => ['required', 'array', 'min:1'],
-                'items.*.id' => ['required','exists:uniform_receiving_items,id'],
-                'items.*.quantity' => ['required','numeric','gt:0'],
-                'items.*.unit_price' => ['required','numeric',],
-                'items.*.remarks' => ['string','max:200','nullable']
+                'items.*.id' => ['required', 'exists:uniform_receiving_items,id'],
+                'items.*.quantity' => ['required', 'numeric', 'gt:0'],
+                'items.*.unit_price' => ['required', 'numeric'],
+                'items.*.remarks' => ['nullable', 'string', 'max:200'],
             ]);
 
             DB::transaction(function () use ($request, $validated, $id) {
 
-                $record = UniformReceiving::with('items')
+                $record = UniformReceiving::with([
+                        'items',
+                        'replenishment.items.item'
+                    ])
                     ->where('status', 'Unposted')
                     ->lockForUpdate()
                     ->findOrFail($id);
 
+                $replenishmentItems = $record->replenishment->items->keyBy('id');
 
-               foreach ($validated['items'] as $item) {
+                foreach ($validated['items'] as $item) {
 
-                    $receivingItem = $record->items()
+                    $receivingItem = $record->items
                         ->where('id', $item['id'])
                         ->firstOrFail();
+
+                    $requestItem = $replenishmentItems->get($receivingItem->replenishment_item_id);
+
+                    if (!$requestItem) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Replenishment item not found.',
+                        ]);
+                    }
+
+                    if ((float) $item['quantity'] > (float) $requestItem->remaining_qty) {
+                        throw ValidationException::withMessages([
+                            'items' => "Cannot proceed. The maximum receiving quantity for {$requestItem->item->description} is {$requestItem->remaining_qty}.",
+                        ]);
+                    }
 
                     $receivingItem->update([
                         'quantity' => $item['quantity'],
@@ -642,15 +660,14 @@ class StockReplenishmentController extends Controller
                 ]);
             });
 
-
             return $this->sendResponse([
-                'message' => 'Receiving transaction reviewed'
+                'message' => 'Receiving transaction reviewed',
             ]);
 
         } catch (Exception $e) {
 
             return $this->sendError([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
     }
