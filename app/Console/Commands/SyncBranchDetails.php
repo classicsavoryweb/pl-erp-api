@@ -33,7 +33,7 @@ class SyncBranchDetails extends Command
      */
     public function handle()
     {
-        $this->info('Starting branch sync to savory_temp_db.branchdetails');
+        $this->info('Starting branch sync branchdetails to savory_temp_db');
         $syncFailed = false;
         $otherCompanyUnavailable = false;
 
@@ -53,8 +53,26 @@ class SyncBranchDetails extends Command
         }
 
         $batchSize = 200;
+        $currentCompany = $this->companyShortName(env('COMPANY_NAME'));
 
-        Branch::orderBy('id')
+        if (!$currentCompany) {
+            $this->error('COMPANY_NAME env is not set to SFI or TTFC');
+            return Command::FAILURE;
+        }
+
+        $this->info("Syncing branches for company: {$currentCompany}");
+
+        Branch::query()
+        ->where(function ($query) use ($currentCompany) {
+            $query->where('company', $currentCompany);
+
+            if ($currentCompany === 'SFI') {
+                $query->orWhere('company', 'LIKE', '%SAVORY FAST FOOD%');
+            } elseif ($currentCompany === 'TTFC') {
+                $query->orWhere('company', 'LIKE', '%TONY TING FOOD CONCEPTS%');
+            }
+        })
+        ->orderBy('id')
         ->chunkById($batchSize, function ($branches) use ($targetColumnKeys, $keyColumn, &$syncFailed, &$otherCompanyUnavailable) {
                 $payload = [];
                 $roleEmployeeNumbers = $branches
