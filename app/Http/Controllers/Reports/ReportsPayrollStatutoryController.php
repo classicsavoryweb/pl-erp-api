@@ -267,6 +267,7 @@ class ReportsPayrollStatutoryController extends Controller
                     + $payrollsForDisplay->sum('special_holiday_overtime_amount')
                     + $payrollsForDisplay->sum('night_differential_overtime_amount')
                     + $payrollsForDisplay->sum('cancelled_off')
+                    + $payrollsForDisplay->sum('cancelled_off_overtime_amount')
                     + $payrollsForDisplay->sum('taxable_adjustment');
                 $nightDiffAmount = $payrollsForDisplay->sum('night_differential_amount');
                 $withholdingTax = $payrollsForDisplay->sum('withholding_tax');
@@ -292,7 +293,8 @@ class ReportsPayrollStatutoryController extends Controller
                 $thirteenthMonthPay = 0;
                 $remarks = '';
 
-                if (!empty($employee->separation_date)) {
+                $parsedSeparated = Carbon::parse($employee->separation_date);
+                if (!empty($employee->separation_date) && $parsedSeparated->isBefore($rangeEnd) ) {
                     $separationDate = Carbon::parse($employee->separation_date);
                     $yearHolded = (int) $separationDate->year;
                     $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
