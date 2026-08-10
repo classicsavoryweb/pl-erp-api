@@ -207,7 +207,7 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
         ->toDateString();
 
         foreach ($groupedEntries as $mainId => $groupedEntry) {
-            $entry = $groupedEntry->first();
+            $entry = $groupedEntry->last();
 
             $entryMain = ApsysEntryMain::create([
                 'ent_tran_no'       => $mainId,
