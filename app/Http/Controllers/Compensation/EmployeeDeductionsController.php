@@ -658,12 +658,18 @@ class EmployeeDeductionsController extends Controller
         }
     }
 
-    public function getEmployeeDeduction(Request $request) {
+    public function getEmployeeDeduction(Request $request, $id) {
         try {
-            $deductions = EmployeeDeduction::where("status", "active")->get();
-            return $this->sendResponse(["deductions" => $deductions]);
-        } catch(Exception $e) {
+            $deduction = EmployeeDeduction::with([
+                "employee", "employee.current_branch", "branch", "deduction"
+            ])->find($id);
+            
+            if ($deduction) {
+                return $this->sendResponse($deduction);
+            }
 
+            return $this->sendError(["message" => "Deduction not found"]);
+        } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
