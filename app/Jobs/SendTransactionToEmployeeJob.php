@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Support\NotifiesJobStatus;
 use Exception;
 use Log;
+use Spatie\Activitylog\Facades\CauserResolver;
 
 class SendTransactionToEmployeeJob implements ShouldQueue
 {
@@ -400,6 +401,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 $creditId = $deduction->credit_id;
                 $user = User::find($userId);
 
+                CauserResolver::setCauser($user);
                 EmployeeDeduction::create([
                     "employee_id" => $employee->id,
                     "deduction_id" => $transaction->transaction_type->deduction_id,
