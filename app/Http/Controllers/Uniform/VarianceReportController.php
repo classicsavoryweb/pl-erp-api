@@ -257,18 +257,14 @@ class VarianceReportController extends Controller
         'begin_date' => ['required', 'date'],
         'ending_date' => ['required', 'date', 'after:begin_date'],
         'remarks' => ['required', 'string'],
-
         'items' => ['required', 'array', 'min:1'],
-
         'items.*.uniform_item_id' => [
             'required',
             'integer',
             'distinct',
             'exists:uniform_items,id',
         ],
-
         'items.*.adjustment' => ['nullable', 'numeric'],
-
         'items.*.reason_of_adjustment' => [
             'nullable',
             'string',
@@ -276,27 +272,20 @@ class VarianceReportController extends Controller
     ]);
 
     return DB::transaction(function () use ($data) {
-
         $this->ensureNoPendingVariance();
-
         $this->ensureNoPostedVarianceForDateRange(
             $data['begin_date'],
             $data['ending_date']
         );
-
-        // IMPORTANT:
-        // This returns ONE physical count, not a collection.
         $physicalCount = $this->findPhysicalCount(
             $data['begin_date'],
             $data['ending_date']
         );
-
         if (!$physicalCount) {
             throw ValidationException::withMessages([
                 'begin_date' => 'No posted physical count found for the selected date range.',
             ]);
         }
-
         $variance = UniformVariance::create([
             'variance_no' => $this->nextNumber(
                 'uniform_variances',
@@ -306,14 +295,10 @@ class VarianceReportController extends Controller
             ),
 
             'physical_count_id' => $physicalCount->id,
-
             'begin_date' => $data['begin_date'],
             'ending_date' => $data['ending_date'],
-
             'status' => 'Unposted',
-
             'remarks' => $data['remarks'],
-
             'prepared_by' => $this->userName(),
         ]);
 
@@ -467,7 +452,7 @@ class VarianceReportController extends Controller
             ]);
         }
     }
-    
+
     private function varianceLines(
         string $beginDate,
         string $endingDate,
