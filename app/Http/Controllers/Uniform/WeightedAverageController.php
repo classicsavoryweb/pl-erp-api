@@ -35,6 +35,14 @@ class WeightedAverageController extends Controller
                 );
             }
 
+            if ($request->filled('date_from')) {
+                $weighted->whereDate('date_from', '>=', $request->date_from);
+            }
+
+            if ($request->filled('date_to')) {
+                $weighted->whereDate('date_to', '<=', $request->date_to);
+            }
+
             if ($request->has("export") && $request->export) {
                 $weighted = $weighted->get();
                 return Excel::download(
