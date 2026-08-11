@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\RequestAndIssuanceItems;
+use App\Models\UniformReceivingItem;
 use Log;
 use Carbon\Carbon;
 
@@ -82,9 +83,89 @@ class VarianceReportController extends Controller
         ]);
     }
 
+    public function getVarianceItemDetails(Request $request)
+    {
+        try {
+            $item = UniformItem::find($request->uniform_item_id);
+
+            if (!$item) {
+                return $this->sendError([
+                    'message' => 'Uniform item not found'
+                ], 404);
+            }
+
+            $dateFrom = Carbon::parse($request->begin_date)->startOfDay();
+            $dateTo = Carbon::parse($request->end_date)->endOfDay();
+
+            $requestDetails = RequestAndIssuanceItems::with('issuance')
+                ->where('uniform_item_no', $item->item_no)
+                ->whereHas('issuance', function ($query) use ($dateFrom, $dateTo) {
+                    $query->where('status', 'Posted')
+                        ->whereBetween('date_posted', [$dateFrom, $dateTo]);
+                })
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'request_number' => $item->issuance?->request_number,
+                        'date_requested' => $item->issuance?->date_requested,
+                        'date_posted' => $item->issuance?->date_posted,
+                        'employee_name' => $item->issuance?->employee_name,
+                        'issuance_type' => $item->issuance?->issuance_type,
+                        'branch' => $item->issuance?->branch,
+                        'quantity' => (float) $item->requested_quantity,
+                        'unit_price' => (float) $item->unit_price,
+                        'total_amount' => (float) $item->total_amount,
+                        'uom' => $item->uom,
+                        'remarks' => $item->item_remarks,
+                        'position' => $item->issuance?->position,
+                    ];
+                });
+
+            $receivingDetails = UniformReceivingItem::with([
+                'receiving.supplier',
+                'receiving.replenishment',
+                'item'
+            ])
+                ->whereHas('item', function ($query) use ($item) {
+                    $query->where('item_no', $item->item_no);
+                })
+                ->whereHas('receiving', function ($query) use ($dateFrom, $dateTo) {
+                    $query->where('status', 'Posted')
+                        ->whereBetween('date_received', [$dateFrom, $dateTo]);
+                })
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'receiving_no' => $item->receiving?->receiving_no,
+                        'date_received' => $item->receiving?->date_received,
+                        'standard_uom' => $item->item?->standard_unit,
+                        'total_purchases' => (float) $item->quantity,
+                        'replenishment_type' => $item->receiving?->replenishment?->replenishment_type,
+                        'unit_price' => (float) $item->unit_price,
+                        'total_net_amount' => (float) $item->total_amount,
+                        'supplier' => $item->receiving?->supplier?->supplier_name,
+                        'crf_no' => $item->receiving?->crf_no,
+                        'document_no' => $item->receiving?->document_no,
+                        'remarks' => $item->remarks,
+                    ];
+                });
+
+            $item->setAttribute('request_details', $requestDetails);
+            $item->setAttribute('receiving_details', $receivingDetails);
+
+            return $this->sendResponse($item);
+
+        } catch (\Exception $e) {
+            return $this->sendError([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
     public function getVarianceItemById($id)
     {
         try {
+
             $varianceItem = UniformVarianceItem::with('varianceHeader', 'item')
                 ->find($id);
 
@@ -96,43 +177,74 @@ class VarianceReportController extends Controller
 
             $dateFrom = $varianceItem->varianceHeader?->begin_date;
             $dateTo   = $varianceItem->varianceHeader?->ending_date;
+
             $requestDetails = collect();
+            $receivingDetails = collect();
 
             if ($varianceItem->item && $dateFrom && $dateTo) {
+
                 $dateFrom = Carbon::parse($dateFrom)->startOfDay();
                 $dateTo   = Carbon::parse($dateTo)->endOfDay();
-
                 $requestDetails = RequestAndIssuanceItems::with('issuance')
                     ->where('uniform_item_no', $varianceItem->item_no)
                     ->whereHas('issuance', function ($query) use ($dateFrom, $dateTo) {
                         $query->where('status', 'Posted')
-                            ->whereBetween('date_posted', [$dateFrom,$dateTo]);
-           
+                            ->whereBetween('date_posted', [$dateFrom, $dateTo]);
                     })
                     ->get()
                     ->map(function ($item) {
                         return [
-                            'request_number'    => $item->issuance?->request_number,
-                            'date_requested'    => $item->issuance?->date_requested,
-                            'date_posted'       => $item->issuance?->date_posted,
-                            'employee_name'     => $item->issuance?->employee_name,
-                            'issuance_type'     => $item->issuance?->issuance_type,
-                            'branch'            => $item->issuance?->branch,
-                            'quantity'          => (float) $item->requested_quantity,
-                            'unit_price'        => (float) $item->unit_price,
-                            'total_amount'      => (float) $item->total_amount,
-                            'uom'               => $item->uom,
-                            'remarks'           => $item->item_remarks,
-                            'position'          => $item->issuance?->position,
+                            'request_number' => $item->issuance?->request_number,
+                            'date_requested' => $item->issuance?->date_requested,
+                            'date_posted'    => $item->issuance?->date_posted,
+                            'employee_name'  => $item->issuance?->employee_name,
+                            'issuance_type'  => $item->issuance?->issuance_type,
+                            'branch'         => $item->issuance?->branch,
+                            'quantity'       => (float) $item->requested_quantity,
+                            'unit_price'     => (float) $item->unit_price,
+                            'total_amount'   => (float) $item->total_amount,
+                            'uom'            => $item->uom,
+                            'remarks'        => $item->item_remarks,
+                            'position'       => $item->issuance?->position,
                         ];
                     });
+                $receivingDetails = UniformReceivingItem::with([
+                    'receiving.supplier',
+                    'receiving.replenishment',
+                    'item'
+                ])
+                ->whereHas('item', function ($query) use ($varianceItem) {
+                    $query->where('item_no', $varianceItem->item_no);
+                })
+                ->whereHas('receiving', function ($query) use ($dateFrom, $dateTo) {
+                    $query->where('status', 'Posted')
+                        ->whereBetween('date_received', [$dateFrom, $dateTo]);
+                })
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'receiving_no'       => $item->receiving?->receiving_no,
+                        'date_received'      => $item->receiving?->date_received,
+                        'standard_uom'       => $item->item?->standard_unit,
+                        'total_purchases'    => (float) $item->quantity,
+                        'replenishment_type' => $item->receiving?->replenishment?->replenishment_type,
+                        'unit_price'         => (float) $item->unit_price,
+                        'total_net_amount'   => (float) $item->total_amount,
+                        'supplier'           => $item->receiving?->supplier?->supplier_name,
+                        'crf_no'             => $item->receiving?->crf_no,
+                        'document_no'        => $item->receiving?->document_no,
+                        'remarks'            => $item->remarks,
+                    ];
+                });
             }
 
             $varianceItem->setAttribute('request_details', $requestDetails);
+            $varianceItem->setAttribute('receiving_details', $receivingDetails);
 
             return $this->sendResponse($varianceItem);
 
         } catch (\Exception $e) {
+
             return $this->sendError([
                 'message' => $e->getMessage()
             ]);
@@ -370,10 +482,7 @@ class VarianceReportController extends Controller
             $input = $overrides->get($item->id, []);
 
             $pcItem = $physicalCountItems->get($item->id);
-
-
             $beginning = $beginningByItem[$item->id];
-
             $purchasing = (float) ($movement['purchasing'][$item->id] ?? 0);
             $madeToOrder = (float) ($movement['made_to_order'][$item->id] ?? 0);
             $atd = (float) ($movement['atd'][$item->item_no] ?? 0);
@@ -431,7 +540,7 @@ class VarianceReportController extends Controller
     private function findPhysicalCounts(string $beginDate, string $endingDate)
     {
         return UniformPhysicalCount::with('items')
-            ->where('status', '!=', 'Cancelled')
+            ->where('status' , 'Posted')
             ->where(function ($query) use ($beginDate, $endingDate) {
                 $query
                     ->whereBetween('begin_date', [$beginDate, $endingDate])

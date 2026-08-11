@@ -62,6 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['permission:view_uniform_variance_report'])->get('/export-uniform-variances', [VarianceReportController::class, 'exportVariances']);
     Route::middleware(['permission:view_uniform_variance_report'])->get('/export-uniform-variances/{id}/details', [VarianceReportController::class, 'exportVarianceDetails']);
     Route::middleware(['permission:view_uniform_variance_report'])->get('/uniform-variances/{id}', [VarianceReportController::class, 'getVarianceItemById']);
+    Route::middleware(['permission:view_uniform_variance_report'])->get('/variance-details', [VarianceReportController::class, 'getVarianceItemDetails']);
+    
     Route::middleware(['permission:perform_uniform_variance_report'])->post('/uniform-variances/preview', [VarianceReportController::class, 'previewVariance']);
     Route::middleware(['permission:perform_uniform_variance_report'])->post('/uniform-variances', [VarianceReportController::class, 'storeVariance']);
     Route::middleware(['permission:perform_uniform_variance_report'])->post('/uniform-variances/{id}/review', [VarianceReportController::class, 'reviewVariance']);
