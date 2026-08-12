@@ -62,7 +62,7 @@ class PhysicalCountController extends Controller
                 'ending_date',
                 'physical_count_no'
             )
-            ->where('status', 'posted')
+            ->wherein('status', ['Posted','Updated'])
             ->orderByDesc('begin_date')
             ->get()
         );
@@ -81,6 +81,48 @@ class PhysicalCountController extends Controller
 
         return response()->json([
             'items' => $this->physicalCountLines($data['begin_date'], $data['ending_date'], $data['items'] ?? []),
+        ]);
+    }
+
+    public function updateQuantity(Request $request)
+    {
+        $request->validate([
+            'physical_count_id' => ['required'],
+            'items' => ['required','array'],
+            'items.*.item_no' => ['required'],
+            'items.*.physical_count' => ['required','numeric'],
+        ]);
+
+        DB::transaction(function () use ($request) {
+
+            foreach ($request->items as $itemData) {
+
+                $item = UniformItem::where('item_no', $itemData['item_no'])
+                    ->first();
+
+                if ($item) {
+                    $item->stock_on_hand = $itemData['physical_count'];
+                    $item->save();
+                }
+            }
+
+            $physicalCount = UniformPhysicalCount::where(
+                'physical_count_no',
+                $request->physical_count_id
+            )->first();
+
+            if ($physicalCount) {
+                $physicalCount->status = 'Updated';
+                $physicalCount->quantity_updated_by = optional($request->user())->proper_full_name;
+                $physicalCount->quantity_updated_at = now();
+                $physicalCount->save();
+            }
+
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Qauntity updated successfully.'
         ]);
     }
 
