@@ -161,7 +161,7 @@ class TimeKeepingService
         }
         if ($workHours < ($hours / 2)) {
             $halfScheduleTime = $scheduleStart->copy()->addMinutes($scheduleStart->diffInMinutes($scheduleEnd) / 2);
-            $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true);
+            $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true) - 30;
         }
         if ($workHours > $hours && $parsedLastPunch->isBefore($scheduleEnd)) {
             $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
