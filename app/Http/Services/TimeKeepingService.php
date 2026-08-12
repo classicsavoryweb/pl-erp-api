@@ -716,7 +716,6 @@ class TimeKeepingService
             }
 
             if ($tardiness > ($hours * 60)) {
-                Log::info($tardiness);
                 return $timeKeeping;
             }
             
