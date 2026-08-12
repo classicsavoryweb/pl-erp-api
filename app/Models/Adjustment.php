@@ -30,7 +30,8 @@ class Adjustment extends Model
         "unapproved_by",
         "unapproved_at",
         "timekeeping_summary_id",
-        "is_timekeeping_locked"
+        "is_timekeeping_locked",
+        "cut_off"
     ];
 
     public function employee() {

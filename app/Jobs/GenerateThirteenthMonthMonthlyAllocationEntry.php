@@ -201,12 +201,13 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
 
         $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
 
-        $date = Carbon::create($this->year, $this->month, 1)
+        $month = Carbon::parse($this->month)->month;
+        $date = Carbon::create($this->year, $month, 1)
         ->endOfMonth()
         ->toDateString();
 
         foreach ($groupedEntries as $mainId => $groupedEntry) {
-            $entry = $groupedEntry->first();
+            $entry = $groupedEntry->last();
 
             $entryMain = ApsysEntryMain::create([
                 'ent_tran_no'       => $mainId,

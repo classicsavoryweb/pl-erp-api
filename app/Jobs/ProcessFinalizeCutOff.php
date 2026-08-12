@@ -18,6 +18,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Support\NotifiesJobStatus;
+use Carbon\Carbon;
 
 class ProcessFinalizeCutOff implements ShouldQueue
 {
@@ -49,6 +50,7 @@ class ProcessFinalizeCutOff implements ShouldQueue
 
             $start_date = $this->cutOff->start_date;
             $end_Date = $this->cutOff->end_date;
+            $cutOffPaid = Carbon::parse($start_date)->format("m/d/Y")." TO ". Carbon::parse($end_Date)->format("m/d/Y");
 
             foreach($payrolls as $payroll) {
                 $payroll->update([
@@ -62,16 +64,14 @@ class ProcessFinalizeCutOff implements ShouldQueue
                 } else {
                     $deductions = json_decode($payroll->deductions ?? "[]") ?? [];
                 }
-
-                $adjustments = Adjustment::where("employee_id", $payroll->employee_id)
+                
+                Adjustment::where("employee_id", $payroll->employee_id)
+                ->where("status", "Adjusted")
                 ->where("is_timekeeping_locked", "0")
-                ->get();
-
-                foreach ($adjustments as $adjustment) {
-                    $adjustment->update([
-                        "is_timekeeping_locked" => true
-                    ]);
-                }
+                ->update([
+                    "is_timekeeping_locked" => true,
+                    "cut_off" => $cutOffPaid
+                ]);
 
                 foreach ($deductions as $deduction) {
                     $employeeDeduction = EmployeeDeduction::find($deduction["deduction_id"]);
