@@ -192,4 +192,20 @@ class TravelOvertimeController extends Controller
         }
     }
 
+    public function deleteTravelTime($id) {
+        try {
+            $travelOT = TravelOvertime::find($id);
+            
+            if ($travelOT) {
+                $travelOT->delete();
+
+                return $this->sendResponse(["message" => "Travel OT deleted successfully"]);
+            }
+
+            return $this->sendError(["message" => "Travel OT not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
 }
