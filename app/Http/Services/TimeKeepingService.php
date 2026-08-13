@@ -161,7 +161,7 @@ class TimeKeepingService
         }
         if ($workHours < ($hours / 2)) {
             $halfScheduleTime = $scheduleStart->copy()->addMinutes($scheduleStart->diffInMinutes($scheduleEnd) / 2);
-            $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true);
+            $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true) - 30;
         }
         if ($workHours > $hours && $parsedLastPunch->isBefore($scheduleEnd)) {
             $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
@@ -492,6 +492,7 @@ class TimeKeepingService
                 $firstPunchToScheduledOutInSeconds = $parsedFirstPunch->diffInSeconds($scheduleEnd);
                 $firstPunchToScheduledOutInHours = $firstPunchToScheduledOutInSeconds / 3600;
                 $overtime = $workHours - $firstPunchToScheduledOutInHours < 1 ? 0 : $workHours - $firstPunchToScheduledOutInHours;
+                $overtime = round($overtime, 1);
                 // $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
 
@@ -716,7 +717,6 @@ class TimeKeepingService
             }
 
             if ($tardiness > ($hours * 60)) {
-                Log::info($tardiness);
                 return $timeKeeping;
             }
             

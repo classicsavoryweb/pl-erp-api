@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\SyncEmployeeDetails::class,
         \App\Console\Commands\TransferUniformDeductions::class,
         \App\Console\Commands\AutoDisableTardinessMonth::class,
+        \App\Console\Commands\UpdateTerminalDevicesOfBranchSeeder::class,
     ];
 
     protected function schedule(Schedule $schedule): void
@@ -27,6 +28,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:sync-employee-details')->dailyAt('11:00');
         $schedule->command('app:sync-employee-details')->dailyAt('18:00');
         $schedule->command('app:sync-branch-details')->dailyAt('23:00');
+        $schedule->command('app:update-terminal-devices-of-branch-seeder')->dailyAt("05:00");
         // REMOVE
         // $schedule->command('app:transfer-uniform-deductions')->dailyAt('12:00');
         // $schedule->command('app:transfer-uniform-deductions')->dailyAt('18:00');
