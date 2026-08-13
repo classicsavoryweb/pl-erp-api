@@ -492,6 +492,7 @@ class TimeKeepingService
                 $firstPunchToScheduledOutInSeconds = $parsedFirstPunch->diffInSeconds($scheduleEnd);
                 $firstPunchToScheduledOutInHours = $firstPunchToScheduledOutInSeconds / 3600;
                 $overtime = $workHours - $firstPunchToScheduledOutInHours < 1 ? 0 : $workHours - $firstPunchToScheduledOutInHours;
+                $overtime = round($overtime, 1);
                 // $overtime = $workHours - $totalDurationHOurs < 1 ? 0 : $workHours - $totalDurationHOurs;
             }
 
