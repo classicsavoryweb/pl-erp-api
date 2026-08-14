@@ -524,7 +524,7 @@ class PayrollService {
         }
 
         if ($position->rank == 1) {
-            $months = Carbon::parse("2026-05-09")->diffInMonths($employee->date_hired);
+            $months = Carbon::now()->diffInMonths($employee->date_hired);
             if ($months < 1) {
                 $months = 1;
             }
