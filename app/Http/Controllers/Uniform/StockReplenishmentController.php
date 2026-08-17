@@ -12,6 +12,7 @@ use App\Models\UniformPeriodLock;
 use App\Models\UniformReceiving;
 use App\Models\UniformReplenishment;
 use App\Models\UniformReplenishmentItem;
+use App\Models\UniformReceivingItem;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -619,39 +620,46 @@ class StockReplenishmentController extends Controller
                     ->where('status', 'Unposted')
                     ->lockForUpdate()
                     ->findOrFail($id);
-
                 $replenishmentItems = $record->replenishment->items->keyBy('id');
-
                 foreach ($validated['items'] as $item) {
-
                     $receivingItem = $record->items
                         ->where('id', $item['id'])
                         ->firstOrFail();
-
-                    $requestItem = $replenishmentItems->get($receivingItem->replenishment_item_id);
-
+                    $requestItem = $replenishmentItems->get(
+                        $receivingItem->replenishment_item_id
+                    );
                     if (!$requestItem) {
                         throw ValidationException::withMessages([
                             'items' => 'Replenishment item not found.',
                         ]);
                     }
-
-                    if ((float) $item['quantity'] > (float) $requestItem->remaining_qty) {
+                    $pendingQty = UniformReceiving::whereIn('status', ['Unposted','Reviewed',])
+                        ->where('id', '!=', $record->id)
+                        ->with(['items'])
+                        ->get()
+                        ->flatMap(function ($receiving) use ($requestItem) {
+                            return $receiving->items->where(
+                                'replenishment_item_id',
+                                $requestItem->id
+                            );
+                        })
+                        ->sum('quantity');
+                    $availableQty =(float) $requestItem->approved_qty - (float) $requestItem->received_qty - (float) $pendingQty;
+                    if ((float) $item['quantity'] > $availableQty) {
                         throw ValidationException::withMessages([
-                            'items' => "Cannot proceed. The maximum receiving quantity for {$requestItem->item->description} is {$requestItem->remaining_qty}.",
+                            'items' =>
+                                "Cannot proceed. The maximum receiving quantity " .
+                                "for {$requestItem->item->description} is {$availableQty}.",
                         ]);
                     }
-
                     $receivingItem->update([
                         'quantity' => $item['quantity'],
                         'unit_price' => $item['unit_price'],
                         'remarks' => $item['remarks'] ?? null,
                     ]);
                 }
-
                 $totalAmount = $record->items()
                     ->sum(DB::raw('quantity * unit_price'));
-
                 $record->update([
                     'status' => 'Reviewed',
                     'total_amount' => $totalAmount,
@@ -659,7 +667,6 @@ class StockReplenishmentController extends Controller
                     'reviewed_at' => now(),
                 ]);
             });
-
             return $this->sendResponse([
                 'message' => 'Receiving transaction reviewed',
             ]);

@@ -554,7 +554,7 @@ class VarianceReportController extends Controller
                     ->orWhereBetween('ending_date', [$beginDate, $endingDate])
                     ->orWhere(function ($q) use ($beginDate, $endingDate) {
                         $q->where('begin_date', '<=', $beginDate)
-                        ->where('ending_date', '>=', $endingDate);
+                        ->where('ending_date', '<=', $endingDate);
                     });
             })
             ->orderBy('begin_date')
