@@ -547,16 +547,9 @@ class VarianceReportController extends Controller
     private function findPhysicalCounts(string $beginDate, string $endingDate)
     {
         return UniformPhysicalCount::with('items')
-            ->wherein('status' , ['Posted','Updated'])
-            ->where(function ($query) use ($beginDate, $endingDate) {
-                $query
-                    ->whereBetween('begin_date', [$beginDate, $endingDate])
-                    ->orWhereBetween('ending_date', [$beginDate, $endingDate])
-                    ->orWhere(function ($q) use ($beginDate, $endingDate) {
-                        $q->where('begin_date', '<=', $beginDate)
-                        ->where('ending_date', '<=', $endingDate);
-                    });
-            })
+            ->whereIn('status', ['Posted', 'Updated'])
+            ->whereDate('begin_date', '<=', $endingDate)
+            ->whereDate('ending_date', '<=', $endingDate)
             ->orderBy('begin_date')
             ->get();
     }
