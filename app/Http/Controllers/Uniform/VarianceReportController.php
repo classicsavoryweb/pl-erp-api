@@ -94,7 +94,7 @@ class VarianceReportController extends Controller
                 ], 404);
             }
 
-            $dateFrom = Carbon::parse($request->begin_date)->startOfDay();
+            $dateFrom = Carbon::parse($request->begin_date)->endOfDay();
             $dateTo = Carbon::parse($request->end_date)->endOfDay();
 
             $requestDetails = RequestAndIssuanceItems::with('issuance')
@@ -355,7 +355,7 @@ class VarianceReportController extends Controller
 
             $postedPhysicalCount = UniformPhysicalCount::where('begin_date', $variance->begin_date)
                 ->where('ending_date', $variance->ending_date)
-                ->where('status', 'Posted')
+                ->wherein('status', ['Posted','Updated'])
                 ->first();
 
             if (!$postedPhysicalCount) {
@@ -533,7 +533,7 @@ class VarianceReportController extends Controller
                 'atd' => $atd,
                 'free_uniform' => $freeUniform,
                 'should_be_inventory' => $shouldBe,
-                'physical_count' => $physicalCountQty,
+                'physical_count' => $physicalCountQty, 
                 'variance' => $variance,
                 'adjustment' => $adjustment,
                 'final_variance' => $finalVariance,
