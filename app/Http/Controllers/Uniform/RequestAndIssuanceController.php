@@ -18,6 +18,7 @@ use App\Models\Employee;
 use App\Models\UniformPeriodLock;
 use App\Models\UniformFreeUniformLimit;
 use App\Models\Branch;
+use App\Models\UniformPhysicalCount;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -157,41 +158,41 @@ class RequestAndIssuanceController extends Controller
             'record' => $issuance,
         ]);
     }
-   public function cancelUniformRequestAndIssuance(Request $request, $id)
-{
-    $request->validate([
-        'cancel_reason' => ['required', 'string', 'max:1000'],
-    ]);
-
-    $issuance = DB::transaction(function () use ($request, $id) {
-        $issuance = RequestAndIssuance::with('items')->lockForUpdate()->findOrFail($id);
-
-        if (in_array($issuance->status, ['Posted', 'Cancelled'])) {
-            throw ValidationException::withMessages([
-                'status' => 'This request cannot be cancelled.',
-            ]);
-        }
-
-        foreach ($issuance->items as $item) {
-            UniformItem::where('item_no', $item->uniform_item_no)
-                ->lockForUpdate()
-                ->increment('stock_on_hand', (int) $item->requested_quantity);
-        }
-
-        $issuance->update([
-            'status' => 'Cancelled',
-            'cancel_reason' => $request->cancel_reason,
-            'date_cancelled' => now(),
-            'cancelled_by' => optional($request->user())->proper_full_name,
+    public function cancelUniformRequestAndIssuance(Request $request, $id)
+    {
+        $request->validate([
+            'cancel_reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        return $issuance->fresh('items');
-    });
+        $issuance = DB::transaction(function () use ($request, $id) {
+            $issuance = RequestAndIssuance::with('items')->lockForUpdate()->findOrFail($id);
 
-    return $this->sendResponse($issuance, 'Request cancelled successfully.');
-}
+            if (in_array($issuance->status, ['Posted', 'Cancelled'])) {
+                throw ValidationException::withMessages([
+                    'status' => 'This request cannot be cancelled.',
+                ]);
+            }
 
-   public function reviewUniformRequestAndIssuance(Request $request, $id)
+            foreach ($issuance->items as $item) {
+                UniformItem::where('item_no', $item->uniform_item_no)
+                    ->lockForUpdate()
+                    ->increment('stock_on_hand', (int) $item->requested_quantity);
+            }
+
+            $issuance->update([
+                'status' => 'Cancelled',
+                'cancel_reason' => $request->cancel_reason,
+                'date_cancelled' => now(),
+                'cancelled_by' => optional($request->user())->proper_full_name,
+            ]);
+
+            return $issuance->fresh('items');
+        });
+
+        return $this->sendResponse($issuance, 'Request cancelled successfully.');
+    }
+
+    public function reviewUniformRequestAndIssuance(Request $request, $id)
     {
         try {
             $validated = $request->validate([
@@ -334,7 +335,7 @@ class RequestAndIssuanceController extends Controller
         }
     }
         
-   public function createUniformRequestAndIssuance(Request $request)
+    public function createUniformRequestAndIssuance(Request $request)
     {
         try {
             $validated = $request->validate([
@@ -355,23 +356,21 @@ class RequestAndIssuanceController extends Controller
                 'items.*.requested_quantity' => ['required', 'integer', 'min:1'],
                 'items.*.item_remarks' => ['nullable', 'string', 'max:1000'],
             ]);
-
             $duplicateFreeUniform = $this->getDuplicateFreeUniformRequest($validated);
-
             if ($duplicateFreeUniform) {
-
-                Log::warning('Free Uniform Request Blocked', [
-                    'request_number' => $duplicateFreeUniform->request_number,
-                    'employee_id' => $validated['employee_id'],
-                ]);
-
                 return $this->sendError([
                     'message' => 'This employee has already reached the allowed free uniform limit for the current period.',
                     'previous_request_number' => $duplicateFreeUniform->request_number,
                     'previous_request_date' => $duplicateFreeUniform->date_requested,
                 ], 422);
             }
-
+            $latestPhysicalCount = UniformPhysicalCount::latest('id')->first();
+            if($latestPhysicalCount->status != 'Updated'){
+                return $this->sendError([
+                    'message' => 'The latest Physical Count was not Updated.Please update the quantity first.',
+                    'physical_count_status' => $latestPhysicalCount->status,
+                ],422);
+            }
             $issuance = DB::transaction(function () use ($request, $validated) {
                 $itemNumbers = collect($validated['items'])->pluck('item_no');
                 $uniformItems = UniformItem::with(['size', 'gender'])
@@ -380,7 +379,6 @@ class RequestAndIssuanceController extends Controller
                     ->get()
                     ->keyBy('item_no');
                 $employeeGender = Employee::where('employee_number', $validated['employee_id'])->value('gender');
-
                 $issuance = RequestAndIssuance::create([
                     'employee_id' => $validated['employee_id'],
                     'employee_name' => $validated['employee_name'],
@@ -395,16 +393,13 @@ class RequestAndIssuanceController extends Controller
                     'created_by' => optional($request->user())->proper_full_name,
                     
                 ]);
-
                 $grandTotal = $this->replaceRequestItems(
                     $issuance,
                     $validated['items'],
                     $uniformItems,
                     $employeeGender
                 );
-
                 $issuance->update(['total_amount' => $grandTotal]);
-
                 return $issuance->fresh('items');
             });
 

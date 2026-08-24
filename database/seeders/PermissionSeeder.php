@@ -25,6 +25,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_tardiness_disabler"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_general_dashboard"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_analytic_dashboard_hr"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "has_uniform_dashboard"], ["module" => "administrators"]);
         // Permission::updateOrCreate(["name" => "view_settings"]);
         // Permission::updateOrCreate(["name" => "perform_settings"]);
 
