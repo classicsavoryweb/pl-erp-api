@@ -18,7 +18,7 @@ class UniformReplenishmentItem extends Model
         'unit_price' => 'decimal:2',
     ];
 
-    protected $appends = ['remaining_qty', 'total_amount'];
+    protected $appends = [ 'total_amount'];
 
     public function item()
     {
@@ -28,6 +28,10 @@ class UniformReplenishmentItem extends Model
     public function getRemainingQtyAttribute(): float
     {
         return max(0, (float) $this->approved_qty - (float) $this->received_qty);
+    }
+    public function receivingItems()
+    {
+        return $this->hasMany(UniformReceivingItem::class, 'replenishment_item_id');
     }
 
     public function getTotalAmountAttribute(): float

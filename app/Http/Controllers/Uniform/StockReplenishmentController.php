@@ -12,6 +12,7 @@ use App\Models\UniformPeriodLock;
 use App\Models\UniformReceiving;
 use App\Models\UniformReplenishment;
 use App\Models\UniformReplenishmentItem;
+use App\Models\UniformReceivingItem;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -201,7 +202,6 @@ class StockReplenishmentController extends Controller
 
             $record = DB::transaction(function () use ($request, $validated) {
                 $record = UniformReplenishment::create([
-                    'request_no' => $this->nextNumber(UniformReplenishment::class, 'request_no', 'RPL'),
                     'supplier_id' => $validated['supplier_id'],
                     'replenishment_type' => $validated['replenishment_type'],
                     'requested_date' => $validated['requested_date'],
@@ -229,9 +229,57 @@ class StockReplenishmentController extends Controller
 
     public function reviewReplenishment(Request $request, int $id)
     {
-        return $this->transitionReplenishment($request, $id, 'Unposted', 'Reviewed');
-    }
+        try {
+            $validated = $request->validate([
+                'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
+                'replenishment_type' => ['required', Rule::in(['Purchasing Department', 'Made to Order'])],
+                'requested_date' => ['required', 'date'],
+                'remarks' => ['nullable', 'string', 'max:2000'],
+                'items' => ['required', 'array', 'min:1'],
+                'items.*.uniform_item_id' => ['required', 'integer', 'distinct', 'exists:uniform_items,id'],
+                'items.*.requested_qty' => ['required', 'numeric', 'gt:0'],
+                'items.*.approved_qty' => ['required', 'numeric', 'gt:0'],
+                'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+                'items.*.remarks' => ['nullable', 'string', 'max:1000'],
+            ]);
 
+            $record = DB::transaction(function () use ($request, $validated, $id) {
+
+                $record = UniformReplenishment::where('status', 'Unposted')
+                    ->findOrFail($id);
+
+                $record->update([
+                    'supplier_id' => $validated['supplier_id'],
+                    'replenishment_type' => $validated['replenishment_type'],
+                    'requested_date' => $validated['requested_date'],
+                    'status' => 'Reviewed',
+                    'total_amount' => collect($validated['items'])->sum(
+                        fn ($item) => $item['approved_qty'] * $item['unit_price']
+                    ),
+                    'remarks' => $validated['remarks'] ?? null,
+                    'reviewed_by' => $this->userName($request),
+                    'reviewed_at' => now(),
+                ]);
+
+                // Replace existing items
+                $record->items()->delete();
+
+                $record->items()->createMany($validated['items']);
+
+                return $record;
+            });
+
+            return $this->sendResponse([
+                'message' => 'Replenishment request reviewed successfully',
+                'record' => $record->load(['supplier', 'items.item']),
+            ]);
+
+        } catch (Exception $e) {
+            return $this->sendError([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
     public function postReplenishment(Request $request, int $id)
     {
         return $this->transitionReplenishment($request, $id, 'Reviewed', 'Posted');
@@ -330,9 +378,12 @@ class StockReplenishmentController extends Controller
     public function closeReplenishment(Request $request, int $id)
     {
         try {
-            $validated = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
+            $validated = $request->validate([
+                'reason' => ['required', 'string', 'max:2000']
+            ]);
 
             DB::transaction(function () use ($request, $validated, $id) {
+
                 $record = UniformReplenishment::lockForUpdate()->findOrFail($id);
 
                 if (!in_array($record->status, ['Posted', 'Partially Received'], true)) {
@@ -340,18 +391,29 @@ class StockReplenishmentController extends Controller
                         'status' => 'Only posted or partially received requests can be closed.',
                     ]);
                 }
-
                 $record->update([
                     'status' => 'Closed',
                     'closed_by' => $this->userName($request),
                     'closed_at' => now(),
                     'closed_reason' => $validated['reason'],
                 ]);
-            });
 
-            return $this->sendResponse(['message' => 'Replenishment request closed']);
+                UniformReceiving::where('replenishment_id', $record->id)
+                    ->where('status', '!=', 'Posted')
+                    ->update([
+                        'status' => 'Closed',
+                        'closed_by' => $this->userName($request),
+                        'closed_at' => now(),
+                    ]);
+            });
+            return $this->sendResponse([
+                'message' => 'Replenishment request closed'
+            ]);
+
         } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
+            return $this->sendError([
+                'message' => $e->getMessage()
+            ]);
         }
     }
 
@@ -360,18 +422,58 @@ class StockReplenishmentController extends Controller
         try {
             $records = UniformReplenishment::with([
                 'supplier',
-                'items' => fn ($query) => $query->whereColumn('received_qty', '<', 'approved_qty'),
+                'items' => function ($query) {
+                $query->withSum([
+        'receivingItems as pending_received_qty' => function ($q) {
+            $q->whereHas('receiving', function ($r) {
+                $r->whereIn('status', ['Unposted', 'Reviewed']);
+            });
+        }
+    ], 'quantity');
+                },
                 'items.item.size',
                 'items.item.gender',
             ])
-                ->whereIn('status', ['Posted', 'Partially Received'])
-                ->whereHas('items', fn ($query) => $query->whereColumn('received_qty', '<', 'approved_qty'))
-                ->latest('id')
-                ->get();
+            ->whereIn('status', ['Posted', 'Partially Received'])
+            ->latest('id')
+            ->get();
+
+            $records->each(function ($record) {
+
+                $record->items = $record->items
+                    ->map(function ($item) {
+
+                        $pending = (float) ($item->pending_received_qty ?? 0);
+
+                        $item->remaining_qty =
+                            max(
+                                0,
+                                (float)$item->approved_qty -
+                                (float)$item->received_qty -
+                                $pending
+                            );
+
+                        return $item;
+                    })
+                    ->filter(function ($item) {
+                        return $item->remaining_qty > 0;
+                    })
+                    ->values();
+
+            });
+
+            // remove replenishments with no remaining items
+            $records = $records->filter(function ($record) {
+                return $record->items->count() > 0;
+            })->values();
+
 
             return $this->sendResponse($records);
+
         } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
+            return $this->sendError([
+                'message' => $e->getMessage()
+            ]);
         }
     }
 
@@ -417,9 +519,18 @@ class StockReplenishmentController extends Controller
         try {
             $validated = $request->validate([
                 'replenishment_id' => ['required', 'integer', 'exists:uniform_replenishments,id'],
-                'date_received' => ['required', 'date'],
-                'crf_no' => ['required', 'string', 'max:100', 'unique:uniform_receivings,crf_no'],
-                'document_no' => ['required', 'string', 'max:100', 'unique:uniform_receivings,document_no'],
+                'date_received' => ['required', 'date'],'crf_no' => ['required', 'string','max:100',
+                Rule::unique('uniform_receivings','crf_no')
+                ->where(function ($query){
+                    return $query ->where('status', '!=', 'Cancelled');
+                }),
+                ],
+                'document_no' => ['required', 'string', 'max:100',
+                 Rule::unique('uniform_receivings','document_no')
+                 ->where(function ($query){
+                    return $query ->where('status', '!=' , 'Cancelled');
+                 }),
+                ],
                 'checker_name' => ['required', 'string', 'max:255'],
                 'transmitted_by' => ['nullable', 'string', 'max:255'],
                 'remarks' => ['nullable', 'string', 'max:2000'],
@@ -454,7 +565,6 @@ class StockReplenishmentController extends Controller
                 }
 
                 $record = UniformReceiving::create([
-                    'receiving_no' => $this->nextNumber(UniformReceiving::class, 'receiving_no', 'RCV'),
                     'replenishment_id' => $replenishment->id,
                     'supplier_id' => $replenishment->supplier_id,
                     'date_received' => $validated['date_received'],
@@ -493,16 +603,79 @@ class StockReplenishmentController extends Controller
     public function reviewReceiving(Request $request, int $id)
     {
         try {
-            $record = UniformReceiving::where('status', 'Unposted')->findOrFail($id);
-            $record->update([
-                'status' => 'Reviewed',
-                'reviewed_by' => $this->userName($request),
-                'reviewed_at' => now(),
+            $validated = $request->validate([
+                'items' => ['required', 'array', 'min:1'],
+                'items.*.id' => ['required', 'exists:uniform_receiving_items,id'],
+                'items.*.quantity' => ['required', 'numeric', 'gt:0'],
+                'items.*.unit_price' => ['required', 'numeric'],
+                'items.*.remarks' => ['nullable', 'string', 'max:200'],
             ]);
 
-            return $this->sendResponse(['message' => 'Receiving transaction reviewed']);
+            DB::transaction(function () use ($request, $validated, $id) {
+
+                $record = UniformReceiving::with([
+                        'items',
+                        'replenishment.items.item'
+                    ])
+                    ->where('status', 'Unposted')
+                    ->lockForUpdate()
+                    ->findOrFail($id);
+                $replenishmentItems = $record->replenishment->items->keyBy('id');
+                foreach ($validated['items'] as $item) {
+                    $receivingItem = $record->items
+                        ->where('id', $item['id'])
+                        ->firstOrFail();
+                    $requestItem = $replenishmentItems->get(
+                        $receivingItem->replenishment_item_id
+                    );
+                    if (!$requestItem) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Replenishment item not found.',
+                        ]);
+                    }
+                    $pendingQty = UniformReceiving::whereIn('status', ['Unposted','Reviewed',])
+                        ->where('id', '!=', $record->id)
+                        ->with(['items'])
+                        ->get()
+                        ->flatMap(function ($receiving) use ($requestItem) {
+                            return $receiving->items->where(
+                                'replenishment_item_id',
+                                $requestItem->id
+                            );
+                        })
+                        ->sum('quantity');
+                    $availableQty =(float) $requestItem->approved_qty - (float) $requestItem->received_qty - (float) $pendingQty;
+                    if ((float) $item['quantity'] > $availableQty) {
+                        throw ValidationException::withMessages([
+                            'items' =>
+                                "Cannot proceed. The maximum receiving quantity " .
+                                "for {$requestItem->item->description} is {$availableQty}.",
+                        ]);
+                    }
+                    $receivingItem->update([
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'remarks' => $item['remarks'] ?? null,
+                    ]);
+                }
+                $totalAmount = $record->items()
+                    ->sum(DB::raw('quantity * unit_price'));
+                $record->update([
+                    'status' => 'Reviewed',
+                    'total_amount' => $totalAmount,
+                    'reviewed_by' => $this->userName($request),
+                    'reviewed_at' => now(),
+                ]);
+            });
+            return $this->sendResponse([
+                'message' => 'Receiving transaction reviewed',
+            ]);
+
         } catch (Exception $e) {
-            return $this->sendError(['message' => $e->getMessage()]);
+
+            return $this->sendError([
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -668,17 +841,6 @@ class StockReplenishmentController extends Controller
         }
 
         return (float) str_replace(',', '', (string) $row[$index]);
-    }
-
-    private function nextNumber(string $model, string $column, string $prefix): string
-    {
-        $latest = $model::where($column, 'LIKE', "{$prefix}%")
-            ->lockForUpdate()
-            ->get([$column])
-            ->map(fn ($record) => (int) substr($record->{$column}, strlen($prefix)))
-            ->max() ?? 0;
-
-        return $prefix . str_pad((string) ($latest + 1), 6, '0', STR_PAD_LEFT);
     }
 
     private function userName(Request $request): ?string

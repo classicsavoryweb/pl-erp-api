@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('prepared_by')->nullable();
             $table->string('updated_by')->nullable();
             $table->timestamps();
-
             $table->index(['date_from', 'date_to']);
         });
     }

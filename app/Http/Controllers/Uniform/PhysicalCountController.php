@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Uniform;
 use App\Exports\Uniform\PhysicalCountDetailedExport;
 use App\Exports\Uniform\PhysicalCountExport;
 use App\Http\Controllers\Controller;
+use App\Http\Services\UniformMovementService;
 use App\Models\PhysicalCountCompare;
 use App\Models\UniformItem;
 use App\Models\UniformPeriodLock;
@@ -18,11 +19,20 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PhysicalCountController extends Controller
 {
+    public function __construct(private UniformMovementService $movementService)
+    {
+    }
+
     public function physicalCounts(Request $request)
     {
-        $query = $this->physicalCountQuery($request)->with('items.item.size', 'items.item.gender')->latest();
+        $query = $this->physicalCountQuery($request)
+            ->with('items.item.size', 'items.item.gender')
+            ->withSum('items', 'total_amount')
+            ->latest('id');
 
-        return response()->json($query->paginate((int) $request->input('per_page', 10)));
+        return response()->json(
+            $query->paginate((int) $request->input('per_page', 10))
+        );
     }
 
     public function exportPhysicalCounts(Request $request)
@@ -32,7 +42,7 @@ class PhysicalCountController extends Controller
             'uniform-physical-counts.xls'
         );
     }
-
+ 
     public function exportPhysicalCountDetails(int $id)
     {
         $physicalCount = UniformPhysicalCount::with('items')->findOrFail($id);
@@ -43,6 +53,21 @@ class PhysicalCountController extends Controller
         );
     }
 
+    public function dropdownPhysicalCounts()
+    {
+        return response()->json(
+            UniformPhysicalCount::select(
+                'id',
+                'begin_date',
+                'ending_date',
+                'physical_count_no'
+            )
+            ->wherein('status', ['Posted','Updated'])
+            ->orderByDesc('begin_date')
+            ->get()
+        );
+    }
+
     public function previewPhysicalCount(Request $request)
     {
         $data = $request->validate([
@@ -50,12 +75,54 @@ class PhysicalCountController extends Controller
             'ending_date' => ['required', 'date', 'after_or_equal:begin_date'],
             'items' => ['sometimes', 'array'],
             'items.*.uniform_item_id' => ['required_with:items', 'integer', 'exists:uniform_items,id'],
-            'items.*.physical_count' => ['nullable', 'numeric', 'min:0'],
+            'items.*.physical_count' => ['nullable', 'numeric'],
             'items.*.item_remarks' => ['nullable', 'string'],
         ]);
 
         return response()->json([
             'items' => $this->physicalCountLines($data['begin_date'], $data['ending_date'], $data['items'] ?? []),
+        ]);
+    }
+
+    public function updateQuantity(Request $request)
+    {
+        $request->validate([
+            'physical_count_id' => ['required'],
+            'items' => ['required','array'],
+            'items.*.item_no' => ['required'],
+            'items.*.physical_count' => ['required','numeric'],
+        ]);
+
+        DB::transaction(function () use ($request) {
+
+            foreach ($request->items as $itemData) {
+
+                $item = UniformItem::where('item_no', $itemData['item_no'])
+                    ->first();
+
+                if ($item) {
+                    $item->stock_on_hand = $itemData['physical_count'];
+                    $item->save();
+                }
+            }
+
+            $physicalCount = UniformPhysicalCount::where(
+                'physical_count_no',
+                $request->physical_count_id
+            )->first();
+
+            if ($physicalCount) {
+                $physicalCount->status = 'Updated';
+                $physicalCount->quantity_updated_by = optional($request->user())->proper_full_name;
+                $physicalCount->quantity_updated_at = now();
+                $physicalCount->save();
+            }
+
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Qauntity updated successfully.'
         ]);
     }
 
@@ -68,7 +135,7 @@ class PhysicalCountController extends Controller
             'remarks' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.uniform_item_id' => ['required', 'integer', 'distinct', 'exists:uniform_items,id'],
-            'items.*.physical_count' => ['required', 'numeric', 'min:0'],
+            'items.*.physical_count' => ['required', 'numeric'],
             'items.*.item_remarks' => ['nullable', 'string'],
         ]);
 
@@ -77,7 +144,6 @@ class PhysicalCountController extends Controller
             $this->ensureNoPhysicalCountForPeriod($data['begin_date'], $data['ending_date']);
 
             $physicalCount = UniformPhysicalCount::create([
-                'physical_count_no' => $this->nextNumber('uniform_physical_counts', 'physical_count_no', 'PC', 7),
                 'begin_date' => $data['begin_date'],
                 'ending_date' => $data['ending_date'],
                 'counted_by' => $data['counted_by'] ?? null,
@@ -97,7 +163,7 @@ class PhysicalCountController extends Controller
         $data = $request->validate([
             'items' => ['sometimes', 'array', 'min:1'],
             'items.*.uniform_item_id' => ['required_with:items', 'integer', 'distinct', 'exists:uniform_items,id'],
-            'items.*.physical_count' => ['required_with:items', 'numeric', 'min:0'],
+            'items.*.physical_count' => ['required_with:items', 'numeric', ],
             'items.*.item_remarks' => ['nullable', 'string'],
         ]);
 
@@ -195,14 +261,14 @@ class PhysicalCountController extends Controller
 
     private function replacePhysicalCountItems(UniformPhysicalCount $physicalCount, array $items): void
     {
-        $lines = $this->physicalCountLines(
+        $result = $this->physicalCountLines(
             $physicalCount->begin_date->format('Y-m-d'),
             $physicalCount->ending_date->format('Y-m-d'),
             $items
         );
 
         $physicalCount->items()->delete();
-        foreach ($lines as $line) {
+        foreach ($result['items'] as $line) {
             UniformPhysicalCountItem::create([
                 'physical_count_id' => $physicalCount->id,
                 ...$line,
@@ -250,18 +316,24 @@ class PhysicalCountController extends Controller
             ->orderBy('description')
             ->get();
 
-        $movement = $this->movementTotals($beginDate, $endingDate);
+        $movement = $this->movementService->movementTotals($beginDate, $endingDate);
+        $beginningByItem = $this->movementService->beginningInventoryBatch($items, $beginDate);
 
-        return $items->map(function (UniformItem $item) use ($beginDate, $movement, $overrides) {
+        $lines = $items->map(function (UniformItem $item) use ($movement, $beginningByItem, $overrides) {
             $input = $overrides->get($item->id, []);
-            $beginning = $this->beginningInventory($item, $beginDate);
+
+            $beginning = $beginningByItem[$item->id];
             $purchasing = (float) ($movement['purchasing'][$item->id] ?? 0);
             $madeToOrder = (float) ($movement['made_to_order'][$item->id] ?? 0);
             $atd = (float) ($movement['atd'][$item->item_no] ?? 0);
             $freeUniform = (float) ($movement['free_uniform'][$item->item_no] ?? 0);
+
             $totalPurchases = $purchasing + $madeToOrder;
             $totalOutgoing = $atd + $freeUniform;
             $shouldBe = $beginning + $totalPurchases - $totalOutgoing;
+
+            $physicalCount = (float) ($input['physical_count'] ?? 0);
+            $totalAmount = $physicalCount * $item->standard_unit_price;
 
             return [
                 'uniform_item_id' => $item->id,
@@ -276,64 +348,19 @@ class PhysicalCountController extends Controller
                 'total_purchases' => $totalPurchases,
                 'total_outgoing' => $totalOutgoing,
                 'should_be_inventory' => $shouldBe,
-                'physical_count' => (float) ($input['physical_count'] ?? 0),
+                'physical_count' => $physicalCount,
                 'standard_cost' => (float) $item->standard_unit_price,
                 'item_remarks' => $input['item_remarks'] ?? null,
+                'total_amount' => $totalAmount,
             ];
-        })->values()->all();
-    }
+        })
+        // ->filter(fn ($line) => $line['total_purchases'] > 0)
+        ->values();
 
-    private function movementTotals(string $beginDate, string $endingDate): array
-    {
-        $receivings = DB::table('uniform_receiving_items as uri')
-            ->join('uniform_receivings as ur', 'ur.id', '=', 'uri.receiving_id')
-            ->join('uniform_replenishments as rpl', 'rpl.id', '=', 'ur.replenishment_id')
-            ->where('ur.status', 'Posted')
-            ->whereDate('ur.posted_at', '>=', $beginDate)
-            ->whereDate('ur.posted_at', '<=', $endingDate)
-            ->select('uri.uniform_item_id', 'rpl.replenishment_type', DB::raw('SUM(uri.quantity) as quantity'))
-            ->groupBy('uri.uniform_item_id', 'rpl.replenishment_type')
-            ->get();
-
-        $issuances = DB::table('request_and_issuance_items as rii')
-            ->join('request_and_issuances as rai', 'rai.request_number', '=', 'rii.requested_number_id')
-            ->where('rai.status', 'Posted')
-            ->whereDate('rai.date_posted', '>=', $beginDate)
-            ->whereDate('rai.date_posted', '<=', $endingDate)
-            ->select('rii.uniform_item_no', 'rai.issuance_type', DB::raw('SUM(rii.requested_quantity) as quantity'))
-            ->groupBy('rii.uniform_item_no', 'rai.issuance_type')
-            ->get();
-
-        $totals = [
-            'purchasing' => [],
-            'made_to_order' => [],
-            'atd' => [],
-            'free_uniform' => [],
+        return [
+            'items' => $lines->all(),
+            'total_sales' => $lines->sum('total_amount'),
         ];
-
-        foreach ($receivings as $row) {
-            $type = strtolower((string) $row->replenishment_type);
-            $bucket = str_contains($type, 'made') ? 'made_to_order' : 'purchasing';
-            $totals[$bucket][$row->uniform_item_id] = (float) $row->quantity;
-        }
-
-        foreach ($issuances as $row) {
-            $type = strtolower((string) $row->issuance_type);
-            $bucket = str_contains($type, 'free') ? 'free_uniform' : 'atd';
-            $totals[$bucket][$row->uniform_item_no] = (float) $row->quantity;
-        }
-
-        return $totals;
-    }
-
-    private function beginningInventory(UniformItem $item, string $beginDate): float
-    {
-        $compare = PhysicalCountCompare::where('uniform_item_id', $item->id)
-            ->whereDate('beginning_date', '<=', $beginDate)
-            ->latest('beginning_date')
-            ->first();
-
-        return $compare ? (float) $compare->stock_on_hand : (float) $item->stock_on_hand;
     }
 
     private function ensureNoPendingPhysicalCount(): void

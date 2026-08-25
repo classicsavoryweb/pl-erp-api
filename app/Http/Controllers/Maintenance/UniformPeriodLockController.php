@@ -107,11 +107,8 @@ class UniformPeriodLockController extends Controller
             UniformPeriodLock::query()
                 ->when($id, fn ($query) => $query->where('id', '!=', $id))
                 ->where('lock_type', $lockType)
-                ->where('status', 'active')
-                ->update([
-                    'status' => 'inactive',
-                    'updated_by' => optional($request->user())->proper_full_name,
-                ]);
+                ->where('status', 'active');
+             
         }
 
         $values = [

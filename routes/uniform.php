@@ -56,10 +56,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['permission:perform_uniform_physical_count'])->post('/uniform-physical-counts/{id}/review', [PhysicalCountController::class, 'reviewPhysicalCount']);
     Route::middleware(['permission:perform_uniform_physical_count'])->post('/uniform-physical-counts/{id}/post', [PhysicalCountController::class, 'postPhysicalCount']);
     Route::middleware(['permission:perform_uniform_physical_count'])->post('/uniform-physical-counts/{id}/cancel', [PhysicalCountController::class, 'cancelPhysicalCount']);
+    Route::middleware(['permission:perform_uniform_physical_count'])->post('/update-quantity', [PhysicalCountController::class, 'updateQuantity']); 
+    Route::middleware(['permission:view_uniform_variance_report'])->get('/physical_count_dropdown', [PhysicalCountController::class, 'dropdownPhysicalCounts']);
 
     Route::middleware(['permission:view_uniform_variance_report'])->get('/uniform-variances', [VarianceReportController::class, 'variances']);
     Route::middleware(['permission:view_uniform_variance_report'])->get('/export-uniform-variances', [VarianceReportController::class, 'exportVariances']);
     Route::middleware(['permission:view_uniform_variance_report'])->get('/export-uniform-variances/{id}/details', [VarianceReportController::class, 'exportVarianceDetails']);
+    Route::middleware(['permission:view_uniform_variance_report'])->get('/uniform-variances/{id}', [VarianceReportController::class, 'getVarianceItemById']);
+    Route::middleware(['permission:view_uniform_variance_report'])->get('/variance-details', [VarianceReportController::class, 'getVarianceItemDetails']);
+    
     Route::middleware(['permission:perform_uniform_variance_report'])->post('/uniform-variances/preview', [VarianceReportController::class, 'previewVariance']);
     Route::middleware(['permission:perform_uniform_variance_report'])->post('/uniform-variances', [VarianceReportController::class, 'storeVariance']);
     Route::middleware(['permission:perform_uniform_variance_report'])->post('/uniform-variances/{id}/review', [VarianceReportController::class, 'reviewVariance']);
@@ -77,9 +82,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/get-weight-average', [WeightedAverageController::class, 'getWeightAverage']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/get-weight-average-export', [WeightedAverageController::class, 'exportAllWeightAverage']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/export-weight-average/{id}/details', [WeightedAverageController::class, 'exportWeightAverageDetails']);
+    Route::middleware(['permission:perform_uniform_weighted_average'])->post('/uniform-weighted/{id}/cancel',[WeightedAverageController::class, 'cancelWeightedAverage']);
     Route::middleware(['permission:perform_uniform_weighted_average'])->post('/create-weight-average',[WeightedAverageController::class,'createWeightedAverage']);
     Route::middleware(['permission:perform_uniform_weighted_average'])->post('/weight-average-items', [WeightedAverageController::class, 'getReceivingItems']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/weighted-average/{id}', [WeightedAverageItemsController::class, 'getWeightAverageById']);       
     Route::middleware(['permission:perform_uniform_weighted_average'])->post('/weighted/{id}/status', [WeightedAverageController::class, 'updateWeightedStatus']);
+    Route::middleware(['permission:perform_uniform_weighted_average'])->post('/update-item-price' , [WeightedAverageController::class,'updatePrice']);
 
 });

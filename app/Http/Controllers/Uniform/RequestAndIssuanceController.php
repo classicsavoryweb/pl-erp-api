@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Uniform;
 
 
 use App\Http\Controllers\Controller;
-use App\Exports\Maintenance\RequestAndIssuanceExport;
+use App\Exports\Uniform\RequestAndIssuanceExport;
 use App\Exports\Uniform\RequestAndIssuanceDetailedExport;
 use Illuminate\Http\Request;
 use Exception;
@@ -16,6 +16,9 @@ use App\Models\RequestAndIssuanceItems;
 use App\Models\UniformItem;
 use App\Models\Employee;
 use App\Models\UniformPeriodLock;
+use App\Models\UniformFreeUniformLimit;
+use App\Models\Branch;
+use App\Models\UniformPhysicalCount;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -23,23 +26,44 @@ use Illuminate\Validation\ValidationException;
 
 class RequestAndIssuanceController extends Controller
 {
-   public function getUniformRequestAndIssuance(Request $request)
+  public function getUniformRequestAndIssuance(Request $request)
     {
         try {
             $perPage = $request->per_page ?? 10;
 
             $issuance = RequestAndIssuance::with('items','branches')->latest("id");
 
-            if ($request->has(["column_type", "key_word"])) {
-                $issuance = $issuance->where(
-                    $request->column_type,
-                    "LIKE",
-                    "%" . $request->key_word . "%"
-                );
+    
+            if ($request->filled('column_type') && $request->filled('key_word')) {
+
+                if ($request->column_type === 'item_name') {
+                    $issuance->whereHas('items', function ($query) use ($request) {
+                        $query->where('description', 'LIKE', '%' . $request->key_word . '%');
+                    });
+                } else {
+                    $issuance->where(
+                        $request->column_type,
+                        'LIKE',
+                        '%' . $request->key_word . '%'
+                    );
+                }
+            }
+
+            if ($request->filled('status')) {
+                $issuance->where("status", $request->status);
+            }
+
+            if ($request->filled('branch_id')) {
+                $branch = Branch::find($request->branch_id);
+
+                if ($branch) {
+                    $issuance->where('branch', $branch->name);
+                }
             }
 
             if ($request->has("export") && $request->export) {
                 $issuance = $issuance->get();
+
                 return Excel::download(
                     new RequestAndIssuanceExport($issuance),
                     "issuance.xls"
@@ -90,7 +114,7 @@ class RequestAndIssuanceController extends Controller
             ];
 
             if (!in_array($next, $allowedTransitions[$current] ?? [], true)) {
-                throw ValidationException::withMessages([
+                throw ValidationException::withMessages([ 
                     'status' => "Invalid status transition from {$current} to {$next}.",
                 ]);
             }
@@ -134,41 +158,41 @@ class RequestAndIssuanceController extends Controller
             'record' => $issuance,
         ]);
     }
-   public function cancelUniformRequestAndIssuance(Request $request, $id)
-{
-    $request->validate([
-        'cancel_reason' => ['required', 'string', 'max:1000'],
-    ]);
-
-    $issuance = DB::transaction(function () use ($request, $id) {
-        $issuance = RequestAndIssuance::with('items')->lockForUpdate()->findOrFail($id);
-
-        if (in_array($issuance->status, ['Posted', 'Cancelled'])) {
-            throw ValidationException::withMessages([
-                'status' => 'This request cannot be cancelled.',
-            ]);
-        }
-
-        foreach ($issuance->items as $item) {
-            UniformItem::where('item_no', $item->uniform_item_no)
-                ->lockForUpdate()
-                ->increment('stock_on_hand', (int) $item->requested_quantity);
-        }
-
-        $issuance->update([
-            'status' => 'Cancelled',
-            'cancel_reason' => $request->cancel_reason,
-            'date_cancelled' => now(),
-            'cancelled_by' => optional($request->user())->proper_full_name,
+    public function cancelUniformRequestAndIssuance(Request $request, $id)
+    {
+        $request->validate([
+            'cancel_reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        return $issuance->fresh('items');
-    });
+        $issuance = DB::transaction(function () use ($request, $id) {
+            $issuance = RequestAndIssuance::with('items')->lockForUpdate()->findOrFail($id);
 
-    return $this->sendResponse($issuance, 'Request cancelled successfully.');
-}
+            if (in_array($issuance->status, ['Posted', 'Cancelled'])) {
+                throw ValidationException::withMessages([
+                    'status' => 'This request cannot be cancelled.',
+                ]);
+            }
 
-   public function reviewUniformRequestAndIssuance(Request $request, $id)
+            foreach ($issuance->items as $item) {
+                UniformItem::where('item_no', $item->uniform_item_no)
+                    ->lockForUpdate()
+                    ->increment('stock_on_hand', (int) $item->requested_quantity);
+            }
+
+            $issuance->update([
+                'status' => 'Cancelled',
+                'cancel_reason' => $request->cancel_reason,
+                'date_cancelled' => now(),
+                'cancelled_by' => optional($request->user())->proper_full_name,
+            ]);
+
+            return $issuance->fresh('items');
+        });
+
+        return $this->sendResponse($issuance, 'Request cancelled successfully.');
+    }
+
+    public function reviewUniformRequestAndIssuance(Request $request, $id)
     {
         try {
             $validated = $request->validate([
@@ -215,11 +239,30 @@ class RequestAndIssuanceController extends Controller
 
             $duplicateFreeUniform = $this->getDuplicateFreeUniformRequest($validated, (int) $id);
 
+            if ($validated['issuance_type'] === 'Free Uniform') {
+
+                $limit = UniformFreeUniformLimit::where('status', 'active')
+                    ->whereDate('date_from', '<=', now())
+                    ->whereDate('date_to', '>=', now())
+                    ->latest('id')
+                    ->first();
+
+                if ($limit) {
+                    $requestedQty = collect($validated['items'])->sum('requested_quantity');
+
+                    if ($requestedQty > $limit->allowed_count) {
+                        return $this->sendError([
+                            'message' => "The total requested quantity ({$requestedQty}) exceeds the allowed free uniform limit of {$limit->allowed_count} item(s).",
+                        ], 422);
+                    }
+                }
+            }
+
             if ($duplicateFreeUniform && empty($validated['confirm_free_uniform_duplicate'])) {
                 return $this->sendError([
                     'requires_confirmation' => true,
                     'confirmation_type' => 'free_uniform_duplicate',
-                    'message' => 'This employee has already availed his/her free uniform for the current year. Do you want to continue?',
+                    'message' => 'This employee has already availed his/her free uniform for the current year',
                     'previous_request_number' => $duplicateFreeUniform->request_number,
                     'previous_request_date' => $duplicateFreeUniform->date_requested,
                 ], 422);
@@ -292,7 +335,7 @@ class RequestAndIssuanceController extends Controller
         }
     }
         
-   public function createUniformRequestAndIssuance(Request $request)
+    public function createUniformRequestAndIssuance(Request $request)
     {
         try {
             $validated = $request->validate([
@@ -313,19 +356,21 @@ class RequestAndIssuanceController extends Controller
                 'items.*.requested_quantity' => ['required', 'integer', 'min:1'],
                 'items.*.item_remarks' => ['nullable', 'string', 'max:1000'],
             ]);
-
             $duplicateFreeUniform = $this->getDuplicateFreeUniformRequest($validated);
-
-            if ($duplicateFreeUniform && empty($validated['confirm_free_uniform_duplicate'])) {
+            if ($duplicateFreeUniform) {
                 return $this->sendError([
-                    'requires_confirmation' => true,
-                    'confirmation_type' => 'free_uniform_duplicate',
-                    'message' => 'This employee has already availed his/her free uniform for the current year',
+                    'message' => 'This employee has already reached the allowed free uniform limit for the current period.',
                     'previous_request_number' => $duplicateFreeUniform->request_number,
                     'previous_request_date' => $duplicateFreeUniform->date_requested,
                 ], 422);
             }
-
+            $latestPhysicalCount = UniformPhysicalCount::latest('id')->first();
+            if($latestPhysicalCount->status != 'Updated'){
+                return $this->sendError([
+                    'message' => 'The latest Physical Count was not Updated.Please update the quantity first.',
+                    'physical_count_status' => $latestPhysicalCount->status,
+                ],422);
+            }
             $issuance = DB::transaction(function () use ($request, $validated) {
                 $itemNumbers = collect($validated['items'])->pluck('item_no');
                 $uniformItems = UniformItem::with(['size', 'gender'])
@@ -334,7 +379,6 @@ class RequestAndIssuanceController extends Controller
                     ->get()
                     ->keyBy('item_no');
                 $employeeGender = Employee::where('employee_number', $validated['employee_id'])->value('gender');
-
                 $issuance = RequestAndIssuance::create([
                     'employee_id' => $validated['employee_id'],
                     'employee_name' => $validated['employee_name'],
@@ -347,18 +391,15 @@ class RequestAndIssuanceController extends Controller
                     'status' => 'Unposted',
                     'sent_email' => 'No',
                     'created_by' => optional($request->user())->proper_full_name,
-                    'request_number' => $this->generateItemNo($validated['issuance_type']),
+                    
                 ]);
-
                 $grandTotal = $this->replaceRequestItems(
                     $issuance,
                     $validated['items'],
                     $uniformItems,
                     $employeeGender
                 );
-
                 $issuance->update(['total_amount' => $grandTotal]);
-
                 return $issuance->fresh('items');
             });
 
@@ -374,45 +415,22 @@ class RequestAndIssuanceController extends Controller
         ]);
     }
     
-    private function generateItemNo(string $issuanceType): string
-    {
-        $prefix = match ($issuanceType) {
-            'Authority To Deduct' => 'ATD',
-            'Free Uniform' => 'FR',
-            default => throw new \InvalidArgumentException(
-                "Invalid issuance type: {$issuanceType}"
-            ),
-        };
-
-        $last = RequestAndIssuance::where(
-                'request_number',
-                'LIKE',
-                "{$prefix}-URN%"
-            )
-            ->orderByDesc('id')
-            ->lockForUpdate()
-            ->first();
-
-        $next = $last
-            ? ((int) substr($last->request_number, -8)) + 1
-            : 1;
-        return $prefix . '-URN' . str_pad($next, 8, '0', STR_PAD_LEFT);
-    }
-
-    private function replaceRequestItems(
-        RequestAndIssuance $issuance,
-        array $items,
-        $uniformItems,
-        ?string $employeeGender
-    ): float {
+    private function replaceRequestItems(RequestAndIssuance $issuance,array $items,$uniformItems,?string $employeeGender): float {
         RequestAndIssuanceItems::where('requested_number_id', $issuance->request_number)->delete();
 
         $grandTotal = 0;
 
+        $oldItems = $issuance->items->keyBy('uniform_item_no');
         foreach ($items as $itemData) {
             $itemNo = $itemData['item_no'];
             $uniformItem = $uniformItems->get($itemNo);
             $requestedQuantity = (int) $itemData['requested_quantity'];
+            $oldItem = $oldItems->get($itemNo);
+            $unitPrice = $oldItem
+                ? (float) $oldItem->unit_price
+                : (float) $uniformItem->standard_unit_price;
+
+            $totalAmount = $requestedQuantity * $unitPrice;
 
             if (!$uniformItem || strtolower((string) $uniformItem->status) !== 'active') {
                 throw ValidationException::withMessages([
@@ -426,15 +444,6 @@ class RequestAndIssuanceController extends Controller
                         . "Available: {$uniformItem->stock_on_hand}.",
                 ]);
             }
-
-            if (!$this->isItemAllowedForEmployeeGender($uniformItem, $employeeGender)) {
-                throw ValidationException::withMessages([
-                    'items' => "{$uniformItem->description} is not allowed for {$employeeGender} employees.",
-                ]);
-            }
-
-            $unitPrice = (float) $uniformItem->standard_unit_price;
-            $totalAmount = $requestedQuantity * $unitPrice;
             $originalStock = (int) $uniformItem->stock_on_hand;
             $grandTotal += $totalAmount;
 
@@ -460,57 +469,92 @@ class RequestAndIssuanceController extends Controller
         return $grandTotal;
     }
 
-    private function getDuplicateFreeUniformRequest(array $validated, ?int $excludeId = null): ?RequestAndIssuance
-    {
+   private function getDuplicateFreeUniformRequest(array $validated, ?int $excludeId = null): ?RequestAndIssuance{
         if (($validated['issuance_type'] ?? null) !== 'Free Uniform') {
             return null;
         }
+        $allowedCount = 1;
 
-        $dateRequested = Carbon::now();
-        $dateHired = Carbon::parse($validated['date_hired']);
-        $cycleStart = $dateHired->copy()->year($dateRequested->year);
-
-        if ($cycleStart->greaterThan($dateRequested)) {
-            $cycleStart->subYear();
-        }
-
-        $cycleEnd = $cycleStart->copy()->addYear()->subDay();
-
-        return RequestAndIssuance::where('employee_id', $validated['employee_id'])
-            ->where('status', '<>', 'Cancelled')
-            ->where('issuance_type', 'Free Uniform')
-            ->where('request_number', 'LIKE', 'FR-URN%')
-            ->when($excludeId, fn ($query) => $query->where('id', '<>', $excludeId))
-            ->whereBetween('date_requested', [
-                $cycleStart->startOfDay(),
-                $cycleEnd->endOfDay(),
-            ])
+        $limit = UniformFreeUniformLimit::where('status', 'active')
             ->latest('id')
             ->first();
-    }
 
-    private function isItemAllowedForEmployeeGender(UniformItem $uniformItem, ?string $employeeGender): bool
-    {
-        $employeeGender = $this->normalizeGender($employeeGender);
-        $itemGender = $this->normalizeGender($uniformItem->gender?->code ?? $uniformItem->gender?->description);
+        Log::info('Limit Result', [
+            'limit' => $limit,
+        ]);
 
-        if ($employeeGender === '' || $itemGender === '') {
-            return true;
+        $employee = Employee::where('employee_number', $validated['employee_id'])
+            ->first();
+
+        if (!$employee || !$employee->date_hired) {
+            return null;
         }
 
-        return $itemGender === 'unisex' || $itemGender === $employeeGender;
+        $hireDate = \Carbon\Carbon::parse($employee->date_hired);
+        $yearsOfService = $hireDate->diffInYears(now());
+        if ($limit && today()->gte($limit->date_from)) {
+            $allowedCount = $limit->allowed_count;
+            if ($yearsOfService === 0) {
+                $allowedCount = 3;
+            }
+        }
+
+        $periodStart = $hireDate->copy()->year(now()->year);
+
+        if ($periodStart->gt(now())) {
+            $periodStart->subYear();
+        }
+
+        $periodEnd = $periodStart->copy()
+            ->addYear()
+            ->subDay();
+
+        $count = RequestAndIssuance::where('request_and_issuances.employee_id', $validated['employee_id'])
+            ->where('request_and_issuances.status', '<>', 'Cancelled')
+            ->where('request_and_issuances.issuance_type', 'Free Uniform')
+            ->where('request_and_issuances.request_number', 'LIKE', 'FR-URN%')
+            ->when(
+                $excludeId,
+                fn ($query) => $query->where('request_and_issuances.id', '<>', $excludeId)
+            )
+            ->whereBetween(
+                'request_and_issuances.date_requested',
+                [$periodStart, $periodEnd]
+            )
+            ->join(
+                'request_and_issuance_items',
+                'request_and_issuances.request_number',
+                '=',
+                'request_and_issuance_items.requested_number_id'
+            )
+            ->sum('request_and_issuance_items.requested_quantity');
+
+        $currentRequestQty = collect($validated['items'])
+            ->sum('requested_quantity');
+
+        $totalQty = $count + $currentRequestQty;
+
+        Log::info('Free Uniform Limit Check', [
+            'employee_id' => $validated['employee_id'],
+            'allowed_count' => $allowedCount,
+            'already_availed' => $count,
+            'current_request' => $currentRequestQty,
+            'total_quantity' => $totalQty,
+            'period_start' => $periodStart->toDateString(),
+            'period_end' => $periodEnd->toDateString(),
+        ]);
+
+        if ($totalQty > $allowedCount) {
+            return RequestAndIssuance::where('employee_id', $validated['employee_id'])
+                ->where('status', '<>', 'Cancelled')
+                ->where('issuance_type', 'Free Uniform')
+                ->where('request_number', 'LIKE', 'FR-URN%')
+                ->latest('id')
+                ->first();
+        }
+
+        return null;
     }
 
-    private function normalizeGender(?string $gender): string
-    {
-        $gender = strtolower(trim((string) $gender));
-
-        return match ($gender) {
-            'm', 'male' => 'male',
-            'f', 'female' => 'female',
-            'n/a', 'na', 'unisex' => 'unisex',
-            default => $gender,
-        };
-    }
 }
  

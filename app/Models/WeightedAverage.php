@@ -40,6 +40,14 @@ class WeightedAverage extends Model
         'cancelled_at' => 'datetime',
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($model) {
+            $model->weighted_id = 'WA' . str_pad($model->id, 8, '0', STR_PAD_LEFT);
+            $model->saveQuietly();
+        });
+    }
+
     public function items()
     {
         return $this->hasMany(WeightedAverageItems::class, 'weighted_id_number', 'weighted_id');

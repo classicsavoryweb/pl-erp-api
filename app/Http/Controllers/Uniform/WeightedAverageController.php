@@ -35,6 +35,14 @@ class WeightedAverageController extends Controller
                 );
             }
 
+            if ($request->filled('date_from')) {
+                $weighted->whereDate('date_from', '>=', $request->date_from);
+            }
+
+            if ($request->filled('date_to')) {
+                $weighted->whereDate('date_to', '<=', $request->date_to);
+            }
+
             if ($request->has("export") && $request->export) {
                 $weighted = $weighted->get();
                 return Excel::download(
@@ -118,7 +126,9 @@ class WeightedAverageController extends Controller
                 $totalQuantity = (float) $item->total_quantity;
                 $totalAmount = (float) $item->total_amount;
                 $currentPrice = (float) $item->standard_unit_price;
-                $newStandardPrice = $totalQuantity > 0 ? $totalAmount / $totalQuantity : 0;
+                $newStandardPrice = $totalQuantity > 0
+                ? round($totalAmount / $totalQuantity, 2)
+                : null;
 
                 return [
                     'item_no' => $item->item_no,
@@ -130,20 +140,55 @@ class WeightedAverageController extends Controller
                     'total_quantity' => round($totalQuantity, 2),
                     'total_amount' => round($totalAmount, 2),
                     'new_standard_price' => round($newStandardPrice, 2),
+                    'final_standard_price' => round($newStandardPrice),
                     'other_charges' => 0,
-                    'standard_difference' => round($newStandardPrice - $currentPrice, 2),
+                    'standard_difference' => $newStandardPrice === null
+                        ? 0
+                        : round($newStandardPrice - $currentPrice, 2),
                     'reason' => '',
                 ];
             })->values(),
         ]);
     }
+
+     public function cancelWeightedAverage(Request $request, int $id)
+    {
+        $data = $request->validate([
+            'cancel_reason' => ['required', 'string'],
+        ]);
+
+        return DB::transaction(function () use ($request,$data, $id) {
+            $weighted = WeightedAverage::whereKey($id)->lockForUpdate()->firstOrFail();
+
+            if (!in_array($weighted->status, ['Unposted', 'Reviewed'], true)) {
+                throw ValidationException::withMessages(['status' => 'Only unposted or reviewed Weighted Average can be cancelled.']);
+            }
+
+            $weighted->update([
+                'status' => 'Cancelled',
+                'cancelled_by' => optional($request->user())->proper_full_name,
+                'cancelled_at' => now(),
+                'cancel_reason' => $data['cancel_reason'],
+            ]);
+
+            return response()->json([
+                'message' => 'Weighted average cancelled successfully.',
+                'data' => $weighted,
+            ]);
+        });
+    }
     public function updateWeightedStatus(Request $request, $id)
     {
         $request->validate([
             'status' => ['required', 'in:Unposted,Reviewed,Posted,Cancelled'],
+            'items' => ['nullable', 'array'],
+            'items.*.id' => ['nullable', 'integer'],
+            'items.*.other_charges' => ['nullable', 'numeric'],
+            'items.*.final_standard_price' => ['nullable', 'numeric'],
+            'items.*.standard_difference' => ['nullable', 'numeric'],
+            'items.*.reason' => ['nullable', 'string'],
         ]);
         $next = $request->status;
-
         $weighted = DB::transaction(function () use ($request, $id, $next) {
             $weighted = WeightedAverage::lockForUpdate()->findOrFail($id);
             $current = $weighted->status;
@@ -154,43 +199,118 @@ class WeightedAverageController extends Controller
                 'Posted' => [],
                 'Cancelled' => [],
             ];
+
             if (!in_array($next, $allowedTransitions[$current] ?? [], true)) {
                 throw ValidationException::withMessages([
                     'status' => "Invalid status transition from {$current} to {$next}.",
                 ]);
             }
-            $updateData = ['status' => $next];
+            if ($request->has('items')) {
+                foreach ($request->items as $itemData) {
+
+                    if (!isset($itemData['id'])) {
+                        continue;
+                    }
+                    WeightedAverageItems::where('id', $itemData['id'])
+                        ->update([
+                            'other_charges' => $itemData['other_charges'] ?? 0,
+                            'final_standard_price' =>
+                                $itemData['final_standard_price']
+                                ?? $itemData['new_standard_price'],
+
+                            'standard_difference' =>
+                                $itemData['standard_difference'],
+
+                            'reason' => $itemData['reason'] ?? null,
+                        ]);
+                }
+            }
+            $updateData = [
+                'status' => $next
+            ];
+
+
             if ($next === 'Reviewed' && !$weighted->reviewed_at) {
+
                 $updateData['reviewed_at'] = now();
-                $updateData['reviewed_by'] = optional($request->user())->proper_full_name;
+                $updateData['reviewed_by'] =
+                    optional($request->user())->proper_full_name;
             }
             if ($next === 'Posted' && !$weighted->posted_at) {
                 $weighted->load('items');
-                UniformPeriodLock::ensureDateIsOpen($weighted->date_posted, UniformPeriodLock::TYPE_RECEIVING);
-
+                UniformPeriodLock::ensureDateIsOpen(
+                    $weighted->date_posted,
+                    UniformPeriodLock::TYPE_RECEIVING
+                );
                 if ($weighted->items->isEmpty()) {
                     throw ValidationException::withMessages([
                         'items' => 'A request must contain at least one item before posting.',
                     ]);
                 }
-
                 foreach ($weighted->items as $item) {
+
                     UniformItem::where('item_no', $item->uniform_item_no)
                         ->lockForUpdate()
-                        ->update(['standard_unit_price' => $item->new_standard_price]);
+                        ->update([
+                            'standard_unit_price' =>
+                                $item->final_standard_price
+                                ?? $item->new_standard_price
+                        ]);
                 }
-
                 $updateData['posted_at'] = now();
-                $updateData['posted_by'] = optional($request->user())->proper_full_name;
+
+                $updateData['posted_by'] =
+                    optional($request->user())->proper_full_name;
             }
             $weighted->update($updateData);
-
             return $weighted->fresh('items');
         });
-
         return $this->sendResponse([
             'message' => 'Status updated successfully.',
             'record' => $weighted,
+        ]);
+    }
+
+
+   public function updatePrice(Request $request)
+    {
+        $request->validate([
+            'weighted_average_id' => ['required'],
+            'items' => ['required','array'],
+            'items.*.item_no' => ['required'],
+            'items.*.standard_unit_price' => ['required','numeric'],
+        ]);
+
+        DB::transaction(function () use ($request) {
+
+            foreach ($request->items as $itemData) {
+
+                $item = UniformItem::where('item_no', $itemData['item_no'])
+                    ->first();
+
+                if ($item) {
+                    $item->standard_unit_price = $itemData['standard_unit_price'];
+                    $item->save();
+                }
+            }
+
+            $weightedAverage = WeightedAverage::where(
+                'weighted_id',
+                $request->weighted_average_id
+            )->first();
+
+            if ($weightedAverage) {
+                $weightedAverage->status = 'Updated';
+                $weightedAverage->price_updated_by = optional($request->user())->proper_full_name;
+                $weightedAverage->price_updated_at = now();
+                $weightedAverage->save();
+            }
+
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All prices updated successfully.'
         ]);
     }
 
@@ -216,9 +336,10 @@ class WeightedAverageController extends Controller
                 'items.*.total_amount' => ['required','numeric'],
                 'items.*.total_quantity' => ['required','numeric'],
                 'items.*.current_price' => ['required' , 'numeric'],
-                'items.*.other_charges' => ['nullable', 'numeric', 'min:0'],
+                'items.*.other_charges' => ['nullable', 'numeric', 'min:0'], 
                 'items.*.standard_difference' => ['required', 'numeric'],
                 'items.*.new_standard_price' => ['required', 'numeric', 'min:0'],
+                'items.*.final_standard_price' => ['numeric', 'min:0']
             ]);
 
             $weighted = DB::transaction(function () use ($request, $validated) {
@@ -227,6 +348,19 @@ class WeightedAverageController extends Controller
                         'date_to' => 'Date range must be in the same month and year.',
                     ]);
                 }
+
+                $lastWeighted = WeightedAverage::latest('created_at')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (
+                        $lastWeighted &&
+                        !in_array($lastWeighted->status, ['Updated', 'Cancelled'])
+                    ) {
+                        throw ValidationException::withMessages([
+                            'status' => 'You cannot create a new Weighted Average until the latest request is Updated or Cancelled.',
+                        ]);
+                    }
 
                 $hasExistingRange = WeightedAverage::where('date_from', $validated['date_from'])
                     ->where('date_to', $validated['date_to'])
@@ -247,7 +381,6 @@ class WeightedAverageController extends Controller
                     ->keyBy('item_no');
 
                 $weighted = WeightedAverage::create([
-                    'weighted_id' => $this->generateItemNo(),
                     'tag' => $validated['tag'],
                     'date_posted' => $validated['date_posted'],
                     'date_from' => $validated['date_from'],
@@ -292,6 +425,7 @@ class WeightedAverageController extends Controller
                         'new_standard_price' => $newStandardPrice,
                         'other_charges' => $otherCharges,
                         'standard_difference' => $standardDifference,
+                        'final_standard_price' => $itemData['final_standard_price'],
                         'reason' => $itemData['item_remarks'] ?? $itemData['reason'] ?? null,
                     ]);
                 }
@@ -319,20 +453,6 @@ class WeightedAverageController extends Controller
             ], 500);
         }
     }
-
-private function generateItemNo(): string
-{
-    $last = WeightedAverage::where('weighted_id', 'LIKE', 'WA%')
-        ->orderByDesc('weighted_id')
-        ->lockForUpdate()
-        ->first();
-
-    $next = $last
-        ? ((int) substr($last->weighted_id, 2)) + 1
-        : 1;
-
-    return 'WA' . str_pad($next, 5, '0', STR_PAD_LEFT);
-}
 
 
 }

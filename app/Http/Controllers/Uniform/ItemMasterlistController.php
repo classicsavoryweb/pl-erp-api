@@ -79,7 +79,6 @@ class ItemMasterlistController extends Controller
             DB::transaction(function () use ($request, $data) {
                 $item = UniformItem::create([
                     ...$data,
-                    'item_no' => $this->generateItemNo(),
                     'created_by' => optional($request->user())->proper_full_name,
                 ]);
 
@@ -141,19 +140,6 @@ class ItemMasterlistController extends Controller
 
         return $data;
     }
-
-    private function generateItemNo(): string
-    {
-        $last = UniformItem::where('item_no', 'LIKE', 'UNI%')
-            ->orderByDesc('item_no')
-            ->lockForUpdate()
-            ->first();
-
-        $next = $last ? ((int) substr($last->item_no, 3)) + 1 : 1;
-
-        return 'UNI' . str_pad((string) $next, 5, '0', STR_PAD_LEFT);
-    }
-
     private function syncSuppliers(UniformItem $item, array $suppliers): void
     {
         $item->suppliers()->delete();
