@@ -119,13 +119,13 @@ class ReportsSSSController extends Controller
                 $query->whereMonth('pay_date', $request->month);
             }
 
-            if ($request->has('loan_type')) {
-                $loanType = $request->loan_type;
+            // if ($request->has('loan_type')) {
+            //     $loanType = $request->loan_type;
 
-                $query->whereHas('deduction', function ($q) use ($loanType) {
-                    $q->where('description', $loanType);
-                });
-            }
+            //     $query->whereHas('deduction', function ($q) use ($loanType) {
+            //         $q->where('description', $loanType);
+            //     });
+            // }
 
             $withDash = $request->with_dash ?? 0;
 

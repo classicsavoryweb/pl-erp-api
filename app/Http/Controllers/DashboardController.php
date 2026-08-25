@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\ActingCapacity;
 use App\Models\Branch;
 use App\Models\Contract;
+use App\Models\Cutoff;
 use App\Models\Employee;
+use App\Models\EmployeeDeduction;
+use App\Models\PayrollList;
 use App\Models\RequestAndIssuance;
 use App\Models\RequestAndIssuanceItems;
 use App\Models\Tardiness;
@@ -146,6 +149,28 @@ class DashboardController extends Controller
             ->paginate($perPage);
 
             return $this->sendResponse($employees);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getPayrollSummaryDetails(Request $request) {
+        try {
+            $activeCutOff = Cutoff::where("status", "active")->first();
+            $payrollList = PayrollList::where("is_included", true)->get()->count();
+            $deductions = EmployeeDeduction::where("approved_status", "Yes")
+            ->whereHas("employee", function ($query) {
+                $query->where("type", "Direct");
+            })
+            ->where("end_loan_status", "No")
+            ->where("balance", ">", 0);
+
+            return $this->sendResponse([
+                "active_cut_off" => $activeCutOff,
+                "payroll_list" => $payrollList,
+                "active_deductions" => $deductions->count(),
+                "active_deductions_amount" => $deductions->sum("balance")
+            ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }

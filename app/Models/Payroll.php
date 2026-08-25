@@ -101,6 +101,7 @@ class Payroll extends Model
         return LogOptions::defaults()
             ->logAll()
             ->useLogName('Payroll')
+            ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 }

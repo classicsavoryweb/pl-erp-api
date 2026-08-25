@@ -311,6 +311,14 @@ class EmployeeController extends Controller
                         ->limit(1),
                         $request->sort
                     );
+                } else if ($request->sortColumn === "agency.name") {
+                    $employees = $employees->orderBy(
+                        Agency::select('name')
+                        ->from('agencies')
+                        ->whereColumn('agencies.id', 'employees.agency_id')
+                        ->limit(1),
+                        $request->sort
+                    );
                 } else {
                     $employees = $employees->orderBy($request->sortColumn, $request->sort);
                 }
