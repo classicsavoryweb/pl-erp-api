@@ -364,13 +364,6 @@ class RequestAndIssuanceController extends Controller
                     'previous_request_date' => $duplicateFreeUniform->date_requested,
                 ], 422);
             }
-            $latestPhysicalCount = UniformPhysicalCount::latest('id')->first();
-            if($latestPhysicalCount->status != 'Updated'){
-                return $this->sendError([
-                    'message' => 'The latest Physical Count was not Updated.Please update the quantity first.',
-                    'physical_count_status' => $latestPhysicalCount->status,
-                ],422);
-            }
             $issuance = DB::transaction(function () use ($request, $validated) {
                 $itemNumbers = collect($validated['items'])->pluck('item_no');
                 $uniformItems = UniformItem::with(['size', 'gender'])
