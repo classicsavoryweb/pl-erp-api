@@ -54,6 +54,7 @@ class UniformReplenishment extends Model
         return LogOptions::defaults()
             ->useLogName('Uniform Replenishment')
             ->logAll()
-            ->logOnlyDirty();
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
