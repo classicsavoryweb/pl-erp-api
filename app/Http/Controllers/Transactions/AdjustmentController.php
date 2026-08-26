@@ -146,7 +146,7 @@ class AdjustmentController extends Controller
 
                 $isExisting = Adjustment::where("employee_id", $employee->id)
                     ->where("date", $request->date)
-                    ->whereIn("status", ["Pending", "Approved"])
+                    ->whereIn("status", ["Pending", "Approved", "Adjusted"])
                     ->first();
 
                 if ($isExisting) {

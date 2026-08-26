@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Support\NotifiesJobStatus;
 use Exception;
 use Log;
+use Spatie\Activitylog\Facades\CauserResolver;
 
 class SendTransactionToEmployeeJob implements ShouldQueue
 {
@@ -152,6 +153,8 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             })
             ->groupBy("transaction_type_id");
 
+        $isOtherCompany = env("COMPANY_NAME") == "SFI" ? "Tony Ting Food Concepts Inc." : "Savory Fast Food Inc." ;
+
         foreach ($batchEntryGroups as $transactionTypeId => $transactions) {
             $firstTransaction = $transactions->first();
 
@@ -245,6 +248,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
             $advancesDebit = $transaction->transaction_type->advances_debit;
             $branchNumber = $transaction->branch->branch_number;
             $branchShortName = $transaction->branch->short_name;
+            $branchCompanyName = $transaction->branch->company;
             $branchName = $transaction->branch->name;
             $branchId = $transaction->branch_id;
             $entryVendorNo = $employee->employee_number;
@@ -263,6 +267,11 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 if ($advancesDebit == 'Yes') {
                     $accountHODebitId = Account::where('acc_name', 'Advances - ' . $branchShortName)
                     ->value('acc_no');
+
+                    if ($isOtherCompany == $branchCompanyName) {
+                        $accountHODebitId = Account::where('acc_name', 'Advances - OPD')
+                        ->value('acc_no');
+                    }
                 }
 
                 $hoEntries = [
@@ -400,6 +409,7 @@ class SendTransactionToEmployeeJob implements ShouldQueue
                 $creditId = $deduction->credit_id;
                 $user = User::find($userId);
 
+                CauserResolver::setCauser($user);
                 EmployeeDeduction::create([
                     "employee_id" => $employee->id,
                     "deduction_id" => $transaction->transaction_type->deduction_id,

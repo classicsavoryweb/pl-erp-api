@@ -25,6 +25,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_tardiness_disabler"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_general_dashboard"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_analytic_dashboard_hr"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "has_analytic_dashboard_payroll"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "by_pass_edit_restrictions"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_uniform_dashboard"], ["module" => "administrators"]);
         // Permission::updateOrCreate(["name" => "view_settings"]);
         // Permission::updateOrCreate(["name" => "perform_settings"]);
@@ -200,6 +202,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_compensation_module"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "view_compensation_payroll_list"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_payroll_list"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "perform_compensation_payroll_list_salary"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "view_compensation_cutoff_setup"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_cutoff_setup"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "initialize_compensation_cutoff_setup"], ["module" => "compensation"]);

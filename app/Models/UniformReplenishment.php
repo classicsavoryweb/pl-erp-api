@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class UniformReplenishment extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'request_no', 'supplier_id', 'replenishment_type', 'requested_date',
         'status', 'total_amount', 'remarks', 'prepared_by', 'reviewed_by',
@@ -49,8 +52,9 @@ class UniformReplenishment extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-         
-            ->dontLogIfAttributesChangedOnly(["request_no"]);
-
+            ->useLogName('Uniform Replenishment')
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

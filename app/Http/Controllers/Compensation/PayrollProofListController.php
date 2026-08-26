@@ -223,7 +223,8 @@ class PayrollProofListController extends Controller
                     $fullName === '' ||
                     $transaction->is_bank == 0 ||
                     $transaction->amount <= 0 ||
-                    $transaction->is_on_maternity_leave == 1 
+                    $transaction->is_on_maternity_leave == 1 ||
+                    $transaction->is_included == 0
                 ) {
                     continue;
                 }

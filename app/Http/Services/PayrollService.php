@@ -393,7 +393,7 @@ class PayrollService {
                 ->first();
 
                 if ($pagibig) {
-                    $pagibigShares = $totalBasic * (0.01 * $pagibig->percentage);
+                    $pagibigShares = $firstPayroll->employee_pagibig == 0 ? 200 : $totalBasic * (0.01 * $pagibig->percentage);
                     $pagibigAmount = $pagibigShares > 100
                         ? $pagibig->max_deduction - $firstPayroll->employee_pagibig
                         : $pagibigShares - $firstPayroll->employee_pagibig;
@@ -524,7 +524,7 @@ class PayrollService {
         }
 
         if ($position->rank == 1) {
-            $months = Carbon::parse("2026-05-09")->diffInMonths($employee->date_hired);
+            $months = Carbon::now()->diffInMonths($employee->date_hired);
             if ($months < 1) {
                 $months = 1;
             }

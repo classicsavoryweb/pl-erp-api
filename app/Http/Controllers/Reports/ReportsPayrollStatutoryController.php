@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Carbon\Carbon;
+use Log;
 
 class ReportsPayrollStatutoryController extends Controller
 {
@@ -266,6 +267,7 @@ class ReportsPayrollStatutoryController extends Controller
                     + $payrollsForDisplay->sum('special_holiday_overtime_amount')
                     + $payrollsForDisplay->sum('night_differential_overtime_amount')
                     + $payrollsForDisplay->sum('cancelled_off')
+                    + $payrollsForDisplay->sum('cancelled_off_overtime_amount')
                     + $payrollsForDisplay->sum('taxable_adjustment');
                 $nightDiffAmount = $payrollsForDisplay->sum('night_differential_amount');
                 $withholdingTax = $payrollsForDisplay->sum('withholding_tax');
@@ -291,7 +293,8 @@ class ReportsPayrollStatutoryController extends Controller
                 $thirteenthMonthPay = 0;
                 $remarks = '';
 
-                if (!empty($employee?->separation_date)) {
+                $parsedSeparated = Carbon::parse($employee->separation_date);
+                if (!empty($employee->separation_date) && $parsedSeparated->isBefore($rangeEnd) ) {
                     $separationDate = Carbon::parse($employee->separation_date);
                     $yearHolded = (int) $separationDate->year;
                     $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();
@@ -302,8 +305,10 @@ class ReportsPayrollStatutoryController extends Controller
                     $thirteenthMonthPeriodEnd = Carbon::create($yearHolded, 12, 10)->format("Y-m-d");
 
                     $annualSalary = 0;
-                    $thirteenthPayrolls = collect($thirteenthPayrollsByEmployee->get($employee->id))
-                        ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd]);
+                    $thirteenthPayrolls = Payroll::where("employee_id", $employee->id)
+                    ->where("is_maternity", 0)
+                    ->whereBetween("end_date", [$thirteenthMonthPeriodStart, $thirteenthMonthPeriodEnd])
+                    ->get();
 
                     foreach ($thirteenthPayrolls as $thirteenthPayroll) {
                         $salary = ($thirteenthPayroll->salary ?? 0)
@@ -311,7 +316,7 @@ class ReportsPayrollStatutoryController extends Controller
                         $annualSalary += $salary;
                     }
 
-                    $thirteenthMonthPay = $annualSalary / 12;
+                    $thirteenthMonthPay = round(($annualSalary / 12), 2);
                     $remarks = 'Resign Date : ' . $separationDate->format('F d Y');
                 }
 

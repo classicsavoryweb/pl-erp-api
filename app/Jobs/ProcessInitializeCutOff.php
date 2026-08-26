@@ -17,6 +17,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Support\NotifiesJobStatus;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class ProcessInitializeCutOff implements ShouldQueue
@@ -67,6 +68,14 @@ class ProcessInitializeCutOff implements ShouldQueue
 
         Payroll::whereIn("id", $payrollIds)->delete();
         PayrollDetail::whereIn("payroll_id", $payrollIds)->delete();
+
+        if ($cutOff->part ==  1) {
+            $month = Carbon::parse($cutOff->pay_date)->month;
+
+            Incentives::where("status", "initial")
+            ->whereMonth("pay_date", $month)
+            ->update(["pay_date" => $cutOff->pay_date]);
+        }
 
         $hoBranch = Branch::where("short_name", "HO")->first();
         foreach ($includedEmployees as $payrollList) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Employee;
+use App\Models\OtherCompany\OtherEmployee;
 use Exception;
 use Hash;
 use Illuminate\Http\Request;
@@ -33,21 +34,26 @@ class AuthController extends Controller
                 $role->permissions->pluck("name")->toArray(),
                 now()->addHours(12)
                 );
-    
+
+                $employee = Employee::where("employee_number", $user->employee_number)->first();
+
+                if (!$employee) {
+                    $employee = OtherEmployee::where("employee_number", $user->employee_number)->first();
+                }
+
                 activity()->causedBy($user)->useLog("Login")->log('user logged in');
     
                 return $this->sendResponse([
                     "message" => "Logged in successfully",
                     "user" => $user,
+                    "employee" => $employee,
                     "token" => $token->plainTextToken,
                     "permissions" => $role->permissions->pluck("name")->toArray()
                 ]);
             }
 
             return $this->sendError(["message" => "Role not existing" ]);
-
         } else {
-
             return $this->sendError(["message" => "Invalid credentials" ]);
         }
     }

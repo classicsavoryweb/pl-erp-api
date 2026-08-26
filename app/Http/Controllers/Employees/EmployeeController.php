@@ -311,6 +311,14 @@ class EmployeeController extends Controller
                         ->limit(1),
                         $request->sort
                     );
+                } else if ($request->sortColumn === "agency.name") {
+                    $employees = $employees->orderBy(
+                        Agency::select('name')
+                        ->from('agencies')
+                        ->whereColumn('agencies.id', 'employees.agency_id')
+                        ->limit(1),
+                        $request->sort
+                    );
                 } else {
                     $employees = $employees->orderBy($request->sortColumn, $request->sort);
                 }
@@ -388,6 +396,13 @@ class EmployeeController extends Controller
 
             $employee = Employee::where("employee_number", $employeeNumber)->first();
             $activities = Activity::with('causer')
+            ->whereNotIn("log_name", [
+                "Payroll",
+                "Payroll Detail",
+                "Incentive History",
+                "Employee Deductions",
+                "Deduction History"
+            ])
             ->where(function ($query) use ($employee) {
                 $query->where(function ($q) use ($employee) {
                     $q->where('subject_type', Employee::class)

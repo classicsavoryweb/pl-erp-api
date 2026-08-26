@@ -386,9 +386,9 @@ class PayrollController extends Controller
                         if ($payrollComp->net_pay < 0) {
                             return $this->sendError(["message" => "Netpay is negative"]);
                         }
-
+                        $payrollModel = Payroll::find($payroll->id);
                         DB::beginTransaction();
-                        PayrollDetail::where("payroll_id", $payroll->id)
+                        $payrollModel->details
                         ->update([
                             "regular_days" => $request->regular_days,
                             "special_leave" => $request->special_leave,
@@ -413,7 +413,7 @@ class PayrollController extends Controller
                             "remarks" => $request->remarks
                         ]);
 
-                        Payroll::where("id", $payroll->id)
+                        $payrollModel
                         ->update([
                             "salary" => $payrollComp->salary,
                             "tardiness_amount" => $payrollComp->tardiness_amount,

@@ -22,8 +22,7 @@ class PayslipController extends Controller
             "timekeeping_summary",
             "timekeeping_branch",
             "details",
-        ])->where("is_hold", 0)
-            ->where("is_maternity", 0);
+        ])->where("is_maternity", 0);
 
         if ($request->type === "Branch") {
             if ($request->branch_id !== 0) {

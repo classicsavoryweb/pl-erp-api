@@ -69,14 +69,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $this->payrollService = new PayrollService();
     }
 
-    public function middleware() {
-        return [
-            (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
-                ->shared()
-                ->releaseAfter(1200)
-                ->expireAfter(7200)
-        ];
-    }
+    // public function middleware() {
+    //     return [
+    //         (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
+    //             ->shared()
+    //             ->releaseAfter(1200)
+    //             ->expireAfter(7200)
+    //     ];
+    // }
 
     public function handle(): void
     {
@@ -532,8 +532,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                             if (
                                 $timeKeeping && $sched->timetable == "NO SCHEDULE" &&
-                                ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes") &&
-                                ($timeKeeping->legal_holiday_hours > 0 || $timeKeeping->special_holiday_hours)
+                                ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes")
                             ) {
                                 continue;
                             }

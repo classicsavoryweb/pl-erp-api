@@ -16,6 +16,7 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use App\Support\NotifiesJobStatus;
+use Carbon\Carbon;
 
 class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
 {
@@ -200,19 +201,24 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
 
         $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
 
+        $month = Carbon::parse($this->month)->month;
+        $date = Carbon::create($this->year, $month, 1)
+        ->endOfMonth()
+        ->toDateString();
+
         foreach ($groupedEntries as $mainId => $groupedEntry) {
-            $entry = $groupedEntry->first();
+            $entry = $groupedEntry->last();
 
             $entryMain = ApsysEntryMain::create([
                 'ent_tran_no'       => $mainId,
                 'ven_no'            => $entry['ven_no'],
                 'ven_name'          => $entry['ven_name'],
-                'ent_doc_date'      => now(),
+                'ent_doc_date'      => $date,
                 'branch_id'         => $entry['branch_number'],
                 'branch_name'         => $entry['branch_name'],
                 'ent_header'        => $entry['document_no'],
                 'ent_trans_amt'     => $entry['amount'],
-                'ent_post_date'     => now(),
+                'ent_post_date'     => $date,
                 'ent_module_type'   => 'Single',
                 'ent_status'        => 'Unapplied',
                 'check_no'          => null,
@@ -222,7 +228,7 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
                 'ent_app_amt'       => $entry['amount'],
                 'ent_unapp_amt'     => 0,
                 'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
-                'ent_due_date'      => now(),
+                'ent_due_date'      => $date,
             ]);
 
             foreach ($groupedEntry as $ent) {
@@ -245,11 +251,11 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
                 ApsysEntry::create([
                     'ent_tran_no'       => $entryMain->ent_tran_no,
                     'branch_id'         => $ent['branch_number'],
-                    'ent_post_date'     => now(),
+                    'ent_post_date'     => $date,
                     'ven_no'            => $ent['ven_no'],
                     'ent_doc_no'        => $ent['document_no'],
-                    'ent_doc_date'      => now(),
-                    'ent_due_date'      => now(),
+                    'ent_doc_date'      => $date,
+                    'ent_due_date'      => $date,
                     'ent_header'        => '',
                     'ent_crf_no'        => '',
                     'ent_trans_amt'     => $ent['total_amount'],
@@ -270,7 +276,7 @@ class GenerateThirteenthMonthMonthlyAllocationEntry implements ShouldQueue
                     'ent_block_payment' => ($ent['is_block_payment'] == 1) ? 'Yes' : 'No',
                     'ent_status'        => 'Unapplied',
                     'ent_chk'           => 'No',
-                    'date_added'        => now(),
+                    'date_added'        => $date,
                 ]);
             }
         }
