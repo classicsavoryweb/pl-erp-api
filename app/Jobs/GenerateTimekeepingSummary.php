@@ -538,7 +538,10 @@ class GenerateTimekeepingSummary implements ShouldQueue
                                 continue;
                             }
 
-                            if (!$timeKeeping || !$biotimeLog) {
+                            if (
+                                (!$timeKeeping || !$biotimeLog) &&
+                                $sched->timetable !== "NO SCHEDULE"
+                            ) {
                                 $absentToBeAdded = 1;
                             }
                         }
