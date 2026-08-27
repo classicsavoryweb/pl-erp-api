@@ -60,8 +60,8 @@ class TimeKeepingService
 
         // Log::info("==================");
         // Log::info($employee->full_name);
-        // Log::info($log->date);
-        // Log::info($schedule->selection);
+        Log::info($log->date);
+        Log::info($schedule->selection);
 
         $travel_time = 0;
 
@@ -161,7 +161,11 @@ class TimeKeepingService
         }
         if ($workHours < ($hours / 2)) {
             $halfScheduleTime = $scheduleStart->copy()->addMinutes($scheduleStart->diffInMinutes($scheduleEnd) / 2);
-            $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true) - 30;
+            $undertime = $parsedLastPunch->diffInMinutes($halfScheduleTime, true) - 30 > 0
+                ? $parsedLastPunch->diffInMinutes($halfScheduleTime, true) - 30
+                : 0;
+            $workHours = $hours / 2;
+            $shouldBeHalfDay = true;
         }
         if ($workHours > $hours && $parsedLastPunch->isBefore($scheduleEnd)) {
             $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
