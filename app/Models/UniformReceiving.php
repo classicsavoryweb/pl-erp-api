@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class UniformReceiving extends Model
 {
+    use HasFactory, LogsActivity;
     protected $fillable = [
         'receiving_no', 'replenishment_id', 'supplier_id', 'date_received',
         'crf_no', 'document_no', 'checker_name', 'transmitted_by', 'status',
@@ -42,5 +46,14 @@ class UniformReceiving extends Model
     public function items()
     {
         return $this->hasMany(UniformReceivingItem::class, 'receiving_id');
+    }
+    
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Uniform Receiving Stocks')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

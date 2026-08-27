@@ -115,7 +115,7 @@ class ItemMasterlistController extends Controller
     private function validatedData(Request $request): array
     {
         $data = $request->validate([
-            'description' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:255', 'unique:uniform_items,description'],
             'uniform_size_id' => ['required', 'exists:sizes,id'],
             'uniform_gender_id' => ['required', 'exists:uniform_genders,id'],
             'standard_unit_price' => ['required', 'numeric', 'min:0'],
@@ -134,6 +134,9 @@ class ItemMasterlistController extends Controller
             'suppliers.*.unit_price' => ['required_with:suppliers', 'numeric', 'min:0.01'],
             'suppliers.*.packaging_unit' => ['nullable', 'string', 'max:50'],
             'suppliers.*.remarks' => ['nullable', 'string', 'max:500'],
+        ],
+        [
+            'description.unique' => "This description already exist.Please enter unique description"
         ]);
 
         unset($data['suppliers']);

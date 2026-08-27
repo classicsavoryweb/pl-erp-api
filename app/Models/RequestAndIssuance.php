@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\RequestAndIssuanceItems;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 class RequestAndIssuance extends Model
 {
-    use HasFactory;
+    use HasFactory,LogsActivity;
 
     protected $table ="request_and_issuances";
 
@@ -67,6 +69,14 @@ class RequestAndIssuance extends Model
     public function branches()
     {
         return $this->hasOne(Branch::class, 'name' , 'branch');
+    }
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Uniform Request and Issuance')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
   
