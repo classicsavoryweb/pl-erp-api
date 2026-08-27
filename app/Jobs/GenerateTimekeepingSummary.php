@@ -532,8 +532,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                             if (
                                 $timeKeeping && $sched->timetable == "NO SCHEDULE" &&
-                                ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes") &&
-                                ($timeKeeping->legal_holiday_hours > 0 || $timeKeeping->special_holiday_hours)
+                                ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes")
                             ) {
                                 continue;
                             }
