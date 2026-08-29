@@ -25,8 +25,17 @@ class PettyCashIssuance extends Model
         'overunder_amount',
         'detailed_purpose',
         'status',
+        'void_reason',
+        'cshub_trans_no',
+        'cshub_id',
+        'source',
+        'liquidated_at',
         'created_by_id',
         'updated_by_id',
+    ];
+
+    protected $casts = [
+        'liquidated_at' => 'datetime',
     ];
 
     public function branch()

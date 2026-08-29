@@ -16,6 +16,9 @@ class PettyCashLiquidation extends Model
 
     protected $fillable = [
         'liquidation_id',
+        'cshub_trans_no',
+        'cshub_id',
+        'source',
         'petty_cash_issuance_id',
         'date',
         'liquidation_type',
@@ -23,6 +26,7 @@ class PettyCashLiquidation extends Model
         'reference_document_number',
         'reference_document_date',
         'description',
+        'supplier_vendor',
         'amount',
         'expense_type_id',
         'created_by_id',

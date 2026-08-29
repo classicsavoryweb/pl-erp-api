@@ -7,8 +7,10 @@ use App\Models\PettyCashCustodian;
 use App\Models\PettyCashIssuance;
 use App\Models\PettyCashLiquidation;
 use App\Models\PettyCashLiquidationAttachment;
+use App\Models\PettyCashReplenishment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 
@@ -67,6 +69,26 @@ class LiquidationController extends Controller
     {
         try {
             $attachment = PettyCashLiquidationAttachment::findOrFail($id);
+
+            // cshub attachments, url lang naka-store, wala talaga dito yung file
+            if ($attachment->source === 'CSHUB') {
+                $response = Http::timeout(30)->get($attachment->file_path);
+
+                if (!$response->successful()) {
+                    return $this->sendError(['message' => 'File not found on CS Hub.']);
+                }
+
+                $mimeType = $response->header('Content-Type') ?: 'application/octet-stream';
+                $fileData = 'data:' . $mimeType . ';base64,' . base64_encode($response->body());
+
+                return $this->sendResponse([
+                    'id'        => $attachment->id,
+                    'file_name' => $attachment->file_name,
+                    'mime_type' => $mimeType,
+                    'file_data' => $fileData,
+                ]);
+            }
+
             $storage = Storage::disk('hr_system_folder');
 
             if (!$storage->exists($attachment->file_path)) {
@@ -98,6 +120,7 @@ class LiquidationController extends Controller
                 'reference_document_number' => 'required|string|max:50',
                 'reference_document_date'   => 'required|date|before_or_equal:today',
                 'description'               => 'required|string|max:250',
+                'supplier_vendor'           => 'required|string|max:150',
                 'amount'                    => 'required|numeric|min:0.01',
                 'expense_type_id'           => 'required|exists:expense_types,id',
                 'attachments'               => 'required|array|min:1',
@@ -121,6 +144,7 @@ class LiquidationController extends Controller
                 'reference_document_number'    => $request->reference_document_number,
                 'reference_document_date'      => $request->reference_document_date,
                 'description'                  => $request->description,
+                'supplier_vendor'              => $request->supplier_vendor,
                 'amount'                       => $request->amount,
                 'expense_type_id'              => $request->expense_type_id,
                 'created_by_id'                => auth()->id(),
@@ -146,6 +170,7 @@ class LiquidationController extends Controller
                 'reference_document_number' => 'required|string|max:50',
                 'reference_document_date'   => 'required|date|before_or_equal:today',
                 'description'               => 'required|string|max:250',
+                'supplier_vendor'           => 'required|string|max:150',
                 'amount'                    => 'required|numeric|min:0.01',
                 'expense_type_id'           => 'required|exists:expense_types,id',
                 'attachments.*'             => 'file|mimetypes:image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf',
@@ -157,12 +182,13 @@ class LiquidationController extends Controller
                 'reference_document_number' => $request->reference_document_number,
                 'reference_document_date'   => $request->reference_document_date,
                 'description'               => $request->description,
+                'supplier_vendor'           => $request->supplier_vendor,
                 'amount'                    => $request->amount,
                 'expense_type_id'           => $request->expense_type_id,
                 'updated_by_id'             => auth()->id(),
             ]);
 
-            // Remove attachments the user deleted
+            // alisin yung mga tinanggal na attachment
             $removedIds = [];
             if ($request->filled('removed_attachment_ids')) {
                 $storage = Storage::disk('hr_system_folder');
@@ -201,6 +227,12 @@ class LiquidationController extends Controller
     {
         try {
             $liquidation = PettyCashLiquidation::findOrFail($id);
+
+            // para pwede pa ulit i-import pag na-void na, unique kasi yung column
+            if ($liquidation->cshub_trans_no) {
+                $liquidation->update(['cshub_trans_no' => null]);
+            }
+
             $liquidation->delete();
 
             return $this->sendResponse(['message' => 'Liquidation voided successfully.']);
@@ -228,6 +260,15 @@ class LiquidationController extends Controller
                 return $this->sendError(['message' => 'You are not an active petty cash custodian.']);
             }
 
+            // bawal mag-liquidate habang may hindi pa Voided/Replenished, baka mahabol na sa snapshot
+            $hasUnsettledReplenishment = PettyCashReplenishment::where('petty_cash_custodian_id', $custodian->id)
+                ->whereNotIn('status', ['Voided', 'Replenished'])
+                ->exists();
+
+            if ($hasUnsettledReplenishment) {
+                return $this->sendError(['message' => 'A replenishment is still Pending or Posted. You can post liquidation once it is Replenished.']);
+            }
+
             $totalLiquidated = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->sum('amount');
 
             if ($totalLiquidated <= 0) {
@@ -237,7 +278,7 @@ class LiquidationController extends Controller
             $diff = round($totalLiquidated - $issuance->amount, 2);
 
             if ($diff > 0) {
-                // Total exceeds issuance — excess deducted from remaining fund
+                // sobra sa inissue, ibabawas sa fund
                 if ($diff > $custodian->remaining_cash_fund) {
                     return $this->sendError([
                         'message' => 'The excess liquidation amount of ₱' . number_format($diff, 2) .
@@ -247,7 +288,7 @@ class LiquidationController extends Controller
                 $custodian->decrement('remaining_cash_fund', $diff);
 
             } elseif ($diff < 0) {
-                // Total is less than issuance — validate denomination breakdown for the change
+                // kulang sa inissue, kailangan ng denomination para sa sukli
                 $changeAmount = abs($diff);
 
                 $request->validate([
@@ -275,6 +316,7 @@ class LiquidationController extends Controller
                 'status'              => 'Liquidated',
                 'unliquidated_amount' => 0,
                 'overunder_amount'    => $diff,
+                'liquidated_at'       => now(),
                 'updated_by_id'       => auth()->id(),
             ]);
 
@@ -282,6 +324,194 @@ class LiquidationController extends Controller
             return $this->sendResponse(['message' => 'Cash issuance posted as liquidated successfully.']);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
+    private function fetchCSHubPettyCash($type, $approvedFrom, $approvedTo)
+    {
+        $baseUrl = env('CS_HUB_URL_LINK');
+        $user = env('CS_HUB_ADMIN_EMAIL');
+        $password = env('CS_HUB_ADMIN_PASSWORD');
+        $company = env('COMPANY_NAME');
+
+        if (!$baseUrl || !$user || !$password || !$company) {
+            throw new Exception('CS Hub integration is not configured properly.');
+        }
+
+        $response = Http::withBasicAuth($user, $password)
+            ->withHeaders([
+                'Accept'       => 'application/json',
+                'Content-Type' => 'application/json',
+            ])
+            ->timeout(30)
+            ->get(rtrim($baseUrl, '/') . '/get-petty-cash-transactions', [
+                'type'          => $type,
+                'approved_from' => $approvedFrom,
+                'approved_to'   => $approvedTo,
+                'company'       => $company,
+            ]);
+
+        if (!$response->successful()) {
+            $message = $response->json('data.message') ?: $response->body();
+            throw new Exception('Failed to fetch CS Hub transactions: ' . $message);
+        }
+
+        return $response->json('data.transactions') ?: [];
+    }
+
+    // tinatanggal yung /api kasi public web root ng cshub yung file path nila
+    private function cshubFileUrl($relativePath)
+    {
+        $baseUrl = env('CS_HUB_URL_LINK');
+        $fileBase = rtrim(preg_replace('#/api/?$#', '', $baseUrl), '/');
+        return $fileBase . '/' . ltrim($relativePath, '/');
+    }
+
+    // same trans_no din ginagamit para mahanap yung liquidation nito sa cshub
+    public function getCSHubLiquidationCandidates(Request $request, $issuanceId)
+    {
+        try {
+            $issuance = PettyCashIssuance::findOrFail($issuanceId);
+
+            if (!$issuance->cshub_trans_no) {
+                return $this->sendError(['message' => 'This cash issuance was not imported from CS Hub.']);
+            }
+
+            $approvedFrom = $request->approved_from ?: now()->subMonths(3)->startOfMonth()->toDateString();
+            $approvedTo = $request->approved_to ?: now()->toDateString();
+
+            $transactions = $this->fetchCSHubPettyCash('PETTY_CASH_LIQUIDATION', $approvedFrom, $approvedTo);
+
+            $candidates = [];
+            foreach ($transactions as $t) {
+                if (!isset($t['trans_no']) || $t['trans_no'] !== $issuance->cshub_trans_no) {
+                    continue;
+                }
+
+                $alreadyImported = PettyCashLiquidation::where('cshub_trans_no', $t['trans_no'])->exists();
+                $attachments = isset($t['liquidation_attachments']) ? $t['liquidation_attachments'] : [];
+
+                $candidates[] = [
+                    'cshub_id'              => isset($t['id']) ? $t['id'] : null,
+                    'trans_no'               => $t['trans_no'],
+                    'liquidation_date_filed' => isset($t['liquidation_date_filed']) ? $t['liquidation_date_filed'] : null,
+                    'actual_amount_spent'    => isset($t['actual_amount_spent']) ? $t['actual_amount_spent'] : 0,
+                    'liquidation_remarks'    => isset($t['liquidation_remarks']) ? $t['liquidation_remarks'] : '',
+                    'attachment_count'       => count($attachments),
+                    'already_imported'       => $alreadyImported,
+                    'importable'             => !$alreadyImported,
+                ];
+            }
+
+            return $this->sendResponse(['transactions' => $candidates]);
+        } catch (Exception $e) {
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
+    public function importCSHubLiquidations(Request $request, $issuanceId)
+    {
+        $request->validate([
+            'cshub_ids'   => 'required|array|min:1',
+            'cshub_ids.*' => 'required',
+        ]);
+
+        try {
+            $issuance = PettyCashIssuance::findOrFail($issuanceId);
+
+            if (!$issuance->cshub_trans_no) {
+                return $this->sendError(['message' => 'This cash issuance was not imported from CS Hub.']);
+            }
+
+            $approvedFrom = $request->approved_from ?: now()->subMonths(3)->startOfMonth()->toDateString();
+            $approvedTo = $request->approved_to ?: now()->toDateString();
+
+            $transactions = $this->fetchCSHubPettyCash('PETTY_CASH_LIQUIDATION', $approvedFrom, $approvedTo);
+            $byId = [];
+            foreach ($transactions as $t) {
+                if (isset($t['id'])) {
+                    $byId[$t['id']] = $t;
+                }
+            }
+
+            $results = [];
+
+            foreach ($request->cshub_ids as $cshubId) {
+                $t = isset($byId[$cshubId]) ? $byId[$cshubId] : null;
+
+                if (!$t || !isset($t['trans_no']) || $t['trans_no'] !== $issuance->cshub_trans_no) {
+                    $results[] = [
+                        'cshub_id' => $cshubId,
+                        'success'  => false,
+                        'message'  => 'Transaction is no longer available for import on CS Hub.',
+                    ];
+                    continue;
+                }
+
+                if (PettyCashLiquidation::where('cshub_trans_no', $t['trans_no'])->exists()) {
+                    $results[] = [
+                        'cshub_id' => $cshubId,
+                        'success'  => false,
+                        'message'  => 'Already imported.',
+                    ];
+                    continue;
+                }
+
+                DB::beginTransaction();
+                try {
+                    $count = PettyCashLiquidation::withTrashed()
+                        ->where('petty_cash_issuance_id', $issuance->id)
+                        ->count();
+
+                    $liquidationId = 'LIQ' . ($count + 1) . '-' . $issuance->pcv_number;
+
+                    $liquidation = PettyCashLiquidation::create([
+                        'liquidation_id'               => $liquidationId,
+                        'cshub_trans_no'                => $t['trans_no'],
+                        'cshub_id'                      => $t['id'],
+                        'source'                        => 'CSHUB',
+                        'petty_cash_issuance_id'       => $issuance->id,
+                        'date'                         => now()->toDateString(),
+                        'liquidation_type'             => 'Cash Advance Liquidation',
+                        'requested_by_employee_number' => $issuance->requested_by_employee_number,
+                        'reference_document_number'    => $t['trans_no'],
+                        'reference_document_date'      => isset($t['liquidation_date_filed']) ? $t['liquidation_date_filed'] : now()->toDateString(),
+                        'description'                  => isset($t['liquidation_remarks']) && $t['liquidation_remarks']
+                            ? $t['liquidation_remarks']
+                            : (isset($t['purpose']) ? $t['purpose'] : ''),
+                        'supplier_vendor'              => null,
+                        'amount'                       => isset($t['actual_amount_spent']) ? $t['actual_amount_spent'] : 0,
+                        'expense_type_id'              => null,
+                        'created_by_id'                => auth()->id(),
+                    ]);
+
+                    $attachments = isset($t['liquidation_attachments']) ? $t['liquidation_attachments'] : [];
+                    foreach ($attachments as $att) {
+                        if (!isset($att['file_path'])) continue;
+
+                        PettyCashLiquidationAttachment::create([
+                            'petty_cash_liquidation_id' => $liquidation->id,
+                            'file_path'                 => $this->cshubFileUrl($att['file_path']),
+                            'file_name'                 => isset($att['original_filename']) ? $att['original_filename'] : basename($att['file_path']),
+                            'source'                    => 'CSHUB',
+                        ]);
+                    }
+
+                    DB::commit();
+                    $results[] = ['cshub_id' => $cshubId, 'success' => true, 'message' => 'Imported successfully.'];
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    $results[] = [
+                        'cshub_id' => $cshubId,
+                        'success'  => false,
+                        'message'  => 'Failed to import liquidation: ' . $e->getMessage(),
+                    ];
+                }
+            }
+
+            return $this->sendResponse(['results' => $results]);
+        } catch (Exception $e) {
             return $this->sendError(['message' => $e->getMessage()]);
         }
     }

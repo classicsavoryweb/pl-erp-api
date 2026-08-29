@@ -15,6 +15,7 @@ class PettyCashLiquidationAttachment extends Model
         'petty_cash_liquidation_id',
         'file_path',
         'file_name',
+        'source',
     ];
 
     public function liquidation()
