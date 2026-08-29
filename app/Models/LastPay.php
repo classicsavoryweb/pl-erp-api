@@ -26,7 +26,8 @@ class LastPay extends Model
         "sales",
         "meal",
         "last_pay",
-        "status"
+        "status",
+        "remarks",
     ];
 
     protected static function booted()
@@ -46,6 +47,10 @@ class LastPay extends Model
         return $this->hasMany(LastPayDeduction::class, "last_pay_id", "id");
     }
 
+    public function additional_fields() {
+        return $this->hasMany(LastPayAdditionalField::class, "last_pay_id", "id");
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -62,6 +67,7 @@ class LastPay extends Model
                 "meal",
                 "last_pay",
                 "status",
+                "remarks",
             ])
             ->useLogName('Last Pay')
             ->logOnlyDirty()

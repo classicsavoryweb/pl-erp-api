@@ -43,6 +43,7 @@ class PayrollDetail extends Model
         "tardiness",
         "travel_time",
         "adjustment_amount",
+        "cancelled_off_overtime",
 
         "undertime_minutes",
         "tardiness_minutes",
@@ -68,6 +69,7 @@ class PayrollDetail extends Model
         return LogOptions::defaults()
             ->logAll()
             ->useLogName('Payroll Detail')
+            ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 }

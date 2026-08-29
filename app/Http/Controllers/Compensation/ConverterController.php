@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Exports\Compensation\ConverterDetailsExport;
+use App\Exports\Compensation\ConverterExports;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessConverterDetailImport;
 use App\Jobs\SendTransactionToEmployeeJob;
@@ -85,6 +86,10 @@ class ConverterController extends Controller
                 )
                 ->get();
 
+                if ($converters->first()->status == "Sent") {
+                    return Excel::download(new ConverterExports($converters, $request->converter_main_id), "converter_details.xls");
+                }
+
                 return Excel::download(new ConverterDetailsExport($converters), "converter_details.xls");
             }
 
@@ -162,8 +167,17 @@ class ConverterController extends Controller
 
                 $request["converter_main_ids"] = $converters;
 
+                unset($request['date_from'], $request['date_to']);
                 return $this->getAllConverterDetails($request);
             }
+
+            $summaryQuery = clone $converters;
+            $summary = [
+                "total_count" => $summaryQuery->sum("count"),
+                "total_amount" => $summaryQuery->sum(DB::raw("CAST(total_amount AS DECIMAL(15,2))")),
+                "total_pending" => ConverterMain::where('status', 'Pending')->count(),
+                "total_generated" => ConverterMain::where('status', 'Generated')->count(),
+            ];
 
             $converters = $converters->with([
                 "added_by",
@@ -183,7 +197,10 @@ class ConverterController extends Controller
             ->orderBy("created_at", "DESC")
             ->paginate($perPage);
 
-            return $this->sendResponse($converters);
+            return $this->sendResponse([
+                "converters" => $converters,
+                "summary" => $summary,
+            ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
@@ -290,8 +307,8 @@ class ConverterController extends Controller
             $detail = ConverterDetail::with(["converter_main"])->find($detailId);
 
             if ($detail) {
-                if ($detail->converter_main && $detail->converter_main->status == "Pending") {
-                    return $this->sendError(["message" => "Transaction is in pending converter"]);
+                if ($detail->converter_main && in_array($detail->converter_main->status, ["Pending", "Posted", "Generated"])) {
+                    return $this->sendError(["message" => "Transaction is in active converter"]);
                 }
 
                 $detail->update([
@@ -581,11 +598,18 @@ class ConverterController extends Controller
                         continue;
                     }
 
+                    $statusArray = ['Pending', 'Generated', 'Sent'];
+
                     $isExisting = ConverterDetail::where("transaction_number", $trans["trans_no"])
                     ->where("employee_id", $employee->id)
-                    ->latest()->first();
+                    ->latest()
+                    ->first();
 
-                    if ($isExisting && in_array($isExisting->status, ['Pending', 'Generated', 'Sent'])) {
+                    if (isset($trans["is_liquidated"]) && $trans["is_liquidated"] == "Yes") {
+                        $statusArray = ["Pending", "Generated"];
+                    }
+
+                    if ($isExisting && in_array($isExisting->status, $statusArray)) {
                         continue;
                     }
 
@@ -650,19 +674,22 @@ class ConverterController extends Controller
                 ->whereNot("status", "Voided")
                 ->first();
 
+                if (isset($transaction["is_liquidated"]) && $transaction["is_liquidated"] == "Yes") {
+                    $isExisting = false;
+                }
+
                 if ($isExisting) {
                     continue;
                 }
 
-                ConverterDetail::updateOrCreate([
+                ConverterDetail::create([
                     "employee_id" => $employee->id,
                     "branch_id" => $employee->current_branch->id,
                     "transaction_number" => $transaction["transaction_number"],
                     "status" => "Pending",
                     "source" => "CSHUB",
-                ], [
-                    "terms" => $transaction["terms"],
                     "amount" => $transaction["amount"],
+                    "terms" => $transaction["terms"],
                     "remarks" => $transaction["purpose"],
                     "transaction_type_id" => $transactionType->id,
                     "added_by" => Auth::user()->id
@@ -678,23 +705,27 @@ class ConverterController extends Controller
         }
     }
 
-    public function sendTransactionEmail ($batchId) {
+    public function sendTransactionEmail (Request $request, $batchId) {
         try {
+            $request->validate([
+                "crediting_date" => "required"
+            ]);
+
             $batch = ConverterMain::with(['converter_details'])->find($batchId);
 
             if ($batch) {
-                SendTransactionToEmployeeJob::dispatch($batch, Auth::user()->id, [], false);
-
                 $batch->update([
                     "status" => "Sent",
                     "sent_at" => now(),
-                    "sent_by" => Auth::user()->id
+                    "sent_by" => Auth::user()->id,
+                    "crediting_date" => $request->crediting_date
                 ]);
 
                 $batch->converter_details()->update([
                     "status" => "Sent"
                 ]);
 
+                SendTransactionToEmployeeJob::dispatch($batch, Auth::user()->id, [], false);
                 return $this->sendResponse(["message" => "Transaction email sending"]);
             }
 

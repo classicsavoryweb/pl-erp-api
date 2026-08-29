@@ -146,7 +146,7 @@ class AdjustmentController extends Controller
 
                 $isExisting = Adjustment::where("employee_id", $employee->id)
                     ->where("date", $request->date)
-                    ->whereIn("status", ["Pending", "Approved"])
+                    ->whereIn("status", ["Pending", "Approved", "Adjusted"])
                     ->first();
 
                 if ($isExisting) {
@@ -236,7 +236,7 @@ class AdjustmentController extends Controller
                     if ($oldTimeKeeping) {
                         if ($oldTimeKeeping->final_worked_hours == $hours / 2) {
                             $originalDays = 0.5;
-                        } else {
+                        } else if ($oldTimeKeeping->final_worked_hours == $hours) {
                             $originalDays = 1;
                         }
                     }
@@ -247,7 +247,7 @@ class AdjustmentController extends Controller
                 $taxable_amount = $adjustmentPayment->total_amount - ($originalPayment->total_amount ?? 0);
                 $amount_paid = $originalPayment->total_amount ?? 0;
 
-                if ($taxable_amount == 0) {
+                if ($taxable_amount == 0 && $days == 0) {
                     return $this->sendError(["message" => "Taxable adjustment computed is 0.00"]);
                 }
 

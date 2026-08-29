@@ -139,54 +139,94 @@ class Controller extends BaseController
         return $excelDate;
     }
 
-    function writeCell(DOMDocument $dom, DOMElement $sheetData, string $cellRef, string $value)
-    {
+    function writeCell(
+        DOMDocument $dom,
+        DOMElement $sheetData,
+        string $cellRef,
+        string $value
+    ) {
         preg_match('/\d+/', $cellRef, $matches);
+
+        if (!$matches) {
+            return;
+        }
+
+        $value = htmlspecialchars($value);
+
         $rowNumber = (int)$matches[0];
 
         $rowNode = null;
-        foreach ($sheetData->getElementsByTagName('row') as $row) {
-            if ((int)$row->getAttribute('r') === $rowNumber) {
-                $rowNode = $row;
+
+        foreach ($sheetData->childNodes as $node) {
+
+            if (
+                $node instanceof DOMElement &&
+                $node->tagName === 'row' &&
+                (int)$node->getAttribute('r') === $rowNumber
+            ) {
+                $rowNode = $node;
                 break;
             }
         }
 
+
         if (!$rowNode) {
             $rowNode = $dom->createElement('row');
-            $rowNode->setAttribute('r', $rowNumber);
-            $sheetData->appendChild($rowNode);
+            $rowNode->setAttribute('r',$rowNumber);
+            $inserted = false;
+
+            foreach ($sheetData->childNodes as $existingRow) {
+                if (
+                    $existingRow instanceof DOMElement &&(int)$existingRow->getAttribute('r') > $rowNumber) {
+                    $sheetData->insertBefore($rowNode, $existingRow);
+
+                    $inserted = true;
+                    break;
+                }
+            }
+
+
+            if (!$inserted) {
+                $sheetData->appendChild($rowNode);
+            }
         }
 
         $cellNode = null;
-        foreach ($rowNode->getElementsByTagName('c') as $cell) {
-            if ($cell->getAttribute('r') === $cellRef) {
-                $cellNode = $cell;
+
+        foreach ($rowNode->childNodes as $node) {
+            if ($node instanceof DOMElement && $node->tagName === 'c' && $node->getAttribute('r') === $cellRef) {
+                $cellNode = $node;
                 break;
             }
         }
 
         if (!$cellNode) {
+
             $cellNode = $dom->createElement('c');
-            $cellNode->setAttribute('r', $cellRef);
-            $cellNode->setAttribute('t', 'str');
+            $cellNode->setAttribute('r',$cellRef);
+            $cellNode->setAttribute('t','inlineStr');
             $rowNode->appendChild($cellNode);
         } else {
-            $cellNode->setAttribute('t', 'str');
+            $style = $cellNode->getAttribute('s');
+
+            while ($cellNode->hasChildNodes()) {
+                $cellNode->removeChild($cellNode->firstChild);
+            }
+
+            $cellNode->setAttribute('t','inlineStr');
+
+            if ($style !== '') {
+                $cellNode->setAttribute('s', $style);
+            }
         }
 
-        $vNode = null;
-        foreach ($cellNode->getElementsByTagName('v') as $v) {
-            $vNode = $v;
-            break;
-        }
 
-        if (!$vNode) {
-            $vNode = $dom->createElement('v');
-            $cellNode->appendChild($vNode);
-        }
+        $isNode =  $dom->createElement('is');
+        $textNode = $dom->createElement('t');
+        $textNode->nodeValue = $value;
 
-        $vNode->nodeValue = htmlspecialchars($value);
+        $isNode->appendChild($textNode);
+        $cellNode->appendChild($isNode);
     }
 
     function hashExcelPassword($password)
@@ -226,4 +266,22 @@ class Controller extends BaseController
             'end_date' => $endDate
         ];
     }
+
+    function numeric($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+
+        return (float) str_replace(',', '', (string) $value);
+    }
+
+    function getTaxRefundPeriod(int $year): array
+    {
+        return [
+            "start" => Carbon::create($year - 1, 12, 26)->format("Y-m-d"),
+            "end" => Carbon::create($year, 12, 25)->format("Y-m-d"),
+        ];
+    }
+
 }

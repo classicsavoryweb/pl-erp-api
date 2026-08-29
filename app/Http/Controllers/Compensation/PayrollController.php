@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Compensation;
 use App\Http\Controllers\Controller;
 use App\Http\Services\PayrollService;
 use App\Jobs\GenerateBranchPayroll;
+use App\Jobs\ProcessInitializeCutOff;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\Tardiness;
@@ -13,6 +14,7 @@ use App\Models\TimeKeeping;
 use App\Models\TimeKeepingSummary;
 use App\Models\Branch;
 use App\Models\Cutoff;
+use App\Models\Employee;
 use App\Models\PayrollDetail;
 use Carbon\Carbon;
 use Exception;
@@ -100,22 +102,27 @@ class PayrollController extends Controller
                     $payroll->deductions = json_decode($payroll->deductions) ?? [];
                 }
 
-                $year = Carbon::parse($payroll->pay_date)->year;
+                $activeCutOff = CutOff::where("pay_date", $payroll->pay_date)->first();
+                $payroll["cut_off"] = $activeCutOff;
 
-                $incentives = Incentives::where("employee_id", $payroll->employee_id)
-                ->where("pay_date", $payroll->pay_date)
-                ->first();
-
-                $tardinessOffenses = Tardiness::with(["tardiness_sanction"])
-                ->where("employee_id", $payroll->employee_id)
-                ->where("status", "Approved")
-                ->whereIn("year", [$year - 1, $year])
-                ->orderBy("id", "DESC")
-                ->limit(5)
-                ->get();
-
+                $incentives = null;
+                if ($activeCutOff->part == 1) {
+                    $incentives = Incentives::where("employee_id", $payroll->employee_id)
+                    ->where("pay_date", $payroll->pay_date)
+                    ->first();
+                }
                 $payroll["incentives"] = $incentives;
-                $payroll["tardiness_offenses"] = $tardinessOffenses;
+
+                // $year = Carbon::parse($payroll->pay_date)->year;
+                // $tardinessOffenses = Tardiness::with(["tardiness_sanction"])
+                // ->where("employee_id", $payroll->employee_id)
+                // ->where("status", "Approved")
+                // ->whereIn("year", [$year - 1, $year])
+                // ->orderBy("id", "DESC")
+                // ->limit(5)
+                // ->get();
+                // $payroll["tardiness_offenses"] = $tardinessOffenses;
+                
                 return $this->sendResponse($payroll);
             }
 
@@ -206,6 +213,54 @@ class PayrollController extends Controller
         }
     }
 
+    public function initializeBranchPayroll(Request $request) {
+        try {
+
+            $request->validate([
+                "branch_id" => "required|array"
+            ]);
+
+            $branches = Branch::get()
+            ->pluck('name', 'id')
+            ->toArray();
+
+            $cutOff = Cutoff::where("status", "active")->first();
+
+            if ($cutOff) {
+                $initializedJson = [];
+
+                if ($cutOff->initializations) {
+                    $initializedJson = json_decode($cutOff->initializations, true);
+                }
+
+                $newJson = [
+                    [
+                        "initialized_at" => now(),
+                        "initialized_by" => Auth::user()->full_name
+                    ],
+                    ...$initializedJson
+                ];
+
+                $cutOff->update([
+                    "initializations" => json_encode($newJson)
+                ]);
+            }
+
+            foreach ($request->branch_id as $branch_id) {
+                $branch = $branches[$branch_id];
+                $context = $branch ?? "Unknown Branch";
+
+                ProcessInitializeCutOff::dispatch($branch_id, Auth::id(), $context);
+            }
+
+            return $this->sendResponse([
+                "message" => "Payroll is generating."
+            ]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function generateBranchPayroll(Request $request) {
         try {
 
@@ -271,6 +326,7 @@ class PayrollController extends Controller
                 $details->regular_days = $request->regular_days;
                 $details->special_leave = $request->special_leave;
                 $details->cancelled_off = $request->cancelled_off;
+                $details->cancelled_off_overtime = $request->cancelled_off_overtime;
                 $details->special_holiday = $request->special_holiday;
                 $details->legal_holiday = $request->legal_holiday;
                 $details->regular_overtime = $request->regular_overtime;
@@ -292,6 +348,7 @@ class PayrollController extends Controller
                 $details->employer_philhealth = $request->employer_philhealth;
                 $details->withholding_tax = $request->withholding_tax;
                 $details->reload_deductions = $request->reload_deductions;
+                $details->modify_deductions = $request->modify_deductions;
                 $details->remarks = $request->remarks;
                 $details->is_on_maternity_leave = $request->is_on_maternity_leave;
                 $details->is_hold = $request->is_hold;
@@ -325,12 +382,18 @@ class PayrollController extends Controller
                     $payroll->details->deductions = $request->deductions;
 
                     if ($request->save_changes) {
+
+                        if ($payrollComp->net_pay < 0) {
+                            return $this->sendError(["message" => "Netpay is negative"]);
+                        }
+                        $payrollModel = Payroll::find($payroll->id);
                         DB::beginTransaction();
-                        PayrollDetail::where("payroll_id", $payroll->id)
+                        $payrollModel->details
                         ->update([
                             "regular_days" => $request->regular_days,
                             "special_leave" => $request->special_leave,
                             "cancelled_off" => $request->cancelled_off,
+                            "cancelled_off_overtime" => $request->cancelled_off_overtime,
                             "special_holiday" => $request->special_holiday,
                             "legal_holiday" => $request->legal_holiday,
                             "regular_overtime" => $request->regular_overtime,
@@ -350,7 +413,7 @@ class PayrollController extends Controller
                             "remarks" => $request->remarks
                         ]);
 
-                        Payroll::where("id", $payroll->id)
+                        $payrollModel
                         ->update([
                             "salary" => $payrollComp->salary,
                             "tardiness_amount" => $payrollComp->tardiness_amount,
@@ -376,6 +439,7 @@ class PayrollController extends Controller
                             "total_deductions" => $payrollComp->total_deductions,
                             "manual_deductions" => $payrollComp->manual_deductions,
                             "cancelled_off" => $payrollComp->cancelled_off,
+                            "cancelled_off_overtime_amount" => $payrollComp->cancelled_off_overtime_amount,
                             "net_pay" => $payrollComp->net_pay,
                             "taxable_income" => $payrollComp->taxable_income,
                             "contribution_total" => $payrollComp->contribution_total,
@@ -409,6 +473,63 @@ class PayrollController extends Controller
             return $this->sendError(["message" => "Payroll not found"]);
         } catch (Exception $e) {
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getAllBranchesToRegeneratePayroll() {
+        try {
+            $branches = [];
+
+            $currentCutOff = Cutoff::where("status", "active")->first();
+
+            $branchesWithPayroll = Payroll::whereDoesntHave("timekeeping_summary")
+            ->where("pay_date", $currentCutOff->pay_date)
+            ->whereNot("timekeeping_summary_id", 0)
+            ->pluck("timekeeping_branch_id")
+            ->unique();
+
+            $branchesWithoutPayroll = Branch::whereDoesntHave("payrolls", function ($query) use ($currentCutOff) {
+                $query->where("pay_date", $currentCutOff->pay_date);
+            })
+            ->pluck("id");
+
+            $branches = $branchesWithPayroll
+            ->merge($branchesWithoutPayroll)
+            ->unique()
+            ->map(fn($id) => (int) $id)
+            ->values();
+
+            return $this->sendResponse(["branches" => $branches]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getEmployeeMonthlyTardiness(Request $request, $employeeNumber) {
+        try {
+            $request->validate([
+                "date" => "required"
+            ]);
+
+            $employee = Employee::where("employee_number", $employeeNumber)->first();
+
+            if (!$employee) {
+                return $this->sendError(["message" => "Employee not found"]);
+            }
+
+            $month = Carbon::parse($request->date)->month;
+            $year = Carbon::parse($request->date)->year;
+
+            $payrolls = PayrollDetail::where("employee_id", $employee->id)
+            ->whereMonth("pay_date", $month)
+            ->whereYear("pay_date", $year)
+            ->orderBy("pay_date", "ASC")
+            ->get()
+            ->pluck("tardiness");
+
+            return $this->sendResponse($payrolls);
+        } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }

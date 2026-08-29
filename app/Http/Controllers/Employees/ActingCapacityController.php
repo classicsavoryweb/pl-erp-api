@@ -440,14 +440,13 @@ class ActingCapacityController extends Controller
                 "bond_year" => "required"
             ]);
 
-            $employee = Employee::where("employee_number", Auth::user()->employee_number)->first();
             $actingCapacity = ActingCapacity::find($id);
 
             $actingCapacity->update([
                 "effectivity_date" => $request->effectivity_date,
                 "bond_amount" => $request->bond_amount,
                 "bond_year" => $request->bond_year,
-                "generated_by" => $employee->id,
+                "generated_by" => Auth::user()->id,
                 "generated_date" => now(),
                 "status" => "For Signature"
             ]);
@@ -469,7 +468,6 @@ class ActingCapacityController extends Controller
                 "attachments" => "required"
             ]);
 
-            $employee = Employee::where("employee_number", Auth::user()->employee_number)->first();
             $actingCapacity = ActingCapacity::find($id);
             $actingEmployee = Employee::find($actingCapacity->employee_id);
 
@@ -479,7 +477,7 @@ class ActingCapacityController extends Controller
                 $months = $startDate->diffInMonths($endDate);
 
                 $actingCapacity->update([
-                    "confirmed_by" => $employee->id,
+                    "confirmed_by" => Auth::user()->id,
                     "confirmed_date" => now(),
                     "effectivity_date" => $request->effectivity_date,
                     "end_date" => $request->effectivity_date,
@@ -516,7 +514,7 @@ class ActingCapacityController extends Controller
                 }
 
                 if ($salary->rate_category === "MINIMUM") {
-                    $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
+                    $rate = Rate::where("code", $actingEmployee->home_branch->rate_code)->first();
                     $minimum = $rate->minimum ?? 0;
                     $monthlyRate = $minimum * $multiplier;
                 } else {
@@ -538,7 +536,7 @@ class ActingCapacityController extends Controller
                     }
 
                     if ($position->description == "Senior Staff") {
-                        $months = Carbon::now()->diffInMonths($employee->date_hired);
+                        $months = Carbon::now()->diffInMonths($actingEmployee->date_hired);
                         if ($months < 1) {
                             $months = 1;
                         }
@@ -554,7 +552,7 @@ class ActingCapacityController extends Controller
                             $baseIncentive = $bracket->amount;
                         }
                         
-                        $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $employee->id)->first();
+                        $rankAndFileIncentive = IncentivesPerEmployee::where("employee_id", $actingEmployee->id)->first();
 
                         if ($rankAndFileIncentive) {
                             $baseIncentive = $rankAndFileIncentive->amount;
@@ -614,13 +612,11 @@ class ActingCapacityController extends Controller
             $request->validate([
                 "rejected_reason" => "required"
             ]);
-
-            $employee = Employee::where("employee_number", Auth::user()->employee_number)->first();
             $actingCapacity = ActingCapacity::find($id);
 
             if ($actingCapacity->status !== "Rejected") {
                 $actingCapacity->update([
-                    "rejected_by" => $employee->id,
+                    "rejected_by" => Auth::user()->id,
                     "rejected_date" => now(),
                     "rejected_reason" => $request->rejected_reason,
                     "status" => "Rejected"

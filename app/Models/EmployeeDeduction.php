@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Awobaz\Compoships\Compoships;
 
 class EmployeeDeduction extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, Compoships;
 
     protected $table = "employee_deductions";
     protected $fillable = [

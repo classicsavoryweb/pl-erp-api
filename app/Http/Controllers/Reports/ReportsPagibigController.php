@@ -7,6 +7,7 @@ use App\Exports\Reports\ReportsPagibigLoansExport;
 use App\Http\Controllers\Controller;
 use App\Models\Deduction;
 use App\Models\DeductionHistory;
+use App\Models\Employee;
 use App\Models\Payroll;
 use Illuminate\Http\Request;
 use Exception;
@@ -34,7 +35,13 @@ class ReportsPagibigController extends Controller
             $withDash = $request->with_dash ?? 0;
 
             if ($request->has('export') && $request->export) {
-                $payrollEmployee = $query->get();
+                $payrollEmployee = $query
+                ->orderBy(
+                    Employee::select('last_name')
+                        ->whereColumn('employees.id', 'payroll.employee_id')
+                )
+                ->get();
+
                 return Excel::download(
                     new ReportsPagibigContributionsExport($payrollEmployee, $withDash),
                     "pagibig_monthly_contribution.xlsx"
@@ -140,7 +147,7 @@ class ReportsPagibigController extends Controller
             $withDash = $request->with_dash ?? 0;
 
             if ($request->has('export') && $request->export) { 
-                $payrollEmployee = $query->get()->unique('employee_id');
+                $payrollEmployee = $query->get();
                 return Excel::download(new ReportsPagibigLoansExport($payrollEmployee, $withDash), "pagibig_loans.xlsx"); 
             }
 

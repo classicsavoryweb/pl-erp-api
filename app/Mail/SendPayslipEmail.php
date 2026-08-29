@@ -42,7 +42,7 @@ class SendPayslipEmail extends Mailable
     {
         $payroll = $this->payroll;
         $employee = $payroll->employee;
-        $timekeeping = $payroll->timekeeping_summary;
+        $timekeeping = $payroll->details ?? $payroll->timekeeping_summary;
         $company = env("COMPANY_NAME") === "SFI" ? "Savory Fastfood Inc." : "Tony Ting Food Concepts";
 
         return new Content(

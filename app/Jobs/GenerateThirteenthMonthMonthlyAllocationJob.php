@@ -43,7 +43,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
         $user = User::find($this->user);
         $userId = $user->id;
 
-        $payrolls = Payroll::whereIn('id', $this->payroll)->get();
+        $payrolls = Payroll::with(["employee", "employee.payroll_list" ,"payroll_list"])->whereIn('id', $this->payroll)->get();
 
         $months = [
             1 => 'JANUARY',
@@ -100,7 +100,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                 $basic_pay_1st_cutoff = 0;
                 $basic_pay_2nd_cutoff = 0;
 
-                $payrollList = PayrollList::where('employee_id', $employee->id)->first();
+                $payrollList = $employee->payroll_list;
 
                 $holdedCutoffs = [];
 
@@ -114,7 +114,6 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                 || in_array($employee->employee_number, ['948', '0007413']);
 
                 if ($sorted->count() === 1) {
-
                     $payroll = $sorted->first();
 
                     $salary    = (float) str_replace(',', '', $payroll->salary);
@@ -132,11 +131,7 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                     $branchShortName = optional(
                         Branch::find($payroll->timekeeping_branch_id)
                     )->short_name;
-
-                    // Log::info("1st branch". $branchShortName);
-
                 } else {
-
                     $first = $sorted->first();
                     $last  = $sorted->last();
 
@@ -144,6 +139,9 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                     $second_cutoff = "{$last->start_date}-{$last->end_date}";
 
                     foreach ($employeePayrolls as $payroll) {
+                        if ($payroll->salary == 0) {
+                            continue;
+                        }
 
                         $salary    = (float) str_replace(',', '', $payroll->salary);
                         $tardiness = (float) str_replace(',', '', $payroll->tardiness_amount);
@@ -170,17 +168,9 @@ class GenerateThirteenthMonthMonthlyAllocationJob implements ShouldQueue
                     $branchShortName = optional(
                         Branch::find($last->timekeeping_branch_id)
                     )->short_name;
-
-                    // Log::info("2nd branch". $branchShortName);
                 }
 
                 $total = $basic_pay_1st_cutoff + $basic_pay_2nd_cutoff;
-
-                // $branchShortName = $last
-                //     ? optional(Branch::find($last->timekeeping_branch_id))->short_name
-                //     : optional(Branch::find($sorted->first()->timekeeping_branch_id))->short_name;
-
-                    // Log::info("3rd branch". $branchShortName);
 
                 $record = EmployeesMonthlyAllocation::create([
                     'thirteenth_month_file_id' => $thirteenthMonthFile->id,

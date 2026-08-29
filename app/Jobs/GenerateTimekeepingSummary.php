@@ -69,14 +69,14 @@ class GenerateTimekeepingSummary implements ShouldQueue
         $this->payrollService = new PayrollService();
     }
 
-    public function middleware() {
-        return [
-            (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
-                ->shared()
-                ->releaseAfter(1200)
-                ->expireAfter(7200)
-        ];
-    }
+    // public function middleware() {
+    //     return [
+    //         (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
+    //             ->shared()
+    //             ->releaseAfter(1200)
+    //             ->expireAfter(7200)
+    //     ];
+    // }
 
     public function handle(): void
     {
@@ -221,6 +221,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
             $regular_days = 0;
             $special_leave= 0;
             $cancelled_off= 0;
+            $cancelled_off_overtime= 0;
             $special_holiday= 0;
             $legal_holiday= 0;
             $regular_overtime= 0;
@@ -382,7 +383,8 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     }
 
                     if ($timeKeep->is_cancelled_off && $timeKeep->cancelled_off_hours > 0 && $totalOT > 0) {
-                        $cancelled_off += $timeKeep->cancelled_off_hours < $timeKeep->cancelled_off_hours ? $timeKeep->cancelled_off_hours : $totalOT;
+                        $cancelled_off += $timeKeep->cancelled_off_hours < $timeKeep->approved_overtime ? $timeKeep->cancelled_off_hours : $totalOT;
+                        $cancelled_off_overtime += $timeKeep->cancelled_off_overtime;
                     }
                     
                     if ($timeKeep->legal_holiday === "Yes" && $holidayIsPaid) {
@@ -509,7 +511,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                         $biotimeLog = $sched->timekeeping->biotime_log ?? null;
                         if (
-                            !in_array($sched->timetable,["REST DAY", "NO SCHEDULE"]) &&
+                            !in_array($sched->timetable,["REST DAY", "NO SCHEDULE", "SUSPENSION"]) &&
                             $employee->schedule->schedule_type->name === "Compressed Schedule"
                         ) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
@@ -522,13 +524,16 @@ class GenerateTimekeepingSummary implements ShouldQueue
 
                         if (
                             $employee->schedule->schedule_type->name === "Normal Schedule" &&
-                            !in_array($sched->timetable,["REST DAY", "INCENTIVE LEAVE"])
+                            !in_array($sched->timetable,["REST DAY", "INCENTIVE LEAVE", "SUSPENSION"])
                         ) {
                             $timeKeeping = TimeKeeping::where("date", $sched->date)
                             ->where("employee_id", $employee->id)
                             ->first();
 
-                            if ($timeKeeping && $sched->timetable == "NO SCHEDULE" && ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes")) {
+                            if (
+                                $timeKeeping && $sched->timetable == "NO SCHEDULE" &&
+                                ($timeKeeping->legal_holiday == "Yes" || $timeKeeping->special_holiday == "Yes")
+                            ) {
                                 continue;
                             }
 
@@ -592,10 +597,7 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 }
 
                 //checking adjustments
-                $adjustments_tardiness_amount = 0;
-                $adjustments_undertime = 0;
                 $adjustments_days = 0;
-                $adjustments_cancelled_off = 0;
 
                 $deductions = $this->timeKeepingService->deductPreviousPaidHoliday($cutOff, $employee);
                 $remarks = "";
@@ -640,13 +642,13 @@ class GenerateTimekeepingSummary implements ShouldQueue
                     $lateDate = [];
                 }
 
-
                 $timeKeepingSummary = TimeKeepingSummary::create([
                     "cut_off" => $cutOff['start_time']."-".$cutOff['end_time'],
                     "employee_id" => $employee->id,
                     "regular_days" => $regular_days,
                     "special_leave" => $special_leave,
                     "cancelled_off" => $cancelled_off,
+                    "cancelled_off_overtime" => $cancelled_off_overtime,
                     "special_holiday" => $special_holiday,
                     "legal_holiday" => $legal_holiday,
                     "regular_overtime" => $regular_overtime,
@@ -673,26 +675,36 @@ class GenerateTimekeepingSummary implements ShouldQueue
                 foreach($adjustments as $adjustment) {                      
                     if ($adjustment->taxable_amount != 0) {
                         $adjustment_amount += $adjustment->taxable_amount;
-                        $adjustment->update([
-                            "status" => "Adjusted",
-                            "timekeeping_summary_id" => $timeKeepingSummary->id
-                        ]);
-    
-                        $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-
-                        if ($adjustment->status == "Manual Taxable Adjustment") {
-                            $adjustment_amount = $adjustment->taxable_amount;
-                            $adjustmentRemarks = $remarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
-                            break;
-                        }
-
-                        $withAdjustments = true;
                     }
+
+                    $adjustment->update([
+                        "status" => "Adjusted",
+                        "timekeeping_summary_id" => $timeKeepingSummary->id
+                    ]);
+
+                    $adjustmentRemarks = $adjustmentRemarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount;
+
+                    if ($adjustment->days > 0) {
+                        $adjustments_days += $adjustment->days;
+                        $adjustmentRemarks = $adjustmentRemarks . " Days Added - ". $adjustment->days;
+                    }
+
+                    $adjustmentRemarks = $adjustmentRemarks." | ";
+
+                    if ($adjustment->status == "Manual Taxable Adjustment") {
+                        $adjustment_amount = $adjustment->taxable_amount;
+                        $adjustmentRemarks = $remarks . $adjustment->date ." ".$adjustment->type." - ".$adjustment->taxable_amount." | ";
+                        break;
+                    }
+
+                    $withAdjustments = true;
                 }
 
                 if ($withAdjustments) {
+                    $regular_days += $adjustments_days;
                     $remarks = $adjustmentRemarks;
                     $timeKeepingSummary->update([
+                        "regular_days" => $regular_days,
                         "adjustment_amount" => $adjustment_amount,
                         "remarks" => $remarks,
                     ]);

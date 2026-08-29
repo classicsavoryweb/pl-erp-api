@@ -106,6 +106,8 @@ class PayrollProofListController extends Controller
                     'b.short_name',
                     'payroll_details.cancelled_off as cancelled_off_hours',
                     'payroll.cancelled_off as cancelled_off_amount',
+                    'payroll_details.cancelled_off_overtime as cancelled_off_overtime',
+                    'payroll.cancelled_off_overtime_amount as cancelled_off_overtime_amount',
                     'payroll_details.special_leave as special_leave_days',
                     'payroll.special_leave as special_leave_amount',
                     'p.description as position',
@@ -221,7 +223,8 @@ class PayrollProofListController extends Controller
                     $fullName === '' ||
                     $transaction->is_bank == 0 ||
                     $transaction->amount <= 0 ||
-                    $transaction->is_on_maternity_leave == 1 
+                    $transaction->is_on_maternity_leave == 1 ||
+                    $transaction->is_included == 0
                 ) {
                     continue;
                 }

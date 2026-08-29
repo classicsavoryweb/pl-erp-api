@@ -44,7 +44,8 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
             "Schedule Type",
             "Daily Rate",
             "Region",
-            "Separation Date"
+            "Separation Date",
+            "Remarks"
         ];
     }
 
@@ -84,7 +85,7 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
 
             $dailyRate = $list->salary_amount / $divisor;
             $scheduleType = $this->normalizeValue($scheduleType);
-            $region = $list->employee->current_branch?->location ?? $list->employee->current_branch?->region ?? null;
+            $region = $list->employee->home_branch->location ?? null;
             $region = $this->normalizeValue($region);
             $separationDate = $this->normalizeValue($list->employee->separation_date ?? null);
 
@@ -108,7 +109,8 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
                 $scheduleType,
                 number_format($dailyRate, 2),
                 $region,
-                $separationDate
+                $separationDate,
+                $list->remarks
             ];
         });
     }

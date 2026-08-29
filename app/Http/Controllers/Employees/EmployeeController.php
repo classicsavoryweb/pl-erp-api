@@ -12,8 +12,13 @@ use App\Models\EducationHistory;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
 use App\Models\EmployeeStatus;
+use App\Models\IncentivePosition;
+use App\Models\IncentivesBracket;
+use App\Models\IncentivesManagement;
+use App\Models\IncentivesPerEmployee;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
+use App\Models\Rate;
 use App\Models\Region;
 use App\Models\ScheduleDetail;
 use App\Models\ScheduleType;
@@ -111,15 +116,10 @@ class EmployeeController extends Controller
             if ($request->type === "Agency") {
                 $agency = Agency::find($request->agency_id);
 
-                if ($agency->name === "MSC") {
-                    $biometricsNumber = "50".$employeeNumber;
-                } else if ($agency->name === "GMI") {
-                    $biometricsNumber = "70".$employeeNumber;
-                } else if ($agency->name === "CNT") {
-                    $biometricsNumber = "11".$employeeNumber;
-                } else {
-                    $biometricsNumber = "12".$employeeNumber;
+                if ($agency) {
+                    $biometricsNumber = $agency->employee_code.$employeeNumber;
                 }
+
                 $employeeNumber = "A".$employeeNumber;
                 $employeeNumber2 = $company."-".$agency->name."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             }
@@ -138,6 +138,28 @@ class EmployeeController extends Controller
                 "region" => $region,
                 ...$fields
             ]);
+
+            if ($request->type === "Direct" && $position->rank == 2) {
+                $baseIncentive = 0;
+                if ($position->description == "Senior Staff") {
+                    $baseIncentive = 2750;
+                } else {
+                    $positionIncentive = IncentivePosition::where(
+                        "position_id",
+                        $position->id
+                    )->first();
+
+                    if ($positionIncentive) {
+                        $baseIncentive = $positionIncentive->amount;
+                    }
+                }
+
+                IncentivesManagement::create([
+                    "employee_id" => $employee->id,
+                    "amount" => $baseIncentive,
+                    "max_amount" => $baseIncentive,
+                ]);
+            }
 
             $startDate = Carbon::parse($request->date_hired);
             $contractEndDate = $startDate->addMonths($request->contract_duration)->toDateString();
@@ -289,6 +311,14 @@ class EmployeeController extends Controller
                         ->limit(1),
                         $request->sort
                     );
+                } else if ($request->sortColumn === "agency.name") {
+                    $employees = $employees->orderBy(
+                        Agency::select('name')
+                        ->from('agencies')
+                        ->whereColumn('agencies.id', 'employees.agency_id')
+                        ->limit(1),
+                        $request->sort
+                    );
                 } else {
                     $employees = $employees->orderBy($request->sortColumn, $request->sort);
                 }
@@ -366,6 +396,13 @@ class EmployeeController extends Controller
 
             $employee = Employee::where("employee_number", $employeeNumber)->first();
             $activities = Activity::with('causer')
+            ->whereNotIn("log_name", [
+                "Payroll",
+                "Payroll Detail",
+                "Incentive History",
+                "Employee Deductions",
+                "Deduction History"
+            ])
             ->where(function ($query) use ($employee) {
                 $query->where(function ($q) use ($employee) {
                     $q->where('subject_type', Employee::class)
@@ -384,7 +421,7 @@ class EmployeeController extends Controller
     public function getEmployees(Request $request) {
         try {
 
-            $employees = Employee::where("status", "active")->get();
+            $employees = Employee::with(["current_position", "current_branch"])->where("status", "active")->get();
             return $this->sendResponse(["employees" => $employees]);
         } catch(Exception $e) {
 
@@ -548,7 +585,9 @@ class EmployeeController extends Controller
                     "email",
                     "max:255",
                     "regex:/^\S+$/",
-                    Rule::unique("employees", "email")->ignore($employee->id),
+                    Rule::unique("employees", "email")
+                    ->ignore($employee->id)
+                    ->where(fn ($query) => $query->where("status", "active")),
                 ]
             ]);
 
@@ -603,6 +642,8 @@ class EmployeeController extends Controller
                 $pathName = $filePath;
             }
 
+            $homeBranchUpdated = $employee->home_branch_id != $request->home_branch_id ? true : false;
+
             $employee->update([
                 "image" => $pathName,
                 "first_name" => $request->first_name,
@@ -627,8 +668,8 @@ class EmployeeController extends Controller
                 "date_hired" => $request->date_hired,
                 "remarks" => $request->remarks,
                 "regularization_date" => $request->regularization_date,
-                "separation_date" => $request->separation_date,
-                "separation_reason" => $request->separation_reason,
+                "separation_date" => $request->status == "inactive" ? $request->separation_date : null,
+                "separation_reason" => $request->status == "inactive" ? $request->separation_reason : null,
                 "emergency_contact_name" => $request->emergency_contact_name,
                 "emergency_contact_number" => $request->emergency_contact_number,
                 "emergency_contact_address" => $request->emergency_contact_address,
@@ -658,6 +699,33 @@ class EmployeeController extends Controller
                             "birthday" => $dependant["birthday"],
                         ]);
                     }
+                }
+            }
+
+            if ($request->type === "Direct" && $homeBranchUpdated) {
+                $position = Position::find($employee->position_id);
+                $salary = $position->salary;
+                $payrollList = $employee->payroll_list;
+    
+                $monthlyRate = 0;
+                $minimum = 0;
+                $multiplier = 26;
+                if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                    $multiplier = 22;
+                }
+    
+                if ($salary->rate_category === "MINIMUM") {
+                    $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
+                    $minimum = $rate->minimum ?? 0;
+                    $monthlyRate = $minimum * $multiplier;
+                } else {
+                    $monthlyRate = $salary->basic_salary;
+                }
+    
+                if ($payrollList) {
+                    $payrollList->update([
+                        "salary_amount" => $monthlyRate
+                    ]);
                 }
             }
 

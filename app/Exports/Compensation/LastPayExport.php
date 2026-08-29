@@ -9,10 +9,14 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 class LastPayExport implements FromCollection, WithHeadings
 {
     protected Collection $lastPays;
+    protected int $maxDeductions;
 
     public function __construct(Collection $lastPays)
     {
         $this->lastPays = $lastPays;
+        $this->maxDeductions = $lastPays->max(function ($lastPay) {
+            return $lastPay->deductions ? $lastPay->deductions->count() : 0;
+        }) ?? 0;
     }
 
     public function collection()
@@ -32,8 +36,25 @@ class LastPayExport implements FromCollection, WithHeadings
             if (!$datePosted && $lastPay->status === 'Posted') {
                 $datePosted = $lastPay->updated_at;
             }
+            $deductions = $lastPay->deductions ?? collect();
+            $createdBy = $createdActivity?->causer
+                ? (
+                    $createdActivity->causer->proper_full_name
+                    ?? $createdActivity->causer->full_name
+                    ?? $createdActivity->causer->name
+                    ?? ''
+                )
+                : '';
+            $postedBy = $postedActivity?->causer
+                ? (
+                    $postedActivity->causer->proper_full_name
+                    ?? $postedActivity->causer->full_name
+                    ?? $postedActivity->causer->name
+                    ?? ''
+                )
+                : '';
 
-            return [
+            $row = [
                 $lastPay->last_pay_number,
                 $lastPay->employee->full_name ?? '',
                 $lastPay->employee->employee_number ?? '',
@@ -42,16 +63,32 @@ class LastPayExport implements FromCollection, WithHeadings
                 $lastPay->last_pay,
                 $lastPay->status,
                 optional($lastPay->created_at)->format('Y-m-d'),
-                $this->activityUserName($createdActivity),
+                $createdBy,
                 optional($datePosted)->format('Y-m-d'),
-                $this->activityUserName($postedActivity),
+                $postedBy,
             ];
+
+            for ($i = 0; $i < $this->maxDeductions; $i++) {
+                $deduction = $deductions->values()->get($i);
+                $row[] = $deduction
+                    ? ($deduction->deduction->description ?? $deduction->reference_doc ?? '')
+                    : '';
+                $row[] = $deduction
+                    ? (
+                        ($deduction->amount === null || $deduction->amount === '')
+                            ? 0.0
+                            : (float) str_replace(',', '', (string) $deduction->amount)
+                    )
+                    : '';
+            }
+
+            return $row;
         });
     }
 
     public function headings(): array
     {
-        return [
+        $headings = [
             'Last Pay Number',
             'Employee Name',
             'Employee Number',
@@ -64,17 +101,12 @@ class LastPayExport implements FromCollection, WithHeadings
             'Date Posted',
             'Posted By',
         ];
-    }
 
-    private function activityUserName($activity): string
-    {
-        if (!$activity?->causer) {
-            return '';
+        for ($i = 1; $i <= $this->maxDeductions; $i++) {
+            $headings[] = "Deduction {$i}";
+            $headings[] = "Amount {$i}";
         }
 
-        return $activity->causer->proper_full_name
-            ?? $activity->causer->full_name
-            ?? $activity->causer->name
-            ?? '';
+        return $headings;
     }
 }

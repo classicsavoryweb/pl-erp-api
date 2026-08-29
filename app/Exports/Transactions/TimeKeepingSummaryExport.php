@@ -21,12 +21,12 @@ class TimeKeepingSummaryExport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            new TimeKeepingSummaryTemplateSheet(
+            new TimeKeepingSummaryOriginalSheet(
                 $this->timekeeping_summary,
                 $this->start_date,
                 $this->end_date
             ),
-            new TimeKeepingSummaryOriginalSheet(
+            new TimeKeepingSummaryTemplateSheet(
                 $this->timekeeping_summary,
                 $this->start_date,
                 $this->end_date

@@ -5,8 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\ActingCapacity;
 use App\Models\Branch;
 use App\Models\Contract;
+use App\Models\Cutoff;
 use App\Models\Employee;
+use App\Models\EmployeeDeduction;
+use App\Models\PayrollList;
+use App\Models\RequestAndIssuance;
+use App\Models\RequestAndIssuanceItems;
 use App\Models\Tardiness;
+use App\Models\UniformFreeUniformLimit;
+use App\Models\UniformItem;
+use App\Models\UniformReceiving;
+use App\Models\UniformReplenishment;
+use App\Models\UniformVariance;
+use App\Models\UniformVarianceItem;
 use Illuminate\Http\Request;
 use Exception;
 use Carbon\Carbon;
@@ -142,4 +153,198 @@ class DashboardController extends Controller
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }
+
+    public function getPayrollSummaryDetails(Request $request) {
+        try {
+            $activeCutOff = Cutoff::where("status", "active")->first();
+            $payrollList = PayrollList::where("is_included", true)->get()->count();
+            $deductions = EmployeeDeduction::where("approved_status", "Yes")
+            ->whereHas("employee", function ($query) {
+                $query->where("type", "Direct");
+            })
+            ->where("end_loan_status", "No")
+            ->where("balance", ">", 0);
+
+            return $this->sendResponse([
+                "active_cut_off" => $activeCutOff,
+                "payroll_list" => $payrollList,
+                "active_deductions" => $deductions->count(),
+                "active_deductions_amount" => $deductions->sum("balance")
+            ]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getAllEmployeeAnniversary (Request $request) {
+        try {
+            $perPage = $request->per_page ?? 10;
+
+            $startOfWeek = Carbon::now();
+            $endOfWeek = Carbon::now()->addDays(5);
+
+            $weekDates = [];
+            $cursor = $startOfWeek->copy();
+            while ($cursor->lte($endOfWeek)) {
+                $weekDates[] = $cursor->format('m-d');
+                $cursor->addDay();
+            }
+            $weekDatesString = "'" . implode("','", $weekDates) . "'";
+
+            $employees = Employee::with(["current_position", "current_branch"])
+            ->whereIn(DB::raw("DATE_FORMAT(date_hired, '%m-%d')"), $weekDates)
+            ->where("status", "active")
+            ->orderByRaw("FIELD(DATE_FORMAT(date_hired, '%m-%d'), $weekDatesString)")
+            ->paginate($perPage);
+
+            return $this->sendResponse($employees);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getSummaryUniformDetails(Request $request){
+        try{
+            $free_limit = UniformFreeUniformLimit::where("status", "active")
+                ->value("allowed_count");
+            $total_request = RequestAndIssuance::whereIn("status", ["Unposted", "Reviewed"])
+                ->count();
+            $total_replenishment = UniformReplenishment::whereIn("status", ["Unposted", "Reviewed"])
+                ->count();
+            $total_partially_received = UniformReplenishment::where("status" ,"Partially Received")
+                ->count();
+            $total_receiving = UniformReceiving::whereIn("status",["Unposted","Reviewed"])
+                ->count();
+            $total_variance_cost = UniformVarianceItem::whereHas('varianceHeader', function ($query) {
+                $query->where('status', 'Posted ');
+            })->whereHas('varianceHeader', function ($query) {
+                $query->whereIn('id', [
+                    UniformVariance::where('status', 'Posted')
+                        ->latest('id')
+                        ->value('id')
+                ]);
+            })->sum('total_variance_cost');
+
+            $total_atd = RequestAndIssuance::selectRaw('MONTH(date_posted) as month,COUNT(*) as total')
+                ->where("status", "Posted")
+                ->where("issuance_type", "Authority To Deduct")
+                ->whereYear('date_posted', Carbon::now()->year)
+                ->groupBy(DB::raw('MONTH(date_posted)'))
+                ->orderBy(DB::raw('MONTH(date_posted)'))
+                ->pluck('total','month')
+                ->mapWithKeys(function ($value,$key){
+                    return [(int)$key => $value];
+                })
+                ->all();
+                $all_atd = collect(range(1,12))-> mapWithKeys(function ($month)
+                use ($total_atd){
+                    return [$month => $total_atd[$month] ?? 0];
+                });
+            
+            $total_free = RequestAndIssuance::selectRaw('MONTH(date_posted) as month,COUNT(*) as total')
+                ->where("status","Posted")
+                ->where("issuance_type", "Free Uniform")
+                ->whereYear('date_posted',Carbon::now()->year)
+                ->groupBy(DB::raw('MONTH(date_posted)'))
+                ->orderBy(DB::raw('MONTH(date_posted)'))
+                ->pluck('total','month')
+                ->mapWithKeys(function ($value,$key){
+                    return [(int)$key => $value];
+                })
+                ->all();
+                $all_free = collect(range(1,12))-> mapWithKeys(function ($month)
+                use ($total_free){
+                    return [$month => $total_free[$month] ?? 0];
+                });
+            
+            $total_variance = UniformVariance::selectRaw('
+                MONTH(uniform_variances.posted_at) as month,
+
+                SUM(
+                    CASE
+                        WHEN uniform_variance_items.total_variance_cost > 0
+                        THEN uniform_variance_items.total_variance_cost
+                        ELSE 0
+                    END
+                ) as positive,
+
+                SUM(
+                    CASE
+                        WHEN uniform_variance_items.total_variance_cost < 0
+                        THEN uniform_variance_items.total_variance_cost
+                        ELSE 0
+                    END
+                ) as negative
+            ')
+                ->join(
+                    'uniform_variance_items',
+                    'uniform_variances.id',
+                    '=',
+                    'uniform_variance_items.variance_id'
+                )
+                ->where('uniform_variances.status', 'Posted')
+                ->whereYear('uniform_variances.posted_at', Carbon::now()->year)
+                ->groupBy(DB::raw('MONTH(uniform_variances.posted_at)'))
+                ->orderBy(DB::raw('MONTH(uniform_variances.posted_at)'))
+                ->get()
+                ->keyBy('month');
+
+            $all_variance = collect(range(1, 12))->mapWithKeys(function ($month) use ($total_variance) {
+                $variance = $total_variance->get($month);
+
+                return [
+                    $month => [
+                        'positive' => $variance ? (float) $variance->positive : 0,
+                        'negative' => $variance ? (float) $variance->negative : 0,
+                    ],
+                ];
+            });
+
+           $most_requested_items = RequestAndIssuanceItems::selectRaw('
+            uniform_item_no,
+                description,
+                SUM(requested_quantity) as total_requested
+            ')
+            ->whereHas('issuance', function ($query) {
+                $query->where('status', 'Posted')
+                    ->where('date_requested', '>=', Carbon::now()->subDays(60));
+            })
+            ->groupBy('uniform_item_no', 'description')
+            ->orderByDesc('total_requested')
+            ->limit(10)
+            ->get();
+
+            return $this-> sendResponse([
+                "allowed_count" => $free_limit,
+                "total_request" => $total_request,
+                "total_replenishment" => $total_replenishment,
+                "total_partially_received" => $total_partially_received,
+                "total_receiving" => $total_receiving,
+                "total_atd" => $all_atd,
+                "total_free" => $all_free,
+                "total_variance" => $all_variance,
+                "total_variance_cost" => $total_variance_cost,
+                "most_requested_items" => $most_requested_items
+            ]);
+
+        }catch(Exception $e){
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+        
+    }
+
+    public function getNearlyOufofStockItem(Request $request){
+        try {
+            $perPage = $request->per_page ?? 10;
+            $item_out_of_stock = UniformItem::where("status","active")
+                ->whereColumn("stock_on_hand", "<=", "crit_level")
+                ->orderBy("stock_on_hand")
+                ->paginate($perPage);
+            return $this->sendResponse($item_out_of_stock);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    
+    }
+
 }

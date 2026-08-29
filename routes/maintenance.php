@@ -39,6 +39,10 @@ use App\Http\Controllers\Maintenance\TermsController;
 use App\Http\Controllers\Maintenance\LastPaySetupController;
 use App\Http\Controllers\Maintenance\TrainingTitleController;
 use App\Http\Controllers\Maintenance\VaccineController;
+use App\Http\Controllers\Maintenance\SizesController;
+use App\Http\Controllers\Maintenance\SupplierController;
+use App\Http\Controllers\Maintenance\UniformFreeUniformLimitController;
+use App\Http\Controllers\Maintenance\UniformPeriodLockController;
 use App\Http\Controllers\Maintenance\ExpenseTypeController;
 use App\Http\Controllers\Maintenance\PettyCashApproverController;
 use App\Http\Controllers\Maintenance\PettyCashCustodianController;
@@ -282,6 +286,19 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get("/export-all-tardiness-sanctions", [TardinessSanctionController::class, "exportAllTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/create-tardiness-sanction", [TardinessSanctionController::class, "createTardinessSanctions"]);
     Route::middleware(["permission:perform_tardiness_sanctions"])->post("/edit-tardiness-sanction/{id}", [TardinessSanctionController::class, "editTardinessSanctions"]);
+    Route::get("/get-uniform-sizes", [SizesController::class, "getUniformSizes"]);
+    Route::get("/export-uniform-sizes", [SizesController::class, "exportSizes"]);
+    Route::middleware(["permission:perform_maintenance_sizes"])->post("/create-uniform-sizes", [SizesController::class, "createUniformSizes"]);
+    Route::middleware(["permission:perform_maintenance_sizes"])->post("/edit-uniform-sizes/{id}", [SizesController::class, "editUniformSizes"]);
+    Route::get("/get-uniform-supplier", [SupplierController::class, "getUniformSupplier"]);
+    Route::get("/export-uniform-supplier", [SupplierController::class, "exportSupplier"]);
+    Route::middleware(["permission:perform_maintenance_suppliers"])->post("/create-uniform-supplier", [SupplierController::class, "createUniformSupplier"]);
+    Route::middleware(["permission:view_uniform_free_uniform_limit"])->get("/get-uniform-free-uniform-limits", [UniformFreeUniformLimitController::class, "getUniformFreeUniformLimits"]);
+    Route::middleware(["permission:perform_uniform_free_uniform_limit"])->post("/create-uniform-free-uniform-limit", [UniformFreeUniformLimitController::class, "createUniformFreeUniformLimit"]);
+    Route::middleware(["permission:perform_uniform_free_uniform_limit"])->post("/edit-uniform-free-uniform-limit/{id}", [UniformFreeUniformLimitController::class, "editUniformFreeUniformLimit"]);
+    Route::middleware(["permission:view_uniform_period_lock"])->get("/get-uniform-period-locks", [UniformPeriodLockController::class, "getUniformPeriodLocks"]);
+    Route::middleware(["permission:perform_uniform_period_lock"])->post("/save-uniform-period-lock-period", [UniformPeriodLockController::class, "saveUniformPeriodLockPeriod"]);
+
 
     //expense types
     Route::get("/get-all-expense-types", [ExpenseTypeController::class, "getAllExpenseTypes"]);

@@ -22,8 +22,9 @@ class ReportsIncentiveAttendanceController extends Controller
                 "employee",
                 "employee.current_position",
                 "employee.schedule.schedule_type",
+                "branch"
             ])
-            ->where("month", $request->month)
+            ->whereMonth("pay_date", $request->month)
             ->where("year", $request->year)
             ->get();
 

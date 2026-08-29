@@ -14,9 +14,13 @@ use App\Models\Deduction;
 use App\Models\Entry;
 use App\Support\EntryBranchNumber;
 use App\Imports\EmployeeDeductionsImport;
+use App\Models\DeductionHistory;
+use App\Models\Term;
+use Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use DB;
+use Log;
 use Str;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
@@ -244,9 +248,13 @@ class EmployeeDeductionsController extends Controller
             }
 
             $summaryQuery = clone $deductions;
+            $summaryQuery = $summaryQuery->where("balance", ">", 0)
+            ->where("approved_status", "Yes")
+            ->where("end_loan_status", "No");
+
             $summary = [
-                "deduction_count" => (clone $summaryQuery)->where("balance", ">", 0)->count(),
-                "total_balance" => (float) (clone $summaryQuery)->sum("balance"),
+                "deduction_count" => $summaryQuery->count(),
+                "total_balance" => $summaryQuery->sum("balance"),
             ];
 
             $hasFilters = ($request->has("employee_id") && $request->employee_id)
@@ -650,12 +658,18 @@ class EmployeeDeductionsController extends Controller
         }
     }
 
-    public function getEmployeeDeduction(Request $request) {
+    public function getEmployeeDeduction(Request $request, $id) {
         try {
-            $deductions = EmployeeDeduction::where("status", "active")->get();
-            return $this->sendResponse(["deductions" => $deductions]);
-        } catch(Exception $e) {
+            $deduction = EmployeeDeduction::with([
+                "employee", "employee.current_branch", "branch", "deduction"
+            ])->find($id);
+            
+            if ($deduction) {
+                return $this->sendResponse($deduction);
+            }
 
+            return $this->sendError(["message" => "Deduction not found"]);
+        } catch(Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
@@ -829,6 +843,216 @@ class EmployeeDeductionsController extends Controller
         }
     }
 
+    public function getHealthCareForSalaryDeduction(Request $request) {
+        try {
+            $transactionLink = env('CS_HUB_URL_LINK')."/get-transactions";
+            $user = env('CS_HUB_ADMIN_EMAIL');
+            $password = env('CS_HUB_ADMIN_PASSWORD');
+            $company = env('COMPANY_NAME');
+
+            $response = Http::withBasicAuth($user, $password)
+            ->withHeaders([
+                "Accept" => "application/json",
+                "Content-Type" => "application/json"
+            ])->timeout(60)
+            ->get($transactionLink,[
+                "company" => $company,
+                "type" => "SALARY_DEDUCTION",
+                "approved_from" => "2020-01-01",
+                "approved_to" => "2026-01-01"
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $transactions = [];
+
+                foreach ($data['data']['transactions'] as $trans) {
+                    $employee = Employee::where("employee_number", $trans["healthcare_transaction"]["user"]["employee_number"])->first();
+
+                    if (!$employee) {
+                        continue;
+                    }
+
+                    $trans["actual_liq_difference"] = abs($trans["actual_liq_difference"]);
+                    $transactions[] = $trans;
+                }
+
+                return $this->sendResponse(["transactions" => $transactions]);
+            }
+
+            return $this->sendError(["message" => "Something went wrong"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function createHealthCareSalaryDeductions(Request $request) {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                "transactions" => "required|array"
+            ]);
+
+            $transactionLink = env('CS_HUB_URL_LINK')."/update-transaction-status";
+            $userName = env('CS_HUB_ADMIN_EMAIL');
+            $password = env('CS_HUB_ADMIN_PASSWORD');
+            $company = env('COMPANY_NAME');
+
+            foreach ($request->transactions as $transaction) {
+                $employee = Employee::where("employee_number", $transaction["healthcare_transaction"]["user"]["employee_number"])
+                ->with(["current_branch"])
+                ->first();
+
+                if (!$employee) {
+                    continue;
+                }
+
+                $first_initial = strtoupper(substr($employee->first_name, 0, 1));
+                $middle_initial = strtoupper(substr($employee->middle_name ?? '', 0, 1));
+                $last_initial = strtoupper(substr($employee->last_name, 0, 1));
+                $employee_number = $employee->employee_number;
+
+                $base_reference = $first_initial . $middle_initial . $last_initial . $employee_number;
+
+                $deduction_count = EmployeeDeduction::where("employee_id", $employee->id)
+                    ->whereNotNull("deduction_ref")
+                    ->where("deduction_ref", "!=", '')
+                    ->count();
+
+                $deduction = Deduction::where("description", "Unliquidated CA")->first();
+
+                if (!$deduction) {
+                    return $this->sendError(["message" => "Deduction type not found for transaction."]);
+                }
+
+                $deductionId = str_pad($deduction->id, 8, '0', STR_PAD_LEFT);
+                $deduction_reference = $base_reference . $deductionId . "|" . ($deduction_count + 1);
+                $user = Auth::user();
+
+
+                $monthlyAmortization = $transaction["actual_liq_difference"];
+
+                $term = Term::where("amount_from", "<=", $transaction["actual_liq_difference"])
+                ->where("amount_to", ">=", $transaction["actual_liq_difference"])
+                ->first();
+
+                $terms = $term->month;
+
+                if ($terms == 0) {
+                    $monthlyAmortization = $transaction["actual_liq_difference"];
+                } else {
+                    $monthlyAmortization = $transaction["actual_liq_difference"] / $terms;
+                }
+
+                $dateStart = now()->format("Y-m-d");
+                $dateEnd = Carbon::parse($dateStart)->addMonths($terms)->format("Y-m-d");
+
+                $remarks = $transaction["trans_no"]." | ".$transaction["verified_date"]." | ".$transaction["healthcare_transaction"]["healthcare_transaction_type"]["description"];
+
+                $atdBranch = $employee->current_branch;
+
+                $employeeDeduction = EmployeeDeduction::create([
+                    "employee_id" => $employee->id,
+                    "deduction_id" => $deduction->id,
+                    "balance" => $transaction["actual_liq_difference"],
+                    "transaction_number" => $transaction["trans_no"],
+                    "months" => $terms,
+                    "amount" => $transaction["actual_liq_difference"],
+                    "source_of_fund" => "HO",
+                    "start_date" => $dateStart,
+                    "end_date" => $dateEnd,
+                    "monthly_amortization" => $monthlyAmortization,
+                    "remarks" => $remarks,
+                    "debit_id" => $deduction->debit_id,
+                    "credit_id" => $deduction->credit_id,
+                    "branch_id" => $atdBranch->id,
+                    "block_payment" => "Yes",
+                    "approved_status" => "Yes",
+                    "deduction_ref" => $deduction_reference,
+                    "created_by" => $user->proper_full_name,
+                    "date_created" => $transaction["verified_date"],
+                    "end_loan_status" => "No",
+                    "source" => "CSHUB"
+                ]);
+
+                $branchHO = Branch::where('short_name', 'HO')
+                ->first();
+                $branchHOId = $branchHO->id;
+                $branchHOName = $branchHO->name;
+                $branchHONumber = $branchHO->branch_number;    
+
+                $deductionEntry = Deduction::where('id', $employeeDeduction->deduction_id)->first();
+                $debitId = $deductionEntry->debit_id;
+                $creditId = $deductionEntry->credit_id;
+
+                $entries = [];
+
+                if ($employeeDeduction->wasRecentlyCreated && $employeeDeduction->amount > 0) {
+                    $entryId = $this->generateEntryId($counterEntry);
+                    $apsysEntryId = $this->generateApsysEntryId($counterApsysEntry);
+                    $apsysEntryMainId = $this->generateApsysEntryMainId($counterApsysEntryMain);
+                    $entries = array_merge($entries, [
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => $employee->employee_number . '|' . 'Head Office',
+                            'branch_id'           => $branchHOId,
+                            'branch_number'       => $branchHONumber,
+                            'branch_name'         => $branchHOName,
+                            'ven_no'              => $employee->employee_number,
+                            'ven_name'            => $employee->full_name,
+                            'amount'              => $employeeDeduction->amount,
+                            'acc_no'              => $debitId,
+                            'description_per_acc' => $employeeDeduction->deduction->description,
+                            'balance_type'        => 'Debit',
+                            'is_block_payment'    => $deductionEntry->is_block_payment,
+                        ],
+                        [
+                            'entry_id'            => $entryId,
+                            'apsys_entry_id'      => $apsysEntryId,
+                            'apsys_entry_main_id' => $apsysEntryMainId,
+                            'document_no'         => $employee->employee_number . '|' . 'Head Office',
+                            'branch_id'           => $branchHOId,
+                            'branch_number'       => $branchHONumber,
+                            'branch_name'         => $branchHOName,
+                            'ven_no'              => $employee->employee_number,
+                            'ven_name'            => $employee->full_name,
+                            'amount'              => $employeeDeduction->amount,
+                            'acc_no'              => $creditId,
+                            'description_per_acc' => $employeeDeduction->deduction->description,
+                            'balance_type'        => 'Credit',
+                            'is_block_payment'    => $deductionEntry->is_block_payment,
+                        ]
+                    ]);
+                }
+
+                $this->createEntries($entries, $user);
+
+                $response = Http::withBasicAuth($userName, $password)
+                ->withHeaders([
+                    "Accept" => "application/json",
+                    "Content-Type" => "application/json"
+                ])->timeout(60)
+                ->retry(3)
+                ->post($transactionLink,[
+                    "transaction_number" => $transaction["trans_no"],
+                    "status" => "Deducted Liquidation",
+                    "type" => "SALARY_DEDUCTION",
+                    "employee_number" => $employee->employee_number,
+                    "company" => $company,
+                    "amount" => $transaction["actual_liq_difference"]
+                ]);
+            }
+
+            DB::commit();
+            return $this->sendResponse(["message" => "Deduction successfully created"]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     public function endLoanTransaction(Request $request, $id)
     {
         try {
@@ -841,7 +1065,13 @@ class EmployeeDeductionsController extends Controller
 
             $updated_balance = $balance - $amount;
 
-            EmployeeDeduction::where("id", $id)->update([
+            $deduction = EmployeeDeduction::find($id);
+            
+            if (!$deduction) {
+                return $this->sendError(["message" => "Deduction not found"]);
+            }
+
+            $deduction->update([
                 "end_loan_reason" => $request->end_loan_reason,
                 "end_loan_status" => "Yes",
                 "balance" => 0
@@ -916,6 +1146,32 @@ class EmployeeDeductionsController extends Controller
         }
     }
 
+    public function getDeductionAmortizationHistory(Request $request) {
+        try {
+            $request->validate([
+                "employee_number" => "required",
+                "reference_number" => "required"
+            ]);
+
+            $perPage = $request->per_page ?? 10;
+
+            $employee = Employee::where("employee_number", $request->employee_number)
+            ->first();
+            if ($employee) {
+                $deductionHistory = DeductionHistory::where("employee_id", $employee->id)
+                ->where("reference_doc", $request->reference_number)
+                ->orderBy("pay_date", "DESC")
+                ->paginate($perPage);
+
+                return $this->sendResponse($deductionHistory);
+            }
+
+            return $this->sendError(["message" => "Employee not found"]);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
     private function createEntries($entries, $user)
     {
         if (empty($entries)) {
@@ -924,61 +1180,11 @@ class EmployeeDeductionsController extends Controller
 
         $entries = EntryBranchNumber::normalizeEntriesForCurrentCompany($entries);
 
-        foreach ($entries as $entry) {
-
-            Entry::create([
-                'entry_id'                   => $entry['entry_id'],
-                'document_no'                => $entry['document_no'],
-                'branch_id'                  => $entry['branch_id'],
-                'branch_number'              => $entry['branch_number'],
-                'vendor_no'                  => $entry['ven_no'],
-                'amount'                     => $entry['amount'],
-                'account_no'                 => $entry['acc_no'],
-                'description'                => $entry['description_per_acc'],
-                'balance_type'               => $entry['balance_type'],
-                'is_block_payment'           => $entry['is_block_payment'],
-                'status'                     => 'Unapplied',
-                'generated_at'               => now(),
-                'generated_by'               => $user->id,
-            ]);
-
-            ApsysEntry::create([
-                'ent_tran_no'       => $entry['apsys_entry_id'],
-                'branch_id'         => $entry['branch_number'],
-                'ent_post_date'     => now(),
-                'ven_no'            => $entry['ven_no'],
-                'ent_doc_no'        => $entry['document_no'],
-                'ent_doc_date'      => now(),
-                'ent_due_date'      => now(),
-                'ent_header'        => '',
-                'ent_crf_no'        => '',
-                'ent_trans_amt'     => $entry['amount'],
-                'ent_amt_due'       => $entry['amount'],
-                'ent_module'        => 'Payroll',
-                'acc_no'            => $entry['acc_no'],
-                'ent_amt_per_acc'   => $entry['amount'],
-                'ent_desc_per_acc'  => $entry['description_per_acc'],
-                'ent_norm_bal'      => $entry['balance_type'],
-                'ent_total'         => $entry['amount'],
-                'ent_module_type'   => 'Single',
-                'ent_app_amt'       => $entry['amount'],
-                'ent_unapp_amt'     => $entry['amount'],
-                'ent_vat_amt'       => 0,
-                'ent_nonvat_amt'    => 0,
-                'ent_na_amt'        => $entry['amount'],
-                'ent_inp_tax_amt'   => 0,
-                'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
-                'ent_status'        => 'Unapplied',
-                'ent_chk'           => 'No',
-                'date_added'        => now(),
-            ]);
-        }
-
-        $groupedEntries = collect($entries)->groupBy('apsys_entry_id');
+        $groupedEntries = collect($entries)->groupBy('apsys_entry_main_id');
         foreach ($groupedEntries as $mainId => $groupedEntry) {
             $entry = $groupedEntry->first();
 
-            ApsysEntryMain::create([
+            $entryMain = ApsysEntryMain::create([
                 'ent_tran_no'       => $mainId,
                 'ven_no'            => $entry['ven_no'],
                 'ven_name'          => $entry['ven_name'],
@@ -999,6 +1205,55 @@ class EmployeeDeductionsController extends Controller
                 'ent_block_payment' => ($entry['is_block_payment'] == 1) ? 'Yes' : 'No',
                 'ent_due_date'      => now(),
             ]);
+
+            foreach ($groupedEntry as $ent) {
+                Entry::create([
+                    'entry_id'                   => $entryMain->ent_tran_no,
+                    'document_no'                => $ent['document_no'],
+                    'branch_id'                  => $ent['branch_id'],
+                    'branch_number'              => $ent['branch_number'],
+                    'vendor_no'                  => $ent['ven_no'],
+                    'amount'                     => $ent['amount'],
+                    'account_no'                 => $ent['acc_no'],
+                    'description'                => $ent['description_per_acc'],
+                    'balance_type'               => $ent['balance_type'],
+                    'is_block_payment'           => $ent['is_block_payment'],
+                    'status'                     => 'Unapplied',
+                    'generated_at'               => now(),
+                    'generated_by'               => $user->id,
+                ]);
+
+                ApsysEntry::create([
+                    'ent_tran_no'       => $entryMain->ent_tran_no,
+                    'branch_id'         => $ent['branch_number'],
+                    'ent_post_date'     => now(),
+                    'ven_no'            => $ent['ven_no'],
+                    'ent_doc_no'        => $ent['document_no'],
+                    'ent_doc_date'      => now(),
+                    'ent_due_date'      => now(),
+                    'ent_header'        => '',
+                    'ent_crf_no'        => '',
+                    'ent_trans_amt'     => $ent['amount'],
+                    'ent_amt_due'       => $ent['amount'],
+                    'ent_module'        => 'Payroll',
+                    'acc_no'            => $ent['acc_no'],
+                    'ent_amt_per_acc'   => $ent['amount'],
+                    'ent_desc_per_acc'  => $ent['description_per_acc'],
+                    'ent_norm_bal'      => $ent['balance_type'],
+                    'ent_total'         => $ent['amount'],
+                    'ent_module_type'   => 'Single',
+                    'ent_app_amt'       => $ent['amount'],
+                    'ent_unapp_amt'     => $ent['amount'],
+                    'ent_vat_amt'       => 0,
+                    'ent_nonvat_amt'    => 0,
+                    'ent_na_amt'        => $ent['amount'],
+                    'ent_inp_tax_amt'   => 0,
+                    'ent_block_payment' => ($ent['is_block_payment'] == 1) ? 'Yes' : 'No',
+                    'ent_status'        => 'Unapplied',
+                    'ent_chk'           => 'No',
+                    'date_added'        => now(),
+                ]);
+            }
         }
     }
 }

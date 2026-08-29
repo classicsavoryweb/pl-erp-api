@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Employee;
+use App\Models\OtherCompany\OtherEmployee;
 use App\Models\PettyCashCustodian;
 use Exception;
 use Hash;
@@ -44,20 +45,25 @@ class AuthController extends Controller
                     now()->addHours(12)
                 );
 
+                $employee = Employee::where("employee_number", $user->employee_number)->first();
+
+                if (!$employee) {
+                    $employee = OtherEmployee::where("employee_number", $user->employee_number)->first();
+                }
+
                 activity()->causedBy($user)->useLog("Login")->log('user logged in');
 
                 return $this->sendResponse([
                     "message" => "Logged in successfully",
                     "user" => $user,
+                    "employee" => $employee,
                     "token" => $token->plainTextToken,
                     "permissions" => $permissions
                 ]);
             }
 
             return $this->sendError(["message" => "Role not existing" ]);
-
         } else {
-
             return $this->sendError(["message" => "Invalid credentials" ]);
         }
     }

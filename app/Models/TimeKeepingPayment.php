@@ -26,6 +26,7 @@ class TimeKeepingPayment extends Model
         "special_holiday_overtime",
         "total_amount",
         "type",
-        "cancelled_off"
+        "cancelled_off",
+        "cancelled_off_overtime"
     ];
 }

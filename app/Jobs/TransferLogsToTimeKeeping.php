@@ -55,14 +55,14 @@ class TransferLogsToTimeKeeping implements ShouldQueue
         $this->dates = $dates;
     }
 
-    public function middleware() {
-        return [
-            (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
-                ->shared()
-                ->releaseAfter(1200)
-                ->expireAfter(7200)
-        ];
-    }
+    // public function middleware() {
+    //     return [
+    //         (new WithoutOverlapping("timekeeping_branch_{$this->branchId}"))
+    //             ->shared()
+    //             ->releaseAfter(1200)
+    //             ->expireAfter(7200)
+    //     ];
+    // }
 
     public function handle(): void
     {
@@ -139,6 +139,12 @@ class TransferLogsToTimeKeeping implements ShouldQueue
                         if ($employee->current_position->timekeeping_type == "Daily") {
                             $isRequiredToReport = false;
                         }
+
+                        // if ($employee->current_position->timekeeping_type == "Monthly" &&
+                        //     $holidayType == "LH"
+                        // ) {
+                        //     $isRequiredToReport = false;
+                        // }
                     }
 
                     $holidayHours = $isRequiredToReport ? 0 : $holidayHours; 

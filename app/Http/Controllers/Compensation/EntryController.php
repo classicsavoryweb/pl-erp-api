@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Compensation;
 
 use App\Exports\Compensation\EntryExport;
 use App\Http\Controllers\Controller;
+use App\Http\Services\EntryService;
 use App\Jobs\GenerateEntry;
 use App\Models\Accounting\ApsysEntry;
 use App\Models\Accounting\ApsysEntryMain;
@@ -19,7 +20,12 @@ use Illuminate\Support\Facades\Auth;
 use Str;
 
 class EntryController extends Controller
-{
+{ 
+    protected $entryService;
+
+    function __construct() {
+        $this->entryService = new EntryService();
+    }
     private function cutoffAlreadySentToApsys(string $startDate, string $endDate): bool
     {
         $cutoffDocumentToken = $startDate . '-' . $endDate;
@@ -314,6 +320,33 @@ class EntryController extends Controller
             ->where("start_date", $request->date_from)
             ->where("end_date", $request->date_to)
             ->get();
+
+            $branchIds = $payroll->pluck("timekeeping_branch_id")->unique()->toArray();
+
+            if ($request->proceed === "No") {
+                $branchesWithout13thMonthAccounts = $this->entryService->checkBranchesWithEmptyAccounts(
+                    $branchIds,
+                    [
+                        "branch_ho_stat_debit",
+                        "branch_ho_stat_credit",
+                        "expense_debit",
+                        "expense_credit",
+                        "advance_debit",
+                        "advance_credit",
+                    ]
+                );
+
+                $branchesOnDifferentCompany = $this->entryService->checkBrancesWithDifferentCompany($branchIds);
+                
+                if (count($branchesWithout13thMonthAccounts) > 0 || count($branchesOnDifferentCompany) > 0) {
+                    return $this->sendError([
+                        "ids" => $branchIds,
+                        "message" => "Entry validation error",
+                        "branches_on_different_company" => $branchesOnDifferentCompany,
+                        "branches_without_13th_month_accounts" => $branchesWithout13thMonthAccounts
+                    ], 409);
+                }
+            }
 
             $start_date = $request->date_from;
             $end_Date = $request->date_to;

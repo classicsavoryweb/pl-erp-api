@@ -11,6 +11,7 @@ use App\Models\Branch;
 use App\Models\Cutoff;
 use App\Models\ScheduleTime;
 use App\Models\Employee;
+use App\Models\ScheduleMasterlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -541,6 +542,47 @@ class ScheduleTimeController extends Controller
                 "employees_with_multiple_rest_days_per_week" => $employeesWithMultipleRestDays,
             ]);
         } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function editScheduleTime(Request $request, $id) {
+        try {
+            DB::beginTransaction();
+
+            $activeCutOff = Cutoff::where("status", "active")
+            ->where("start_date", "<=", $request->date)
+            ->where("end_date", ">=", $request->date)
+            ->first();
+
+            if (!$activeCutOff) {
+                return $this->sendError(["message" => "You cant edit inactive cutoff"]);
+            }
+
+            $schedule = ScheduleTime::find($id);
+
+            if ($schedule) {
+                $selectedSchedule = ScheduleMasterlist::where("selection", $request->timetable)->first();
+                
+                if (!$selectedSchedule) {
+                    DB::rollBack();
+                    return $this->sendError(["message" => "Selected schedule not found"]);
+                }
+
+                $schedule->update([
+                    "timetable" => $selectedSchedule->selection,
+                    "check_in" => $selectedSchedule->start_time,
+                    "check_out" => $selectedSchedule->end_time
+                ]);
+
+                DB::commit();
+                return $this->sendResponse(["message" => "Schedule updated succesfully"]);
+            }
+
+            DB::rollBack();
+            return $this->sendError(["message" => "Schedule not found"]);
+        } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage()]);
         }
     }

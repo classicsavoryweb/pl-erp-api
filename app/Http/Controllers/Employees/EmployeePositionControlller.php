@@ -99,28 +99,30 @@ class EmployeePositionControlller extends Controller
                 "schedule_type_id" => $scheduleType->id
             ]);
 
-            $salary = $position->salary;
-            $payrollList = $employee->payroll_list;
-
-            $monthlyRate = 0;
-            $minimum = 0;
-            $multiplier = 26;
-            if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
-                $multiplier = 22;
-            }
-
-            if ($salary->rate_category === "MINIMUM") {
-                $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
-                $minimum = $rate->minimum ?? 0;
-                $monthlyRate = $minimum * $multiplier;
-            } else {
-                $monthlyRate = $salary->basic_salary;
-            }
-
-            if ($payrollList) {
-                $payrollList->update([
-                    "salary_amount" => $monthlyRate
-                ]);
+            if ($employee->type == "Direct") {
+                $salary = $position->salary;
+                $payrollList = $employee->payroll_list;
+    
+                $monthlyRate = 0;
+                $minimum = 0;
+                $multiplier = 26;
+                if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                    $multiplier = 22;
+                }
+    
+                if ($salary->rate_category === "MINIMUM") {
+                    $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
+                    $minimum = $rate->minimum ?? 0;
+                    $monthlyRate = $minimum * $multiplier;
+                } else {
+                    $monthlyRate = $salary->basic_salary;
+                }
+    
+                if ($payrollList) {
+                    $payrollList->update([
+                        "salary_amount" => $monthlyRate
+                    ]);
+                }
             }
 
             DB::commit();
@@ -159,6 +161,32 @@ class EmployeePositionControlller extends Controller
             $employee->schedule()->update([
                 "schedule_type_id" => $scheduleType->id
             ]);
+
+            if ($employee->type == "Direct") {
+                $salary = $position->salary;
+                $payrollList = $employee->payroll_list;
+    
+                $monthlyRate = 0;
+                $minimum = 0;
+                $multiplier = 26;
+                if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                    $multiplier = 22;
+                }
+    
+                if ($salary->rate_category === "MINIMUM") {
+                    $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
+                    $minimum = $rate->minimum ?? 0;
+                    $monthlyRate = $minimum * $multiplier;
+                } else {
+                    $monthlyRate = $salary->basic_salary;
+                }
+    
+                if ($payrollList) {
+                    $payrollList->update([
+                        "salary_amount" => $monthlyRate
+                    ]);
+                }
+            }
 
             DB::commit();
             return $this->sendResponse(["message" => "Position updated successfully"]);

@@ -52,6 +52,7 @@ class PayrollService {
             $nightDifferentialAmount = 0;
             $nightDifferentialOvertimeAmount = 0;
             $cancelledOffAmount = 0;
+            $cancelledOffOTAmount = 0;
             $nonTaxableAmount = $payrollDetails->non_taxable_adjustment ?? 0;
             $taxableAdustmentAmount = $payrollDetails->adjustment_amount ?? 0;
             $philHealthAmount = 0;
@@ -85,6 +86,7 @@ class PayrollService {
             $nightDifferentialAmount = $payrollDetails->night_differential * ($hourly_rate * .1);
             $nightDifferentialOvertimeAmount = $payrollDetails->night_differential_overtime * ($hourly_rate * .125);
             $cancelledOffAmount = $payrollDetails->cancelled_off * ($hourly_rate * 1.3);
+            $cancelledOffOTAmount = $payrollDetails->cancelled_off_overtime * ($hourly_rate * 1.69);
             $basicSalary = $salary - ($tardinessAmount + $undertimeAmount);
 
             $deductions = [];
@@ -125,10 +127,10 @@ class PayrollService {
                             "type" => $deduction->deduction->description,
                             "monthly_amortization" => $deduction->monthly_amortization,
                             "balance" => $deduction->balance,
-                            "deducted_amount" => $amountToDeduct,
+                            "deducted_amount" => round($amountToDeduct, 2),
                             "payslip_description" => $deduction->deduction->payslip_description
                         ];
-                        $totalDeductions += $amountToDeduct;
+                        $totalDeductions += round($amountToDeduct, 2);
                     }
                 } else {
                     $totalDeductions = 0;
@@ -139,10 +141,10 @@ class PayrollService {
                     }
     
                     foreach ($deductions as $ded) {
-                        $totalDeductions += $ded["deducted_amount"];
+                        $totalDeductions += round($ded["deducted_amount"], 2);
                     }
                 }
-            }
+            } 
 
             $grossPayAmount = ( $salary +
                 $overtimeAmount +
@@ -153,6 +155,7 @@ class PayrollService {
                 $nightDifferentialAmount +
                 $nightDifferentialOvertimeAmount +
                 $cancelledOffAmount +
+                $cancelledOffOTAmount +
                 $taxableAdustmentAmount) -
                 $undertimeAmount -
                 $tardinessAmount;
@@ -188,7 +191,7 @@ class PayrollService {
                 $philHealthAmount = $payrollDetails->employee_philhealth;
             }
 
-            $taxableIncome = round($grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount, 2);
+            $taxableIncome = $grossPayAmount - $philHealthAmount - $pagibigEmployee - $sssEmployeeAmount;
 
             if ($payrollDetails->is_complete_documents == 1 && !$payrollDetails->is_manual_statutory_entry) {
                 if ($this->isNcrMinimum($employee) || $payrollDetails->is_on_maternity_leave == 1) {
@@ -203,7 +206,7 @@ class PayrollService {
                     $percentage = $tax->percentage ?? 0;
     
                     $taxAmount = (($taxableIncome - $salaryBase) * ($percentage* 0.01)) + $exemption > 0
-                        ? round( (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption, 2)
+                        ? (($taxableIncome - $salaryBase) * ($percentage * 0.01)) + $exemption
                         : 0;
                 }
             }
@@ -213,7 +216,15 @@ class PayrollService {
             }
             
             $contributionTotal = $sssEmployeeAmount + $pagibigEmployee + $philHealthAmount;
-            $additionalWorkingHoursTotal = $overtimeAmount + $legalHolidayAmount + $legalHolidayOvertimeAmount + $specialHolidayAmount + $specialHolidayOvertimeAmount + $nightDifferentialAmount + $nightDifferentialOvertimeAmount + $cancelledOffAmount;
+            $additionalWorkingHoursTotal = $overtimeAmount + 
+                $legalHolidayAmount + 
+                $legalHolidayOvertimeAmount +
+                $specialHolidayAmount +
+                $specialHolidayOvertimeAmount +
+                $nightDifferentialAmount +
+                $nightDifferentialOvertimeAmount +
+                $cancelledOffAmount +
+                $cancelledOffOTAmount;
             $workingHoursDeductionTotal = $undertimeAmount + $tardinessAmount;
             $netPayAmount = $taxableIncome - $taxAmount;
 
@@ -232,7 +243,7 @@ class PayrollService {
             ->sortBy("deducted_amount")
             ->values()
             ->toArray();
-            if ($netPayCheck < 0) {
+            if (!$payrollDetails->modify_deductions && $netPayCheck < 0) {
                 foreach ($deductions as $deduction) {
                     $netPayNoDeductions -= $deduction['deducted_amount'];
 
@@ -260,7 +271,8 @@ class PayrollService {
                 }
             }
 
-            $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
+            // $netPayAmount = $netPayAmount - $totalDeductions - $manualDeductions + $nonTaxableAmount;
+            $netPayAmount = round($grossPayAmount, 2) - ($sssEmployeeAmount + $pagibigEmployee + $philHealthAmount + round($taxAmount, 2) + round($totalDeductions, 2)) + $nonTaxableAmount;
 
             $payroll = [
                 "salary" => round($salary,2),
@@ -287,6 +299,7 @@ class PayrollService {
                 "total_deductions" => round($totalDeductions,2),
                 "manual_deductions" => $manualDeductions,
                 "cancelled_off" => round($cancelledOffAmount,2),
+                "cancelled_off_overtime_amount" => round($cancelledOffOTAmount,2),
                 "net_pay" => round($netPayAmount, 2),
                 "taxable_income" => round($taxableIncome, 2),
                 "contribution_total" => round($contributionTotal,2),
@@ -353,6 +366,8 @@ class PayrollService {
         ->where('max_amount', '>=', $basicSalary)
         ->first();
 
+        $pagibigAmount = 0;
+
         $shares = [
             "er" => 0,
             "ee" => 0
@@ -378,7 +393,7 @@ class PayrollService {
                 ->first();
 
                 if ($pagibig) {
-                    $pagibigShares = $totalBasic * (0.01 * $pagibig->percentage);
+                    $pagibigShares = $firstPayroll->employee_pagibig == 0 ? 200 : $totalBasic * (0.01 * $pagibig->percentage);
                     $pagibigAmount = $pagibigShares > 100
                         ? $pagibig->max_deduction - $firstPayroll->employee_pagibig
                         : $pagibigShares - $firstPayroll->employee_pagibig;
@@ -395,6 +410,11 @@ class PayrollService {
                     $shares['er'] = round($pagibigAmount, 2);
                 }
             }
+        }
+
+        if ($pagibigAmount < 0) {
+            $shares['ee'] = 0;
+            $shares['er'] = 0;
         }
 
         return $shares;
@@ -504,7 +524,7 @@ class PayrollService {
         }
 
         if ($position->rank == 1) {
-            $months = Carbon::parse("2026-05-09")->diffInMonths($employee->date_hired);
+            $months = Carbon::now()->diffInMonths($employee->date_hired);
             if ($months < 1) {
                 $months = 1;
             }
@@ -551,6 +571,7 @@ class PayrollService {
         $addedDays = 0;
         $undertimeDeductionDays = 0;
         $totalDays = 0;
+        $additionalDailyRate = 0;
 
         $firstCutOffDays = ($firstTimeKeeping->regular_days ?? 0) + ($firstTimeKeeping->special_leave ?? 0);
         $secondCutOffDays = ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0);
@@ -583,7 +604,7 @@ class PayrollService {
                 "days" => $adjustment->days
             ];
             $addedDays += $adjustment->days;
-            $firstCutOffDays += $adjustment->days;
+            // $firstCutOffDays += $adjustment->days;
         }
 
         foreach ($secondCutOffAdjustments as $adjustment) {
@@ -592,7 +613,7 @@ class PayrollService {
                 "days" => $adjustment->days
             ];
             $addedDays += $adjustment->days;
-            $secondCutOffDays += $adjustment->days;
+            // $secondCutOffDays += $adjustment->days;
         }
 
         $monthWorkedDays = $firstCutOffDays + $secondCutOffDays;
@@ -613,14 +634,6 @@ class PayrollService {
             if (trim($employee->oic_status) == "OIC") {
                 $baseAdditional = $incentivePosition->oic_additional_amount;
                 $additionalDailyRate = $baseAdditional / $monthShouldBeWorkDays;
-                $additionalIncentive = $additionalDailyRate * (
-                    ($firstTimeKeeping->regular_days ?? 0) + ($firstTimeKeeping->special_leave ?? 0) +
-                    ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0)
-                );
-
-                if ($additionalIncentive > $baseAdditional) {
-                    $additionalIncentive = $baseAdditional;
-                }
             }
         }
 
@@ -723,6 +736,19 @@ class PayrollService {
             }
         }
 
+        if (trim($employee->oic_status) == "OIC") {
+            $additionalIncentive = $additionalDailyRate * (
+                (
+                    ($firstTimeKeeping->regular_days  ?? 0) + ($firstTimeKeeping->special_leave ?? 0) +
+                    ($secondTimeKeeping->regular_days ?? 0) + ($secondTimeKeeping->special_leave ?? 0)
+                ) - $addedDays
+            );
+    
+            if ($additionalIncentive > $baseAdditional) {
+                $additionalIncentive = $baseAdditional;
+            }
+        }
+
         $incentiveAmount += $additionalIncentive;
 
         $totalDays = $monthWorkedDays + $addedDays - $undertimeDeductionDays;
@@ -757,7 +783,7 @@ class PayrollService {
         return $incentive;
     }
 
-    private function isNcrMinimum(Employee $employee): bool
+    public function isNcrMinimum(Employee $employee): bool
     {
         $ncrRate = Rate::where("code", "E")->first();
         $divisor = 26;

@@ -5,6 +5,7 @@ use App\Http\Controllers\Transactions\AdjustmentController;
 use App\Http\Controllers\Transactions\OvertimeController;
 use App\Http\Controllers\Transactions\ScheduleTimeController;
 use App\Http\Controllers\Transactions\TimeKeepingController;
+use App\Http\Controllers\Transactions\TravelOvertimeController;
 use Illuminate\Support\Facades\Route;
 
 //TRANSACTIONS MODULE
@@ -19,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:transfer_time_keeping_branch"])->post("/transfer-timekeeping-branch/{schedule_id}", [ScheduleTimeController::class, "transferTimekeepingBranch"]);
     Route::middleware(["permission:transfer_time_keeping_branch"])->get("/get-transactions-schedule-time-employees", [ScheduleTimeController::class, "getTransactionsScheduleTimeEmployees"]);
     Route::middleware(["permission:transfer_time_keeping_branch"])->post("/transfer-timekeeping-branch-all", [ScheduleTimeController::class, "transferTimekeepingBranchAll"]);
+    Route::middleware(["permission:perform_transactions_schedule_time"])->post("/edit-schedule-time/{id}", [ScheduleTimeController::class, "editScheduleTime"]);
 
     //actual logs
     Route::get("/get-all-transactions-actual-time", [ActualTimeController::class, "getAllBiotimeTransactions"]);
@@ -62,7 +64,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:export_all_transactions_time_keeping_summary"])->get("/export-all-time-keeping-summary", [TimeKeepingController::class, "exportAllTimeKeepingSummary"]);
     Route::middleware(["permission:perform_transactions_adjustments"])->post("/add-timekeeping-summary-adjustment", [TimeKeepingController::class, "addTimeKeepingSummaryAdjustment"]);
     Route::middleware(["permission:perform_transactions_adjustments"])->get("/get-timekeeping-summary-adjustment-logs", [TimeKeepingController::class, "getTimeKeepingSummaryAdjustmentLogs"]);
-    
+    Route::middleware(["permission:perform_transactions_adjustments"])->post("/update-timekeeping/{id}", [TimeKeepingController::class, "updateTimeKeepingSummary"]);
+
     //adjustments
     Route::get("/get-all-adjustments", [AdjustmentController::class, "getAllAdjustments"]);
     Route::get("/get-adjustment/{id}", [AdjustmentController::class, "getAdjustment"]);
@@ -72,4 +75,12 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware("permission:perform_transactions_adjustments")->post("/create-adjustments", [AdjustmentController::class, "createAdjustments"]);
     Route::middleware("permission:perform_transactions_adjustments")->post("/edit-adjustments/{id}", [AdjustmentController::class, "editAdjustments"]);
 
+    // travel time
+    Route::get("/get-all-travel-overtimes", [TravelOvertimeController::class, "getAllTravelOvertime"]);
+    Route::get("/export-all-travel-overtimes", [TravelOvertimeController::class, "exportAllTravelOvertime"]);
+    Route::middleware(["permission:perform_transactions_travel_overtime"])->post("/create-travel-overtime", [TravelOvertimeController::class, "createTravelOvertime"]);
+    Route::middleware(["permission:perform_transactions_travel_overtime"])->post("/edit-travel-overtime/{id}", [TravelOvertimeController::class, "editTravelOvertime"]);  
+    Route::middleware(["permission:perform_transactions_travel_overtime"])->post("/import-travel-overtime", [TravelOvertimeController::class, "importTravelTime"]);
+    Route::middleware(["permission:perform_transactions_travel_overtime"])->get("/delete-travel-overtime/{id}", [TravelOvertimeController::class, "deleteTravelTime"]);
 });
+ 

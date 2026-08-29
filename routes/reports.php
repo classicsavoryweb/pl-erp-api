@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Compensation\PayslipController;
 use App\Http\Controllers\Reports\BankAccountController;
+use App\Http\Controllers\Reports\Bir1601CController;
+use App\Http\Controllers\Reports\Bir2316Controller;
 use App\Http\Controllers\Reports\IncentiveReportController;
 use App\Http\Controllers\Reports\ReportsThirteenthMonthController;
 use App\Http\Controllers\Reports\ReportsPagibigController;
@@ -70,4 +72,19 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //bank account history export
     Route::middleware(["permission:perform_reports_bank_account_history"])->get("/export-bank-account-history", [BankAccountController::class, "exportBankAccountHistory"]);
+
+    //BIR 1601-C monthly remittance return
+    Route::middleware(['permission:view_reports_bir_1601c'])->get('/bir-1601c', [Bir1601CController::class, 'index']);
+    Route::middleware(['permission:view_reports_bir_1601c'])->get('/bir-1601c/{id}', [Bir1601CController::class, 'show']);
+    Route::middleware(['permission:perform_reports_bir_1601c'])->post('/bir-1601c/generate', [Bir1601CController::class, 'generate']);
+    Route::middleware(['permission:perform_reports_bir_1601c'])->post('/bir-1601c/{id}', [Bir1601CController::class, 'update']);
+    Route::middleware(['permission:perform_reports_bir_1601c'])->post('/bir-1601c/{id}/finalize', [Bir1601CController::class, 'finalize']);
+    Route::middleware(['permission:view_reports_bir_1601c'])->get('/export-bir-1601c/{id}', [Bir1601CController::class, 'export']);
+
+    //BIR 2316 annual certificate of compensation payment/tax withheld
+    Route::middleware(['permission:view_reports_bir_2316'])->get('/bir-2316', [Bir2316Controller::class, 'index']);
+    Route::middleware(['permission:view_reports_bir_2316'])->get('/bir-2316/signatory', [Bir2316Controller::class, 'signatory']);
+    Route::middleware(['permission:view_reports_bir_2316'])->get('/bir-2316/{id}', [Bir2316Controller::class, 'show']);
+    Route::middleware(['permission:perform_reports_bir_2316'])->post('/bir-2316/import', [Bir2316Controller::class, 'import']);
+    Route::middleware(['permission:view_reports_bir_2316'])->get('/export-bir-2316/{id}', [Bir2316Controller::class, 'export']);
 });

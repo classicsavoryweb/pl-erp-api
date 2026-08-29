@@ -26,7 +26,8 @@ class ConverterMain extends Model
         "bank_account_type_id",
         "transaction_type_id",
         "sent_by",
-        "sent_at"
+        "sent_at",
+        "crediting_date"
     ];
 
     protected static function booted()

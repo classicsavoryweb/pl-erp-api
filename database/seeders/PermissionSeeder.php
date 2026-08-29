@@ -25,6 +25,12 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_tardiness_disabler"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_general_dashboard"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "has_analytic_dashboard_hr"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "has_analytic_dashboard_payroll"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "has_uniform_dashboard"], ["module" => "administrators"]);
+        // Permission::updateOrCreate(["name" => "by_pass_edit_restrictions"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_employees"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_time_keeping"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_payroll"], ["module" => "administrators"]);
         // Permission::updateOrCreate(["name" => "view_settings"]);
         // Permission::updateOrCreate(["name" => "perform_settings"]);
 
@@ -200,11 +206,14 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "unapprove_all_transactions_overtime"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "void_all_transactions_overtime"], ["module" => "transactions"]);
         Permission::updateOrCreate(["name" => "force_adjust_all_transactions_overtime"], ["module" => "transactions"]);
+        Permission::updateOrCreate(["name" => "view_transactions_travel_overtime"], ["module" => "transactions"]);
+        Permission::updateOrCreate(["name" => "perform_transactions_travel_overtime"], ["module" => "transactions"]);
 
         //compensation modules
         Permission::updateOrCreate(["name" => "view_compensation_module"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "view_compensation_payroll_list"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_payroll_list"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "perform_compensation_payroll_list_salary"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "view_compensation_cutoff_setup"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_cutoff_setup"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "initialize_compensation_cutoff_setup"], ["module" => "compensation"]);
@@ -214,6 +223,8 @@ class PermissionSeeder extends Seeder
 
         Permission::updateOrCreate(["name" => "view_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_deductions"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "end_loan_compensation_deductions"], ["module" => "compensation"]);
+        Permission::updateOrCreate(["name" => "edit_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "export_all_compensation_deductions"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "view_compensation_payroll"], ["module" => "compensation"]);
         Permission::updateOrCreate(["name" => "perform_compensation_payroll"], ["module" => "compensation"]);
@@ -256,6 +267,10 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "generate_13th_month_pay"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_bir"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_bir"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_bir_1601c"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_bir_1601c"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "view_reports_bir_2316"], ["module" => "reports"]);
+        Permission::updateOrCreate(["name" => "perform_reports_bir_2316"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_deductions"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_deductions"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_incentive_attendance"], ["module" => "reports"]);
@@ -266,5 +281,32 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_reports_timekeeping_summary_report"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "view_reports_bank_account_history"], ["module" => "reports"]);
         Permission::updateOrCreate(["name" => "perform_reports_bank_account_history"], ["module" => "reports"]);
+
+
+        //uniform (maintenance)
+        Permission::updateOrCreate(["name" => "view_maintenance_suppliers"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_maintenance_suppliers"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_maintenance_sizes"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_maintenance_sizes"], ["module" => "maintenance"]);
+        //uniform module (section)
+        Permission::updateOrCreate(["name" => "view_uniform_module"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_item_masterlist"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_item_masterlist"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_request_and_issuance"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_request_and_issuance"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_replenishment_request"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_replenishment_request"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_receiving_stocks"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_receiving_stocks"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_weighted_average"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_weighted_average"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_physical_count"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_physical_count"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_variance_report"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_variance_report"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "view_uniform_period_lock"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_period_lock"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "view_uniform_free_uniform_limit"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_free_uniform_limit"], ["module" => "maintenance"]);
     }
 }

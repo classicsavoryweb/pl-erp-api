@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\EntryService as ServicesEntryService;
 use App\Jobs\GenerateThirteenthMonthMonthlyAllocationEntry;
 use App\Jobs\GenerateThirteenthMonthPayJob;
 use App\Jobs\GenerateThirteenthMonthMonthlyAllocationJob;
 use App\Models\BranchesMonthlyAllocation;
+use \App\Http\Services\EntryService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
@@ -19,6 +21,13 @@ use DB;
 
 class ReportsThirteenthMonthController extends Controller
 {
+
+    protected $entryService;
+
+    function __construct() {
+        $this->entryService = new EntryService();
+    }
+
     public function getAllThirteenthMonth(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
@@ -137,7 +146,9 @@ class ReportsThirteenthMonthController extends Controller
                         $q->whereYear('start_date', $previousYear)
                             ->whereMonth('start_date', 12);
                     });
-            })->pluck('id')->toArray();
+            })
+            ->where("is_maternity", 0)
+            ->pluck('id')->toArray();
 
             GenerateThirteenthMonthPayJob::dispatch($user->id, $currentYear, $payrollIds);
 
@@ -231,8 +242,13 @@ class ReportsThirteenthMonthController extends Controller
             $user = Auth::user();
 
             $payrollIds = Payroll::whereIn('cut_off', [$first_cutoff, $second_cutoff])
-                ->pluck('id')
-                ->toArray();
+            ->whereHas("details", function ($query) {
+                $query->where("is_mancom", 0);
+            })
+            ->where("salary" , ">", 0)
+            ->where("is_maternity", 0)
+            ->pluck('id')
+            ->toArray();
 
             GenerateThirteenthMonthMonthlyAllocationJob::dispatch($user->id, $month, $selectedYear, $payrollIds);
 
@@ -249,7 +265,7 @@ class ReportsThirteenthMonthController extends Controller
         }
     }
 
-    public function generateThirteenthMonthMonthlyAllocationEntries($id)
+    public function generateThirteenthMonthMonthlyAllocationEntries(Request $request, $id)
     {
         try {
             DB::beginTransaction();
@@ -273,6 +289,32 @@ class ReportsThirteenthMonthController extends Controller
             
             $monthlyAllocation = ThirteenthMonthFiles::where('id', $id)->first();
             $groupedBranches = BranchesMonthlyAllocation::where('thirteenth_month_file_id', $monthlyAllocation->id)->get();
+
+            $branchIds = $groupedBranches->pluck('branch_id')->toArray();
+
+            if ($request->proceed === "No") {
+                $branchesWithout13thMonthAccounts = $this->entryService->checkBranchesWithEmptyAccounts(
+                    $branchIds,
+                    [
+                        "ho_13th_debit",
+                        "ho_13th_debit_1",
+                        "ho_13th_credit",
+                        "branch_ho_13th_debit",
+                        "branch_ho_13th_debit_1",
+                        "branch_ho_13th_credit",
+                    ]
+                );
+
+                $branchesOnDifferentCompany = $this->entryService->checkBrancesWithDifferentCompany($branchIds);
+                
+                if (count($branchesWithout13thMonthAccounts) > 0 || count($branchesOnDifferentCompany) > 0) {
+                    return $this->sendError([
+                        "message" => "Entry validation error",
+                        "branches_on_different_company" => $branchesOnDifferentCompany,
+                        "branches_without_13th_month_accounts" => $branchesWithout13thMonthAccounts
+                    ], 409);
+                }
+            }
 
             $month = $months[$monthlyAllocation->month];
             $year = $monthlyAllocation->year;

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Services\PayrollService;
 use App\Models\Branch;
 use App\Models\Cutoff;
+use App\Models\Employee;
 use App\Models\Incentives;
 use App\Models\Payroll;
 use App\Models\PayrollDetail;
@@ -16,24 +17,24 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Support\NotifiesJobStatus;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class ProcessInitializeCutOff implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     use NotifiesJobStatus;
-    protected Cutoff $cutOff;
+    protected $branchId;
     protected PayrollService $payrollService;
     protected $userId;
-    protected $notificationLabel = "Initialize Cutoff";
     protected $notificationContext;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(Cutoff $cutoff, ?int $userId = null, ?string $notificationContext = null)
+    public function __construct(?int $branchId = null, ?int $userId = null, ?string $notificationContext = null)
     {
-        $this->cutOff = $cutoff;
+        $this->branchId = $branchId;
         $this->payrollService = new PayrollService();
         $this->userId = $userId;
         $this->notificationContext = $notificationContext;
@@ -45,40 +46,47 @@ class ProcessInitializeCutOff implements ShouldQueue
     public function handle(): void
     {
         try {
-        $cutOff = $this->cutOff;
-        $history = json_decode($cutOff->initializations, true);
-        $initializationDates = collect($history)
-        ->pluck('initialized_at')
-        ->filter(fn($date) => !is_null($date))
-        ->sortDesc()
-        ->values();
-        $datesArray = $initializationDates->toArray();
-        $count = count($datesArray);
+        $branchId = $this->branchId;
+        $cutOff = Cutoff::where("status", "active")->first();
 
         $includedEmployees = PayrollList::with([
             "employee",
             "employee.schedule",
             "employee.schedule.schedule_type"
         ])
-        ->where("is_included", 1);
+        ->whereHas("employee", function ($query) use ($branchId) {
+            $query->where("branch_id", $branchId);
+        })
+        ->where("is_included", 1)
+        ->get();
 
-        if ($count > 1) {
-            $dateBasis = $datesArray[$count - 2];
-            $includedEmployees = $includedEmployees->where("updated_at", ">=", $dateBasis);
+        $employeeIds = $includedEmployees->pluck("employee_id");
+
+        $payrollIds = Payroll::where("pay_date", $cutOff->pay_date)
+        ->whereIn("employee_id", $employeeIds)
+        ->pluck("id");
+
+        Payroll::whereIn("id", $payrollIds)->delete();
+        PayrollDetail::whereIn("payroll_id", $payrollIds)->delete();
+
+        if ($cutOff->part ==  1) {
+            $month = Carbon::parse($cutOff->pay_date)->month;
+
+            Incentives::where("status", "initial")
+            ->whereMonth("pay_date", $month)
+            ->update(["pay_date" => $cutOff->pay_date]);
         }
 
-        $includedEmployees = $includedEmployees->get();
-
+        $hoBranch = Branch::where("short_name", "HO")->first();
         foreach ($includedEmployees as $payrollList) {
             $divisor = 13;
             $dayDivisor = 8;
             $salaryBaseAmount = $payrollList->salary_amount ?? 0;
             $employee = $payrollList->employee;
-            $scheduleName = $payrollList->employee->schedule?->schedule_type?->name ?? "Normal Schedule";
+            $scheduleName = $employee->schedule->schedule_type->name ?? "Normal Schedule";
             $branchIdToUse = $employee->branch_id;
 
             if ($payrollList->is_on_maternity_leave == 1 || $payrollList->is_mancom == 1) {
-                $hoBranch = Branch::where("short_name", "HO")->first();
                 $branchIdToUse = $hoBranch->id;
             }
 
@@ -204,14 +212,6 @@ class ProcessInitializeCutOff implements ShouldQueue
                 ]);
             }
         }
-
-        // TO BE DISCUSSED
-        // if ($cutOff->part == 1) {
-        //     Incentives::where("pay_date", $cutOff->start_date)
-        //     ->update([
-        //         "pay_date" => $cutOff->pay_date
-        //     ]);
-        // }
 
         $this->notifyJobFinished();
         } catch (\Throwable $e) {
