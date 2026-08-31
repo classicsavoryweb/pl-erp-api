@@ -242,35 +242,12 @@ class RequestAndIssuanceController extends Controller
                 ]);
             }
 
-            $duplicateFreeUniform = $this->freeUniformLimitService->check($validated, (int) $id);
-
-            if ($validated['issuance_type'] === 'Free Uniform') {
-
-                $limit = UniformFreeUniformLimit::where('status', 'active')
-                    ->whereDate('date_from', '<=', now())
-                    ->whereDate('date_to', '>=', now())
-                    ->latest('id')
-                    ->first();
-
-                if ($limit) {
-                    $requestedQty = collect($validated['items'])->sum('requested_quantity');
-
-                    if ($requestedQty > $limit->allowed_count) {
-                        return $this->sendError([
-                            'message' => "The total requested quantity ({$requestedQty}) exceeds the allowed free uniform limit of {$limit->allowed_count} item(s).",
-                        ], 422);
-                    }
-                }
-            }
-
-            if ($duplicateFreeUniform && empty($validated['confirm_free_uniform_duplicate'])) {
-                return $this->sendError([
-                    'requires_confirmation' => true,
-                    'confirmation_type' => 'free_uniform_duplicate',
-                    'message' => 'This employee has already availed his/her free uniform for the current year',
-                    'previous_request_number' => $duplicateFreeUniform->request_number,
-                    'previous_request_date' => $duplicateFreeUniform->date_requested,
-                ], 422);
+            $duplicate = $this->freeUniformLimitService->check($validated, (int) $id);
+            if ($duplicate) {
+                throw ValidationException::withMessages([
+                    'issuance_type' =>
+                        'This employee has already reached the allowed free uniform limit.'
+                ]);
             }
 
             $issuance = DB::transaction(function () use ($request, $id, $validated) {

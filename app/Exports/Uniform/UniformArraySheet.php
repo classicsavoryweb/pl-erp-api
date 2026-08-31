@@ -10,15 +10,16 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
 
-class UniformArraySheet implements FromArray, WithHeadings, WithTitle , WithStyles
+class UniformArraySheet implements FromArray, WithHeadings, WithTitle, WithStyles
 {
     public function __construct(
         private string $title,
         private array $headings,
         private array $rows,
-        private bool $freezeHeader = false
+        private ?string $freezePane = null
     ) {
     }
+
 
     public function array(): array
     {
@@ -34,18 +35,15 @@ class UniformArraySheet implements FromArray, WithHeadings, WithTitle , WithStyl
     {
         return substr($this->title, 0, 31);
     }
-
-      public function styles(Worksheet $sheet)
+    
+    public function styles(Worksheet $sheet)
     {
-        if ($this->freezeHeader) {
-            $sheet->freezePane('A2');
-            $sheet->freezePane('E2');
-        }
-        $sheet->getColumnDimension('A')->setWidth(10);
-        $sheet->getColumnDimension('B')->setWidth(40);
-        $sheet->getColumnDimension('C')->setWidth(14);
-        $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->getStyle('D:O')
+         if ($this->freezePane) {
+        $sheet->freezePane($this->freezePane);
+    }
+    $lastColumn = $sheet->getHighestColumn();
+
+        $sheet->getStyle("C:{$lastColumn}")
             ->getNumberFormat()
             ->setFormatCode('###,##0.00');
 
@@ -65,13 +63,15 @@ class UniformArraySheet implements FromArray, WithHeadings, WithTitle , WithStyl
             ->setFillType(Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FFC7CE');
 
-        $conditionalStyles = $sheet->getStyle('O2:O' . ($sheet->getHighestRow()))
-            ->getConditionalStyles();
+        $conditionalStyles = $sheet->getStyle(
+            'O2:O' . $sheet->getHighestRow()
+        )->getConditionalStyles();
 
         $conditionalStyles[] = $green;
         $conditionalStyles[] = $red;
 
-        $sheet->getStyle('O2:O' . $sheet->getHighestRow())
-            ->setConditionalStyles($conditionalStyles);
+        $sheet->getStyle(
+            'O2:O' . $sheet->getHighestRow()
+        )->setConditionalStyles($conditionalStyles);
     }
 }
