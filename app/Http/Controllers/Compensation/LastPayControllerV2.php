@@ -373,9 +373,8 @@ class LastPayControllerV2 extends Controller
                     $lastPayDetails->additional_fields()->delete();
 
                     foreach ($lastPay["additional_fields"] as $additional) {
-                        $lastPayDetails->additional_fields()->updateOrCreate([
-                            "transaction_type_id" => $additional["transaction_type_id"]
-                        ],[
+                        $lastPayDetails->additional_fields()->create([
+                            "transaction_type_id" => $additional["transaction_type_id"],
                             "amount" => $additional["amount"],
                         ]);
                     }
