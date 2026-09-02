@@ -205,15 +205,20 @@ class DashboardController extends Controller
 
     public function getSummaryUniformDetails(Request $request){
         try{
-            $free_limit = UniformFreeUniformLimit::where("status", "active")
-                ->value("allowed_count");
-            $total_request = RequestAndIssuance::whereIn("status", ["Unposted", "Reviewed"])
-                ->count();
+            $total_request_atd = RequestAndIssuance::whereIn("status", ["Unposted", "Reviewed"])
+            ->where("issuance_type","Authority To Deduct")
+            ->count();
+            $total_request_free = RequestAndIssuance::whereIn("status",["Unposted","Reviewed"])
+            ->where("issuance_type","Free Uniform")
+            ->count();
             $total_replenishment = UniformReplenishment::whereIn("status", ["Unposted", "Reviewed"])
                 ->count();
             $total_partially_received = UniformReplenishment::where("status" ,"Partially Received")
                 ->count();
             $total_receiving = UniformReceiving::whereIn("status",["Unposted","Reviewed"])
+                ->count();
+            $items_need_replenish = UniformItem::where("status","active")
+                ->whereColumn("stock_on_hand","<=","crit_level")
                 ->count();
             $total_variance_cost = UniformVarianceItem::whereHas('varianceHeader', function ($query) {
                 $query->where('status', 'Posted ');
@@ -315,8 +320,6 @@ class DashboardController extends Controller
             ->get();
 
             return $this-> sendResponse([
-                "allowed_count" => $free_limit,
-                "total_request" => $total_request,
                 "total_replenishment" => $total_replenishment,
                 "total_partially_received" => $total_partially_received,
                 "total_receiving" => $total_receiving,
@@ -324,7 +327,10 @@ class DashboardController extends Controller
                 "total_free" => $all_free,
                 "total_variance" => $all_variance,
                 "total_variance_cost" => $total_variance_cost,
-                "most_requested_items" => $most_requested_items
+                "most_requested_items" => $most_requested_items,
+                "total_request_atd" => $total_request_atd,
+                "total_request_free" => $total_request_free,
+                "item_need_replenish" => $items_need_replenish,
             ]);
 
         }catch(Exception $e){

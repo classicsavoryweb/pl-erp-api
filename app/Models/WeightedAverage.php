@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class WeightedAverage extends Model
 {
-    use HasFactory;
+    use HasFactory,LogsActivity;
 
     protected $table = 'weighted_averages';
 
@@ -51,5 +53,14 @@ class WeightedAverage extends Model
     public function items()
     {
         return $this->hasMany(WeightedAverageItems::class, 'weighted_id_number', 'weighted_id');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Uniform Weighted Average')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
