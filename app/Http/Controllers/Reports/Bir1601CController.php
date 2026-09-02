@@ -107,9 +107,21 @@ class Bir1601CController extends Controller
             }
 
             $validated = $request->validate([
+                'total_compensation' => ['nullable', 'numeric'],
+                'statutory_minimum_wage' => ['nullable', 'numeric'],
+                'holiday_pay_ot_ndf' => ['nullable', 'numeric'],
+                'thirteenth_month_pay' => ['nullable', 'numeric'],
                 'de_minimis_benefits' => ['nullable', 'numeric'],
+                'ee_contributions' => ['nullable', 'numeric'],
                 'other_non_taxable_compensation' => ['nullable', 'numeric'],
+                'total_taxable_compensation' => ['nullable', 'numeric'],
+                'taxable_compensation_not_subject_to_wtax' => ['nullable', 'numeric'],
+                'net_taxable_compensation' => ['nullable', 'numeric'],
+                'total_taxes_withheld' => ['nullable', 'numeric'],
                 'add_less_adjustment' => ['nullable', 'numeric'],
+                'total_remittance' => ['nullable', 'numeric'],
+                'tax_still_due' => ['nullable', 'numeric'],
+                'total_amount_due' => ['nullable', 'numeric'],
                 'previous_month_1_period' => ['nullable', 'string'],
                 'previous_month_1_date_paid' => ['nullable', 'date'],
                 'previous_month_1_bank' => ['nullable', 'string'],
@@ -136,12 +148,6 @@ class Bir1601CController extends Controller
             $bir->disableLogging();
 
             $bir->update($validated);
-
-            $taxable = $this->birService->computeTaxableCompensation($bir->toArray());
-            $bir->update($taxable);
-
-            $remittance = $this->birService->computeDerivedRemittance($bir->toArray());
-            $bir->update($remittance);
 
             $bir->enableLogging();
 
