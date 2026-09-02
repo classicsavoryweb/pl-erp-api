@@ -31,6 +31,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_employees"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_time_keeping"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_payroll"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "view_scheduled_timekeeping"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "perform_scheduled_timekeeping"], ["module" => "administrators"]);
         // Permission::updateOrCreate(["name" => "view_settings"]);
         // Permission::updateOrCreate(["name" => "perform_settings"]);
 
