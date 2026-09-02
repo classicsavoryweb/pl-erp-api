@@ -73,7 +73,7 @@ class Bir1601CService
 
             $totalCompensation += $gross;
             $totalTaxesWithheld += $withholdingTax;
-            $thirteenthMonthPay += $this->resolveSeparatedThirteenthMonthPay($employee, $year, $month);
+            $thirteenthMonthPay += $this->separatedThirteenthMonthPay($employee, $rangeEnd);
 
             $isMwe = $this->payrollService->isNcrMinimum($employee);
 
@@ -104,7 +104,7 @@ class Bir1601CService
         ];
     }
 
-    private function resolveSeparatedThirteenthMonthPay(Employee $employee, int $year, int $month): float
+    private function separatedThirteenthMonthPay(Employee $employee, Carbon $rangeEnd): float
     {
         if (empty($employee->separation_date)) {
             return 0.0;
@@ -112,7 +112,7 @@ class Bir1601CService
 
         $separationDate = Carbon::parse($employee->separation_date);
 
-        if ($separationDate->year !== $year || $separationDate->month !== $month) {
+        if ($separationDate->greaterThan($rangeEnd)) {
             return 0.0;
         }
 
