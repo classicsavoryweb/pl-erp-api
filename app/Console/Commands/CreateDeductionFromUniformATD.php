@@ -40,6 +40,7 @@ class CreateDeductionFromUniformATD extends Command
     {
         $requests = RequestAndIssuance::with(["employee", "items"])
         ->where("status", "Posted")
+        ->where("issuance_type", "Authority To Deduct")
         ->where("atd_status", "ATD Acknowledged")
         ->whereNotNull("atd_transaction_number")
         ->get();
