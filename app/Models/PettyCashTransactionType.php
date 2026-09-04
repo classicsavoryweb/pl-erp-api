@@ -17,12 +17,14 @@ class PettyCashTransactionType extends Model
         'report_id_required',
         'effect_direction',
         'effect_target',
+        'allow_negative',
         'status',
     ];
 
     protected $casts = [
         'cash_fund_required' => 'boolean',
         'report_id_required' => 'boolean',
+        'allow_negative'      => 'boolean',
     ];
 
     public function transactions()

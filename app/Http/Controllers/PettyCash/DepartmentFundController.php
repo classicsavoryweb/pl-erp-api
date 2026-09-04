@@ -111,7 +111,12 @@ class DepartmentFundController extends Controller
             }
 
             if (!$isReplenishment) {
-                $rules['cash_fund'] = $type->cash_fund_required ? 'required|numeric|min:0.01' : 'nullable|numeric|min:0';
+                if ($type->allow_negative) {
+                    // pwede negative, wala nang min floor
+                    $rules['cash_fund'] = $type->cash_fund_required ? 'required|numeric' : 'nullable|numeric';
+                } else {
+                    $rules['cash_fund'] = $type->cash_fund_required ? 'required|numeric|min:0.01' : 'nullable|numeric|min:0';
+                }
             }
 
             $request->validate($rules);
@@ -139,7 +144,7 @@ class DepartmentFundController extends Controller
                     'custodian_id'        => $custodian->id,
                     'transaction_type_id' => $request->transaction_type_id,
                     'report_id'           => $request->report_id,
-                    'cash_fund'           => $cashFund > 0 ? $cashFund : ($request->cash_fund ?: null),
+                    'cash_fund'           => $cashFund !== 0.0 ? $cashFund : ($request->cash_fund ?: null),
                     'reason'              => $request->reason,
                     'created_by_id'       => auth()->id(),
                 ]);
@@ -148,20 +153,26 @@ class DepartmentFundController extends Controller
                     $replenishment->update(['status' => 'Replenished']);
                 }
 
-                if ($cashFund > 0) {
-                    if ($type->effect_direction === 'add') {
+                if ($cashFund != 0) {
+                    // pag 'both' yung direction, sign ng input mismo ang nagsasabi kung add o less
+                    $isAdd = $type->effect_direction === 'both'
+                        ? $cashFund > 0
+                        : $type->effect_direction === 'add';
+                    $amount = abs($cashFund);
+
+                    if ($isAdd) {
                         if (in_array($type->effect_target, ['remaining_cash_fund', 'both'])) {
-                            $custodian->increment('remaining_cash_fund', $cashFund);
+                            $custodian->increment('remaining_cash_fund', $amount);
                         }
                         if (in_array($type->effect_target, ['total_cash_fund', 'both'])) {
-                            $custodian->increment('total_cash_fund', $cashFund);
+                            $custodian->increment('total_cash_fund', $amount);
                         }
                     } else {
                         if (in_array($type->effect_target, ['remaining_cash_fund', 'both'])) {
-                            $custodian->decrement('remaining_cash_fund', $cashFund);
+                            $custodian->decrement('remaining_cash_fund', $amount);
                         }
                         if (in_array($type->effect_target, ['total_cash_fund', 'both'])) {
-                            $custodian->decrement('total_cash_fund', $cashFund);
+                            $custodian->decrement('total_cash_fund', $amount);
                         }
                     }
                 }
