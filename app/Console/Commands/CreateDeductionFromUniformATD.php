@@ -10,6 +10,7 @@ use App\Models\EmployeeDeduction;
 use App\Models\Entry;
 use App\Models\RequestAndIssuance;
 use App\Models\Term;
+use App\Models\User;
 use App\Support\EntryBranchNumber;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -105,7 +106,6 @@ class CreateDeductionFromUniformATD extends Command
             $remarks = $request->atd_transaction_number." | ".Carbon::parse($request->date_posted)->format("Y-m-d")." | Uniform | ";
 
             foreach ($request->items as $idx => $item) {
-
                 if ($idx === 0) {
                     $remarks = $remarks . $item->description;
                 } else {
@@ -198,7 +198,8 @@ class CreateDeductionFromUniformATD extends Command
             }
         }
 
-        $this->createEntries($entries, $user);
+        $adminUser = User::where("email", "admin@classicsavory.com")->first();
+        $this->createEntries($entries, $adminUser);
     }
 
     private function createEntries($entries, $user)
