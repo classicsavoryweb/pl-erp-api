@@ -143,6 +143,10 @@ class CreateDeductionFromUniformATD extends Command
                 "source" => "CSHUB"
             ]);
 
+            $request->update([
+                "atd_status" => "ATD Generated"
+            ]);
+
             $branchHO = Branch::where('short_name', 'HO')
             ->first();
             $branchHOId = $branchHO->id;
