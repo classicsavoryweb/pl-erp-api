@@ -63,7 +63,7 @@ class CreateDeductionFromUniformATD extends Command
             ])->timeout(60)
             ->post($transactionLink,[
                 "company" => $company,
-                "employee_numbers" => $request->employee_id
+                "employee_numbers" => [$request->employee_id]
             ]);
 
             if (!$response->successful()) {
