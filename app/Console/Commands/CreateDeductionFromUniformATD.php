@@ -47,7 +47,7 @@ class CreateDeductionFromUniformATD extends Command
         $entries = [];
 
         foreach ($requests as $request) {
-            $employee = $request->employee[0];
+            $employee = $request->employee;
 
             if (!$employee) {
                 continue;
