@@ -108,9 +108,9 @@ class CreateDeductionFromUniformATD extends Command
 
             foreach ($request->items as $idx => $item) {
                 if ($idx === 0) {
-                    $remarks = $remarks . $item->description;
+                    $remarks = $remarks . $item->requested_quantity ." ". $item->description;
                 } else {
-                    $remarks = $remarks . " , " . $item->description;
+                    $remarks = $remarks . " , " . $item->requested_quantity ." ". $item->description;
                 }
             }
 
