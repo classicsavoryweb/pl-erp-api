@@ -35,7 +35,8 @@ class RequestAndIssuance extends Model
         'posted_by',
         'cancelled_by',
         'cancel_reason',       
-        'atd_status'
+        'atd_status',
+        'atd_transaction_number'
     ];
 
     protected static function booted()
