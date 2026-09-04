@@ -15,6 +15,7 @@ use App\Support\EntryBranchNumber;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CreateDeductionFromUniformATD extends Command
 {
@@ -46,7 +47,7 @@ class CreateDeductionFromUniformATD extends Command
         $entries = [];
 
         foreach ($requests as $request) {
-            $employee = $request->employee;
+            $employee = $request->employee->first();
 
             if (!$employee) {
                 continue;
