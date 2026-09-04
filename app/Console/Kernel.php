@@ -29,6 +29,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:sync-employee-details')->dailyAt('18:00');
         $schedule->command('app:sync-branch-details')->dailyAt('23:00');
         $schedule->command('app:update-terminal-devices-of-branch-seeder')->dailyAt("05:00");
+        $schedule->command('create:deduction-from-uniform-atd')->twiceDaily(7,19);
+
         // REMOVE
         // $schedule->command('app:transfer-uniform-deductions')->dailyAt('12:00');
         // $schedule->command('app:transfer-uniform-deductions')->dailyAt('18:00');
