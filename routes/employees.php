@@ -93,4 +93,7 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //employees without payroll list relationship
     Route::get("/get-employees-without-payroll-list", [EmployeeController::class, "getEmployeesWithoutPayrollList"]);
+    
+    //employees that is for last pay
+    Route::get("/get-employees-for-last-pay-list", [EmployeeController::class, "getEmployeesForLastPayList"]);
 });

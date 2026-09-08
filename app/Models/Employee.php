@@ -444,6 +444,10 @@ class Employee extends Model
         return $this->hasOne(SalaryPosition::class, "position_id", "position_id");
     }
 
+    public function last_pay() {
+        return $this->hasOne(LastPay::class, "employee_id", "id");
+    }
+
     public function government_deductions() {
         return $this->hasMany(EmployeeDeduction::class, "employee_id", "id")
         ->whereHas("deduction", function ($query) {
