@@ -88,6 +88,7 @@ class LastPayService {
     public function getAllHoldedPayrollsAmount (Employee $employee, $payDate) {
         $holdedPayrolls = Payroll::where("employee_id", $employee->id)
             ->where("pay_date", ">=" ,$payDate)
+            ->where("is_maternity", 0)
             ->sum("net_pay");
 
         return round($holdedPayrolls, 2) ?? 0;

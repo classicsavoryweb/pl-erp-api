@@ -44,7 +44,8 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
             "Schedule Type",
             "Daily Rate",
             "Region",
-            "Separation Date"
+            "Separation Date",
+            "Remarks"
         ];
     }
 
@@ -108,7 +109,8 @@ class PayrollListExport implements FromCollection, WithHeadings, WithColumnForma
                 $scheduleType,
                 number_format($dailyRate, 2),
                 $region,
-                $separationDate
+                $separationDate,
+                $list->remarks
             ];
         });
     }

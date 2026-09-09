@@ -35,7 +35,8 @@ class RequestAndIssuance extends Model
         'posted_by',
         'cancelled_by',
         'cancel_reason',       
-
+        'atd_status',
+        'atd_transaction_number'
     ];
 
     protected static function booted()
@@ -63,7 +64,7 @@ class RequestAndIssuance extends Model
     }
     public function employee()
     {
-        return $this->hasMany(Employee::class, 'employee_number', 'request_number');
+        return $this->hasOne(Employee::class, 'employee_number', 'employee_id');
     }
     
     public function branches()

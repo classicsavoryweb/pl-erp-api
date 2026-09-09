@@ -294,7 +294,7 @@ class ReportsPayrollStatutoryController extends Controller
                 $remarks = '';
 
                 $parsedSeparated = Carbon::parse($employee->separation_date);
-                if (!empty($employee->separation_date) && $parsedSeparated->isBefore($rangeEnd) ) {
+                if (!empty($employee->separation_date) && $parsedSeparated->lessThanOrEqualTo($rangeEnd)) {
                     $separationDate = Carbon::parse($employee->separation_date);
                     $yearHolded = (int) $separationDate->year;
                     $dec11 = Carbon::create($yearHolded, 12, 11)->startOfDay();

@@ -147,7 +147,11 @@ class CutOffController extends Controller
 
             $createdCutOff = Cutoff::find($id);
 
-            if ($createdCutOff) {                
+            if ($createdCutOff) {
+                if ($createdCutOff->is_cutoff_locked == 1) {
+                    return $this->sendError(["message" => "Cutoff already finalized"]);
+                }
+
                 $initializedJson = [];
 
                 if ($createdCutOff->initializations) {

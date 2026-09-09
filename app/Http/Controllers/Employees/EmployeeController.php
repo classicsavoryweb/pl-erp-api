@@ -668,8 +668,8 @@ class EmployeeController extends Controller
                 "date_hired" => $request->date_hired,
                 "remarks" => $request->remarks,
                 "regularization_date" => $request->regularization_date,
-                "separation_date" => $request->separation_date,
-                "separation_reason" => $request->separation_reason,
+                "separation_date" => $request->status == "inactive" ? $request->separation_date : null,
+                "separation_reason" => $request->status == "inactive" ? $request->separation_reason : null,
                 "emergency_contact_name" => $request->emergency_contact_name,
                 "emergency_contact_number" => $request->emergency_contact_number,
                 "emergency_contact_address" => $request->emergency_contact_address,
@@ -734,6 +734,66 @@ class EmployeeController extends Controller
         } catch (Exception $e) {
 
             DB::rollBack();
+            return $this->sendError(["message" => $e->getMessage() ]);
+        }
+    }
+
+    public function getEmployeesForLastPayList(Request $request) {
+        try {
+
+            $employees = Employee::query();
+
+            if ($request->has("keyWord")) {
+                $keyword = $request->keyWord;
+
+                $employees = $employees->where(function ($query) use ($keyword) {
+                    $query->whereAny(
+                        ["first_name", "last_name", "middle_name"],
+                        'LIKE',
+                        "%$keyword%"
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(' ', first_name, last_name)"), 'LIKE', "%$keyword%");
+                        }
+                    )->orWhere(function ($query) use ($keyword) {
+                            $query->where(DB::raw("CONCAT_WS(', ', last_name, first_name)"), 'LIKE', "%$keyword%");
+                        }
+                    );
+                });
+            }
+
+            if ($request->has("status")) {
+                $status = $request->status;
+                switch ($status) {
+                    case "active":
+                        $employees = $employees->where("status", "active");
+                        break;
+                    case "inactive":
+                        $employees = $employees->where("status", "inactive");
+                        break; 
+                    default:
+                        break;
+                }
+            }
+
+            $employees = $employees->with([
+                "current_position",
+                "current_branch",
+                "employee_status",
+                "current_position.station",
+                "payroll_list"
+            ])
+            ->whereHas("payroll_list", function ($query) {
+                $query->where("is_hold", true);
+            })
+            ->whereDoesntHave("last_pay")
+            ->where("type", "Direct")
+            ->orderBy("last_name", "ASC")
+            ->take(100)
+            ->get();
+
+            return $this->sendResponse($employees);
+        } catch(Exception $e) {
+
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
