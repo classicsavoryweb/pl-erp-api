@@ -25,9 +25,10 @@ class AuthController extends Controller
                 return $this->sendError(["message" => "Your account is inactive"]);
             }
 
-            $roles = $user->roles;
+            $roles = $user->roles()->get();
             if ($roles->isNotEmpty()) {
                 $permissions = $user->getAllPermissions()->pluck("name")->toArray();
+                $user->unsetRelation("roles")->unsetRelation("permissions");
                 $user["role_name"] = $roles->pluck("name")->implode(", ");
                 $token = $user->createToken(
                      $user->email,
