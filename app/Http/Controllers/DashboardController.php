@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\ActingCapacity;
 use App\Models\Branch;
 use App\Models\Contract;
+use App\Models\ConverterMain;
 use App\Models\Cutoff;
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
+use App\Models\LastPay;
+use App\Models\Payroll;
 use App\Models\PayrollList;
 use App\Models\RequestAndIssuance;
 use App\Models\RequestAndIssuanceItems;
@@ -157,7 +160,15 @@ class DashboardController extends Controller
     public function getPayrollSummaryDetails(Request $request) {
         try {
             $activeCutOff = Cutoff::where("status", "active")->first();
-            $payrollList = PayrollList::where("is_included", true)->get()->count();
+            $payrollList = PayrollList::where("is_included", true)
+            ->get()
+            ->count();
+
+            $onMaternityLeave = PayrollList::where("is_included", true)
+            ->where("is_on_maternity_leave", 1)
+            ->get()
+            ->count();
+
             $deductions = EmployeeDeduction::where("approved_status", "Yes")
             ->whereHas("employee", function ($query) {
                 $query->where("type", "Direct");
@@ -165,11 +176,73 @@ class DashboardController extends Controller
             ->where("end_loan_status", "No")
             ->where("balance", ">", 0);
 
+            $activeEmployees = Employee::where("status", "active")
+            ->where("type", "Direct")
+            ->get()
+            ->count();
+
+            $unpostedLastPay = LastPay::where("status", "Unposted")
+            ->get()
+            ->count();
+
+            $pendingConverter = ConverterMain::where("status", "Pending")
+            ->get()
+            ->count();
+
+            $monthlyLaborCost = Payroll::selectRaw('MONTH(pay_date) as month, SUM(gross_pay) as total_gross_pay')
+            ->whereYear('pay_date', Carbon::now()->year)
+            ->groupBy(DB::raw('MONTH(pay_date)'))
+            ->orderBy(DB::raw('MONTH(pay_date)'))
+            ->pluck('total_gross_pay', 'month')
+            ->mapWithKeys(function ($value, $key) {
+                return [(int)$key => $value];
+            })
+            ->all();
+
+            $allLaborCost = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyLaborCost) {
+                return [$month => $monthlyLaborCost[$month] ?? 0];
+            });
+
+            $taxWithHeld = Payroll::selectRaw('MONTH(pay_date) as month, SUM(withholding_tax) as total_with_holding_tax')
+            ->whereYear('pay_date', Carbon::now()->year)
+            ->groupBy(DB::raw('MONTH(pay_date)'))
+            ->orderBy(DB::raw('MONTH(pay_date)'))
+            ->pluck('total_with_holding_tax', 'month')
+            ->mapWithKeys(function ($value, $key) {
+                return [(int)$key => $value];
+            })
+            ->all();
+
+            $allTaxWithHeld = collect(range(1, 12))->mapWithKeys(function ($month) use ($taxWithHeld) {
+                return [$month => $taxWithHeld[$month] ?? 0];
+            });
+
+            $deductedATDS = Payroll::selectRaw('MONTH(pay_date) as month, SUM(total_deductions) as overall_deductions')
+            ->whereYear('pay_date', Carbon::now()->year)
+            ->groupBy(DB::raw('MONTH(pay_date)'))
+            ->orderBy(DB::raw('MONTH(pay_date)'))
+            ->pluck('overall_deductions', 'month')
+            ->mapWithKeys(function ($value, $key) {
+                return [(int)$key => $value];
+            })
+            ->all();
+
+            $allDeductions = collect(range(1, 12))->mapWithKeys(function ($month) use ($deductedATDS) {
+                return [$month => $deductedATDS[$month] ?? 0];
+            });
+
             return $this->sendResponse([
                 "active_cut_off" => $activeCutOff,
                 "payroll_list" => $payrollList,
+                "on_maternity_leave" => $onMaternityLeave,
+                "active_employees" => $activeEmployees,
                 "active_deductions" => $deductions->count(),
-                "active_deductions_amount" => $deductions->sum("balance")
+                "active_deductions_amount" => $deductions->sum("balance"),
+                "pending_converter" => $pendingConverter,
+                "unposted_last_pay" => $unpostedLastPay,
+                "labor_cost" => $allLaborCost,
+                "with_held_tax" => $allTaxWithHeld,
+                "all_deductions" => $allDeductions
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
@@ -353,4 +426,71 @@ class DashboardController extends Controller
     
     }
 
+    public function getEmployeesForLastPay(Request $request) {
+        try {
+            $perPage = $request->per_page ?? 10;
+
+            $holdedEmployees = Employee::with([
+                "current_branch",
+                "current_position",
+                "separation"
+            ])
+            ->where("type", "Direct")
+            ->where("status", "inactive")
+            ->whereDoesntHave("last_pay")
+            ->whereHas("separation", function ($query) {
+                $query->whereNot("description", "Data not available");
+            })
+            ->orderBy("separation_date", "DESC")
+            ->paginate($perPage);
+
+            return $this->sendResponse($holdedEmployees);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function getAllActiveBranchesWithMissingAccounts(Request $request) {
+        try {
+            $company = env("COMPANY_NAME") ? "Savory Fast Food Inc." : "Tony Ting Food Concepts Inc.";
+            $perPage = $request->per_page ?? 10;
+
+            $accounts = [
+                "branch_ho_13th_debit",
+                "branch_ho_13th_debit_1",
+                "branch_ho_13th_credit",
+                "ho_13th_debit",
+                "ho_13th_debit_1",
+                "ho_13th_credit",
+                "branch_ho_stat_debit",
+                "branch_ho_stat_credit",
+                "expense_debit",
+                "expense_credit",
+                "advance_debit",
+                "advance_credit",
+            ];
+
+            $branches = Branch::where("status", "active")
+            ->where("company", $company)
+            ->where(function ($query) use ($accounts) {
+                $arr = ["branch_ho_stat_debit", "branch_ho_stat_credit"];
+                foreach ($accounts as $account) {
+                    $query->orWhere(function ($q) use ($account, $arr) {
+                        $q->where(function ($sub) use ($account) {
+                            $sub->whereNull($account)
+                                ->orWhere($account, "=", "");
+                        });
+                        if (in_array($account, $arr)) {
+                            $q->where("type", "Branch");
+                        }
+                    });
+                }
+            })
+            ->paginate($perPage);
+
+            return $this->sendResponse($branches);
+        } catch (Exception $e) {
+            return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
 }
