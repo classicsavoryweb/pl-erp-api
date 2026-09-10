@@ -294,12 +294,18 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_uniform_replenishment_request"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_receiving_stocks"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_receiving_stocks"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_receiving_stocks_review"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_receiving_stocks_post"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_weighted_average"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_weighted_average"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_physical_count"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_physical_count"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_physical_count_review"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_physical_count_post"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_variance_report"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_variance_report"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_variance_report_review"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_variance_report_post"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_period_lock"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_uniform_period_lock"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_uniform_free_uniform_limit"], ["module" => "maintenance"]);
