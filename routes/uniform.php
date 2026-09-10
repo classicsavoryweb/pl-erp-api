@@ -74,10 +74,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['permission:view_uniform_request_and_issuance'])->get('/get-uniform-request-and-issuance', [RequestAndIssuanceController::class, 'getUniformRequestAndIssuance']);
     Route::middleware(['permission:view_uniform_request_and_issuance'])->get('/export-uniform-request-and-issuance/{id}/details', [RequestAndIssuanceController::class, 'exportRequestAndIssuanceDetails']);
     Route::middleware(['permission:perform_uniform_request_and_issuance'])->post('/create-uniform-request-and-issuance', [RequestAndIssuanceController::class, 'createUniformRequestAndIssuance']);
-    Route::middleware(['permission:perform_uniform_request_and_issuance'])->post('/uniform-request/{id}/review', [RequestAndIssuanceController::class, 'reviewUniformRequestAndIssuance']);
-    Route::middleware(['permission:perform_uniform_request_and_issuance'])->post('/issuance/{id}/status', [RequestAndIssuanceController::class, 'updateStatus']);
+    Route::middleware(['permission:perform_uniform_request_and_issuance_review'])->post('/uniform-request/{id}/review', [RequestAndIssuanceController::class, 'reviewUniformRequestAndIssuance']);
+    Route::middleware(['permission:perform_uniform_request_and_issuance_post'])->post('/issuance/{id}/status', [RequestAndIssuanceController::class, 'updateStatus']);
     Route::middleware(['permission:view_uniform_request_and_issuance'])->get('export-all-request-and-issuance', [RequestAndIssuanceController::class, 'exportRequestandIssuance']);
     Route::get('/get-drop-down-masterlist', [RequestAndIssuanceItemsController::class, 'getOptionsMasterList']);
+    Route::get('/get-uniform-free-uniform-limit', [RequestAndIssuanceController::class, 'getFreeUniformLimit']);
     Route::middleware(['permission:perform_uniform_request_and_issuance'])->post('/uniform-request/{id}/cancel', [RequestAndIssuanceController::class, 'cancelUniformRequestAndIssuance']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/get-weight-average', [WeightedAverageController::class, 'getWeightAverage']);
     Route::middleware(['permission:view_uniform_weighted_average'])->get('/get-weight-average-export', [WeightedAverageController::class, 'exportAllWeightAverage']);

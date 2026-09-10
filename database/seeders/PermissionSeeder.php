@@ -288,6 +288,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_uniform_item_masterlist"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_request_and_issuance"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_request_and_issuance"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_request_and_issuance_review"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_request_and_issuance_post"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_replenishment_request"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_replenishment_request"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_receiving_stocks"], ["module" => "uniform"]);
