@@ -47,6 +47,11 @@ class UniformPhysicalCount extends Model
     {
         return $this->hasMany(UniformPhysicalCountItem::class, 'physical_count_id');
     }
+
+    public function counters()
+    {
+        return $this->hasMany(UniformPhysicalCountCounter::class, 'physical_count_id');
+    }
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

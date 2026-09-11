@@ -6,10 +6,12 @@ use App\Exports\Uniform\PhysicalCountDetailedExport;
 use App\Exports\Uniform\PhysicalCountExport;
 use App\Http\Controllers\Controller;
 use App\Http\Services\UniformMovementService;
+use App\Models\Employee;
 use App\Models\PhysicalCountCompare;
 use App\Models\UniformItem;
 use App\Models\UniformPeriodLock;
 use App\Models\UniformPhysicalCount;
+use App\Models\UniformPhysicalCountCounter;
 use App\Models\UniformPhysicalCountItem;
 use App\Models\UniformVariance;
 use Illuminate\Http\Request;
@@ -26,7 +28,7 @@ class PhysicalCountController extends Controller
     public function physicalCounts(Request $request)
     {
         $query = $this->physicalCountQuery($request)
-            ->with('items.item.size', 'items.item.gender')
+            ->with('items.item.size', 'items.item.gender', 'counters')
             ->withSum('items', 'total_amount')
             ->latest('id');
 
@@ -131,7 +133,8 @@ class PhysicalCountController extends Controller
         $data = $request->validate([
             'begin_date' => ['required', 'date'],
             'ending_date' => ['required', 'date', 'after_or_equal:begin_date'],
-            'counted_by' => ['nullable', 'string', 'max:255'],
+            'counted_by_employee_ids' => ['required', 'array', 'min:1'],
+            'counted_by_employee_ids.*' => ['integer', 'distinct', 'exists:employees,id'],
             'remarks' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.uniform_item_id' => ['required', 'integer', 'distinct', 'exists:uniform_items,id'],
@@ -143,18 +146,28 @@ class PhysicalCountController extends Controller
             $this->ensureNoPendingPhysicalCount();
             $this->ensureNoPhysicalCountForPeriod($data['begin_date'], $data['ending_date']);
 
+            $employees = Employee::whereIn('id', $data['counted_by_employee_ids'])->get();
+
             $physicalCount = UniformPhysicalCount::create([
                 'begin_date' => $data['begin_date'],
                 'ending_date' => $data['ending_date'],
-                'counted_by' => $data['counted_by'] ?? null,
+                'counted_by' => $employees->pluck('proper_full_name')->implode(', '),
                 'status' => 'Unposted',
                 'remarks' => $data['remarks'] ?? null,
                 'prepared_by' => $this->userName(),
             ]);
 
+            foreach ($employees as $employee) {
+                UniformPhysicalCountCounter::create([
+                    'physical_count_id' => $physicalCount->id,
+                    'employee_id' => $employee->id,
+                    'employee_name' => $employee->proper_full_name,
+                ]);
+            }
+
             $this->replacePhysicalCountItems($physicalCount, $data['items']);
 
-            return response()->json($physicalCount->load('items.item.size', 'items.item.gender'), 201);
+            return response()->json($physicalCount->load('items.item.size', 'items.item.gender', 'counters'), 201);
         });
     }
 
