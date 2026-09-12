@@ -31,7 +31,7 @@ class AuthController extends Controller
                 $permissions = $user->getAllPermissions()->pluck("name")->toArray();
                 $user->unsetRelation("roles")->unsetRelation("permissions");
                 $user["role_name"] = $roles->pluck("name")->implode(", ");
-                $permissions = $role->permissions->pluck("name")->toArray();
+                
 
                 $isCustodian = PettyCashCustodian::where('user_id', $user->id)
                     ->where('status', 'active')
