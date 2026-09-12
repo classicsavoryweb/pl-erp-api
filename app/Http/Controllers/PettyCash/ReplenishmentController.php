@@ -184,7 +184,7 @@ class ReplenishmentController extends Controller
             // (Replenished status update ay galing sa ibang module pag na-fund na)
             if ($this->hasUnsettledReplenishment($custodian)) {
                 DB::rollBack();
-                return $this->sendError(['message' => 'You have an existing replenishment that is not yet Replenished or Voided.']);
+                return $this->sendError(['message' => 'You have an existing replenishment that is not yet Replenished']);
             }
 
             $branchIds = $custodian->branches->pluck('id');
