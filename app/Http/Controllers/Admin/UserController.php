@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Models\Role;
 use Str;
 
 class UserController extends Controller
@@ -18,7 +19,7 @@ class UserController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $users = User::with("role");
+            $users = User::with("roles");
 
             if ($request->has(["column_type", "key_word"])) {
                 $column = $request->column_type;
@@ -107,11 +108,18 @@ class UserController extends Controller
             $user->last_name = $request->last_name;
             $user->email = $request->email;
             $user->status = $request->status;
-            $user->role_id = $request->role_id;
             $user->employee_number = $request->employee_number;
             $user->middle_name = $request->middle_name ?? null;
             if ($request->password) {
                 $user->password = Hash::make(value: $request->password);
+            }
+
+            if ($request->has("role_ids")) {
+                $roles = Role::whereIn("id", $request->role_ids)->get();
+                if ($roles->isNotEmpty()) {
+                    $user->role_id = $roles->first()->id;
+                }
+                $user->syncRoles($roles);
             }
 
             $user->save();

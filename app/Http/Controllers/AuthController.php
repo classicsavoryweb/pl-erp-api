@@ -26,10 +26,11 @@ class AuthController extends Controller
                 return $this->sendError(["message" => "Your account is inactive"]);
             }
 
-            $role = Role::find($user->role_id);
-            if ($role) {
-                $user->syncRoles($role);
-                $user["role_name"] = $role->name;
+            $roles = $user->roles()->get();
+            if ($roles->isNotEmpty()) {
+                $permissions = $user->getAllPermissions()->pluck("name")->toArray();
+                $user->unsetRelation("roles")->unsetRelation("permissions");
+                $user["role_name"] = $roles->pluck("name")->implode(", ");
                 $permissions = $role->permissions->pluck("name")->toArray();
 
                 $isCustodian = PettyCashCustodian::where('user_id', $user->id)
@@ -40,9 +41,9 @@ class AuthController extends Controller
                 }
 
                 $token = $user->createToken(
-                    $user->email,
-                    $permissions,
-                    now()->addHours(12)
+                     $user->email,
+                $permissions,
+                now()->addHours(12)
                 );
 
                 $employee = Employee::where("employee_number", $user->employee_number)->first();
@@ -52,6 +53,7 @@ class AuthController extends Controller
                 }
 
                 activity()->causedBy($user)->useLog("Login")->log('user logged in');
+
 
                 return $this->sendResponse([
                     "message" => "Logged in successfully",
@@ -81,11 +83,14 @@ class AuthController extends Controller
             $request->validate([
                 "first_name" => "required",
                 "last_name" => "required",
-                "role_id" => "required",
+                "role_ids" => "required|array|min:1",
+                "role_ids.*" => "exists:roles,id",
                 "employee_number" => "required|unique:users",
                 "email" => "required|unique:users",
                 "password" => "required",
             ]);
+
+            $roles = Role::whereIn("id", $request->role_ids)->get();
 
             $employeeNumber = $request->employee_number;
             $employeeNumberVariants = [$employeeNumber];
@@ -111,17 +116,19 @@ class AuthController extends Controller
                 ->first();
             $position = $employee?->current_position?->description;
 
-            User::create([
+            $user = User::create([
                 "first_name" => $request->first_name,
                 "last_name" => $request->last_name,
                 "middle_name" => $request->middle_name,
-                "role_id" => $request->role_id,
+                "role_id" => $roles->first()->id,
                 "employee_number" => $request->employee_number,
                 "position" => $position,
                 "email"=> $request->email,
                 "password"=> bcrypt($request->password),
                 "status" => "active"
             ]);
+
+            $user->syncRoles($roles);
 
             return $this->sendResponse([
                 "message"=> "User created successfully.",

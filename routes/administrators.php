@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ActivityLogsController;
 use App\Http\Controllers\Admin\DatabaseBackupsController;
 use App\Http\Controllers\Admin\RolesPermissionController;
+use App\Http\Controllers\Admin\ScheduleTimekeepingController;
 use App\Http\Controllers\Admin\TardinessDisablerController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
@@ -32,4 +33,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:view_tardiness_disabler"])->post("/upsert-tardiness-disabler", [TardinessDisablerController::class, "upsertTardinessDisabler"]);
 
     Route::get("/get-specific-activity-logs", [ActivityLogsController::class, "getSpecificActivityLogs"]);
+
+    //scheduled timekeeping generation
+    Route::middleware(["permission:view_scheduled_timekeeping"])->get("/get-scheduled-timekeeping-generation", [ScheduleTimekeepingController::class, "getAllScheduledTimeKeeping"]);
+    Route::middleware(["permission:perform_scheduled_timekeeping"])->post("/create-scheduled-timekeeping-generation", [ScheduleTimekeepingController::class, "createScheduleTimeKeepingGeneration"]);
 });

@@ -23,7 +23,7 @@ class AdminuserExports implements FromCollection, WithHeadings
                 $user->middle_name,
                 $user->last_name,
                 $user->email,
-                $user->role->name,
+                $user->roles->pluck('name')->implode(', '),
                 $user->status,
             ];
         });

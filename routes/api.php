@@ -21,4 +21,6 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::post('/notifications/mark-all-read', [NotificationsController::class, 'markAllRead']);
 
     Route::get("/get-payroll-summary-details", [DashboardController::class, "getPayrollSummaryDetails"]);
+    Route::get("/get-employees-for-last-pay", [DashboardController::class, "getEmployeesForLastPay"]);
+    Route::get("/get-all-branches-with-missing-accounts", [DashboardController::class, "getAllActiveBranchesWithMissingAccounts"]);
 });

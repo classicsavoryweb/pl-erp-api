@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\RequestAndIssuanceItems;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 class RequestAndIssuance extends Model
 {
-    use HasFactory;
+    use HasFactory,LogsActivity;
 
     protected $table ="request_and_issuances";
 
@@ -33,7 +35,8 @@ class RequestAndIssuance extends Model
         'posted_by',
         'cancelled_by',
         'cancel_reason',       
-
+        'atd_status',
+        'atd_transaction_number'
     ];
 
     protected static function booted()
@@ -61,12 +64,20 @@ class RequestAndIssuance extends Model
     }
     public function employee()
     {
-        return $this->hasMany(Employee::class, 'employee_number', 'request_number');
+        return $this->hasOne(Employee::class, 'employee_number', 'employee_id');
     }
     
     public function branches()
     {
         return $this->hasOne(Branch::class, 'name' , 'branch');
+    }
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Uniform Request and Issuance')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
   

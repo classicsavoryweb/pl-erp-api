@@ -31,6 +31,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_employees"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_time_keeping"], ["module" => "administrators"]);
         Permission::updateOrCreate(["name" => "by_pass_edit_restrictions_payroll"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "view_scheduled_timekeeping"], ["module" => "administrators"]);
+        Permission::updateOrCreate(["name" => "perform_scheduled_timekeeping"], ["module" => "administrators"]);
         // Permission::updateOrCreate(["name" => "view_settings"]);
         // Permission::updateOrCreate(["name" => "perform_settings"]);
 
@@ -294,16 +296,24 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "perform_uniform_item_masterlist"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_request_and_issuance"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_request_and_issuance"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_request_and_issuance_review"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_request_and_issuance_post"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_replenishment_request"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_replenishment_request"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_receiving_stocks"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_receiving_stocks"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_receiving_stocks_review"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_receiving_stocks_post"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_weighted_average"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_weighted_average"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_physical_count"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_physical_count"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_physical_count_review"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_physical_count_post"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_variance_report"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "perform_uniform_variance_report"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_variance_report_review"], ["module" => "uniform"]);
+        Permission::updateOrCreate(["name" => "perform_uniform_variance_report_post"], ["module" => "uniform"]);
         Permission::updateOrCreate(["name" => "view_uniform_period_lock"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_uniform_period_lock"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_uniform_free_uniform_limit"], ["module" => "maintenance"]);

@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class UniformVariance extends Model
 {
+    use HasFactory, LogsActivity;
     protected $fillable = [
         'variance_no',
         'physical_count_id',
@@ -47,5 +51,15 @@ class UniformVariance extends Model
     public function items()
     {
         return $this->hasMany(UniformVarianceItem::class, 'variance_id');
+    }
+
+     public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->useLogName('Uniform Variance')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+            
     }
 }

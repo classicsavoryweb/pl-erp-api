@@ -17,7 +17,12 @@ class VarianceReportDetailedExport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            new UniformArraySheet('Variance', $this->varianceHeadings(), $this->varianceRows()),
+            new UniformArraySheet(
+                'Variance',
+                $this->varianceHeadings(),
+                $this->varianceRows(),
+                'E2'
+            ),
             $this->receivingSheet('Purchasing Department', 'Purchasing Department'),
             $this->receivingSheet('Made to Order', 'Made to Order'),
             $this->issuanceSheet('ATD', 'atd'),
@@ -84,7 +89,8 @@ class VarianceReportDetailedExport implements WithMultipleSheets
             ->get()
             ->groupBy('uniform_item_id');
 
-        return new UniformArraySheet($title, $this->movementHeadings($dates), $this->movementRows($dates, $totals, 'uniform_item_id'));
+            return new UniformArraySheet($title,$this->movementHeadings($dates), $this->movementRows($dates, $totals, 'uniform_item_id'),'C2'
+    );
     }
 
     private function issuanceSheet(string $title, string $type): UniformArraySheet
@@ -108,7 +114,7 @@ class VarianceReportDetailedExport implements WithMultipleSheets
             ->get()
             ->groupBy('uniform_item_no');
 
-        return new UniformArraySheet($title, $this->movementHeadings($dates), $this->movementRows($dates, $totals, 'item_no'));
+        return new UniformArraySheet($title, $this->movementHeadings($dates), $this->movementRows($dates, $totals, 'item_no'),'C2');
     }
 
     private function movementHeadings(array $dates): array

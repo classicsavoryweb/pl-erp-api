@@ -60,8 +60,8 @@ class TimeKeepingService
 
         // Log::info("==================");
         // Log::info($employee->full_name);
-        Log::info($log->date);
-        Log::info($schedule->selection);
+        // Log::info($log->date);
+        // Log::info($schedule->selection);
 
         $travel_time = 0;
 
