@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get("/get-all-healthcare-for-salary-deductions", [EmployeeDeductionsController::class, "getHealthCareForSalaryDeduction"]);
     Route::middleware(["permission:perform_compensation_deductions"])->post("/create-healthcare-for-salary-deductions", [EmployeeDeductionsController::class, "createHealthCareSalaryDeductions"]);
     Route::get("/get-employee-deduction-amortization-history", [EmployeeDeductionsController::class, "getDeductionAmortizationHistory"]);
+    Route::get('/export-deduction-amortization-history',[EmployeeDeductionsController::class, 'exportDeductionAmortizationHistory']);
 
     //payroll
     Route::get("/get-all-payroll", [PayrollController::class, "getAllPayroll"]);
