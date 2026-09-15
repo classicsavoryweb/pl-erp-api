@@ -28,6 +28,10 @@ class ScheduledTimekeepingGenerationJob implements ShouldQueue
     {
         $schedule = ScheduledTimekeepingGeneration::find($this->scheduleId);
         $activeCutOff = Cutoff::find($this->cutOffId);
+        $cutOff = [
+            "start_time" => $activeCutOff->start_date,
+            "end_time" => $activeCutOff->end_date
+        ];
 
         if ($schedule) {
             $schedule->update([
@@ -52,8 +56,8 @@ class ScheduledTimekeepingGenerationJob implements ShouldQueue
         //timekeeping
         foreach ($branches as $branch) {
             Bus::chain([
-                new TransferLogsToTimeKeeping($branch->id, $activeCutOff),
-                new GenerateTimekeepingSummary($branch->id, $activeCutOff)
+                new TransferLogsToTimeKeeping($branch->id, $cutOff),
+                new GenerateTimekeepingSummary($branch->id, $cutOff)
             ])
             ->dispatch();
         }

@@ -111,7 +111,8 @@ class FetchOvertimeJob implements ShouldQueue
             ->get($overtimeLink,[
                 "start_date" => $start_date,
                 "end_date" => $end_date,
-                "branch_number" => $branch->branch_number
+                "branch_number" => $branch->branch_number,
+                "short_name" => $branch->short_name
             ]);
 
             if ($response->successful()) {

@@ -167,6 +167,7 @@ class TimeKeepingService
             $workHours = $hours / 2;
             $shouldBeHalfDay = true;
         }
+
         if ($workHours > $hours && $parsedLastPunch->isBefore($scheduleEnd)) {
             $undertime = $parsedLastPunch->diffInMinutes($scheduleEnd, true);
         }
@@ -645,7 +646,7 @@ class TimeKeepingService
                     (($workHours < $schedule->total_hours - 3.5 || $workHours >= $schedule->total_hours / 2) || $shouldBeHalfDay) &&
                     !$isCancelledOff &&
                     $workHours > 0 &&
-                    $undertime < ($halfDayBasis / 2)
+                    $undertime < $halfDayBasis
                 ) {
                     $finalWorkHours = $hours / 2;
                 }
