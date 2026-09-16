@@ -95,7 +95,7 @@ class ItemMasterlistController extends Controller
     {
         try {
             $item = UniformItem::findOrFail($id);
-            $data = $this->validatedData($request);
+            $data = $this->validatedData($request, $item->id);
 
             DB::transaction(function () use ($request, $item, $data) {
                 $item->update([
@@ -112,10 +112,15 @@ class ItemMasterlistController extends Controller
         }
     }
 
-    private function validatedData(Request $request): array
+    private function validatedData(Request $request, ?int $ignoreId = null): array
     {
         $data = $request->validate([
-            'description' => ['required', 'string', 'max:255', 'unique:uniform_items,description'],
+            'description' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('uniform_items', 'description')->ignore($ignoreId),
+            ],
             'uniform_size_id' => ['required', 'exists:sizes,id'],
             'uniform_gender_id' => ['required', 'exists:uniform_genders,id'],
             'standard_unit_price' => ['required', 'numeric', 'min:0'],
