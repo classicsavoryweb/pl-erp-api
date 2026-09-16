@@ -256,7 +256,7 @@ class VarianceReportController extends Controller
         $data = $request->validate([
             'begin_date' => ['required', 'date'],
             'ending_date' => ['required', 'date', 'after:begin_date'],
-            'remarks' => ['required', 'string'],
+            'remarks' => ['string','nullable'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.uniform_item_id' => [
                 'required',
@@ -291,7 +291,7 @@ class VarianceReportController extends Controller
                 'begin_date' => $data['begin_date'],
                 'ending_date' => $data['ending_date'],
                 'status' => 'Unposted',
-                'remarks' => $data['remarks'],
+                'remarks' => $data['remarks'] ?? null,
                 'prepared_by' => $this->userName(),
             ]);
 
@@ -402,7 +402,8 @@ class VarianceReportController extends Controller
 
     private function varianceQuery(Request $request)
     {
-        $query = UniformVariance::query();
+        $query = UniformVariance::query()
+            ->orderBy('variance_no','desc');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
