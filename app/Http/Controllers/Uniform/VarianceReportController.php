@@ -29,7 +29,7 @@ class VarianceReportController extends Controller
 
     public function variances(Request $request)
     {
-        $query = $this->varianceQuery($request)->with('physicalCount', 'items.item.size', 'items.item.gender')->latest();
+        $query = $this->varianceQuery($request)->with('physicalCount', 'items.item.size', 'items.item.gender')->orderByDesc('variance_no');
 
         return response()->json($query->paginate((int) $request->input('per_page', 10)));
     }

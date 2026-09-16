@@ -45,7 +45,7 @@ class UniformPhysicalCount extends Model
 
     public function items()
     {
-        return $this->hasMany(UniformPhysicalCountItem::class, 'physical_count_id');
+        return $this->hasMany(UniformPhysicalCountItem::class, 'physical_count_id')->orderBy('item_no');
     }
 
     public function counters()
