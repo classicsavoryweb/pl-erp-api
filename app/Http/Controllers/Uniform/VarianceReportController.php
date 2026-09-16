@@ -329,7 +329,7 @@ class VarianceReportController extends Controller
             }
 
             if (!empty($data['items'])) {
-                $physicalCount = $this->findPhysicalCounts($variance->begin_date->format('Y-m-d'), $variance->ending_date->format('Y-m-d'));
+                $physicalCount = $this->findPhysicalCount($variance->begin_date->format('Y-m-d'), $variance->ending_date->format('Y-m-d'));
                 $variance->physical_count_id = $physicalCount?->id;
                 $this->replaceVarianceItems($variance, $physicalCount, $data['items']);
             }
@@ -548,8 +548,8 @@ class VarianceReportController extends Controller
     {
         return UniformPhysicalCount::with('items')
             ->whereIn('status', ['Posted', 'Updated'])
-            ->whereDate('begin_date', '<=', $endingDate)
-            ->whereDate('ending_date', '<=', $endingDate)
+            ->whereDate('begin_date', $beginDate)
+            ->whereDate('ending_date', $endingDate)
             ->orderBy('begin_date')
             ->get();
     }
