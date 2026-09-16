@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Compensation;
 
 use App\Exports\Compensation\EmployeeDeductionExport;
+use App\Exports\Compensation\DeductionAmortizationHistoryExport;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\ApsysEntry;
 use App\Models\Accounting\ApsysEntryMain;
@@ -1169,6 +1170,39 @@ class EmployeeDeductionsController extends Controller
             return $this->sendError(["message" => "Employee not found"]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function exportDeductionAmortizationHistory(Request $request)
+    {
+        try {
+            $request->validate([
+                'employee_number' => 'required',
+                'reference_number' => 'required',
+            ]);
+
+            $employee = Employee::where(
+                'employee_number',
+                $request->employee_number
+            )->first();
+
+            if (!$employee) {
+                return $this->sendError([
+                    'message' => 'Employee not found'
+                ]);
+            }
+
+            return Excel::download(
+                new DeductionAmortizationHistoryExport(
+                    $request->employee_number,
+                    $request->reference_number
+                ),
+                'amortization-history.xlsx'
+            );
+        } catch (Exception $e) {
+            return $this->sendError([
+                'message' => $e->getMessage()
+            ]);
         }
     }
 
