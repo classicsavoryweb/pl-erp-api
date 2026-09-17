@@ -349,18 +349,16 @@ class WeightedAverageController extends Controller
                     ]);
                 }
 
-                $lastWeighted = WeightedAverage::latest('created_at')
-                    ->lockForUpdate()
-                    ->first();
+                $lastWeighted = WeightedAverage::orderByDesc("id")->first();
 
                 if (
-                        $lastWeighted &&
-                        !in_array($lastWeighted->status, ['Updated', 'Cancelled'])
-                    ) {
-                        throw ValidationException::withMessages([
-                            'status' => 'You cannot create a new Weighted Average until the latest request is Updated or Cancelled.',
-                        ]);
-                    }
+                    $lastWeighted &&
+                    !in_array($lastWeighted->status, ['Updated', 'Cancelled'])
+                ) {
+                    throw ValidationException::withMessages([
+                        'status' => 'You cannot create a new Weighted Average until the latest request is Updated or Cancelled.',
+                    ]);
+                }
 
                 $hasExistingRange = WeightedAverage::where('date_from', $validated['date_from'])
                     ->where('date_to', $validated['date_to'])
