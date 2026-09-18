@@ -63,6 +63,18 @@ class RequestAndIssuanceController extends Controller
                 $issuance->where("status", $request->status);
             }
 
+            if ($request->filled('atd_status')) {
+                $issuance->where("atd_status", $request->atd_status);
+            }
+
+            if ($request->filled('date_from')) {
+                $issuance->whereDate('date_requested', '>=', $request->date_from);
+            }
+
+            if ($request->filled('date_to')) {
+                $issuance->whereDate('date_requested', '<=', $request->date_to);
+            }
+
             if ($request->filled('branch_id')) {
                 $branch = Branch::find($request->branch_id);
 
