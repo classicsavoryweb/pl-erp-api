@@ -4,6 +4,7 @@ use App\Http\Controllers\PettyCash\DepartmentFundController;
 use App\Http\Controllers\PettyCash\CashIssuanceController;
 use App\Http\Controllers\PettyCash\LiquidationController;
 use App\Http\Controllers\PettyCash\ReplenishmentController;
+use App\Http\Controllers\PettyCash\PettyCashAuditController;
 use Illuminate\Support\Facades\Route;
 
 // PETTY CASH MODULE
@@ -48,4 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/create-replenishment', [ReplenishmentController::class, 'createReplenishment']);
     Route::post('/post-replenishment/{id}', [ReplenishmentController::class, 'postReplenishment']);
     Route::post('/void-replenishment/{id}', [ReplenishmentController::class, 'voidReplenishment']);
+
+    // Petty Cash Audit
+    Route::get('/get-all-replenishments-audit', [PettyCashAuditController::class, 'getAllReplenishmentsForAudit'])
+        ->middleware('permission:view_pettycash_audit_module');
 });

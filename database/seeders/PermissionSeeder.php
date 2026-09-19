@@ -125,6 +125,8 @@ class PermissionSeeder extends Seeder
         //petty cash module
         Permission::updateOrCreate(["name" => "view_petty_cash_module"], ["module" => "petty_cash"]);
         Permission::updateOrCreate(["name" => "view_department_fund"], ["module" => "petty_cash"]);
+        Permission::updateOrCreate(["name" => "view_pettycash_audit_module"], ["module" => "petty_cash"]);
+
 
         //employees module
         
