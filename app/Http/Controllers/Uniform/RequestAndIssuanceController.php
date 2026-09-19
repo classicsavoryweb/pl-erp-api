@@ -45,6 +45,11 @@ class RequestAndIssuanceController extends Controller
                     $issuance->whereHas('items', function ($query) use ($request) {
                         $query->where('description', 'LIKE', '%' . $request->key_word . '%');
                     });
+                } elseif ($request->column_type === 'issuance_type') {
+                    $issuance->where(
+                        'issuance_type',
+                        strtoupper(trim($request->key_word)) === 'ATD' ? 'Authority To Deduct' : 'Free Uniform'
+                    );
                 } else {
                     $issuance->where(
                         $request->column_type,

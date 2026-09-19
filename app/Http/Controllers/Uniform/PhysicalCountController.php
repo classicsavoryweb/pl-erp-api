@@ -326,7 +326,7 @@ class PhysicalCountController extends Controller
             ->with('size', 'gender')
             ->when(!empty($itemIds), fn ($query) => $query->whereIn('id', $itemIds))
             ->where('status', 'active')
-            ->orderBy('description')
+            ->orderBy('item_no')
             ->get();
 
         $movement = $this->movementService->movementTotals($beginDate, $endingDate);

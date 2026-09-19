@@ -29,7 +29,7 @@ class VarianceReportController extends Controller
 
     public function variances(Request $request)
     {
-        $query = $this->varianceQuery($request)->with('physicalCount', 'items.item.size', 'items.item.gender')->latest();
+        $query = $this->varianceQuery($request)->with('physicalCount', 'items.item.size', 'items.item.gender')->orderByDesc('variance_no');
 
         return response()->json($query->paginate((int) $request->input('per_page', 10)));
     }
@@ -256,7 +256,7 @@ class VarianceReportController extends Controller
         $data = $request->validate([
             'begin_date' => ['required', 'date'],
             'ending_date' => ['required', 'date', 'after:begin_date'],
-            'remarks' => ['required', 'string'],
+            'remarks' => ['string','nullable'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.uniform_item_id' => [
                 'required',
@@ -291,7 +291,7 @@ class VarianceReportController extends Controller
                 'begin_date' => $data['begin_date'],
                 'ending_date' => $data['ending_date'],
                 'status' => 'Unposted',
-                'remarks' => $data['remarks'],
+                'remarks' => $data['remarks'] ?? null,
                 'prepared_by' => $this->userName(),
             ]);
 
@@ -329,7 +329,7 @@ class VarianceReportController extends Controller
             }
 
             if (!empty($data['items'])) {
-                $physicalCount = $this->findPhysicalCounts($variance->begin_date->format('Y-m-d'), $variance->ending_date->format('Y-m-d'));
+                $physicalCount = $this->findPhysicalCount($variance->begin_date->format('Y-m-d'), $variance->ending_date->format('Y-m-d'));
                 $variance->physical_count_id = $physicalCount?->id;
                 $this->replaceVarianceItems($variance, $physicalCount, $data['items']);
             }
@@ -402,7 +402,8 @@ class VarianceReportController extends Controller
 
     private function varianceQuery(Request $request)
     {
-        $query = UniformVariance::query();
+        $query = UniformVariance::query()
+            ->orderBy('variance_no','desc');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -548,8 +549,8 @@ class VarianceReportController extends Controller
     {
         return UniformPhysicalCount::with('items')
             ->whereIn('status', ['Posted', 'Updated'])
-            ->whereDate('begin_date', '<=', $endingDate)
-            ->whereDate('ending_date', '<=', $endingDate)
+            ->whereDate('begin_date', $beginDate)
+            ->whereDate('ending_date', $endingDate)
             ->orderBy('begin_date')
             ->get();
     }
