@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\ExpenseType;
 
-class ExpenseTypeSeeder extends Seeder
+class ExpenseTypeTTFCSeeder extends Seeder
 {
     public function run(): void
     {
