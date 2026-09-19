@@ -108,7 +108,7 @@ class PermissionSeeder extends Seeder
 
         Permission::updateOrCreate(["name" => "view_contributions_and_tax"], ["module" => "maintenance", "submodule" => "contributions_and_tax"]);
         Permission::updateOrCreate(["name" => "perform_contributions_and_tax"], ["module" => "maintenance", "submodule" => "contributions_and_tax"]);
-
+ 
         Permission::updateOrCreate(["name" => "view_terms"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_terms"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_last_pay_setup"], ["module" => "maintenance"]);
@@ -120,7 +120,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_petty_cash_approver"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "perform_petty_cash_approver"], ["module" => "maintenance"]);
         Permission::updateOrCreate(["name" => "view_petty_cash_custodian"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_petty_cash_custodian"], ["module" => "maintenance"]);
+        Permission::updateOrCreate(["name" => "perform_petty_cash_custodian"], ["module" => "maintenance"]); 
 
         //petty cash module
         Permission::updateOrCreate(["name" => "view_petty_cash_module"], ["module" => "petty_cash"]);
