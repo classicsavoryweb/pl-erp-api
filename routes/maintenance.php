@@ -43,6 +43,9 @@ use App\Http\Controllers\Maintenance\SizesController;
 use App\Http\Controllers\Maintenance\SupplierController;
 use App\Http\Controllers\Maintenance\UniformFreeUniformLimitController;
 use App\Http\Controllers\Maintenance\UniformPeriodLockController;
+use App\Http\Controllers\Maintenance\ExpenseTypeController;
+use App\Http\Controllers\Maintenance\PettyCashApproverController;
+use App\Http\Controllers\Maintenance\PettyCashCustodianController;
 use Illuminate\Support\Facades\Route;
 
 // MAINTENANCE MODULE
@@ -296,4 +299,23 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::middleware(["permission:view_uniform_period_lock"])->get("/get-uniform-period-locks", [UniformPeriodLockController::class, "getUniformPeriodLocks"]);
     Route::middleware(["permission:perform_uniform_period_lock"])->post("/save-uniform-period-lock-period", [UniformPeriodLockController::class, "saveUniformPeriodLockPeriod"]);
 
+
+    //expense types
+    Route::get("/get-all-expense-types", [ExpenseTypeController::class, "getAllExpenseTypes"]);
+    Route::get("/get-expense-types", [ExpenseTypeController::class, "getExpenseTypes"]);
+    Route::get("/export-all-expense-types", [ExpenseTypeController::class, "exportAllExpenseTypes"]);
+    Route::middleware(["permission:perform_expense_type"])->post("/create-expense-type", [ExpenseTypeController::class, "createExpenseType"]);
+    Route::middleware(["permission:perform_expense_type"])->post("/edit-expense-type/{id}", [ExpenseTypeController::class, "editExpenseType"]);
+
+    //petty cash approvers
+    Route::get("/get-all-petty-cash-approvers", [PettyCashApproverController::class, "getAllApprovers"]);
+    Route::get("/export-all-petty-cash-approvers", [PettyCashApproverController::class, "exportAllApprovers"]);
+    Route::middleware(["permission:perform_petty_cash_approver"])->post("/create-petty-cash-approver", [PettyCashApproverController::class, "createApprover"]);
+    Route::middleware(["permission:perform_petty_cash_approver"])->post("/edit-petty-cash-approver/{id}", [PettyCashApproverController::class, "editApprover"]);
+
+    //petty cash custodians
+    Route::get("/get-all-petty-cash-custodians", [PettyCashCustodianController::class, "getAllCustodians"]);
+    Route::get("/export-all-petty-cash-custodians", [PettyCashCustodianController::class, "exportAllCustodians"]);
+    Route::middleware(["permission:perform_petty_cash_custodian"])->post("/create-petty-cash-custodian", [PettyCashCustodianController::class, "createCustodian"]);
+    Route::middleware(["permission:perform_petty_cash_custodian"])->post("/edit-petty-cash-custodian/{id}", [PettyCashCustodianController::class, "editCustodian"]);
 });

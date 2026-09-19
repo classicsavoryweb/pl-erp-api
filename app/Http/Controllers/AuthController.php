@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Employee;
 use App\Models\OtherCompany\OtherEmployee;
+use App\Models\PettyCashCustodian;
 use Exception;
 use Hash;
 use Illuminate\Http\Request;
@@ -30,6 +31,15 @@ class AuthController extends Controller
                 $permissions = $user->getAllPermissions()->pluck("name")->toArray();
                 $user->unsetRelation("roles")->unsetRelation("permissions");
                 $user["role_name"] = $roles->pluck("name")->implode(", ");
+                
+
+                $isCustodian = PettyCashCustodian::where('user_id', $user->id)
+                    ->where('status', 'active')
+                    ->exists();
+                if ($isCustodian) {
+                    $permissions[] = 'is_petty_cash_custodian';
+                }
+
                 $token = $user->createToken(
                      $user->email,
                 $permissions,
@@ -43,6 +53,7 @@ class AuthController extends Controller
                 }
 
                 activity()->causedBy($user)->useLog("Login")->log('user logged in');
+
 
                 return $this->sendResponse([
                     "message" => "Logged in successfully",
