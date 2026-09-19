@@ -108,24 +108,25 @@ class PermissionSeeder extends Seeder
 
         Permission::updateOrCreate(["name" => "view_contributions_and_tax"], ["module" => "maintenance", "submodule" => "contributions_and_tax"]);
         Permission::updateOrCreate(["name" => "perform_contributions_and_tax"], ["module" => "maintenance", "submodule" => "contributions_and_tax"]);
- 
-        Permission::updateOrCreate(["name" => "view_terms"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_terms"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_last_pay_setup"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_last_pay_setup"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_tardiness_sanctions"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_tardiness_sanctions"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_expense_type"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_expense_type"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_petty_cash_approver"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_petty_cash_approver"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "view_petty_cash_custodian"], ["module" => "maintenance"]);
-        Permission::updateOrCreate(["name" => "perform_petty_cash_custodian"], ["module" => "maintenance"]); 
+
+        Permission::updateOrCreate(["name" => "view_terms"], ["module" => "maintenance", "submodule" => "terms"]);
+        Permission::updateOrCreate(["name" => "perform_terms"], ["module" => "maintenance", "submodule" => "terms"]);
+        Permission::updateOrCreate(["name" => "view_last_pay_setup"], ["module" => "maintenance", "submodule" => "last_pay_setup"]);
+        Permission::updateOrCreate(["name" => "perform_last_pay_setup"], ["module" => "maintenance", "submodule" => "last_pay_setup"]);
+        Permission::updateOrCreate(["name" => "view_tardiness_sanctions"], ["module" => "maintenance", "submodule" => "tardiness_sanctions"]);
+        Permission::updateOrCreate(["name" => "perform_tardiness_sanctions"], ["module" => "maintenance", "submodule" => "tardiness_sanctions"]);
+
+        Permission::updateOrCreate(["name" => "view_expense_type"], ["module" => "maintenance", "submodule" => "expense_type"]);
+        Permission::updateOrCreate(["name" => "perform_expense_type"], ["module" => "maintenance", "submodule" => "expense_type"]);
+        Permission::updateOrCreate(["name" => "view_petty_cash_approver"], ["module" => "maintenance", "submodule" => "petty_cash_approver"]);
+        Permission::updateOrCreate(["name" => "perform_petty_cash_approver"], ["module" => "maintenance", "submodule" => "petty_cash_approver"]);
+        Permission::updateOrCreate(["name" => "view_petty_cash_custodian"], ["module" => "maintenance", "submodule" => "petty_cash_custodian"]);
+        Permission::updateOrCreate(["name" => "perform_petty_cash_custodian"], ["module" => "maintenance", "submodule" => "petty_cash_custodian"]);
 
         //petty cash module
-        Permission::updateOrCreate(["name" => "view_petty_cash_module"], ["module" => "petty_cash"]);
-        Permission::updateOrCreate(["name" => "view_department_fund"], ["module" => "petty_cash"]);
-        Permission::updateOrCreate(["name" => "view_pettycash_audit_module"], ["module" => "petty_cash"]);
+        Permission::updateOrCreate(["name" => "view_petty_cash_module"], ["module" => "petty_cash", "submodule" => "module_access"]);
+        Permission::updateOrCreate(["name" => "view_department_fund"], ["module" => "petty_cash", "submodule" => "department_fund"]);
+        Permission::updateOrCreate(["name" => "view_pettycash_audit_module"], ["module" => "petty_cash", "submodule" => "audit_module"]);
 
 
         //employees module
