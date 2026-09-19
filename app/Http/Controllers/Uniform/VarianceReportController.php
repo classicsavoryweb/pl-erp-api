@@ -324,8 +324,8 @@ class VarianceReportController extends Controller
         return DB::transaction(function () use ($data, $id) {
             $variance = UniformVariance::with('physicalCount')->whereKey($id)->lockForUpdate()->firstOrFail();
 
-            if ($variance->status !== 'Unposted') {
-                throw ValidationException::withMessages(['status' => 'Only unposted variances can be reviewed.']);
+            if (!in_array($variance->status, ['Unposted', 'Reviewed'], true)) {
+                throw ValidationException::withMessages(['status' => 'Only unposted or reviewed variances can be edited here.']);
             }
 
             if (!empty($data['items'])) {
@@ -489,7 +489,7 @@ class VarianceReportController extends Controller
                 fn ($query) => $query->whereIn('id', $itemIds)
             )
             ->where('status', 'active')
-            ->orderBy('description')
+            ->orderBy('item_no')
             ->get();
 
         $movement = $this->movementService->movementTotals(
