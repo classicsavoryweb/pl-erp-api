@@ -183,8 +183,8 @@ class PhysicalCountController extends Controller
         return DB::transaction(function () use ($data, $id) {
             $physicalCount = UniformPhysicalCount::whereKey($id)->lockForUpdate()->firstOrFail();
 
-            if ($physicalCount->status !== 'Unposted') {
-                throw ValidationException::withMessages(['status' => 'Only unposted physical counts can be reviewed.']);
+            if (!in_array($physicalCount->status, ['Unposted', 'Reviewed'], true)) {
+                throw ValidationException::withMessages(['status' => 'Only unposted or reviewed physical counts can be edited here.']);
             }
 
             if (!empty($data['items'])) {

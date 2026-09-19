@@ -42,7 +42,7 @@ class StockReplenishmentController extends Controller
     {
         try {
             $records = UniformReplenishment::with([
-                'supplier', 'items.item.size', 'items.item.gender',
+                'supplier', 'items.item.size', 'items.item.gender', 'items.item.suppliers',
             ])
                 ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
                 ->when($request->filled('key_word'), function ($query) use ($request) {
