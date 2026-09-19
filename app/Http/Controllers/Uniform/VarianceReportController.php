@@ -489,7 +489,7 @@ class VarianceReportController extends Controller
                 fn ($query) => $query->whereIn('id', $itemIds)
             )
             ->where('status', 'active')
-            ->orderBy('description')
+            ->orderBy('item_no')
             ->get();
 
         $movement = $this->movementService->movementTotals(
