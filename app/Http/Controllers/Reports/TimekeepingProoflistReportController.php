@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Reports;
 
 use Illuminate\Http\Request;
 use App\Models\Cutoff;
@@ -8,6 +8,7 @@ use App\Models\TimeKeepingSummary;
 use App\Exports\Reports\TimekeepingProoflistReportExport;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Controllers\Controller;
 
 class TimekeepingProoflistReportController extends Controller
 {
