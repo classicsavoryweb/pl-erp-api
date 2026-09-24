@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/get-all-cash-issuances', [CashIssuanceController::class, 'getAllCashIssuances']);
     Route::get('/export-all-cash-issuances', [CashIssuanceController::class, 'exportAllCashIssuances']);
     Route::get('/get-pcv-number', [CashIssuanceController::class, 'getPCVNumber']);
-    Route::get('/get-branch-employees', [CashIssuanceController::class, 'getBranchEmployees']);
+    Route::get('/get-petty-cash-branch-employees', [CashIssuanceController::class, 'getBranchEmployees']);
     Route::get('/get-my-employees', [CashIssuanceController::class, 'getMyEmployees']);
     Route::get('/get-approver-employees', [CashIssuanceController::class, 'getApproverEmployees']);
     Route::get('/get-branch-approvers', [CashIssuanceController::class, 'getBranchApprovers']);
