@@ -14,6 +14,7 @@ use App\Http\Controllers\Reports\ReportsDeductionController;
 use App\Http\Controllers\Reports\ReportsIncentiveAttendanceController;
 use App\Http\Controllers\Reports\ReportsPayrollStatutoryController;
 use App\Http\Controllers\Reports\TimeKeepingSummaryReportController;
+use App\Http\Controllers\TimekeepingProoflistReportController;
 use Illuminate\Support\Facades\Route;
 
 // REPORTS MODULE
@@ -69,6 +70,7 @@ Route::middleware('auth:sanctum')->group(function() {
 
     //timekeeping summary look up to payroll list
     Route::middleware(["permission:perform_reports_timekeeping_summary_report"])->get('/export-timekeeping-summary-report', [TimeKeepingSummaryReportController::class, 'exportTimeKeepingSummaryReport']);
+    Route::middleware(["permission:perform_reports_timekeeping_summary_report"])->get('/export-timekeeping-prooflist-report',[TimekeepingProoflistReportController::class,'exportTimeKeepingProoflistReport']);
 
     //bank account history export
     Route::middleware(["permission:perform_reports_bank_account_history"])->get("/export-bank-account-history", [BankAccountController::class, "exportBankAccountHistory"]);
