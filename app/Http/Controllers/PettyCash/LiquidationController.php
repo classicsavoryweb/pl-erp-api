@@ -122,7 +122,7 @@ class LiquidationController extends Controller
                 'reference_document_date'   => 'required|date|before_or_equal:today',
                 'description'               => 'required|string|max:250',
                 'supplier_vendor'           => 'required|string|max:150',
-                'amount'                    => 'required|numeric|min:0.01',
+                'amount'                    => 'required|numeric|min:0',
                 'expense_type_id'           => 'required|exists:expense_types,id',
                 'attachments'               => 'required|array|min:1',
                 'attachments.*'             => 'required|file|mimetypes:image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf',
@@ -172,7 +172,7 @@ class LiquidationController extends Controller
                 'reference_document_date'   => 'required|date|before_or_equal:today',
                 'description'               => 'required|string|max:250',
                 'supplier_vendor'           => 'required|string|max:150',
-                'amount'                    => 'required|numeric|min:0.01',
+                'amount'                    => 'required|numeric|min:0',
                 'expense_type_id'           => 'required|exists:expense_types,id',
                 'attachments.*'             => 'file|mimetypes:image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf',
             ]);
@@ -273,11 +273,13 @@ class LiquidationController extends Controller
                 return $this->sendError(['message' => 'A replenishment is still Pending or Posted. You can post liquidation once it is Replenished.']);
             }
 
-            $totalLiquidated = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->sum('amount');
+            $hasLiquidations = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->exists();
 
-            if ($totalLiquidated <= 0) {
+            if (!$hasLiquidations) {
                 return $this->sendError(['message' => 'No liquidation records found. Please add at least one liquidation before posting.']);
             }
+
+            $totalLiquidated = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->sum('amount');
 
             $diff = round($totalLiquidated - $issuance->amount, 2);
 
