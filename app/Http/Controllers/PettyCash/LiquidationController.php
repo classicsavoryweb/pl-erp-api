@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\PettyCash;
 
 use App\Http\Controllers\Controller;
+use App\Models\ExpenseType;
 use App\Models\PettyCashCustodian;
 use App\Models\PettyCashIssuance;
 use App\Models\PettyCashLiquidation;
@@ -228,9 +229,12 @@ class LiquidationController extends Controller
         try {
             $liquidation = PettyCashLiquidation::findOrFail($id);
 
-            // para pwede pa ulit i-import pag na-void na, unique kasi yung column
-            if ($liquidation->cshub_trans_no) {
-                $liquidation->update(['cshub_trans_no' => null]);
+            // para pwede pa ulit i-import pag na-void na, unique kasi yung cshub_item_id column
+            if ($liquidation->cshub_trans_no || $liquidation->cshub_item_id) {
+                $liquidation->update([
+                    'cshub_trans_no' => null,
+                    'cshub_item_id'  => null,
+                ]);
             }
 
             $liquidation->delete();
@@ -368,6 +372,88 @@ class LiquidationController extends Controller
         return $fileBase . '/' . ltrim($relativePath, '/');
     }
 
+    private function resolveExpenseTypeId($name)
+    {
+        if (!$name) return null;
+        return ExpenseType::whereRaw('LOWER(description) = ?', [strtolower(trim($name))])->value('id');
+    }
+
+    // isang set lang ng attachments per cshub trans_no, kaya kinokopya sa bawat
+    // liquidation row na nagmula sa mga liquidation_items ng parehong trans_no
+    private function importCSHubAttachments(PettyCashLiquidation $liquidation, array $attachments): void
+    {
+        foreach ($attachments as $att) {
+            $url = !empty($att['file_url'])
+                ? $att['file_url']
+                : (isset($att['file_path']) ? $this->cshubFileUrl($att['file_path']) : null);
+
+            if (!$url) continue;
+
+            PettyCashLiquidationAttachment::create([
+                'petty_cash_liquidation_id' => $liquidation->id,
+                'file_path'                 => $url,
+                'file_name'                 => $att['original_filename'] ?? basename($att['file_path'] ?? $url),
+                'source'                    => 'CSHUB',
+            ]);
+        }
+    }
+
+    // pinapalitan ang isang cshub liquidation transaction (trans_no) papuntang
+    // isang candidate row per liquidation_item (may sariling expense type at
+    // supplier); kung walang liquidation_items pa (lumang transaction), isang
+    // legacy row lang gamit ang buong actual_amount_spent, tulad ng dati
+    private function flattenCSHubLiquidationCandidates($t)
+    {
+        $items = $t['liquidation_items'] ?? [];
+        $attachments = $t['liquidation_attachments'] ?? [];
+        $rows = [];
+
+        if (empty($items)) {
+            $alreadyImported = PettyCashLiquidation::where('cshub_trans_no', $t['trans_no'])
+                ->whereNull('cshub_item_id')
+                ->exists();
+
+            $rows[] = [
+                'selection_key'          => 'legacy:' . $t['id'],
+                'cshub_id'               => $t['id'] ?? null,
+                'cshub_item_id'          => null,
+                'trans_no'               => $t['trans_no'],
+                'liquidation_date_filed' => $t['liquidation_date_filed'] ?? null,
+                'expense_type'           => null,
+                'supplier'               => null,
+                'amount'                 => $t['actual_amount_spent'] ?? 0,
+                'remarks'                => $t['liquidation_remarks'] ?? ($t['purpose'] ?? ''),
+                'attachment_count'       => count($attachments),
+                'already_imported'       => $alreadyImported,
+                'importable'             => !$alreadyImported,
+            ];
+            return $rows;
+        }
+
+        foreach ($items as $item) {
+            $alreadyImported = isset($item['id'])
+                ? PettyCashLiquidation::where('cshub_item_id', $item['id'])->exists()
+                : false;
+
+            $rows[] = [
+                'selection_key'          => 'item:' . $item['id'],
+                'cshub_id'               => $t['id'] ?? null,
+                'cshub_item_id'          => $item['id'] ?? null,
+                'trans_no'               => $t['trans_no'],
+                'liquidation_date_filed' => $t['liquidation_date_filed'] ?? null,
+                'expense_type'           => $item['expense_type'] ?? null,
+                'supplier'               => $item['supplier'] ?? null,
+                'amount'                 => $item['amount'] ?? 0,
+                'remarks'                => $item['remarks'] ?: ($t['liquidation_remarks'] ?? ''),
+                'attachment_count'       => count($attachments),
+                'already_imported'       => $alreadyImported,
+                'importable'             => !$alreadyImported,
+            ];
+        }
+
+        return $rows;
+    }
+
     // same trans_no din ginagamit para mahanap yung liquidation nito sa cshub
     public function getCSHubLiquidationCandidates(Request $request, $issuanceId)
     {
@@ -389,19 +475,7 @@ class LiquidationController extends Controller
                     continue;
                 }
 
-                $alreadyImported = PettyCashLiquidation::where('cshub_trans_no', $t['trans_no'])->exists();
-                $attachments = isset($t['liquidation_attachments']) ? $t['liquidation_attachments'] : [];
-
-                $candidates[] = [
-                    'cshub_id'              => isset($t['id']) ? $t['id'] : null,
-                    'trans_no'               => $t['trans_no'],
-                    'liquidation_date_filed' => isset($t['liquidation_date_filed']) ? $t['liquidation_date_filed'] : null,
-                    'actual_amount_spent'    => isset($t['actual_amount_spent']) ? $t['actual_amount_spent'] : 0,
-                    'liquidation_remarks'    => isset($t['liquidation_remarks']) ? $t['liquidation_remarks'] : '',
-                    'attachment_count'       => count($attachments),
-                    'already_imported'       => $alreadyImported,
-                    'importable'             => !$alreadyImported,
-                ];
+                $candidates = array_merge($candidates, $this->flattenCSHubLiquidationCandidates($t));
             }
 
             return $this->sendResponse(['transactions' => $candidates]);
@@ -413,8 +487,8 @@ class LiquidationController extends Controller
     public function importCSHubLiquidations(Request $request, $issuanceId)
     {
         $request->validate([
-            'cshub_ids'   => 'required|array|min:1',
-            'cshub_ids.*' => 'required',
+            'selection_keys'   => 'required|array|min:1',
+            'selection_keys.*' => 'required|string',
         ]);
 
         try {
@@ -428,32 +502,40 @@ class LiquidationController extends Controller
             $approvedTo = $request->approved_to ?: now()->toDateString();
 
             $transactions = $this->fetchCSHubPettyCash('PETTY_CASH_LIQUIDATION', $approvedFrom, $approvedTo);
-            $byId = [];
+
+            // i-index lahat ng candidate rows (item- or legacy-level) by selection_key
+            $byKey = [];
             foreach ($transactions as $t) {
-                if (isset($t['id'])) {
-                    $byId[$t['id']] = $t;
+                if (!isset($t['trans_no']) || $t['trans_no'] !== $issuance->cshub_trans_no) {
+                    continue;
+                }
+                foreach ($this->flattenCSHubLiquidationCandidates($t) as $row) {
+                    $byKey[$row['selection_key']] = ['row' => $row, 'transaction' => $t];
                 }
             }
 
             $results = [];
 
-            foreach ($request->cshub_ids as $cshubId) {
-                $t = isset($byId[$cshubId]) ? $byId[$cshubId] : null;
+            foreach ($request->selection_keys as $key) {
+                $match = $byKey[$key] ?? null;
 
-                if (!$t || !isset($t['trans_no']) || $t['trans_no'] !== $issuance->cshub_trans_no) {
+                if (!$match) {
                     $results[] = [
-                        'cshub_id' => $cshubId,
-                        'success'  => false,
-                        'message'  => 'Transaction is no longer available for import on CS Hub.',
+                        'selection_key' => $key,
+                        'success'       => false,
+                        'message'       => 'Transaction is no longer available for import on CS Hub.',
                     ];
                     continue;
                 }
 
-                if (PettyCashLiquidation::where('cshub_trans_no', $t['trans_no'])->exists()) {
+                $row = $match['row'];
+                $t = $match['transaction'];
+
+                if ($row['already_imported']) {
                     $results[] = [
-                        'cshub_id' => $cshubId,
-                        'success'  => false,
-                        'message'  => 'Already imported.',
+                        'selection_key' => $key,
+                        'success'       => false,
+                        'message'       => 'Already imported.',
                     ];
                     continue;
                 }
@@ -468,44 +550,33 @@ class LiquidationController extends Controller
 
                     $liquidation = PettyCashLiquidation::create([
                         'liquidation_id'               => $liquidationId,
-                        'cshub_trans_no'                => $t['trans_no'],
-                        'cshub_id'                      => $t['id'],
+                        'cshub_trans_no'                => $row['trans_no'],
+                        'cshub_id'                      => $row['cshub_id'],
+                        'cshub_item_id'                 => $row['cshub_item_id'],
                         'source'                        => 'CSHUB',
                         'petty_cash_issuance_id'       => $issuance->id,
                         'date'                         => now()->toDateString(),
                         'liquidation_type'             => 'Cash Advance Liquidation',
                         'requested_by_employee_number' => $issuance->requested_by_employee_number,
-                        'reference_document_number'    => $t['trans_no'],
-                        'reference_document_date'      => isset($t['liquidation_date_filed']) ? $t['liquidation_date_filed'] : now()->toDateString(),
-                        'description'                  => isset($t['liquidation_remarks']) && $t['liquidation_remarks']
-                            ? $t['liquidation_remarks']
-                            : (isset($t['purpose']) ? $t['purpose'] : ''),
-                        'supplier_vendor'              => null,
-                        'amount'                       => isset($t['actual_amount_spent']) ? $t['actual_amount_spent'] : 0,
-                        'expense_type_id'              => null,
+                        'reference_document_number'    => $row['trans_no'],
+                        'reference_document_date'      => $row['liquidation_date_filed'] ?: now()->toDateString(),
+                        'description'                  => $row['remarks'],
+                        'supplier_vendor'              => $row['supplier'],
+                        'amount'                       => $row['amount'],
+                        'expense_type_id'              => $this->resolveExpenseTypeId($row['expense_type']),
                         'created_by_id'                => auth()->id(),
                     ]);
 
-                    $attachments = isset($t['liquidation_attachments']) ? $t['liquidation_attachments'] : [];
-                    foreach ($attachments as $att) {
-                        if (!isset($att['file_path'])) continue;
-
-                        PettyCashLiquidationAttachment::create([
-                            'petty_cash_liquidation_id' => $liquidation->id,
-                            'file_path'                 => $this->cshubFileUrl($att['file_path']),
-                            'file_name'                 => isset($att['original_filename']) ? $att['original_filename'] : basename($att['file_path']),
-                            'source'                    => 'CSHUB',
-                        ]);
-                    }
+                    $this->importCSHubAttachments($liquidation, $t['liquidation_attachments'] ?? []);
 
                     DB::commit();
-                    $results[] = ['cshub_id' => $cshubId, 'success' => true, 'message' => 'Imported successfully.'];
+                    $results[] = ['selection_key' => $key, 'success' => true, 'message' => 'Imported successfully.'];
                 } catch (Exception $e) {
                     DB::rollBack();
                     $results[] = [
-                        'cshub_id' => $cshubId,
-                        'success'  => false,
-                        'message'  => 'Failed to import liquidation: ' . $e->getMessage(),
+                        'selection_key' => $key,
+                        'success'       => false,
+                        'message'       => 'Failed to import liquidation: ' . $e->getMessage(),
                     ];
                 }
             }

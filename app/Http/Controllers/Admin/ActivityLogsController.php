@@ -12,11 +12,31 @@ class ActivityLogsController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $activityLogs = Activity::with('causer')
-            ->whereNot("causer_id", null)
-            ->orderBy("created_at", "desc")
-            ->paginate($perPage);
-
+            $query = Activity::with('causer')->whereNot("causer_id", null)->orderBy("created_at", "desc");
+         
+            if ($request->filled("column_type") && $request->filled("key_word")) {
+                if ($request->column_type === "causer.full_name") {
+                    $query->whereHas("causer", function ($q) use ($request) {
+                        $keyword = $request->key_word;
+                        $q->where(function ($q) use ($keyword) {
+                            $q->where("first_name", "LIKE", "%{$keyword}%")
+                                ->orWhere("last_name", "LIKE", "%{$keyword}%")
+                                ->orWhere("middle_name", "LIKE", "%{$keyword}%")
+                                ->orWhereRaw(
+                                    "CONCAT(last_name, ', ', first_name, ' ', middle_name) LIKE ?",
+                                    ["%{$keyword}%"]
+                                );
+                        });
+                    });
+                } else {
+                $query->where(
+                    $request->column_type,
+                    "LIKE",
+                    "%" . $request->key_word . "%"
+                );
+                }
+            }
+            $activityLogs = $query->paginate($perPage);
             return $this->sendResponse($activityLogs);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);

@@ -18,6 +18,7 @@ class PettyCashLiquidation extends Model
         'liquidation_id',
         'cshub_trans_no',
         'cshub_id',
+        'cshub_item_id',
         'source',
         'petty_cash_issuance_id',
         'date',

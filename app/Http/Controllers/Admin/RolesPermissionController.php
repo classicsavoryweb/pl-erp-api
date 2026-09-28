@@ -14,8 +14,15 @@ class RolesPermissionController extends Controller
     public function getAllRolesAndPermissions(Request $request) {
         try {
             $perPage = $request->per_page ?? 10;
-
-            $roles = Role::with("permissions")->paginate($perPage);
+            $query = Role::with("permissions");
+            if ($request->filled("column_type") && $request->filled("key_word")) {
+                $query->where(
+                    $request->column_type,
+                    "LIKE",
+                    "%" . $request->key_word . "%"
+                );
+            }
+            $roles = $query->paginate($perPage);
 
             return $this->sendResponse($roles);
         } catch(Exception $e) {
