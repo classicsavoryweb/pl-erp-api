@@ -172,7 +172,7 @@ class LiquidationController extends Controller
                 'reference_document_date'   => 'required|date|before_or_equal:today',
                 'description'               => 'required|string|max:250',
                 'supplier_vendor'           => 'required|string|max:150',
-                'amount'                    => 'required|numeric|min:0.01',
+                'amount'                    => 'required|numeric|min:0',
                 'expense_type_id'           => 'required|exists:expense_types,id',
                 'attachments.*'             => 'file|mimetypes:image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf',
             ]);
