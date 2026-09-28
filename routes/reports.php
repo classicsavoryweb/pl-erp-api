@@ -14,7 +14,7 @@ use App\Http\Controllers\Reports\ReportsDeductionController;
 use App\Http\Controllers\Reports\ReportsIncentiveAttendanceController;
 use App\Http\Controllers\Reports\ReportsPayrollStatutoryController;
 use App\Http\Controllers\Reports\TimeKeepingSummaryReportController;
-use App\Http\Controllers\TimekeepingProoflistReportController;
+use App\Http\Controllers\Reports\TimekeepingProoflistReportController;
 use Illuminate\Support\Facades\Route;
 
 // REPORTS MODULE
