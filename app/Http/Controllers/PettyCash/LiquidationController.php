@@ -275,7 +275,7 @@ class LiquidationController extends Controller
 
             $totalLiquidated = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->sum('amount');
 
-            if ($totalLiquidated <= 0) {
+            if ($totalLiquidated < 0) {
                 return $this->sendError(['message' => 'No liquidation records found. Please add at least one liquidation before posting.']);
             }
 
