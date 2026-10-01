@@ -451,7 +451,7 @@ class ConverterController extends Controller
 
             if ($converterBatch) {
                 $transactions = $converterBatch->converter_details()
-                ->with(["employee", "employee.latest_bank_details", "transaction_type"])
+                ->with(["employee", "employee.latest_bank_details", "employee.payroll_list.current_bank_details", "transaction_type"])
                 ->get();
 
                 if ($converterBatch->status != "Generated") {
@@ -497,10 +497,12 @@ class ConverterController extends Controller
 
                     $rowIndex = 7;
                     foreach ($transactions as $transaction) {
+                        $bankNumber = $transaction->employee->payroll_list->current_bank_details->bank_number
+                        ?? $transaction->employee->latest_bank_details->bank_number;
 
                         $transaction->update([
                             "status" => "Generated",
-                            "bank_account_number" => $transaction->employee->latest_bank_details->bank_number
+                            "bank_account_number" => $bankNumber
                         ]);
 
                         $colA = "A".$rowIndex;
@@ -509,8 +511,6 @@ class ConverterController extends Controller
                         $colE = "E".$rowIndex;
 
                         $transactionDescription = $transaction->transaction_type->description ?? "";
-
-                        $bankNumber = $transaction->employee->latest_bank_details->bank_number;
 
                         $this->writeCell($dom, $sheetData, $colA, (string)$bankNumber);
                         $this->writeCell($dom, $sheetData, $colB,number_format($transaction->amount, 2));
