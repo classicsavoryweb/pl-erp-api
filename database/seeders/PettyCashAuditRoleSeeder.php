@@ -17,6 +17,6 @@ class PettyCashAuditRoleSeeder extends Seeder
             "guard_name" => "web"
         ]);
 
-        $role->syncPermissions(["view_pettycash_audit_module"]);
+        $role->syncPermissions(["view_pettycash_audit_module", "perform_pettycash_audit_module"]);
     }
 }

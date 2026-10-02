@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\PettyCashReplenishment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class PettyCashAuditController extends Controller
@@ -16,18 +17,21 @@ class PettyCashAuditController extends Controller
             $perPage = $request->per_page ?? 10;
 
             // "Pending" dito ay tumutukoy sa mga Posted na ni custodian pero pending pa i-audit.
-            // Reviewed/Audited ay hindi pa aktwal na na-a-apply kahit saan (walang pang process/action
-            // para dito), kaya wala munang ibabalik na laman ang mga filter na yan hangga't wala pang
-            // ganitong mekanismo.
             $statusMap = [
                 'Pending'  => 'Posted',
                 'Reviewed' => 'Reviewed',
                 'Audited'  => 'Audited',
+                'Replenished'  => 'Replenished',
             ];
-            $status = $request->filled('status') ? ($statusMap[$request->status] ?? 'Posted') : 'Posted';
 
-            $query = PettyCashReplenishment::where('status', $status)
-                ->with(['custodian.user']);
+            $query = PettyCashReplenishment::with(['custodian.user']);
+
+            if ($request->filled('status')) {
+                $query->where('status', $statusMap[$request->status] ?? 'Posted');
+            } else {
+                // walang piniling status filter, ipakita lahat ng nasa audit pipeline
+                $query->whereIn('status', ['Posted', 'Reviewed', 'Audited', 'Replenished']);
+            }
 
             if ($request->filled('custodian_id')) {
                 $query->where('petty_cash_custodian_id', $request->custodian_id);
@@ -56,6 +60,58 @@ class PettyCashAuditController extends Controller
 
             return $this->sendResponse($replenishments);
         } catch (Exception $e) {
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
+    public function reviewReplenishment($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $replenishment = PettyCashReplenishment::lockForUpdate()->findOrFail($id);
+
+            if ($replenishment->status !== 'Posted') {
+                DB::rollBack();
+                return $this->sendError(['message' => 'Only Posted replenishments can be marked as Reviewed.']);
+            }
+
+            $replenishment->update([
+                'status'         => 'Reviewed',
+                'reviewed_by_id' => auth()->id(),
+                'reviewed_at'    => now(),
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(['message' => 'Replenishment marked as Reviewed.']);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
+    public function postAuditReplenishment($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $replenishment = PettyCashReplenishment::lockForUpdate()->findOrFail($id);
+
+            if ($replenishment->status !== 'Reviewed') {
+                DB::rollBack();
+                return $this->sendError(['message' => 'Only Reviewed replenishments can be marked as Audited.']);
+            }
+
+            $replenishment->update([
+                'status'        => 'Audited',
+                'audited_by_id' => auth()->id(),
+                'audited_at'    => now(),
+            ]);
+
+            DB::commit();
+            return $this->sendResponse(['message' => 'Replenishment marked as Audited.']);
+        } catch (Exception $e) {
+            DB::rollBack();
             return $this->sendError(['message' => $e->getMessage()]);
         }
     }

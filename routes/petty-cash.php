@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Liquidation
     Route::get('/get-liquidations/{issuanceId}', [LiquidationController::class, 'getLiquidations']);
+    Route::get('/get-liquidations-for-replenishment/{replenishmentId}', [LiquidationController::class, 'getLiquidationsForReplenishment']);
     Route::get('/get-liquidation-attachment/{id}', [LiquidationController::class, 'getLiquidationAttachment']);
     Route::post('/create-liquidation', [LiquidationController::class, 'createLiquidation']);
     Route::post('/edit-liquidation/{id}', [LiquidationController::class, 'editLiquidation']);
@@ -39,6 +40,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/post-liquidation/{id}', [LiquidationController::class, 'postLiquidation']);
     Route::get('/get-cshub-liquidation-candidates/{issuanceId}', [LiquidationController::class, 'getCSHubLiquidationCandidates']);
     Route::post('/import-cshub-liquidations/{issuanceId}', [LiquidationController::class, 'importCSHubLiquidations']);
+    Route::post('/audit-create-liquidation', [LiquidationController::class, 'auditCreateLiquidation'])
+        ->middleware('permission:perform_pettycash_audit_module');
+    Route::post('/audit-edit-liquidation/{id}', [LiquidationController::class, 'auditEditLiquidation'])
+        ->middleware('permission:perform_pettycash_audit_module');
+    Route::get('/get-liquidation-audit-logs/{replenishmentId}', [LiquidationController::class, 'getLiquidationAuditLogs']);
 
     // Replenishment
     Route::get('/get-all-replenishments', [ReplenishmentController::class, 'getAllReplenishments']);
@@ -53,4 +59,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Petty Cash Audit
     Route::get('/get-all-replenishments-audit', [PettyCashAuditController::class, 'getAllReplenishmentsForAudit'])
         ->middleware('permission:view_pettycash_audit_module');
+    Route::post('/review-replenishment-audit/{id}', [PettyCashAuditController::class, 'reviewReplenishment'])
+        ->middleware('permission:perform_pettycash_audit_module');
+    Route::post('/post-replenishment-audit/{id}', [PettyCashAuditController::class, 'postAuditReplenishment'])
+        ->middleware('permission:perform_pettycash_audit_module');
 });
