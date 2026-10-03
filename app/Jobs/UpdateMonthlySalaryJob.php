@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class UpdateMonthlySalaryJob implements ShouldQueue
 {
@@ -35,6 +36,7 @@ class UpdateMonthlySalaryJob implements ShouldQueue
         }
         $employees = Employee::with(["payroll_list", "schedule.schedule_type"])
         ->where("status", "active")
+        ->where("type", "Direct")
         ->whereHas("home_branch", function ($query) use($rateCode) {
             $query->where("rate_code", $rateCode);
         })
@@ -48,7 +50,9 @@ class UpdateMonthlySalaryJob implements ShouldQueue
             $scheduleType = $employee->schedule->schedule_type->name;
             if ($scheduleType == "Compressed Schedule") {
                 $multiplier = 22;
+                $dailyRate = ($rate->minimum * 26) / 22;
             }
+
             $payrollList = $employee->payroll_list;
 
             if ($payrollList) {

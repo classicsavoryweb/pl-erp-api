@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Maintenance;
 
 use App\Exports\Maintenance\SalaryPositionExport;
 use App\Http\Controllers\Controller;
+use App\Models\PayrollList;
 use App\Models\SalaryPosition;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Str;
 
@@ -95,6 +97,7 @@ class SalaryPositionController extends Controller
 
     public function editSalaryPosition(Request $request, $id) {
         try {
+            DB::beginTransaction();
             $request->validate([
                 "basic_salary" => "required",
                 "position_id" => "required|unique:salary_positions,position_id,". $id,
@@ -103,16 +106,34 @@ class SalaryPositionController extends Controller
             ], [
                 'position_id.unique' => 'The position has already been taken.'
             ]);
-            SalaryPosition::where("id", $id)->update( [
+
+            $salaryPosition = SalaryPosition::find($id);
+
+            $basicSalaryUpdated = $salaryPosition->basic_salary != $request->basic_salary ? true : false;
+
+            $salaryPosition->update([
                 "basic_salary" => $request->basic_salary,
                 "position_id" => $request->position_id,
                 "rate_category" => $request->rate_category,
                 "status" => $request->status
             ]);
 
+            if ($basicSalaryUpdated && $request->rate_category == "ABOVE MINIMUM") {
+                PayrollList::where("is_included", 1)
+                ->whereHas("employee", function ($query) use($request) {
+                    $query->where("type", "Direct")
+                    ->where("status", "active")
+                    ->where("position_id", $request->position_id);
+                })
+                ->update([
+                    "salary_amount" => $request->basic_salary
+                ]);
+            }
+
+            DB::commit();
             return $this->sendResponse(["message" => "Salary position updated successfully"]);
         } catch(Exception $e) {
-
+            DB::rollBack();
             return $this->sendError(["message" => $e->getMessage() ]);
         }
     }
