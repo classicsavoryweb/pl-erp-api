@@ -27,7 +27,7 @@ class LiquidationController extends Controller
             ->whereIn('status', ['Pending', 'Posted'])
             ->exists();
     }
-
+    
     private function saveAttachments(PettyCashLiquidation $liquidation, Request $request): void
     {
         if (!$request->hasFile('attachments')) return;
