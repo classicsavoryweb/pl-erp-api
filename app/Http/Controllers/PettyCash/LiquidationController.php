@@ -19,6 +19,15 @@ use Exception;
 
 class LiquidationController extends Controller
 {
+    // naka-freeze na yung snapshot pag may replenishment today, bawal muna mag-liquidate hanggang bukas
+    private function hasBlockingReplenishmentToday($custodian)
+    {
+        return PettyCashReplenishment::where('petty_cash_custodian_id', $custodian->id)
+            ->whereDate('date', now()->toDateString())
+            ->whereIn('status', ['Pending', 'Posted'])
+            ->exists();
+    }
+
     private function saveAttachments(PettyCashLiquidation $liquidation, Request $request): void
     {
         if (!$request->hasFile('attachments')) return;
@@ -48,7 +57,7 @@ class LiquidationController extends Controller
         try {
             $issuance = PettyCashIssuance::findOrFail($issuanceId);
 
-            $liquidations = PettyCashLiquidation::with(['expenseType', 'createdBy', 'attachments'])
+            $liquidations = PettyCashLiquidation::with(['expenseType', 'createdBy', 'attachments', 'latestAuditLog.performedBy'])
                 ->where('petty_cash_issuance_id', $issuanceId)
                 ->orderBy('created_at')
                 ->get();
@@ -75,7 +84,13 @@ class LiquidationController extends Controller
     {
         try {
             $replenishment = PettyCashReplenishment::with('snapshots')->findOrFail($replenishmentId);
-            $snapshotsByIssuance = $replenishment->snapshots->keyBy('petty_cash_issuance_id');
+
+            // scope lang sa mga issuance na 'Liquidated' na noong kinuha ang snapshot -
+            // kung may na-liquidate mamaya na 'Unliquidated' pa noon, susunod na
+            // replenishment cycle ang masasakop nito, hindi ito
+            $snapshotsByIssuance = $replenishment->snapshots
+                ->where('status_at_snapshot', 'Liquidated')
+                ->keyBy('petty_cash_issuance_id');
 
             $liquidations = PettyCashLiquidation::with([
                     'expenseType',
@@ -84,6 +99,7 @@ class LiquidationController extends Controller
                     'issuance.requestedBy',
                     'issuance.receivedBy',
                     'issuance.approvedBy',
+                    'latestAuditLog.performedBy',
                 ])
                 ->whereIn('petty_cash_issuance_id', $snapshotsByIssuance->keys())
                 ->orderBy('petty_cash_issuance_id')
@@ -96,7 +112,33 @@ class LiquidationController extends Controller
                     return $liquidation;
                 });
 
-            return $this->sendResponse(['liquidations' => $liquidations]);
+            // display-only reference: mga issuance na 'Unliquidated' pa noong snapshot -
+            // wala silang action (view/edit) dahil hindi sakop ng replenishment na 'to,
+            // pero ipapakita gamit ang live status ng CI para alam kung ano na kalagayan
+            $unliquidatedSnapshots = $replenishment->snapshots
+                ->where('status_at_snapshot', 'Unliquidated')
+                ->values();
+
+            $unliquidatedIssuancesById = PettyCashIssuance::with(['requestedBy', 'receivedBy', 'approvedBy'])
+                ->whereIn('id', $unliquidatedSnapshots->pluck('petty_cash_issuance_id'))
+                ->get()
+                ->keyBy('id');
+
+            $unliquidatedIssuances = $unliquidatedSnapshots->map(function ($snapshot) use ($unliquidatedIssuancesById) {
+                $issuance = $unliquidatedIssuancesById->get($snapshot->petty_cash_issuance_id);
+                return [
+                    'petty_cash_issuance_id' => $snapshot->petty_cash_issuance_id,
+                    'pcv_number'             => $snapshot->pcv_number,
+                    'cshub_trans_no'         => $snapshot->cshub_trans_no,
+                    'issuance'               => $issuance,
+                    'current_status'        => $issuance->status ?? $snapshot->status_at_snapshot,
+                ];
+            })->values();
+
+            return $this->sendResponse([
+                'liquidations'           => $liquidations,
+                'unliquidated_issuances' => $unliquidatedIssuances,
+            ]);
         } catch (Exception $e) {
             return $this->sendError(['message' => $e->getMessage()]);
         }
@@ -270,8 +312,12 @@ class LiquidationController extends Controller
             throw new Exception('This replenishment is not open for audit editing.');
         }
 
+        // dapat 'Liquidated' na noong snapshot mismo - kung 'Unliquidated' pa noon,
+        // susunod na replenishment cycle ang masasakop nito kahit na-liquidate na
+        // mamaya sa live, hindi ito
         $belongsToReplenishment = PettyCashReplenishmentSnapshot::where('petty_cash_replenishment_id', $replenishment->id)
             ->where('petty_cash_issuance_id', $issuanceId)
+            ->where('status_at_snapshot', 'Liquidated')
             ->exists();
 
         if (!$belongsToReplenishment) {
@@ -537,13 +583,8 @@ class LiquidationController extends Controller
                 return $this->sendError(['message' => 'You are not an active petty cash custodian.']);
             }
 
-            // bawal mag-liquidate habang may hindi pa Voided/Replenished, baka mahabol na sa snapshot
-            $hasUnsettledReplenishment = PettyCashReplenishment::where('petty_cash_custodian_id', $custodian->id)
-                ->whereNotIn('status', ['Voided', 'Replenished'])
-                ->exists();
-
-            if ($hasUnsettledReplenishment) {
-                return $this->sendError(['message' => 'A replenishment is still Pending or Posted. You can post liquidation once it is Replenished.']);
+            if ($this->hasBlockingReplenishmentToday($custodian)) {
+                return $this->sendError(['message' => 'A replenishment created today is still Pending or Posted. You can post liquidation once it is Replenished, or starting tomorrow.']);
             }
 
             $hasLiquidations = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->exists();

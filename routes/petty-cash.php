@@ -32,7 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Liquidation
     Route::get('/get-liquidations/{issuanceId}', [LiquidationController::class, 'getLiquidations']);
-    Route::get('/get-liquidations-for-replenishment/{replenishmentId}', [LiquidationController::class, 'getLiquidationsForReplenishment']);
+    Route::get('/get-liquidations-for-replenishment/{replenishmentId}', [LiquidationController::class, 'getLiquidationsForReplenishment'])
+        ->middleware('permission:view_pettycash_audit_module');
     Route::get('/get-liquidation-attachment/{id}', [LiquidationController::class, 'getLiquidationAttachment']);
     Route::post('/create-liquidation', [LiquidationController::class, 'createLiquidation']);
     Route::post('/edit-liquidation/{id}', [LiquidationController::class, 'editLiquidation']);
@@ -44,7 +45,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('permission:perform_pettycash_audit_module');
     Route::post('/audit-edit-liquidation/{id}', [LiquidationController::class, 'auditEditLiquidation'])
         ->middleware('permission:perform_pettycash_audit_module');
-    Route::get('/get-liquidation-audit-logs/{replenishmentId}', [LiquidationController::class, 'getLiquidationAuditLogs']);
+    Route::get('/get-liquidation-audit-logs/{replenishmentId}', [LiquidationController::class, 'getLiquidationAuditLogs'])
+        ->middleware('permission:view_pettycash_audit_module');
 
     // Replenishment
     Route::get('/get-all-replenishments', [ReplenishmentController::class, 'getAllReplenishments']);

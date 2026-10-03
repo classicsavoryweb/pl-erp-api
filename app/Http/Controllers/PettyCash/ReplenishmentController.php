@@ -9,7 +9,6 @@ use App\Models\PettyCashReplenishment;
 use App\Models\PettyCashReplenishmentSnapshot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Exception;
 
 class ReplenishmentController extends Controller
@@ -271,7 +270,6 @@ class ReplenishmentController extends Controller
             }
 
             $replenishment = PettyCashReplenishment::where('petty_cash_custodian_id', $custodian->id)
-                ->with('snapshots')
                 ->lockForUpdate()
                 ->findOrFail($id);
 
@@ -280,80 +278,18 @@ class ReplenishmentController extends Controller
                 return $this->sendError(['message' => 'Only pending replenishments can be posted.']);
             }
 
-            // dito na mag Fully Liquidated, skip kung nagbago na status
-            $cshubSyncQueue = [];
-
-            foreach ($replenishment->snapshots as $snapshot) {
-                if ($snapshot->status_at_snapshot !== 'Liquidated') {
-                    continue;
-                }
-
-                $issuance = PettyCashIssuance::where('id', $snapshot->petty_cash_issuance_id)
-                    ->where('status', 'Liquidated')
-                    ->first();
-
-                if (!$issuance) {
-                    continue;
-                }
-
-                $issuance->update(['status' => 'Fully Liquidated']);
-
-                if ($issuance->cshub_trans_no) {
-                    $cshubSyncQueue[] = $issuance;
-                }
-            }
-
+            // ang pag-flip ng issuance status papuntang 'Fully Liquidated' (at CS Hub sync)
+            // ay ngayon nasa PettyCashAuditController::postAuditReplenishment na, hindi dito -
+            // dapat lang ito mangyari kapag na-audit na talaga, hindi pa habang Posted lang
+            // ng custodian (puwede pang baguhin ng auditor ang liquidation sa Review step)
             $replenishment->update(['status' => 'Posted']);
 
             DB::commit();
 
-            // best effort na lang toh, di na kailangan i-rollback yung post
-            $cshubSyncErrors = [];
-            foreach ($cshubSyncQueue as $issuance) {
-                try {
-                    $this->updateCSHubTransactionStatus($issuance->cshub_id, 'fully-liquidated', $issuance->requested_by_employee_number);
-                } catch (Exception $e) {
-                    $cshubSyncErrors[] = $issuance->pcv_number . ': ' . $e->getMessage();
-                }
-            }
-
-            $message = 'Replenishment posted successfully.';
-            if ($cshubSyncErrors) {
-                $message .= ' However, failed to sync status to CS Hub for: ' . implode('; ', $cshubSyncErrors);
-            }
-
-            return $this->sendResponse(['message' => $message]);
+            return $this->sendResponse(['message' => 'Replenishment posted successfully.']);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->sendError(['message' => $e->getMessage()]);
-        }
-    }
-
-    // same lang ginamit dito sa CashIssuanceController
-    private function updateCSHubTransactionStatus($cshubId, $status, $employeeNumber)
-    {
-        $baseUrl = env('CS_HUB_URL_LINK');
-        $user = env('CS_HUB_ADMIN_EMAIL');
-        $password = env('CS_HUB_ADMIN_PASSWORD');
-        $company = env('COMPANY_NAME');
-
-        $response = Http::withBasicAuth($user, $password)
-            ->withHeaders([
-                'Accept'       => 'application/json',
-                'Content-Type' => 'application/json',
-            ])
-            ->timeout(30)
-            ->post(rtrim($baseUrl, '/') . '/update-petty-cash-transaction-status', [
-                'type'               => 'PETTY_CASH',
-                'status'             => $status,
-                'transaction_number' => $cshubId,
-                'employee_number'    => $employeeNumber,
-                'company'            => $company,
-            ]);
-
-        if (!$response->successful()) {
-            $message = $response->json('data.message') ?: $response->body();
-            throw new Exception($message);
         }
     }
 
