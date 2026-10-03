@@ -114,8 +114,7 @@ class ReplenishmentController extends Controller
             $totalCashIssuanceAmount = $issuances->sum(fn($i) => (float) $i->amount);
             $totalOverunderAmount = $issuances->sum(fn($i) => (float) ($i->overunder_amount ?? 0));
 
-            // Unliquidated pa, wala pang alam kung magkano talaga nagastos, kaya
-            // hindi pa dapat sumali sa Total Replenishment.
+            // Liquidated lang, hindi pa kasali ang Unliquidated sa total replenishment
             $totalReplenishmentAmount = $issuances
                 ->where('status', 'Liquidated')
                 ->sum(fn($i) => (float) $i->amount + (float) ($i->overunder_amount ?? 0));
@@ -180,7 +179,6 @@ class ReplenishmentController extends Controller
             }
 
             // bawal mag-create ng bago kung may hindi pa Voided/Replenished na existing
-            // (Replenished status update ay galing sa ibang module pag na-fund na)
             if ($this->hasUnsettledReplenishment($custodian)) {
                 DB::rollBack();
                 return $this->sendError(['message' => 'You have an existing replenishment that is not yet Replenished']);
@@ -200,8 +198,7 @@ class ReplenishmentController extends Controller
                 return $this->sendError(['message' => 'No unliquidated or liquidated transactions found to replenish.']);
             }
 
-            // walang saysay ang replenishment kung lahat pa Unliquidated, wala pang
-            // aktwal na nagastos na pwedeng i-reimburse
+            // kailangan ng at least isang Liquidated, walang saysay kung lahat pa Unliquidated
             $hasLiquidated = $issuances->contains(fn($i) => $i->status === 'Liquidated');
             if (!$hasLiquidated) {
                 DB::rollBack();
@@ -278,10 +275,7 @@ class ReplenishmentController extends Controller
                 return $this->sendError(['message' => 'Only pending replenishments can be posted.']);
             }
 
-            // ang pag-flip ng issuance status papuntang 'Fully Liquidated' (at CS Hub sync)
-            // ay ngayon nasa PettyCashAuditController::postAuditReplenishment na, hindi dito -
-            // dapat lang ito mangyari kapag na-audit na talaga, hindi pa habang Posted lang
-            // ng custodian (puwede pang baguhin ng auditor ang liquidation sa Review step)
+            // Fully Liquidated flip (at CS Hub sync) ay nasa PettyCashAuditController na ngayon
             $replenishment->update(['status' => 'Posted']);
 
             DB::commit();

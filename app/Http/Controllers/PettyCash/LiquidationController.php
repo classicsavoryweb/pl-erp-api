@@ -77,17 +77,13 @@ class LiquidationController extends Controller
         }
     }
 
-    // flattened na listahan ng lahat ng liquidations sa lahat ng issuance na kasama
-    // sa isang replenishment - gamit ng Audit Review screen kaya't hindi na kailangang
-    // pumasok pa isa-isa sa bawat cash issuance
+    // ginagamit ng Audit Review screen para makita lahat ng liquidation sa isang replenishment
     public function getLiquidationsForReplenishment($replenishmentId)
     {
         try {
             $replenishment = PettyCashReplenishment::with('snapshots')->findOrFail($replenishmentId);
 
-            // scope lang sa mga issuance na 'Liquidated' na noong kinuha ang snapshot -
-            // kung may na-liquidate mamaya na 'Unliquidated' pa noon, susunod na
-            // replenishment cycle ang masasakop nito, hindi ito
+            // base sa status noong snapshot, hindi sa live status
             $snapshotsByIssuance = $replenishment->snapshots
                 ->where('status_at_snapshot', 'Liquidated')
                 ->keyBy('petty_cash_issuance_id');
@@ -112,9 +108,7 @@ class LiquidationController extends Controller
                     return $liquidation;
                 });
 
-            // display-only reference: mga issuance na 'Unliquidated' pa noong snapshot -
-            // wala silang action (view/edit) dahil hindi sakop ng replenishment na 'to,
-            // pero ipapakita gamit ang live status ng CI para alam kung ano na kalagayan
+            // display lang, walang action - hindi sakop ng replenishment na 'to
             $unliquidatedSnapshots = $replenishment->snapshots
                 ->where('status_at_snapshot', 'Unliquidated')
                 ->values();
@@ -302,8 +296,6 @@ class LiquidationController extends Controller
         }
     }
 
-    // sinisiguro na kasama nga sa snapshot ng replenishment na 'to yung issuance,
-    // at nasa tamang status pa ang replenishment (Posted = review, Reviewed = post-audit)
     private function resolveReplenishmentForAuditEdit($replenishmentId, $issuanceId): PettyCashReplenishment
     {
         $replenishment = PettyCashReplenishment::findOrFail($replenishmentId);
@@ -312,9 +304,7 @@ class LiquidationController extends Controller
             throw new Exception('This replenishment is not open for audit editing.');
         }
 
-        // dapat 'Liquidated' na noong snapshot mismo - kung 'Unliquidated' pa noon,
-        // susunod na replenishment cycle ang masasakop nito kahit na-liquidate na
-        // mamaya sa live, hindi ito
+        // base sa status noong snapshot, hindi sa live status
         $belongsToReplenishment = PettyCashReplenishmentSnapshot::where('petty_cash_replenishment_id', $replenishment->id)
             ->where('petty_cash_issuance_id', $issuanceId)
             ->where('status_at_snapshot', 'Liquidated')
@@ -327,10 +317,7 @@ class LiquidationController extends Controller
         return $replenishment;
     }
 
-    // kapag na-correct ng auditor ang isang liquidation amount, dapat sumabay ang
-    // overunder ng issuance, ang cash fund ng custodian (delta lang, hindi buong halaga),
-    // at ang mga total ng replenishment - kung hindi, yung lumang mali/kulang na numero
-    // pa rin ang madadala papunta sa Department Fund settlement pagka-Audited na.
+    // kasabay i-adjust ang overunder/cash fund kapag na-edit ni audit ang amount
     private function syncIssuanceAndReplenishmentAfterAuditEdit(PettyCashIssuance $issuance, PettyCashReplenishment $replenishment): void
     {
         $newTotalLiquidated = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->sum('amount');
@@ -341,9 +328,7 @@ class LiquidationController extends Controller
         if ($delta !== 0.0) {
             $custodian = PettyCashCustodian::lockForUpdate()->find($replenishment->petty_cash_custodian_id);
             if ($custodian) {
-                // diff > 0 dati nang ibinawas sa fund (sobra sa inissue), kaya kung tumaas pa
-                // ang diff (positive delta) ibawas din yung dagdag; kung bumaba (negative delta)
-                // ibalik yung sobra sa fund. Same guard sa postLiquidation: bawal umabot sa negative.
+                // delta lang ang kinukuha sa fund, hindi buong amount - same negative guard sa postLiquidation
                 $newBalance = round((float) $custodian->remaining_cash_fund - $delta, 2);
 
                 if ($newBalance < 0) {
@@ -694,8 +679,7 @@ class LiquidationController extends Controller
         return ExpenseType::whereRaw('LOWER(description) = ?', [strtolower(trim($name))])->value('id');
     }
 
-    // isang set lang ng attachments per cshub trans_no, kaya kinokopya sa bawat
-    // liquidation row na nagmula sa mga liquidation_items ng parehong trans_no
+    // isang set lang ng attachments per trans_no, kinokopya sa bawat row na galing dito
     private function importCSHubAttachments(PettyCashLiquidation $liquidation, array $attachments): void
     {
         foreach ($attachments as $att) {
@@ -714,10 +698,7 @@ class LiquidationController extends Controller
         }
     }
 
-    // pinapalitan ang isang cshub liquidation transaction (trans_no) papuntang
-    // isang candidate row per liquidation_item (may sariling expense type at
-    // supplier); kung walang liquidation_items pa (lumang transaction), isang
-    // legacy row lang gamit ang buong actual_amount_spent, tulad ng dati
+    // isang row per liquidation_item; kung wala pa (lumang transaction), legacy row na lang
     private function flattenCSHubLiquidationCandidates($t)
     {
         $items = $t['liquidation_items'] ?? [];

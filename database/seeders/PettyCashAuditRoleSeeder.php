@@ -19,8 +19,7 @@ class PettyCashAuditRoleSeeder extends Seeder
 
         $role->syncPermissions(["view_pettycash_audit_module", "perform_pettycash_audit_module"]);
 
-        // para sa ibang department na dapat makapag-open ng audit module pero view-only
-        // lang - walang perform_pettycash_audit_module kaya walang Review/Post/Add/Edit access
+        // view-only access para sa ibang department, walang Review/Post/Add/Edit
         $viewerRole = Role::firstOrCreate([
             "name" => "pettycash-audit-viewer",
             "guard_name" => "web"

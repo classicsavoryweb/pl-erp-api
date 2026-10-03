@@ -110,9 +110,7 @@ class PettyCashAuditController extends Controller
                 return $this->sendError(['message' => 'Only Reviewed replenishments can be marked as Audited.']);
             }
 
-            // mga liquidation na saklaw ng GL entry generation - dapat 'Liquidated' na sa
-            // snapshot (kaparehong scope ng audit review mismo) at may amount, bago pa man
-            // mag-sulat ng kahit ano, i-validate muna ang expense_type_id ng lahat ng ito
+            // i-validate muna ang expense_type_id bago mag-sulat ng kahit anong entry
             $liquidationGroups = $this->collectQualifyingLiquidations($replenishment);
 
             $missingExpenseType = [];
@@ -129,9 +127,6 @@ class PettyCashAuditController extends Controller
                 ]);
             }
 
-            // dito na lang mag Fully Liquidated, hindi na sa custodian's postReplenishment -
-            // dapat lang ito mangyari kapag na-audit na talaga ang liquidation data (final na,
-            // hindi na puwedeng baguhin pa), hindi habang Posted/Reviewed pa lang
             $cshubSyncQueue = [];
 
             foreach ($replenishment->snapshots as $snapshot) {
@@ -154,9 +149,6 @@ class PettyCashAuditController extends Controller
                 }
             }
 
-            // GL entry generation sa apsys - mirror ng Payroll's GenerateEntry.php pattern
-            // pero hiwalay na implementation dito, hindi hinahawakan/binabago ang
-            // GenerateEntry.php o ibang Payroll entry-generation code
             if ($this->isApsysAvailable()) {
                 $this->createApsysEntriesForReplenishment($replenishment, $liquidationGroups);
             }
@@ -219,9 +211,7 @@ class PettyCashAuditController extends Controller
         }
     }
 
-    // mga liquidation na saklaw ng GL entry generation - 'Liquidated' na sa snapshot
-    // (kaparehong scope ng audit review mismo) at may amount - isa-isa per liquidation,
-    // hindi per issuance o per replenishment
+    // isa-isa per liquidation, hindi per issuance o per replenishment
     private function collectQualifyingLiquidations(PettyCashReplenishment $replenishment): array
     {
         $groups = [];
@@ -264,9 +254,7 @@ class PettyCashAuditController extends Controller
         return Vendor::where('ven_name', 'HO')->first();
     }
 
-    // isang ApsysEntryMain + 2 ApsysEntry (Debit/Credit) + 2 Entry mirror rows per
-    // qualifying liquidation - mirror ng GenerateEntry.php's persistence pattern
-    // (GenerateEntry.php:3708-3777) pero hiwalay na code, walang ginalaw dun
+    // mirror ng GenerateEntry.php's persistence pattern, pra d magalaw yung shared component ng entry
     private function createApsysEntriesForReplenishment(PettyCashReplenishment $replenishment, array $liquidationGroups): void
     {
         $vendor = $this->resolveHoVendor();
@@ -275,7 +263,7 @@ class PettyCashAuditController extends Controller
             $liquidation = $group['liquidation'];
             $issuance = $group['issuance'];
 
-            // idempotency guard - baka retry ng isang partial-failed na Audited action
+            // idempotency guard - for uniqueness
             if (ApsysEntryMain::where('ent_crf_no', $liquidation->liquidation_id)->exists()) {
                 continue;
             }
