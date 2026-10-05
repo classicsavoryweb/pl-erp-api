@@ -242,11 +242,6 @@ class WeightedAverageController extends Controller
                     $weighted->date_posted,
                     UniformPeriodLock::TYPE_RECEIVING
                 );
-                if ($weighted->items->isEmpty()) {
-                    throw ValidationException::withMessages([
-                        'items' => 'A request must contain at least one item before posting.',
-                    ]);
-                }
                 foreach ($weighted->items as $item) {
 
                     UniformItem::where('item_no', $item->uniform_item_no)
@@ -276,7 +271,7 @@ class WeightedAverageController extends Controller
     {
         $request->validate([
             'weighted_average_id' => ['required'],
-            'items' => ['required','array'],
+            'items' => ['array'],
             'items.*.item_no' => ['required'],
             'items.*.standard_unit_price' => ['required','numeric'],
         ]);
@@ -329,8 +324,8 @@ class WeightedAverageController extends Controller
                 'tag' => ['required','string'],
 
 
-                'items' => ['required', 'array', 'min:1'],
-                'items.*.item_no' => ['required', 'string'],
+                'items' => ['array'],
+                'items.*.item_no' => ['string'],
                 'items.*.item_remarks' => ['nullable', 'string'],
                 'items.*.reason' => ['nullable', 'string'],
                 'items.*.total_amount' => ['required','numeric'],
