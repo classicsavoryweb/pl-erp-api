@@ -64,6 +64,12 @@ class PettyCashLiquidation extends Model
         return $this->hasMany(PettyCashLiquidationAttachment::class, 'petty_cash_liquidation_id');
     }
 
+    public function latestAuditLog()
+    {
+        return $this->hasOne(PettyCashLiquidationAuditLog::class, 'petty_cash_liquidation_id')
+            ->latestOfMany();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
