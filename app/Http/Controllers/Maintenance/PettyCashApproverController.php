@@ -88,10 +88,8 @@ class PettyCashApproverController extends Controller
                     "status" => $request->status,
                 ]);
 
-                // Sync branches
                 $approver->branches()->sync($request->branch_ids);
 
-                // Sync employees with amounts
                 $syncData = [];
                 foreach ($request->employees as $emp) {
                     $syncData[$emp['employee_id']] = [
@@ -141,10 +139,8 @@ class PettyCashApproverController extends Controller
                     "status" => $request->status,
                 ]);
 
-                // Sync branches
                 $approver->branches()->sync($request->branch_ids);
 
-                // Sync employees with amounts
                 $syncData = [];
                 foreach ($request->employees as $emp) {
                     $syncData[$emp['employee_id']] = [

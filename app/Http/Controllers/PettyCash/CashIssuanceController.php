@@ -193,7 +193,6 @@ class CashIssuanceController extends Controller
             $branchId = $request->branch_id;
             $amount   = $request->amount;
 
-            // Employees from groups that use a shared amount range
             $sameRange = DB::table('petty_cash_approver_employee as pae')
                 ->join('petty_cash_approvers as pa', 'pa.id', '=', 'pae.approver_id')
                 ->join('petty_cash_approver_branch as pab', 'pab.approver_id', '=', 'pa.id')
@@ -206,7 +205,6 @@ class CashIssuanceController extends Controller
                 ->where('pa.max_amount', '>=', $amount)
                 ->select('e.employee_number', 'e.first_name', 'e.middle_name', 'e.last_name');
 
-            // Employees from groups that use per-employee amount ranges
             $perEmployee = DB::table('petty_cash_approver_employee as pae')
                 ->join('petty_cash_approvers as pa', 'pa.id', '=', 'pae.approver_id')
                 ->join('petty_cash_approver_branch as pab', 'pab.approver_id', '=', 'pa.id')
@@ -284,12 +282,10 @@ class CashIssuanceController extends Controller
                 ->where('pab.branch_id', $request->branch_id)
                 ->where(function ($q) use ($request) {
                     $q->where(function ($inner) use ($request) {
-                        // Shared range
                         $inner->where('pa.use_same_range', true)
                             ->where('pa.min_amount', '<=', $request->amount)
                             ->where('pa.max_amount', '>=', $request->amount);
                     })->orWhere(function ($inner) use ($request) {
-                        // Per-employee range
                         $inner->where('pa.use_same_range', false)
                             ->where('pae.min_amount', '<=', $request->amount)
                             ->where('pae.max_amount', '>=', $request->amount);
