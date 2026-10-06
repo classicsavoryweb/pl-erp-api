@@ -460,11 +460,11 @@ class ReportsPayrollStatutoryController extends Controller
                 'X', 'Y', 'Z', 'AA',
             ];
 
-            for ($r = $startRow; $r <= $totalsRow; $r++) {
-                if ($r < $totalsRow) {
-                    $sheet->setCellValue("N{$r}", "=SUM(K{$r}+L{$r}+M{$r})");
-                }
-            }
+            // for ($r = $startRow; $r <= $totalsRow; $r++) {
+            //     if ($r < $totalsRow) {
+            //         $sheet->setCellValue("N{$r}", "=SUM(K{$r}+L{$r}+M{$r})");
+            //     }
+            // }
 
             foreach ($totalColumns as $col) {
                 $sheet->setCellValue("{$col}{$totalsRow}", "=SUM({$col}{$startRow}:INDEX({$col}:{$col},{$lastRowExpr}))");
