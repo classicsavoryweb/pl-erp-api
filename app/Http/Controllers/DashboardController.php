@@ -452,7 +452,7 @@ class DashboardController extends Controller
 
     public function getAllActiveBranchesWithMissingAccounts(Request $request) {
         try {
-            $company = env("COMPANY_NAME") ? "Savory Fast Food Inc." : "Tony Ting Food Concepts Inc.";
+            $company = env("COMPANY_NAME") == "SFI" ? "Savory Fast Food Inc." : "Tony Ting Food Concepts Inc.";
             $perPage = $request->per_page ?? 10;
 
             $accounts = [
