@@ -54,7 +54,7 @@ class DepartmentFundController extends Controller
             }
 
             $replenishments = PettyCashReplenishment::where('petty_cash_custodian_id', $custodian->id)
-                ->where('status', 'Posted')
+                ->where('status', 'Audited')
                 ->orderBy('date')
                 ->get(['id', 'replenishment_id', 'total_replenishment_amount']);
 
@@ -102,7 +102,7 @@ class DepartmentFundController extends Controller
             ];
 
             if ($isReplenishment) {
-                // dito galing yung Report ID: replenishment_id ng piniling Posted replenishment
+                // dito galing yung Report ID: replenishment_id ng piniling Audited replenishment
                 $rules['report_id'] = 'required|string';
             } elseif ($type->report_id_required) {
                 $rules['report_id'] = 'required|string|max:255';
@@ -129,7 +129,7 @@ class DepartmentFundController extends Controller
                 if ($isReplenishment) {
                     $replenishment = PettyCashReplenishment::where('replenishment_id', $request->report_id)
                         ->where('petty_cash_custodian_id', $custodian->id)
-                        ->where('status', 'Posted')
+                        ->where('status', 'Audited')
                         ->lockForUpdate()
                         ->first();
 

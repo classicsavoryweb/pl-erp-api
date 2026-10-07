@@ -24,6 +24,10 @@ class PettyCashReplenishment extends Model
         'status',
         'void_reason',
         'created_by_id',
+        'reviewed_by_id',
+        'reviewed_at',
+        'audited_by_id',
+        'audited_at',
     ];
 
     public function custodian()
@@ -39,6 +43,16 @@ class PettyCashReplenishment extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    public function reviewedBy()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by_id');
+    }
+
+    public function auditedBy()
+    {
+        return $this->belongsTo(User::class, 'audited_by_id');
     }
 
     public function getActivitylogOptions(): LogOptions

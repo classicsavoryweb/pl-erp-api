@@ -17,6 +17,14 @@ class PettyCashAuditRoleSeeder extends Seeder
             "guard_name" => "web"
         ]);
 
-        $role->syncPermissions(["view_pettycash_audit_module"]);
+        $role->syncPermissions(["view_pettycash_audit_module", "perform_pettycash_audit_module"]);
+
+        // view-only access para sa ibang department, walang Review/Post/Add/Edit
+        $viewerRole = Role::firstOrCreate([
+            "name" => "pettycash-audit-viewer",
+            "guard_name" => "web"
+        ]);
+
+        $viewerRole->syncPermissions(["view_pettycash_audit_module"]);
     }
 }

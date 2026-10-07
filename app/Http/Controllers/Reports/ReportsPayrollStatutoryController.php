@@ -171,7 +171,7 @@ class ReportsPayrollStatutoryController extends Controller
                     );
 
                     $sheet->setCellValue("K{$r}", "=SUM(I{$r}+J{$r})");
-                    $sheet->setCellValue("N{$r}", "=SUM(K{$r}+L{$r}+M{$r})");
+                    // $sheet->setCellValue("N{$r}", "=SUM(K{$r}+L{$r}+M{$r})");
                     $sheet->setCellValue("S{$r}", "=SUM(Q{$r}+R{$r})");
                     $sheet->setCellValue("V{$r}", "=SUM(T{$r}+U{$r})");
                     $sheet->setCellValue("Y{$r}", "=SUM(W{$r}+X{$r})");
@@ -273,6 +273,7 @@ class ReportsPayrollStatutoryController extends Controller
                 $withholdingTax = $payrollsForDisplay->sum('withholding_tax');
                 $employeeSss = $employeePayrolls->sum('employee_sss');
                 $employerSssTotal = $employeePayrolls->sum('employer_sss');
+                $grossPay = $payrollsForDisplay->sum('gross_pay');
                 $employerSss = $employerSssTotal;
                 $employerEc = 0;
                 $sssBasis = null;
@@ -351,6 +352,7 @@ class ReportsPayrollStatutoryController extends Controller
                 $sheet->setCellValue('J' . $row, (float) $legalHolidayAmount);
                 $sheet->setCellValue('L' . $row, (float) $overtimeAmount);
                 $sheet->setCellValue('M' . $row, (float) $nightDiffAmount);
+                $sheet->setCellValue('N' . $row, (float) $grossPay);
                 $sheet->setCellValue('O' . $row, (float) $withholdingTax);
                 $sheet->setCellValue('P' . $row, (float) $employeeSss);
                 $sheet->setCellValue('Q' . $row, (float) $employerSss);
@@ -458,11 +460,11 @@ class ReportsPayrollStatutoryController extends Controller
                 'X', 'Y', 'Z', 'AA',
             ];
 
-            for ($r = $startRow; $r <= $totalsRow; $r++) {
-                if ($r < $totalsRow) {
-                    $sheet->setCellValue("N{$r}", "=SUM(K{$r}+L{$r}+M{$r})");
-                }
-            }
+            // for ($r = $startRow; $r <= $totalsRow; $r++) {
+            //     if ($r < $totalsRow) {
+            //         $sheet->setCellValue("N{$r}", "=SUM(K{$r}+L{$r}+M{$r})");
+            //     }
+            // }
 
             foreach ($totalColumns as $col) {
                 $sheet->setCellValue("{$col}{$totalsRow}", "=SUM({$col}{$startRow}:INDEX({$col}:{$col},{$lastRowExpr}))");

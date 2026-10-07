@@ -127,6 +127,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_petty_cash_module"], ["module" => "petty_cash", "submodule" => "module_access"]);
         Permission::updateOrCreate(["name" => "view_department_fund"], ["module" => "petty_cash", "submodule" => "department_fund"]);
         Permission::updateOrCreate(["name" => "view_pettycash_audit_module"], ["module" => "petty_cash", "submodule" => "audit_module"]);
+        Permission::updateOrCreate(["name" => "perform_pettycash_audit_module"], ["module" => "petty_cash", "submodule" => "audit_module"]);
 
 
         //employees module

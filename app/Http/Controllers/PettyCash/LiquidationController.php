@@ -8,7 +8,9 @@ use App\Models\PettyCashCustodian;
 use App\Models\PettyCashIssuance;
 use App\Models\PettyCashLiquidation;
 use App\Models\PettyCashLiquidationAttachment;
+use App\Models\PettyCashLiquidationAuditLog;
 use App\Models\PettyCashReplenishment;
+use App\Models\PettyCashReplenishmentSnapshot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -17,6 +19,15 @@ use Exception;
 
 class LiquidationController extends Controller
 {
+    // naka-freeze na yung snapshot pag may replenishment today, bawal muna mag-liquidate hanggang bukas
+    private function hasBlockingReplenishmentToday($custodian)
+    {
+        return PettyCashReplenishment::where('petty_cash_custodian_id', $custodian->id)
+            ->whereDate('date', now()->toDateString())
+            ->whereIn('status', ['Pending', 'Posted'])
+            ->exists();
+    }
+    
     private function saveAttachments(PettyCashLiquidation $liquidation, Request $request): void
     {
         if (!$request->hasFile('attachments')) return;
@@ -46,7 +57,7 @@ class LiquidationController extends Controller
         try {
             $issuance = PettyCashIssuance::findOrFail($issuanceId);
 
-            $liquidations = PettyCashLiquidation::with(['expenseType', 'createdBy', 'attachments'])
+            $liquidations = PettyCashLiquidation::with(['expenseType', 'createdBy', 'attachments', 'latestAuditLog.performedBy'])
                 ->where('petty_cash_issuance_id', $issuanceId)
                 ->orderBy('created_at')
                 ->get();
@@ -60,6 +71,67 @@ class LiquidationController extends Controller
             return $this->sendResponse([
                 'liquidations'        => $liquidations,
                 'next_liquidation_id' => $nextLiquidationId,
+            ]);
+        } catch (Exception $e) {
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
+    // ginagamit ng Audit Review screen para makita lahat ng liquidation sa isang replenishment
+    public function getLiquidationsForReplenishment($replenishmentId)
+    {
+        try {
+            $replenishment = PettyCashReplenishment::with('snapshots')->findOrFail($replenishmentId);
+
+            // base sa status noong snapshot, hindi sa live status
+            $snapshotsByIssuance = $replenishment->snapshots
+                ->where('status_at_snapshot', 'Liquidated')
+                ->keyBy('petty_cash_issuance_id');
+
+            $liquidations = PettyCashLiquidation::with([
+                    'expenseType',
+                    'createdBy',
+                    'attachments',
+                    'issuance.requestedBy',
+                    'issuance.receivedBy',
+                    'issuance.approvedBy',
+                    'latestAuditLog.performedBy',
+                ])
+                ->whereIn('petty_cash_issuance_id', $snapshotsByIssuance->keys())
+                ->orderBy('petty_cash_issuance_id')
+                ->orderBy('created_at')
+                ->get()
+                ->map(function ($liquidation) use ($snapshotsByIssuance) {
+                    $snapshot = $snapshotsByIssuance->get($liquidation->petty_cash_issuance_id);
+                    $liquidation->pcv_number = $snapshot->pcv_number ?? null;
+                    $liquidation->cshub_trans_no_snapshot = $snapshot->cshub_trans_no ?? null;
+                    return $liquidation;
+                });
+
+            // display lang, walang action - hindi sakop ng replenishment na 'to
+            $unliquidatedSnapshots = $replenishment->snapshots
+                ->where('status_at_snapshot', 'Unliquidated')
+                ->values();
+
+            $unliquidatedIssuancesById = PettyCashIssuance::with(['requestedBy', 'receivedBy', 'approvedBy'])
+                ->whereIn('id', $unliquidatedSnapshots->pluck('petty_cash_issuance_id'))
+                ->get()
+                ->keyBy('id');
+
+            $unliquidatedIssuances = $unliquidatedSnapshots->map(function ($snapshot) use ($unliquidatedIssuancesById) {
+                $issuance = $unliquidatedIssuancesById->get($snapshot->petty_cash_issuance_id);
+                return [
+                    'petty_cash_issuance_id' => $snapshot->petty_cash_issuance_id,
+                    'pcv_number'             => $snapshot->pcv_number,
+                    'cshub_trans_no'         => $snapshot->cshub_trans_no,
+                    'issuance'               => $issuance,
+                    'current_status'        => $issuance->status ?? $snapshot->status_at_snapshot,
+                ];
+            })->values();
+
+            return $this->sendResponse([
+                'liquidations'           => $liquidations,
+                'unliquidated_issuances' => $unliquidatedIssuances,
             ]);
         } catch (Exception $e) {
             return $this->sendError(['message' => $e->getMessage()]);
@@ -122,7 +194,7 @@ class LiquidationController extends Controller
                 'reference_document_date'   => 'required|date|before_or_equal:today',
                 'description'               => 'required|string|max:250',
                 'supplier_vendor'           => 'required|string|max:150',
-                'amount'                    => 'required|numeric|min:0.01',
+                'amount'                    => 'required|numeric|min:0',
                 'expense_type_id'           => 'required|exists:expense_types,id',
                 'attachments'               => 'required|array|min:1',
                 'attachments.*'             => 'required|file|mimetypes:image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf',
@@ -172,7 +244,7 @@ class LiquidationController extends Controller
                 'reference_document_date'   => 'required|date|before_or_equal:today',
                 'description'               => 'required|string|max:250',
                 'supplier_vendor'           => 'required|string|max:150',
-                'amount'                    => 'required|numeric|min:0.01',
+                'amount'                    => 'required|numeric|min:0',
                 'expense_type_id'           => 'required|exists:expense_types,id',
                 'attachments.*'             => 'file|mimetypes:image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf',
             ]);
@@ -224,6 +296,238 @@ class LiquidationController extends Controller
         }
     }
 
+    private function resolveReplenishmentForAuditEdit($replenishmentId, $issuanceId): PettyCashReplenishment
+    {
+        $replenishment = PettyCashReplenishment::findOrFail($replenishmentId);
+
+        if (!in_array($replenishment->status, ['Posted', 'Reviewed'])) {
+            throw new Exception('This replenishment is not open for audit editing.');
+        }
+
+        // base sa status noong snapshot, hindi sa live status
+        $belongsToReplenishment = PettyCashReplenishmentSnapshot::where('petty_cash_replenishment_id', $replenishment->id)
+            ->where('petty_cash_issuance_id', $issuanceId)
+            ->where('status_at_snapshot', 'Liquidated')
+            ->exists();
+
+        if (!$belongsToReplenishment) {
+            throw new Exception('This cash issuance is not part of the selected replenishment.');
+        }
+
+        return $replenishment;
+    }
+
+    // kasabay i-adjust ang overunder/cash fund kapag na-edit ni audit ang amount
+    private function syncIssuanceAndReplenishmentAfterAuditEdit(PettyCashIssuance $issuance, PettyCashReplenishment $replenishment): void
+    {
+        $newTotalLiquidated = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->sum('amount');
+        $newOverunder = round($newTotalLiquidated - $issuance->amount, 2);
+        $oldOverunder = round((float) ($issuance->overunder_amount ?? 0), 2);
+        $delta = round($newOverunder - $oldOverunder, 2);
+
+        if ($delta !== 0.0) {
+            $custodian = PettyCashCustodian::lockForUpdate()->find($replenishment->petty_cash_custodian_id);
+            if ($custodian) {
+                // delta lang ang kinukuha sa fund, hindi buong amount - same negative guard sa postLiquidation
+                $newBalance = round((float) $custodian->remaining_cash_fund - $delta, 2);
+
+                if ($newBalance < 0) {
+                    throw new Exception(
+                        'This change would push the remaining cash fund to ₱' . number_format($newBalance, 2) .
+                        ', which exceeds the available balance of ₱' . number_format($custodian->remaining_cash_fund, 2) . '.'
+                    );
+                }
+
+                $custodian->decrement('remaining_cash_fund', $delta);
+            }
+        }
+
+        $issuance->update(['overunder_amount' => $newOverunder]);
+
+        PettyCashReplenishmentSnapshot::where('petty_cash_replenishment_id', $replenishment->id)
+            ->where('petty_cash_issuance_id', $issuance->id)
+            ->update(['overunder_amount' => $newOverunder]);
+
+        $snapshots = PettyCashReplenishmentSnapshot::where('petty_cash_replenishment_id', $replenishment->id)->get();
+
+        $replenishment->update([
+            'total_cash_issuance_amount' => $snapshots->sum(fn($s) => (float) $s->amount),
+            'total_overunder_amount'     => $snapshots->sum(fn($s) => (float) ($s->overunder_amount ?? 0)),
+            'total_replenishment_amount' => $snapshots->where('status_at_snapshot', 'Liquidated')
+                ->sum(fn($s) => (float) $s->amount + (float) ($s->overunder_amount ?? 0)),
+        ]);
+    }
+
+    public function auditCreateLiquidation(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                'petty_cash_issuance_id'      => 'required|exists:petty_cash_issuances,id',
+                'petty_cash_replenishment_id' => 'required|exists:petty_cash_replenishments,id',
+                'liquidation_type'            => 'required|string',
+                'reference_document_number'   => 'required|string|max:50',
+                'reference_document_date'     => 'required|date|before_or_equal:today',
+                'description'                 => 'required|string|max:250',
+                'supplier_vendor'             => 'required|string|max:150',
+                'amount'                      => 'required|numeric|min:0',
+                'expense_type_id'             => 'required|exists:expense_types,id',
+                'reason'                      => 'required|string|max:250',
+                'attachments'                 => 'required|array|min:1',
+                'attachments.*'               => 'required|file|mimetypes:image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf',
+            ]);
+
+            $replenishment = $this->resolveReplenishmentForAuditEdit($request->petty_cash_replenishment_id, $request->petty_cash_issuance_id);
+            $issuance = PettyCashIssuance::findOrFail($request->petty_cash_issuance_id);
+
+            $count = PettyCashLiquidation::withTrashed()
+                ->where('petty_cash_issuance_id', $issuance->id)
+                ->count();
+
+            $liquidationId = 'LIQ' . ($count + 1) . '-' . $issuance->pcv_number;
+
+            $liquidation = PettyCashLiquidation::create([
+                'liquidation_id'               => $liquidationId,
+                'petty_cash_issuance_id'       => $issuance->id,
+                'date'                         => now()->toDateString(),
+                'liquidation_type'             => $request->liquidation_type,
+                'requested_by_employee_number' => $issuance->requested_by_employee_number,
+                'reference_document_number'    => $request->reference_document_number,
+                'reference_document_date'      => $request->reference_document_date,
+                'description'                  => $request->description,
+                'supplier_vendor'              => $request->supplier_vendor,
+                'amount'                       => $request->amount,
+                'expense_type_id'              => $request->expense_type_id,
+                'created_by_id'                => auth()->id(),
+            ]);
+
+            $this->saveAttachments($liquidation, $request);
+
+            PettyCashLiquidationAuditLog::create([
+                'petty_cash_liquidation_id'    => $liquidation->id,
+                'petty_cash_replenishment_id'  => $replenishment->id,
+                'action'                       => 'created',
+                'reason'                       => $request->reason,
+                'old_values'                   => null,
+                'new_values'                   => $liquidation->only([
+                    'liquidation_type', 'reference_document_number', 'reference_document_date',
+                    'description', 'supplier_vendor', 'amount', 'expense_type_id',
+                ]),
+                'performed_by_id'              => auth()->id(),
+            ]);
+
+            $this->syncIssuanceAndReplenishmentAfterAuditEdit($issuance, $replenishment);
+
+            DB::commit();
+            return $this->sendResponse(['message' => 'Liquidation added successfully.']);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
+    public function auditEditLiquidation(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                'petty_cash_replenishment_id' => 'required|exists:petty_cash_replenishments,id',
+                'liquidation_type'            => 'required|string',
+                'reference_document_number'   => 'required|string|max:50',
+                'reference_document_date'     => 'required|date|before_or_equal:today',
+                'description'                 => 'required|string|max:250',
+                'supplier_vendor'             => 'required|string|max:150',
+                'amount'                      => 'required|numeric|min:0',
+                'expense_type_id'             => 'required|exists:expense_types,id',
+                'reason'                      => 'required|string|max:250',
+                'attachments.*'               => 'file|mimetypes:image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf',
+            ]);
+
+            $liquidation = PettyCashLiquidation::findOrFail($id);
+            $replenishment = $this->resolveReplenishmentForAuditEdit($request->petty_cash_replenishment_id, $liquidation->petty_cash_issuance_id);
+
+            $oldValues = $liquidation->only([
+                'liquidation_type', 'reference_document_number', 'reference_document_date',
+                'description', 'supplier_vendor', 'amount', 'expense_type_id',
+            ]);
+
+            $liquidation->update([
+                'liquidation_type'          => $request->liquidation_type,
+                'reference_document_number' => $request->reference_document_number,
+                'reference_document_date'   => $request->reference_document_date,
+                'description'               => $request->description,
+                'supplier_vendor'           => $request->supplier_vendor,
+                'amount'                    => $request->amount,
+                'expense_type_id'           => $request->expense_type_id,
+                'updated_by_id'             => auth()->id(),
+            ]);
+
+            // alisin yung mga tinanggal na attachment
+            if ($request->filled('removed_attachment_ids')) {
+                $storage = Storage::disk('hr_system_folder');
+                $removedIds = is_array($request->removed_attachment_ids)
+                    ? $request->removed_attachment_ids
+                    : explode(',', $request->removed_attachment_ids);
+
+                foreach ($removedIds as $attId) {
+                    $att = PettyCashLiquidationAttachment::find($attId);
+                    if ($att) {
+                        if ($storage->exists($att->file_path)) $storage->delete($att->file_path);
+                        $att->delete();
+                    }
+                }
+            }
+
+            $remainingCount = PettyCashLiquidationAttachment::where('petty_cash_liquidation_id', $liquidation->id)->count();
+            $incomingCount  = $request->hasFile('attachments') ? count($request->file('attachments')) : 0;
+
+            if ($remainingCount + $incomingCount < 1) {
+                DB::rollBack();
+                return $this->sendError(['message' => 'At least one attachment is required.']);
+            }
+
+            $this->saveAttachments($liquidation, $request);
+
+            PettyCashLiquidationAuditLog::create([
+                'petty_cash_liquidation_id'   => $liquidation->id,
+                'petty_cash_replenishment_id' => $replenishment->id,
+                'action'                      => 'updated',
+                'reason'                      => $request->reason,
+                'old_values'                  => $oldValues,
+                'new_values'                  => $liquidation->only([
+                    'liquidation_type', 'reference_document_number', 'reference_document_date',
+                    'description', 'supplier_vendor', 'amount', 'expense_type_id',
+                ]),
+                'performed_by_id'             => auth()->id(),
+            ]);
+
+            $issuance = PettyCashIssuance::findOrFail($liquidation->petty_cash_issuance_id);
+            $this->syncIssuanceAndReplenishmentAfterAuditEdit($issuance, $replenishment);
+
+            DB::commit();
+            return $this->sendResponse(['message' => 'Liquidation updated successfully.']);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
+    public function getLiquidationAuditLogs($replenishmentId)
+    {
+        try {
+            $logs = PettyCashLiquidationAuditLog::with(['liquidation', 'performedBy'])
+                ->where('petty_cash_replenishment_id', $replenishmentId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return $this->sendResponse(['logs' => $logs]);
+        } catch (Exception $e) {
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
     public function voidLiquidation($id)
     {
         try {
@@ -264,20 +568,17 @@ class LiquidationController extends Controller
                 return $this->sendError(['message' => 'You are not an active petty cash custodian.']);
             }
 
-            // bawal mag-liquidate habang may hindi pa Voided/Replenished, baka mahabol na sa snapshot
-            $hasUnsettledReplenishment = PettyCashReplenishment::where('petty_cash_custodian_id', $custodian->id)
-                ->whereNotIn('status', ['Voided', 'Replenished'])
-                ->exists();
+            if ($this->hasBlockingReplenishmentToday($custodian)) {
+                return $this->sendError(['message' => 'A replenishment created today is still Pending or Posted. You can post liquidation once it is Replenished, or starting tomorrow.']);
+            }
 
-            if ($hasUnsettledReplenishment) {
-                return $this->sendError(['message' => 'A replenishment is still Pending or Posted. You can post liquidation once it is Replenished.']);
+            $hasLiquidations = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->exists();
+
+            if (!$hasLiquidations) {
+                return $this->sendError(['message' => 'No liquidation records found. Please add at least one liquidation before posting.']);
             }
 
             $totalLiquidated = PettyCashLiquidation::where('petty_cash_issuance_id', $issuance->id)->sum('amount');
-
-            if ($totalLiquidated <= 0) {
-                return $this->sendError(['message' => 'No liquidation records found. Please add at least one liquidation before posting.']);
-            }
 
             $diff = round($totalLiquidated - $issuance->amount, 2);
 
@@ -378,8 +679,7 @@ class LiquidationController extends Controller
         return ExpenseType::whereRaw('LOWER(description) = ?', [strtolower(trim($name))])->value('id');
     }
 
-    // isang set lang ng attachments per cshub trans_no, kaya kinokopya sa bawat
-    // liquidation row na nagmula sa mga liquidation_items ng parehong trans_no
+    // isang set lang ng attachments per trans_no, kinokopya sa bawat row na galing dito
     private function importCSHubAttachments(PettyCashLiquidation $liquidation, array $attachments): void
     {
         foreach ($attachments as $att) {
@@ -398,10 +698,7 @@ class LiquidationController extends Controller
         }
     }
 
-    // pinapalitan ang isang cshub liquidation transaction (trans_no) papuntang
-    // isang candidate row per liquidation_item (may sariling expense type at
-    // supplier); kung walang liquidation_items pa (lumang transaction), isang
-    // legacy row lang gamit ang buong actual_amount_spent, tulad ng dati
+    // isang row per liquidation_item; kung wala pa (lumang transaction), legacy row na lang
     private function flattenCSHubLiquidationCandidates($t)
     {
         $items = $t['liquidation_items'] ?? [];

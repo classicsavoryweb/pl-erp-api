@@ -113,6 +113,10 @@ class EmployeePositionControlller extends Controller
                 if ($salary->rate_category === "MINIMUM") {
                     $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
                     $minimum = $rate->minimum ?? 0;
+                    if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                        $minimum = ($rate->minimum * 26) / 22;
+                    }
+
                     $monthlyRate = $minimum * $multiplier;
                 } else {
                     $monthlyRate = $salary->basic_salary;
@@ -176,6 +180,10 @@ class EmployeePositionControlller extends Controller
                 if ($salary->rate_category === "MINIMUM") {
                     $rate = Rate::where("code", $employee->home_branch->rate_code)->first();
                     $minimum = $rate->minimum ?? 0;
+                    if ($employee->schedule->schedule_type->name == "Compressed Schedule") {
+                        $minimum = ($rate->minimum * 26) / 22;
+                    }
+
                     $monthlyRate = $minimum * $multiplier;
                 } else {
                     $monthlyRate = $salary->basic_salary;
