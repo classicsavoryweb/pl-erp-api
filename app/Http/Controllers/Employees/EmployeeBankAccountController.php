@@ -59,8 +59,11 @@ class EmployeeBankAccountController extends Controller
             ]);
 
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $employee->bank_details()->where("id", $request->id)->update([
-                ...$request->except(["id"])
+            $bank_details = BankDetail::find($request->id);
+            $bank_details->update([
+                "bank_account_type_id" => $request->bank_account_type_id,
+                "bank_number" => $request->bank_number,
+                "remarks" => $request->remarks,
             ]);
 
             DB::commit();

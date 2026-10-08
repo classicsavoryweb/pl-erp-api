@@ -16,13 +16,15 @@ use App\Models\Payroll;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
-use Str;
-use Log;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use App\Http\Services\LastPayService;
 use App\Models\ConverterDetail;
+use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 class LastPayControllerV2 extends Controller
 {
@@ -224,7 +226,8 @@ class LastPayControllerV2 extends Controller
                 $lastPay->enableLogging();
 
                 foreach ($lastPay->additional_fields as $additionalField) {
-                    $fieldOnConverter = ConverterDetail::where("employee_id", $lastPay->employee_id)
+                    $fieldOnConverter = ConverterDetail::with(['transaction_type'])
+                    ->where("employee_id", $lastPay->employee_id)
                     ->where("amount", $additionalField->amount)
                     ->where("transaction_type_id", $additionalField->transaction_type_id)
                     ->where("status", "Pending")
@@ -232,6 +235,39 @@ class LastPayControllerV2 extends Controller
 
                     if (!$fieldOnConverter) {
                         continue;
+                    }
+                    $type = null;
+                    
+                    if (in_array($fieldOnConverter->transaction_type->source_id, [1,2])) {
+                        $type = $fieldOnConverter->transaction_type->source_id == 1 ? "LOAN" : "HEALTHCARE";
+                    }
+                    
+                    if(!is_null($fieldOnConverter->transaction_number)){
+                        try {
+                            $userEmployee = Auth::user();
+                            $employeeNumber = $userEmployee->employee_number;
+                            $baseUrl = env('CS_HUB_URL_LINK');
+                            $user = env('CS_HUB_ADMIN_EMAIL');
+                            $password = env('CS_HUB_ADMIN_PASSWORD');
+                            $endPoint = $baseUrl."/update-transaction-status";
+                            $response = Http::withBasicAuth($user, $password)
+                                ->withHeaders([
+                                    "Accept" => "application/json",
+                                    "Content-Type" => "application/json",
+                                ])
+                                ->retry(3)
+                                ->timeout(60)
+                                ->post($endPoint, [
+                                    "transaction_number" => $fieldOnConverter->transaction_number,
+                                    "status" => "Credited",
+                                    "type" => $type,
+                                    "employee_number" => $employeeNumber,
+                                    "company" => env("COMPANY_NAME"),
+                                    "amount" => $fieldOnConverter->amount
+                                ]);          
+                        } catch (Exception $e) {
+                            Log::info($e->getMessage());
+                        }
                     }
 
                     $fieldOnConverter->update(["status" => "Last Pay"]);
