@@ -110,8 +110,9 @@ class EmployeeContractControlller extends Controller
                 "contract_end_date" => "required",
                 "status" => "required",
             ]);
-            $employee = Employee::where("employee_number", $employee_number)->first();
-            $employee->contracts()->where("id", $request->id)->update([
+            $employee = Employee::where("employee_number", $employee_number)->firstOrFail();
+            $contract = Contract::find($request->id);
+            $contract->update([
                 "contract_start_date" => $request->contract_start_date,
                 "contract_end_date" => $request->contract_end_date,
                 "status" => $request->status,

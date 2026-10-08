@@ -33,7 +33,6 @@ class Contract extends Model
         return LogOptions::defaults()
             ->logAll()
             ->useLogName('Contract')
-            ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 }

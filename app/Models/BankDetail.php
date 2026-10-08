@@ -27,7 +27,7 @@ class BankDetail extends Model
         return LogOptions::defaults()
             ->logAll()
             ->useLogName('Bank Details')
-            ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 }
+ 
