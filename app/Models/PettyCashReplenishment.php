@@ -20,6 +20,7 @@ class PettyCashReplenishment extends Model
         'branches_summary',
         'total_cash_issuance_amount',
         'total_overunder_amount',
+        'total_unliquidated_amount',
         'total_replenishment_amount',
         'status',
         'void_reason',

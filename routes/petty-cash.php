@@ -61,6 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Petty Cash Audit
     Route::get('/get-all-replenishments-audit', [PettyCashAuditController::class, 'getAllReplenishmentsForAudit'])
         ->middleware('permission:view_pettycash_audit_module');
+    Route::get('/export-all-replenishments-audit', [PettyCashAuditController::class, 'exportAllReplenishmentsForAudit'])
+        ->middleware('permission:view_pettycash_audit_module');
     Route::post('/review-replenishment-audit/{id}', [PettyCashAuditController::class, 'reviewReplenishment'])
         ->middleware('permission:perform_pettycash_audit_module');
     Route::post('/post-replenishment-audit/{id}', [PettyCashAuditController::class, 'postAuditReplenishment'])
