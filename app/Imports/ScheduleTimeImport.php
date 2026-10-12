@@ -39,6 +39,8 @@ class ScheduleTimeImport implements ToCollection, WithHeadingRow, WithMultipleSh
 
         foreach ($collection as $row) {
             $employee = Employee::where("biometric_number", (string) $row["employee_id"])
+            ->where("biometric_number", "!=", "")
+            ->whereNotNull("biometric_number")
             ->first();
 
             if ($employee && in_array($employee->biometric_number, $this->excludedEmployeeIds)) {
