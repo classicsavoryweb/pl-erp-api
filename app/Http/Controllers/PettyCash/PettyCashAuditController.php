@@ -19,54 +19,167 @@ use Exception;
 
 class PettyCashAuditController extends Controller
 {
+    // "Pending" dito ay tumutukoy sa mga Posted na ni custodian pero pending pa i-audit
+    private function buildAuditReplenishmentQuery(Request $request)
+    {
+        $statusMap = [
+            'Pending'  => 'Posted',
+            'Reviewed' => 'Reviewed',
+            'Audited'  => 'Audited',
+            'Replenished'  => 'Replenished',
+        ];
+
+        $query = PettyCashReplenishment::with(['custodian.user']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $statusMap[$request->status] ?? 'Posted');
+        } else {
+            // walang piniling status filter, ipakita lahat ng nasa audit pipeline
+            $query->whereIn('status', ['Posted', 'Reviewed', 'Audited', 'Replenished']);
+        }
+
+        if ($request->filled('custodian_id')) {
+            $query->where('petty_cash_custodian_id', $request->custodian_id);
+        }
+
+        if ($request->filled('replenishment_id')) {
+            $query->where('replenishment_id', 'like', '%' . $request->replenishment_id . '%');
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('branch_id')) {
+            $branch = Branch::find($request->branch_id);
+            if ($branch) {
+                $query->where('branches_summary', 'like', '%' . $branch->name . '%');
+            }
+        }
+
+        return $query;
+    }
+
     public function getAllReplenishmentsForAudit(Request $request)
     {
         try {
             $perPage = $request->per_page ?? 10;
 
-            // "Pending" dito ay tumutukoy sa mga Posted na ni custodian pero pending pa i-audit.
-            $statusMap = [
-                'Pending'  => 'Posted',
-                'Reviewed' => 'Reviewed',
-                'Audited'  => 'Audited',
-                'Replenished'  => 'Replenished',
+            $replenishments = $this->buildAuditReplenishmentQuery($request)
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
+
+            return $this->sendResponse($replenishments);
+        } catch (Exception $e) {
+            return $this->sendError(['message' => $e->getMessage()]);
+        }
+    }
+
+    // detailed export - isang row per liquidation (kapareho ng audit view), hindi per replenishment
+    public function exportAllReplenishmentsForAudit(Request $request)
+    {
+        try {
+            $replenishments = $this->buildAuditReplenishmentQuery($request)
+                ->with('snapshots')
+                ->orderBy('replenishment_id', 'desc')
+                ->get();
+
+            $headers = [
+                'Replenishment ID', 'Custodian', 'PCV Number', 'Liquidation ID', 'Transaction Date',
+                'Requested By', 'Received By', 'Approved By', 'Cash Issuance Amount', 'Over/Under Amount',
+                'Source', 'Liquidation Date', 'Ref Doc No.', 'Description', 'Liquidated Amount',
+                'Expense Type', 'Snapshot Status', 'Current Status',
             ];
 
-            $query = PettyCashReplenishment::with(['custodian.user']);
+            $employeeName = fn($emp) => $emp ? $emp->last_name . ', ' . $emp->first_name : '—';
 
-            if ($request->filled('status')) {
-                $query->where('status', $statusMap[$request->status] ?? 'Posted');
-            } else {
-                // walang piniling status filter, ipakita lahat ng nasa audit pipeline
-                $query->whereIn('status', ['Posted', 'Reviewed', 'Audited', 'Replenished']);
-            }
+            // liquidated muna lahat sa taas, tapos unliquidated sa baba - hindi
+            // pinagsasabay per replenishment dahil nakakalito pag paulit-ulit lumabas
+            // ang parehong CI (Unliquidated noong isang replenishment, Liquidated na sa sunod)
+            $liquidatedRows = collect();
+            $unliquidatedRows = collect();
 
-            if ($request->filled('custodian_id')) {
-                $query->where('petty_cash_custodian_id', $request->custodian_id);
-            }
+            foreach ($replenishments as $replenishment) {
+                $custodianName = $replenishment->custodian->user->full_name ?? '—';
 
-            if ($request->filled('replenishment_id')) {
-                $query->where('replenishment_id', 'like', '%' . $request->replenishment_id . '%');
-            }
+                // kapareho ng scope rule sa view: Liquidated-at-snapshot lang ang may liquidation detail
+                $liquidatedSnapshots = $replenishment->snapshots
+                    ->where('status_at_snapshot', 'Liquidated')
+                    ->keyBy('petty_cash_issuance_id');
 
-            if ($request->filled('date_from')) {
-                $query->whereDate('date', '>=', $request->date_from);
-            }
+                $liquidations = PettyCashLiquidation::with(['expenseType', 'issuance.requestedBy', 'issuance.receivedBy', 'issuance.approvedBy'])
+                    ->whereIn('petty_cash_issuance_id', $liquidatedSnapshots->keys())
+                    ->orderBy('liquidation_id', 'asc')
+                    ->get();
 
-            if ($request->filled('date_to')) {
-                $query->whereDate('date', '<=', $request->date_to);
-            }
+                foreach ($liquidations as $liquidation) {
+                    $issuance = $liquidation->issuance;
+                    $snapshot = $liquidatedSnapshots->get($liquidation->petty_cash_issuance_id);
 
-            if ($request->filled('branch_id')) {
-                $branch = Branch::find($request->branch_id);
-                if ($branch) {
-                    $query->where('branches_summary', 'like', '%' . $branch->name . '%');
+                    $liquidatedRows->push([
+                        $replenishment->replenishment_id,
+                        $custodianName,
+                        $snapshot->pcv_number ?? '—',
+                        $liquidation->liquidation_id,
+                        $issuance->date ?? '—',
+                        $employeeName($issuance->requestedBy),
+                        $employeeName($issuance->receivedBy),
+                        $employeeName($issuance->approvedBy),
+                        $issuance->amount,
+                        $issuance->overunder_amount,
+                        $issuance->source ?? '—',
+                        $liquidation->date,
+                        $liquidation->reference_document_number,
+                        $liquidation->description,
+                        $liquidation->amount,
+                        $liquidation->expenseType->description ?? '—',
+                        $snapshot->status_at_snapshot,
+                        $issuance->status ?? '—',
+                    ]);
+                }
+
+                // display-only reference, gaya ng sa view - mga Unliquidated pa noong snapshot
+                $unliquidatedSnapshots = $replenishment->snapshots->where('status_at_snapshot', 'Unliquidated');
+
+                foreach ($unliquidatedSnapshots as $snapshot) {
+                    $issuance = PettyCashIssuance::with(['requestedBy', 'receivedBy', 'approvedBy'])
+                        ->find($snapshot->petty_cash_issuance_id);
+
+                    if (!$issuance) {
+                        continue;
+                    }
+
+                    $unliquidatedRows->push([
+                        $replenishment->replenishment_id,
+                        $custodianName,
+                        $snapshot->pcv_number ?? '—',
+                        '—',
+                        $issuance->date ?? '—',
+                        $employeeName($issuance->requestedBy),
+                        $employeeName($issuance->receivedBy),
+                        $employeeName($issuance->approvedBy),
+                        $issuance->amount,
+                        '—',
+                        $issuance->source ?? '—',
+                        '—',
+                        '—',
+                        '—',
+                        '—',
+                        '—',
+                        $snapshot->status_at_snapshot,
+                        $issuance->status ?? $snapshot->status_at_snapshot,
+                    ]);
                 }
             }
 
-            $replenishments = $query->orderBy('created_at', 'desc')->paginate($perPage);
+            $rows = $liquidatedRows->concat($unliquidatedRows);
 
-            return $this->sendResponse($replenishments);
+            $export = new \App\Exports\PettyCash\AuditLiquidationExport($rows, $headers);
+            return \Maatwebsite\Excel\Facades\Excel::download($export, 'petty-cash-audit-liquidations.xls');
         } catch (Exception $e) {
             return $this->sendError(['message' => $e->getMessage()]);
         }
