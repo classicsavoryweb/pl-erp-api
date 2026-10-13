@@ -31,9 +31,6 @@ class UpdateMonthlySalaryJob implements ShouldQueue
         $rateCode = $this->rateCode;
         $rate = Rate::where("code", $rateCode)->first();
         $dailyRate = 0;
-        if ($rate) {
-            $dailyRate = $rate->minimum;
-        }
         $employees = Employee::with(["payroll_list", "schedule.schedule_type"])
         ->where("status", "active")
         ->where("type", "Direct")
@@ -47,6 +44,9 @@ class UpdateMonthlySalaryJob implements ShouldQueue
 
         foreach ($employees as $employee) {
             $multiplier = 26;
+            if ($rate) {
+                $dailyRate = $rate->minimum;
+            }
             $scheduleType = $employee->schedule->schedule_type->name;
             if ($scheduleType == "Compressed Schedule") {
                 $multiplier = 22;
