@@ -42,11 +42,11 @@ class ReportsEmploymentStatusController extends Controller
                 }
 
                 $groupHead = Employee::with(["current_position"])
-                ->where("employee_number", $branch->group_head_employee_number)->first();
+                ->where("employee_number", $branch->area_head_employee_number)->first();
 
                 if (!$groupHead) {
                     $groupHead = OtherEmployee::with(["current_position"])
-                    ->where("employee_number", $branch->group_head_employee_number)->first();
+                    ->where("employee_number", $branch->area_head_employee_number)->first();
                 }
                 $groupedEmployees = $employees->groupBy("station_id");
                 $data = [];
@@ -96,7 +96,7 @@ class ReportsEmploymentStatusController extends Controller
 
                     $data[] = [
                         "branch_oic" => $branchOIC,
-                        "group_head" => $groupHead,
+                        "area_head" => $groupHead,
                         "date" => now()->toDateString(),
                         "branch" => $branch,
                         "data" => $group,

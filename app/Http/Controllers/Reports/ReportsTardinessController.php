@@ -426,7 +426,7 @@ class ReportsTardinessController extends Controller
                 "date" => $formattedDate,
                 "proper_full_name" => $properFullName,
                 "branch_head" => $branch->branch_head,
-                "group_head" => strtoupper($branch->group_head),
+                "area_head" => strtoupper($branch->area_head),
                 "tardiness_sanction" => $tardiness_sanction->punishment,
                 "rank" => $tardiness_sanction->rank,
                 "count" => $tardiness_sanction->count,

@@ -89,19 +89,12 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            $inc = 1;
-            do {
-                $thisCompanyEmployeeCount = Employee::count();
-                $otherCompanyEmployeeCount = OtherEmployee::count();
-                $employeeCount = $thisCompanyEmployeeCount + $otherCompanyEmployeeCount;
-                $company = env('COMPANY_NAME');
-                $employeeNumber = str_pad($employeeCount + $inc, 7, '0', STR_PAD_LEFT);
-                $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
-                $inc++;
-            } while (
-                Employee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0 ||
-                OtherEmployee::whereIn("employee_number", [$employeeNumber, "A".$employeeNumber])->get()->count() > 0
-            );
+            $thisCompanyEmployeeCount = Employee::count();
+            $otherCompanyEmployeeCount = OtherEmployee::count();
+            $employeeCount = $thisCompanyEmployeeCount + $otherCompanyEmployeeCount;
+            $company = env('COMPANY_NAME');
+            $employeeNumber = str_pad($thisCompanyEmployeeCount, 7, '0', STR_PAD_LEFT);
+            $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
 
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave", "region"]);
@@ -109,19 +102,8 @@ class EmployeeController extends Controller
             $biometricsNumber = "";
 
             if ($request->type === "Direct") {
-                $prefix = env('COMPANY_NAME') == "SFI" ? "10" : "30";
-
+                $prefix = env('COMPANY_NAME') == "PL" ? "10" : "30";
                 $biometricsNumber = $prefix . $employeeNumber;
-            }
-            if ($request->type === "Agency") {
-                $agency = Agency::find($request->agency_id);
-
-                if ($agency) {
-                    $biometricsNumber = $agency->employee_code.$employeeNumber;
-                }
-
-                $employeeNumber = "A".$employeeNumber;
-                $employeeNumber2 = $company."-".$agency->name."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
             }
 
             $region = null;
@@ -139,27 +121,27 @@ class EmployeeController extends Controller
                 ...$fields
             ]);
 
-            if ($request->type === "Direct" && $position->rank == 2) {
-                $baseIncentive = 0;
-                if ($position->description == "Senior Staff") {
-                    $baseIncentive = 2750;
-                } else {
-                    $positionIncentive = IncentivePosition::where(
-                        "position_id",
-                        $position->id
-                    )->first();
+            // if ($request->type === "Direct" && $position->rank == 2) {
+            //     $baseIncentive = 0;
+            //     if ($position->description == "Senior Staff") {
+            //         $baseIncentive = 2750;
+            //     } else {
+            //         $positionIncentive = IncentivePosition::where(
+            //             "position_id",
+            //             $position->id
+            //         )->first();
 
-                    if ($positionIncentive) {
-                        $baseIncentive = $positionIncentive->amount;
-                    }
-                }
+            //         if ($positionIncentive) {
+            //             $baseIncentive = $positionIncentive->amount;
+            //         }
+            //     }
 
-                IncentivesManagement::create([
-                    "employee_id" => $employee->id,
-                    "amount" => $baseIncentive,
-                    "max_amount" => $baseIncentive,
-                ]);
-            }
+            //     IncentivesManagement::create([
+            //         "employee_id" => $employee->id,
+            //         "amount" => $baseIncentive,
+            //         "max_amount" => $baseIncentive,
+            //     ]);
+            // }
 
             $startDate = Carbon::parse($request->date_hired);
             $contractEndDate = $startDate->addMonths($request->contract_duration)->toDateString();

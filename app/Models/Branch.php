@@ -27,13 +27,13 @@ class Branch extends Model
         "branch_email",
         "rate_code",
         'branch_head_employee_number',
-        "group_head_employee_number",
+        "area_head_employee_number",
         'branch_head',
-        "group_head",
-        'kitchen_oic_employee_number',
-        'kitchen_oic',
-        'kitchen_oic_2_employee_number',
-        'kitchen_oic_2',
+        "area_head",
+        'lab_head_employee_number',
+        'lab_head',
+        'lab_head_2_employee_number',
+        'lab_head_2',
         'mancom_employee_number',
         'mancom',
         'expense_debit',
@@ -58,20 +58,20 @@ class Branch extends Model
         return $this->belongsTo(ActingCapacity::class);
     }
 
-    public function kitchen_oic() {
-        return $this->hasOne(Employee::class, "employee_number", "kitchen_oic_employee_number");
+    public function lab_head() {
+        return $this->hasOne(Employee::class, "employee_number", "lab_head_employee_number");
     }
 
-    public function kitchen_oic_2() {
-        return $this->hasOne(Employee::class, "employee_number", "kitchen_oic_2_employee_number");
+    public function lab_head_2() {
+        return $this->hasOne(Employee::class, "employee_number", "lab_head_2_employee_number");
     }
 
     public function branch_oic() {
         return $this->hasOne(Employee::class, "employee_number", "branch_head_employee_number");
     }
 
-    public function group_head() {
-        return $this->hasOne(Employee::class, "employee_number", "group_head_employee_number");
+    public function area_head() {
+        return $this->hasOne(Employee::class, "employee_number", "area_head_employee_number");
     }
     public function expense_debit() {
         return $this->belongsTo(Account::class, 'expense_debit', 'acc_no');

@@ -21,8 +21,8 @@ class BranchController extends Controller
     private array $oicDateAppointmentCache = [];
     private const OIC_DATE_APPOINTED_FIELDS = [
         "branch_head_date_appointed" => "branch_head_employee_number",
-        "kitchen_oic_date_appointed" => "kitchen_oic_employee_number",
-        "kitchen_oic_2_date_appointed" => "kitchen_oic_2_employee_number",
+        "lab_head_date_appointed" => "lab_head_employee_number",
+        "lab_head_2_date_appointed" => "lab_head_2_employee_number",
     ];
 
     private const ACCOUNT_ACTIVITY_FIELDS = [
@@ -49,15 +49,15 @@ class BranchController extends Controller
         ],
         [
             'label' => 'Kitchen OIC',
-            'name_field' => 'kitchen_oic',
-            'employee_field' => 'kitchen_oic_employee_number',
-            'date_field' => 'kitchen_oic_date_appointed',
+            'name_field' => 'lab_head',
+            'employee_field' => 'lab_head_employee_number',
+            'date_field' => 'lab_head_date_appointed',
         ],
         [
             'label' => 'Kitchen OIC 2',
-            'name_field' => 'kitchen_oic_2',
-            'employee_field' => 'kitchen_oic_2_employee_number',
-            'date_field' => 'kitchen_oic_2_date_appointed',
+            'name_field' => 'lab_head_2',
+            'employee_field' => 'lab_head_2_employee_number',
+            'date_field' => 'lab_head_2_date_appointed',
         ],
     ];
 
@@ -66,8 +66,8 @@ class BranchController extends Controller
         return Branch::where("status", "active")
             ->where(function ($query) use ($employeeNumber) {
                 $query->where("branch_head_employee_number", $employeeNumber)
-                    ->orWhere("kitchen_oic_employee_number", $employeeNumber)
-                    ->orWhere("kitchen_oic_2_employee_number", $employeeNumber);
+                    ->orWhere("lab_head_employee_number", $employeeNumber)
+                    ->orWhere("lab_head_2_employee_number", $employeeNumber);
             });
     }
 
@@ -312,8 +312,8 @@ class BranchController extends Controller
     {
         return $branches->map(function ($branch) {
             $branch->branch_head_date_appointed = $this->getOicDateAppointed($branch->branch_head_employee_number);
-            $branch->kitchen_oic_date_appointed = $this->getOicDateAppointed($branch->kitchen_oic_employee_number);
-            $branch->kitchen_oic_2_date_appointed = $this->getOicDateAppointed($branch->kitchen_oic_2_employee_number);
+            $branch->lab_head_date_appointed = $this->getOicDateAppointed($branch->lab_head_employee_number);
+            $branch->lab_head_2_date_appointed = $this->getOicDateAppointed($branch->lab_head_2_employee_number);
 
             return $branch;
         });
@@ -666,11 +666,11 @@ class BranchController extends Controller
                 "rate_code" => "required",
                 'branch_head_employee_number' => "nullable|string",
                 "branch_head_date_appointed" => "nullable|date",
-                "group_head_employee_number" => "nullable|string",
-                "kitchen_oic_employee_number" => "nullable|string",
-                "kitchen_oic_date_appointed" => "nullable|date",
-                "kitchen_oic_2_employee_number" => "nullable|string",
-                "kitchen_oic_2_date_appointed" => "nullable|date",
+                "area_head_employee_number" => "nullable|string",
+                "lab_head_employee_number" => "nullable|string",
+                "lab_head_date_appointed" => "nullable|date",
+                "lab_head_2_employee_number" => "nullable|string",
+                "lab_head_2_date_appointed" => "nullable|date",
                 "mancom_employee_number" => "nullable|string",
                 // "expense_debit" => "required",
                 // "expense_credit" => "required",
@@ -690,24 +690,24 @@ class BranchController extends Controller
             $format = $request->company === "Tony Ting Food Concepts Inc." ? "TTFC" : "SFI";
             $branchNumber = $format . str_pad(++$count, 5, '0', STR_PAD_LEFT);
             $bhEmployee = $this->resolveEmployeeByNumber($request->branch_head_employee_number);
-            $ghEmployee = $this->resolveEmployeeByNumber($request->group_head_employee_number);
+            $ghEmployee = $this->resolveEmployeeByNumber($request->area_head_employee_number);
             $mancom = $this->resolveEmployeeByNumber($request->mancom_employee_number);
-            $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
-            $kitchenOIC2 = $this->resolveEmployeeByNumber($request->kitchen_oic_2_employee_number);
+            $kitchenOIC = $this->resolveEmployeeByNumber($request->lab_head_employee_number);
+            $kitchenOIC2 = $this->resolveEmployeeByNumber($request->lab_head_2_employee_number);
 
             if ($request->filled('branch_head_employee_number') && !$bhEmployee) {
                 return $this->sendError(["message" => "Branch head employee number not found."]);
             }
-            if ($request->filled('group_head_employee_number') && !$ghEmployee) {
+            if ($request->filled('area_head_employee_number') && !$ghEmployee) {
                 return $this->sendError(["message" => "Group head employee number not found."]);
             }
             if ($request->filled('mancom_employee_number') && !$mancom) {
                 return $this->sendError(["message" => "Mancom employee number not found."]);
             }
-            if ($request->filled('kitchen_oic_employee_number') && !$kitchenOIC) {
+            if ($request->filled('lab_head_employee_number') && !$kitchenOIC) {
                 return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
-            if ($request->filled('kitchen_oic_2_employee_number') && !$kitchenOIC2) {
+            if ($request->filled('lab_head_2_employee_number') && !$kitchenOIC2) {
                 return $this->sendError(["message" => "Kitchen OIC 2 employee number not found."]);
             }
             $dateOverrides = [];
@@ -715,11 +715,11 @@ class BranchController extends Controller
             if (!empty($bhEmployee['employee_number']) && !empty($request->branch_head_date_appointed)) {
                 $dateOverrides[$bhEmployee['employee_number']] = $request->branch_head_date_appointed;
             }
-            if (!empty($kitchenOIC['employee_number']) && !empty($request->kitchen_oic_date_appointed)) {
-                $dateOverrides[$kitchenOIC['employee_number']] = $request->kitchen_oic_date_appointed;
+            if (!empty($kitchenOIC['employee_number']) && !empty($request->lab_head_date_appointed)) {
+                $dateOverrides[$kitchenOIC['employee_number']] = $request->lab_head_date_appointed;
             }
-            if (!empty($kitchenOIC2['employee_number']) && !empty($request->kitchen_oic_2_date_appointed)) {
-                $dateOverrides[$kitchenOIC2['employee_number']] = $request->kitchen_oic_2_date_appointed;
+            if (!empty($kitchenOIC2['employee_number']) && !empty($request->lab_head_2_date_appointed)) {
+                $dateOverrides[$kitchenOIC2['employee_number']] = $request->lab_head_2_date_appointed;
             }
 
             $branch = Branch::create([
@@ -737,15 +737,15 @@ class BranchController extends Controller
                 "rate_code" => $request->rate_code,
                 "branch_email" => $request->branch_email,
                 'branch_head_employee_number' => $bhEmployee['employee_number'] ?? null,
-                "group_head_employee_number" => $ghEmployee['employee_number'] ?? null,
+                "area_head_employee_number" => $ghEmployee['employee_number'] ?? null,
                 'branch_head' => $bhEmployee['full_name'] ?? null,
-                "group_head" => $ghEmployee['full_name'] ?? null,
+                "area_head" => $ghEmployee['full_name'] ?? null,
                 "mancom_employee_number" => $mancom['employee_number'] ?? null,
                 "mancom" => $mancom['full_name'] ?? null,
-                "kitchen_oic_employee_number" => $kitchenOIC['employee_number'] ?? null,
-                "kitchen_oic" => $kitchenOIC['full_name'] ?? null, 
-                "kitchen_oic_2_employee_number" => $kitchenOIC2['employee_number'] ?? null,
-                "kitchen_oic_2" => $kitchenOIC2['full_name'] ?? null,
+                "lab_head_employee_number" => $kitchenOIC['employee_number'] ?? null,
+                "lab_head" => $kitchenOIC['full_name'] ?? null, 
+                "lab_head_2_employee_number" => $kitchenOIC2['employee_number'] ?? null,
+                "lab_head_2" => $kitchenOIC2['full_name'] ?? null,
                 "expense_debit" => $request->expense_debit ?? null, 
                 "expense_credit" => $request->expense_credit ?? null, 
                 "advance_debit" => $request->advance_debit ?? null, 
@@ -762,8 +762,8 @@ class BranchController extends Controller
 
             $this->syncEmployeeOicStatuses([
                 $branch->branch_head_employee_number,
-                $branch->kitchen_oic_employee_number,
-                $branch->kitchen_oic_2_employee_number,
+                $branch->lab_head_employee_number,
+                $branch->lab_head_2_employee_number,
             ], $dateOverrides);
 
             return $this->sendResponse(["message" => "Branch created successfully"]);
@@ -786,11 +786,11 @@ class BranchController extends Controller
             $rules = [
                 'branch_head_employee_number' => "nullable|string",
                 "branch_head_date_appointed" => "nullable|date",
-                "group_head_employee_number" => "nullable|string",
-                "kitchen_oic_employee_number" => "nullable|string",
-                "kitchen_oic_date_appointed" => "nullable|date",
-                "kitchen_oic_2_employee_number" => "nullable|string",
-                "kitchen_oic_2_date_appointed" => "nullable|date",
+                "area_head_employee_number" => "nullable|string",
+                "lab_head_employee_number" => "nullable|string",
+                "lab_head_date_appointed" => "nullable|date",
+                "lab_head_2_employee_number" => "nullable|string",
+                "lab_head_2_date_appointed" => "nullable|date",
                 "mancom_employee_number" => "nullable|string",
             ];
 
@@ -813,24 +813,24 @@ class BranchController extends Controller
             $request->validate($rules);
 
             $bhEmployee = $this->resolveEmployeeByNumber($request->branch_head_employee_number);
-            $ghEmployee = $this->resolveEmployeeByNumber($request->group_head_employee_number);
+            $ghEmployee = $this->resolveEmployeeByNumber($request->area_head_employee_number);
             $mancom = $this->resolveEmployeeByNumber($request->mancom_employee_number);
-            $kitchenOIC = $this->resolveEmployeeByNumber($request->kitchen_oic_employee_number);
-            $kitchenOIC2 = $this->resolveEmployeeByNumber($request->kitchen_oic_2_employee_number);
+            $kitchenOIC = $this->resolveEmployeeByNumber($request->lab_head_employee_number);
+            $kitchenOIC2 = $this->resolveEmployeeByNumber($request->lab_head_2_employee_number);
 
             if ($request->filled('branch_head_employee_number') && !$bhEmployee) {
                 return $this->sendError(["message" => "Branch head employee number not found."]);
             }
-            if ($request->filled('group_head_employee_number') && !$ghEmployee) {
+            if ($request->filled('area_head_employee_number') && !$ghEmployee) {
                 return $this->sendError(["message" => "Group head employee number not found."]);
             }
             if ($request->filled('mancom_employee_number') && !$mancom) {
                 return $this->sendError(["message" => "Mancom employee number not found."]);
             }
-            if ($request->filled('kitchen_oic_employee_number') && !$kitchenOIC) {
+            if ($request->filled('lab_head_employee_number') && !$kitchenOIC) {
                 return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
             }
-            if ($request->filled('kitchen_oic_2_employee_number') && !$kitchenOIC2) {
+            if ($request->filled('lab_head_2_employee_number') && !$kitchenOIC2) {
                 return $this->sendError(["message" => "Kitchen OIC 2 employee number not found."]);
             }
             $dateValidationError = $this->validateEditableOicDates($request, $branch);
@@ -841,8 +841,8 @@ class BranchController extends Controller
             $oldOicDateSnapshot = $this->captureOicDateSnapshot($branch);
             $affectedEmployeeNumbers = [
                 $branch->branch_head_employee_number,
-                $branch->kitchen_oic_employee_number,
-                $branch->kitchen_oic_2_employee_number,
+                $branch->lab_head_employee_number,
+                $branch->lab_head_2_employee_number,
                 $bhEmployee['employee_number'] ?? null,
                 $kitchenOIC['employee_number'] ?? null,
                 $kitchenOIC2['employee_number'] ?? null,
@@ -852,24 +852,24 @@ class BranchController extends Controller
             if (!empty($bhEmployee['employee_number']) && !empty($request->branch_head_date_appointed)) {
                 $dateOverrides[$bhEmployee['employee_number']] = $request->branch_head_date_appointed;
             }
-            if (!empty($kitchenOIC['employee_number']) && !empty($request->kitchen_oic_date_appointed)) {
-                $dateOverrides[$kitchenOIC['employee_number']] = $request->kitchen_oic_date_appointed;
+            if (!empty($kitchenOIC['employee_number']) && !empty($request->lab_head_date_appointed)) {
+                $dateOverrides[$kitchenOIC['employee_number']] = $request->lab_head_date_appointed;
             }
-            if (!empty($kitchenOIC2['employee_number']) && !empty($request->kitchen_oic_2_date_appointed)) {
-                $dateOverrides[$kitchenOIC2['employee_number']] = $request->kitchen_oic_2_date_appointed;
+            if (!empty($kitchenOIC2['employee_number']) && !empty($request->lab_head_2_date_appointed)) {
+                $dateOverrides[$kitchenOIC2['employee_number']] = $request->lab_head_2_date_appointed;
             }
 
             $updateData = [
                 'branch_head_employee_number' => $bhEmployee['employee_number'] ?? null,
-                "group_head_employee_number" => $ghEmployee['employee_number'] ?? null,
+                "area_head_employee_number" => $ghEmployee['employee_number'] ?? null,
                 'branch_head' => $bhEmployee['full_name'] ?? null,
-                "group_head" => $ghEmployee['full_name'] ?? null,
+                "area_head" => $ghEmployee['full_name'] ?? null,
                 "mancom_employee_number" => $mancom['employee_number'] ?? null,
                 "mancom" => $mancom['full_name'] ?? null,
-                "kitchen_oic_employee_number" => $kitchenOIC['employee_number'] ?? null,
-                "kitchen_oic" => $kitchenOIC['full_name'] ?? null,
-                "kitchen_oic_2_employee_number" => $kitchenOIC2['employee_number'] ?? null,
-                "kitchen_oic_2" => $kitchenOIC2['full_name'] ?? null,
+                "lab_head_employee_number" => $kitchenOIC['employee_number'] ?? null,
+                "lab_head" => $kitchenOIC['full_name'] ?? null,
+                "lab_head_2_employee_number" => $kitchenOIC2['employee_number'] ?? null,
+                "lab_head_2" => $kitchenOIC2['full_name'] ?? null,
             ];
 
             if ($canEditAll) {

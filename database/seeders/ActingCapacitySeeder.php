@@ -31,7 +31,7 @@ class ActingCapacitySeeder extends Seeder
 
             $oicNumber = $branch->branch_head_employee_number;
             if ( strtolower($position->station->name) === "back of the house") {
-                $oicNumber = $branch->kitchen_oic_employee_number;
+                $oicNumber = $branch->lab_head_employee_number;
             }
 
             if ($acting["date_added"]) {
