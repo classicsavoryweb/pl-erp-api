@@ -289,11 +289,11 @@ class OldOicDateAppointedSeeder extends Seeder
         if ((string) $branch->branch_head_employee_number === (string) $employeeNumber) {
             $slots[] = 'branch_head';
         }
-        if ((string) $branch->kitchen_oic_employee_number === (string) $employeeNumber) {
-            $slots[] = 'kitchen_oic';
+        if ((string) $branch->lab_head_employee_number === (string) $employeeNumber) {
+            $slots[] = 'lab_head';
         }
-        if ((string) $branch->kitchen_oic_2_employee_number === (string) $employeeNumber) {
-            $slots[] = 'kitchen_oic_2';
+        if ((string) $branch->lab_head_2_employee_number === (string) $employeeNumber) {
+            $slots[] = 'lab_head_2';
         }
 
         return $slots;

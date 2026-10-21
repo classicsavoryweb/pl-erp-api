@@ -79,8 +79,8 @@ class SyncBranchDetails extends Command
                     ->flatMap(function ($branch) {
                         return [
                             $branch->branch_head_employee_number,
-                            $branch->group_head_employee_number,
-                            $branch->kitchen_oic_employee_number,
+                            $branch->area_head_employee_number,
+                            $branch->lab_head_employee_number,
                             $branch->mancom_employee_number,
                         ];
                     })
@@ -152,14 +152,14 @@ class SyncBranchDetails extends Command
                     $bhCompanyValue = $bhCompany ?? $branch->company;
 
                     $ghCompany = null;
-                    if ($branch->group_head_employee_number) {
-                        $ghCompany = $companyByEmployeeNumber[trim((string) $branch->group_head_employee_number)] ?? null;
+                    if ($branch->area_head_employee_number) {
+                        $ghCompany = $companyByEmployeeNumber[trim((string) $branch->area_head_employee_number)] ?? null;
                     }
                     $ghCompanyShort = $ghCompany ? $this->companyShortName($ghCompany) : $companyShort;
 
                     $kitchenCompany = null;
-                    if ($branch->kitchen_oic_employee_number) {
-                        $kitchenCompany = $companyByEmployeeNumber[trim((string) $branch->kitchen_oic_employee_number)] ?? null;
+                    if ($branch->lab_head_employee_number) {
+                        $kitchenCompany = $companyByEmployeeNumber[trim((string) $branch->lab_head_employee_number)] ?? null;
                     }
                     $kitchenCompanyShort = $kitchenCompany ? $this->companyShortName($kitchenCompany) : $companyShort;
 
@@ -183,11 +183,11 @@ class SyncBranchDetails extends Command
                         'status' => is_string($branch->status) ? strtolower($branch->status) : $branch->status,
                         'branch_email' => $branch->branch_email,
                         'date_opened' => $branch->date_open,
-                        'gh_employeeid' => $branch->group_head_employee_number,
-                        'group_head' => $branch->group_head,
+                        'gh_employeeid' => $branch->area_head_employee_number,
+                        'area_head' => $branch->area_head,
                         'gh_company' => $ghCompanyShort,
-                        'kitchenID' => $branch->kitchen_oic_employee_number,
-                        'kitchenName' => $branch->kitchen_oic,
+                        'kitchenID' => $branch->lab_head_employee_number,
+                        'kitchenName' => $branch->lab_head,
                         'kitchenCompany' => $kitchenCompanyShort,
                         'mancomID' => $branch->mancom_employee_number,
                         'mancomName' => $branch->mancom,
