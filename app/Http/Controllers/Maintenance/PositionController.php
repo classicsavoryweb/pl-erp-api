@@ -58,7 +58,7 @@ class PositionController extends Controller
                 "description" => "required|unique:positions",
                 "rank" => "required",
                 "status" => "required",
-                "station_id" => "required",
+                "station_id" => "nullable",
                 "schedule_type" => "required",
                 "timekeeping_type" => "required",
             ]);
