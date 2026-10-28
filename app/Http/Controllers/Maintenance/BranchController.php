@@ -687,7 +687,7 @@ class BranchController extends Controller
             ]);
 
             $count = Branch::count();
-            $format = $request->company === "Tony Ting Food Concepts Inc." ? "TTFC" : "SFI";
+            $format = $request->company === "Photoline" ? "PL" : "SFI";
             $branchNumber = $format . str_pad(++$count, 5, '0', STR_PAD_LEFT);
             $bhEmployee = $this->resolveEmployeeByNumber($request->branch_head_employee_number);
             $ghEmployee = $this->resolveEmployeeByNumber($request->area_head_employee_number);
@@ -805,7 +805,7 @@ class BranchController extends Controller
                     "location" => "required",
                     "company" => "required",
                     "date_open" => "required",
-                    "branch_email" => "required",
+                    "branch_email" => "nullable",
                     "rate_code" => "required",
                 ], $rules);
             }

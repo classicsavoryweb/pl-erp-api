@@ -160,6 +160,7 @@ class EmployeeContractControlller extends Controller
             $date2 = Carbon::parse($contract->contract_end_date);
             $duration = $date1->diffInMonths($date2);
             $durationType = "months";
+            $education = $employee->education;
 
             if ($duration == 0) {
 
@@ -199,12 +200,8 @@ class EmployeeContractControlller extends Controller
             $properFullName = ucwords($fullName);
 
             return $this->sendResponse([
-                "first_name" => $employee->first_name,
-                "middle_name" => $employee->middle_name,
-                "last_name" => $employee->last_name,
-                "gender" => $employee->gender,
-                "address" => $employee->address,
-                "date_hired" => $employee->date_hired,
+                "employee" => $employee,
+                "education" => $education,
                 "contract_start_date" => $contract->contract_start_date,
                 "contract_end_date" => $contract->contract_end_date,
                 "previous_contract_start_date" => $previousContract->contract_start_date ?? null,

@@ -22,8 +22,8 @@ class EmployeePositionControlller extends Controller
         $hasBranchOicAssignment = Branch::where("status", "active")
             ->where(function ($query) use ($employee) {
                 $query->where("branch_head_employee_number", $employee->employee_number)
-                    ->orWhere("kitchen_oic_employee_number", $employee->employee_number)
-                    ->orWhere("kitchen_oic_2_employee_number", $employee->employee_number);
+                    ->orWhere("lab_head_employee_number", $employee->employee_number)
+                    ->orWhere("lab_head_2_employee_number", $employee->employee_number);
             })->exists();
 
         $employee->loadMissing("latest_position");
