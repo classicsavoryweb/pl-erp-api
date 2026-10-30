@@ -16,6 +16,7 @@ use App\Models\IncentivePosition;
 use App\Models\IncentivesBracket;
 use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
+use App\Models\AdditionalDailyRate;
 use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\Rate;
@@ -28,7 +29,7 @@ use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Log;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Str;
@@ -201,7 +202,8 @@ class EmployeeController extends Controller
                 "contracts",
                 "schedule",
                 "schedule.schedule_type",
-                "separation"
+                "separation",
+                "additionalDailyRate"
             ])->where("employee_number", $employee_number)
             ->first();
 
@@ -602,6 +604,19 @@ class EmployeeController extends Controller
                     "flexible_schedule" => $request->flexible_schedule,
                     "incentive_leave" => $request->incentive_leave
                 ]);
+            }
+            $amount = $request->input('additional_daily_rate.amount');
+
+            if ($amount !== null && $amount !== '') {
+                $additionalDailyRate = AdditionalDailyRate::where(
+                    'employee_id',
+                    $employee->id
+                )->first();
+
+                if ($additionalDailyRate) {
+                    $additionalDailyRate->amount = $amount;
+                    $additionalDailyRate->save();
+                }
             }
 
             $pathName = "";

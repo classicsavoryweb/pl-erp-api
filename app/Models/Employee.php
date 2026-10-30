@@ -17,6 +17,13 @@ class Employee extends Model
 
     protected static function booted()
     {
+
+        static::created(function (Employee $employee) {
+            $employee->additionalDailyRate()->create([
+                'amount' => 0
+            ]);
+        });
+
         static::saved(function (Employee $employee) {
             if (!$employee->wasChanged('position_id')) {
                 return;
@@ -426,6 +433,10 @@ class Employee extends Model
     }
     public function adjustments() {
         return $this->hasMany(Adjustment::class, "employee_id", "biometric_number");
+    }
+    public function additionalDailyRate()
+    {
+        return $this->hasOne(AdditionalDailyRate::class, 'employee_id');
     }
 
     public function overtime() {
