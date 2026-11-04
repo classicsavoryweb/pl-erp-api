@@ -48,9 +48,9 @@ class AuthController extends Controller
 
                 $employee = Employee::where("employee_number", $user->employee_number)->first();
 
-                if (!$employee) {
-                    $employee = OtherEmployee::where("employee_number", $user->employee_number)->first();
-                }
+                // if (!$employee) {
+                //     $employee = OtherEmployee::where("employee_number", $user->employee_number)->first();
+                // }
 
                 activity()->causedBy($user)->useLog("Login")->log('user logged in');
 
