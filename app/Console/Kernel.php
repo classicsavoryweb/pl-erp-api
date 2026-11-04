@@ -20,21 +20,21 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:fetch-biotime-attendance')->dailyAt("23:59");
-        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(11, '21:00');
-        $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '21:00');
-        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(10, '14:01');
-        $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(25, '14:01');
-        $schedule->command('app:sync-employee-details')->dailyAt('11:00');
-        $schedule->command('app:sync-employee-details')->dailyAt('18:00');
-        $schedule->command('app:sync-branch-details')->dailyAt('23:00');
-        $schedule->command('app:update-terminal-devices-of-branch-seeder')->dailyAt("05:00");
-        $schedule->command('create:deduction-from-uniform-atd')->twiceDaily(7,19);
+        // $schedule->command('app:fetch-biotime-attendance')->dailyAt("23:59");
+        // $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(11, '21:00');
+        // $schedule->command('app:fetch-overtime-in-cs-hub')->monthlyOn(26, '21:00');
+        // $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(10, '14:01');
+        // $schedule->command('app:fetch-employee-assigned-schedule')->monthlyOn(25, '14:01');
+        // $schedule->command('app:sync-employee-details')->dailyAt('11:00');
+        // $schedule->command('app:sync-employee-details')->dailyAt('18:00');
+        // $schedule->command('app:sync-branch-details')->dailyAt('23:00');
+        // $schedule->command('app:update-terminal-devices-of-branch-seeder')->dailyAt("05:00");
+        // $schedule->command('create:deduction-from-uniform-atd')->twiceDaily(7,19);
 
         // REMOVE
         // $schedule->command('app:transfer-uniform-deductions')->dailyAt('12:00');
         // $schedule->command('app:transfer-uniform-deductions')->dailyAt('18:00');
-        $schedule->command('app:auto-disable-tardiness-month')->monthlyOn(11, '05:00');
+        // $schedule->command('app:auto-disable-tardiness-month')->monthlyOn(11, '05:00');
     }
 
     protected function commands(): void
