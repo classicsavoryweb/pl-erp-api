@@ -30,14 +30,15 @@ class EmployeeBankAccountController extends Controller
         try {
             DB::beginTransaction();
             $request->validate([
-                "bank_account_type_id" => "required",
                 "bank_number" => "required|unique:bank_details,bank_number",
                 "remarks" => "required"
             ]);
 
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $employee->bank_details()->create([
-                ...$request->all()
+             $employee->bank_details()->create([
+                "bank_account_type_id" => 2,
+                "bank_number" => $request->bank_number,
+                "remarks" => $request->remarks,
             ]);
 
             DB::commit();

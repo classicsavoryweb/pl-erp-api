@@ -29,7 +29,7 @@ use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Log;
+use Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Str;
@@ -97,7 +97,7 @@ class EmployeeController extends Controller
             $employeeNumber = str_pad($thisCompanyEmployeeCount, 7, '0', STR_PAD_LEFT);
             $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
 
-            $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
+            $pendingStatus = EmployeeStatus::where('description', "Trainee")->first();
             $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave", "region"]);
             $position = Position::find($request->position_id);
             $biometricsNumber = "";
