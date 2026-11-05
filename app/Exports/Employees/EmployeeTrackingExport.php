@@ -20,9 +20,16 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
         $this->columns = $columns;
 
         $dateHiredIndex = array_search('date_hired', $this->columns, true);
+        $regularDateHired = array_search('regularization_date', $this->columns, true);
+
         if ($dateHiredIndex !== false) {
             array_splice($this->columns, $dateHiredIndex + 1, 0, '__tenure');
             array_splice($this->headers, $dateHiredIndex + 1, 0, 'Tenure');
+        }
+
+         if ($dateHiredIndex !== false) {
+            array_splice($this->columns, $regularDateHired + 1, 0, '__regular_tenure');
+            array_splice($this->headers, $regularDateHired + 1, 0, 'Regular Tenure');
         }
     }
 
@@ -70,13 +77,13 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
         return $value;
     }
 
-    protected function getTenure($employee): string
+    protected function getTenure($employee, string $dateColumn = 'date_hired'): string
     {
-        if (!$employee->date_hired) {
+        if (!$employee->$dateColumn) {
             return '';
         }
 
-        $dateHired = Carbon::parse($employee->date_hired)->startOfDay();
+        $dateHired = Carbon::parse($employee->$dateColumn)->startOfDay();
         $endDate = !empty($employee->separation_date) && $employee->separation_date !== '1900-01-01'
             ? Carbon::parse($employee->separation_date)->startOfDay()
             : now()->startOfDay();
@@ -109,7 +116,12 @@ class EmployeeTrackingExport implements FromCollection, WithHeadings
 
             foreach ($this->columns as $column) {
                 if ($column === '__tenure') {
-                    $row[] = $this->getTenure($employee);
+                    $row[] = $this->getTenure($employee,'date_hired');
+                    continue;
+                }
+
+                    if ($column === '__regular_tenure') {
+                    $row[] = $this->getTenure($employee,'regularization_date');
                     continue;
                 }
 

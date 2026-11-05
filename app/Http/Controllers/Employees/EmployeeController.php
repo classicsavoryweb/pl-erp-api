@@ -97,7 +97,7 @@ class EmployeeController extends Controller
             $employeeNumber = str_pad($thisCompanyEmployeeCount, 7, '0', STR_PAD_LEFT);
             $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
 
-            $pendingStatus = EmployeeStatus::where('description', "Trainee")->first();
+            $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave", "region"]);
             $position = Position::find($request->position_id);
             $biometricsNumber = "";
@@ -618,6 +618,11 @@ class EmployeeController extends Controller
                     $additionalDailyRate->save();
                 }
             }
+            $employee_status_id = $request->employee_status_id;
+
+            if ($request->filled('regularization_date')) {
+                $employee_status_id = EmployeeStatus::where('description', "Regular")->first();
+            }
 
             $pathName = "";
 
@@ -672,7 +677,7 @@ class EmployeeController extends Controller
                 "emergency_contact_address" => $request->emergency_contact_address,
                 "emergency_contact_relationship" => $request->emergency_contact_relationship,
                 "education_history_id" => $education->id,
-                "employee_status_id" => $request->employee_status_id,
+                "employee_status_id" => $employee_status_id->id,
                 "status" => $request->status,
                 "home_branch_id" => $request->home_branch_id
             ]);

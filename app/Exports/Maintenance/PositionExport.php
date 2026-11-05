@@ -20,8 +20,8 @@ class PositionExport implements FromCollection, WithHeadings
         return $this->positions->map(function ($position) {
             return [
                 $position->description,
-                $position->station->name,
-                $position->rank,
+                $position->station->name ?? "",
+                $position->rank ?? "",
                 $position->schedule_type,
                 $position->timekeeping_type,
                 $position->status,
