@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Str; 
 use App\Support\NotifiesJobStatus;
+use Illuminate\Support\Facades\Artisan;
+use Spatie\Backup\BackupDestination\BackupDestination;
 
 class CreateDatabaseBackup implements ShouldQueue
 {
@@ -30,70 +32,29 @@ class CreateDatabaseBackup implements ShouldQueue
 
     public function handle()
     {
-        $filename = "database-backup-" . Carbon::now()->format('Y-m-d-H-i-s') . ".sql"; 
+        $disk = config('backup.backup.destination.disks')[0];
+        $exitCode = Artisan::call('backup:run', [
+            '--only-db'   => true,
+            '--only-to-disk' => $disk,
+            '--disable-notifications' => true,
+        ]);
 
-        $tempFilename = Str::uuid() . '.sql';
-        $tempFilePath = storage_path('app/temp_backups') . DIRECTORY_SEPARATOR . $tempFilename;
-
-        if (!file_exists(storage_path('app/temp_backups'))) {
-            mkdir(storage_path('app/temp_backups'), 0755, true);
+        if ($exitCode !== 0) {
+            Log::error('Database backup failed', ['output' => Artisan::output()]);
+            throw new Exception('Database backup failed.');
         }
 
-        $mysqldumpPath = env("SQL_DUMP_PATH"); 
-        
-        $command = "$mysqldumpPath --user=" . env('DB_USERNAME') .
-           " --password=" . env('DB_PASSWORD') .
-           " --host=" . env('DB_HOST') .
-           " --port=" . env('DB_PORT', 3306) .
-           " " . env('DB_DATABASE') .
-           " > " . $tempFilePath;
-        
-        $returnVar = NULL;
-        $output = NULL;
-        
-        try {
-            exec($command, $output, $returnVar);
+        $backup = BackupDestination::create($disk, config('backup.backup.name'))->newestBackup();
 
-            if ($returnVar !== 0) {
-                throw new Exception("Database backup command failed.");
-            }
-
-            $storage = Storage::disk("hr_system_folder");
-            $directory = "/Database Backups"; 
-
-            if (!$storage->exists($directory)) {
-                $storage->makeDirectory($directory);
-            }
-
-            $finalFilename = $filename; 
-            $filePathOnDisk = $directory . '/' . $finalFilename;
-
-            $storage->put($filePathOnDisk, file_get_contents($tempFilePath));
-
-            if (file_exists($tempFilePath)) {
-                unlink($tempFilePath);
-            }
-
-            $employee_name = 'System'; 
-            if ($this->user && $this->user->employee) {
-                $employee_name = $this->user->employee->full_name;
-            }
-
-            DatabaseBackup::create([
-                'date' => now(),
-                'file_name' => $finalFilename,
-                'file_path' => $filePathOnDisk,
-                'backed_up_by' => $employee_name,
-            ]);
-
-            $this->notifyJobFinished();
-        } catch (Exception $e) {
-            $this->notifyJobFailed();
-            throw $e; 
-        } finally {
-            if (file_exists($tempFilePath)) {
-                unlink($tempFilePath);
-            }
+        if (! $backup) {
+            throw new Exception('Backup ran but no backup file was found.');
         }
+
+        DatabaseBackup::create([
+            'date'        => now(),
+            'file_name'   => basename($backup->path()),
+            'file_path'   => $backup->path(),
+            'backed_up_by'=> $this->user->full_name,
+        ]);
     }
 }

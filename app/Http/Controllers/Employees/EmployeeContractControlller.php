@@ -211,6 +211,8 @@ class EmployeeContractControlller extends Controller
                 "proper_full_name" => $properFullName,
                 "position" => $position->description,
                 "branch" => $branch->name,
+                "branch_location" => $branch->location,
+                "branch_address" => $branch->address,
                 "salary_amount" => $salary_amount
             ]);
         } catch (Exception $e) {

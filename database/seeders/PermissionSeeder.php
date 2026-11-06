@@ -161,6 +161,7 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(["name" => "view_employee_vaccination"], ["module" => "employees", "submodule" => "employee_vaccination"]);
         Permission::updateOrCreate(["name" => "perform_employee_vaccination"], ["module" => "employees", "submodule" => "employee_vaccination"]);
         Permission::updateOrCreate(["name" => "view_employee_audit_logs"], ["module" => "employees", "submodule" => "employee_audit_logs"]);
+        Permission::updateOrCreate(["name" => "perform_additional_daily_rate"], ["module" => "employees", "submodule" => "employee_tracking"]);
 
         //all records module
         // Permission::updateOrCreate(["name" => "view_all_records_health_and_safety"]);
