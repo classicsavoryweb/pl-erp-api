@@ -117,7 +117,9 @@ class ReportCoeRequestsController extends Controller
     public function getCoeRequest($id ) {
         try {
             $coeRequest = CoeRequest::where("id", $id)->first();
-            $employee = $coeRequest->employee()->first();
+            $employee = $coeRequest->employee()
+            ->with('contracts')
+            ->first();
             $position = $employee->current_position()->first();
             $branch = $employee->home_branch()->first();
             $positions = $employee->positions()->get();
@@ -173,15 +175,20 @@ class ReportCoeRequestsController extends Controller
                 "gender" => $employee->gender,
                 "date_of_stay" => $dateOfStay,
                 "include_salary" => $coeRequest->include_salary,
+                "current_salary" => $coeRequest->basic_salary,
                 "salary" => $this->convertToChequeWords($coeRequest->basic_salary),
                 "current_position" => $coeRequest->position,
+                "current_branch" => $branch->name,
                 "purpose" => $purpose,
                 "positions" => $result,
+                "date_hired" => $employee->date_hired,
+                "coe_format" => $coeRequest->coe_format,
                 "employee_status" => $employee->status,
                 "coe_reason" => $coeRequest->coe_reason,
                 "leave_from" => Carbon::parse($coeRequest->leave_from)->format('F j, Y'),
                 "leave_to" => Carbon::parse($coeRequest->leave_to)->format('F j, Y'),
-                "employment_status" => $employee->employee_status->description
+                "employment_status" => $employee->employee_status->description,
+                "contract" => $employee->contracts
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);

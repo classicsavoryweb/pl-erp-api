@@ -618,10 +618,10 @@ class EmployeeController extends Controller
                     $additionalDailyRate->save();
                 }
             }
-            $employee_status_id = $request->employee_status_id;
-
+            $employeeStatusId = $request->employee_status_id;
             if ($request->filled('regularization_date')) {
-                $employee_status_id = EmployeeStatus::where('description', "Regular")->first();
+                $employeeStatusId = EmployeeStatus::where('description', 'Regular')
+                    ->value('id');
             }
 
             $pathName = "";
@@ -677,7 +677,7 @@ class EmployeeController extends Controller
                 "emergency_contact_address" => $request->emergency_contact_address,
                 "emergency_contact_relationship" => $request->emergency_contact_relationship,
                 "education_history_id" => $education->id,
-                "employee_status_id" => $employee_status_id->id,
+                "employee_status_id" => $employeeStatusId,
                 "status" => $request->status,
                 "home_branch_id" => $request->home_branch_id
             ]);
