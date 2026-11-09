@@ -17,7 +17,6 @@ use App\Models\IncentivesBracket;
 use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
 use App\Models\AdditionalDailyRate;
-use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\Rate;
 use App\Models\Region;
@@ -91,8 +90,8 @@ class EmployeeController extends Controller
             }
 
             $thisCompanyEmployeeCount = Employee::count();
-            $otherCompanyEmployeeCount = OtherEmployee::count();
-            $employeeCount = $thisCompanyEmployeeCount + $otherCompanyEmployeeCount;
+            // $otherCompanyEmployeeCount = OtherEmployee::count();
+            $employeeCount = $thisCompanyEmployeeCount;
             $company = env('COMPANY_NAME');
             $employeeNumber = str_pad($thisCompanyEmployeeCount, 7, '0', STR_PAD_LEFT);
             $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
@@ -416,14 +415,6 @@ class EmployeeController extends Controller
     public function getBranchEmployees(Request $request) {
         try {
             $employees = Employee::where("status", "active")->get();
-            $otherEmployees = collect();
-            try {
-                $otherEmployees = OtherEmployee::where("status", "active")->get();
-            } catch (Exception $e) {
-                $otherEmployees = collect();
-            }
-
-            $employees = $employees->concat($otherEmployees)->values();
 
             return $this->sendResponse(["employees" => $employees]);
         } catch(Exception $e) {

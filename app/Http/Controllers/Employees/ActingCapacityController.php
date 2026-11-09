@@ -14,7 +14,6 @@ use App\Models\IncentivePosition;
 use App\Models\IncentivesBracket;
 use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
-use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\Rate;
 use App\Models\ScheduleType;
@@ -334,12 +333,6 @@ class ActingCapacityController extends Controller
              $approvedBy = Employee::with(["current_position"])
                 ->where("employee_number", "0000007")
                 ->first();
-
-            if (!$approvedBy) {
-                $approvedBy = OtherEmployee::with(["current_position"])
-                    ->where("employee_number", "0000007")
-                    ->first();
-            }
 
             return $this->sendResponse([
                 "acting_capacity" => $actingCapacity,
