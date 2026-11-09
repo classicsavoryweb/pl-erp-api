@@ -9,7 +9,6 @@ use App\Models\Accounting\Account;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\EmployeePosition;
-use App\Models\OtherCompany\OtherEmployee;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Exception;
@@ -516,11 +515,7 @@ class BranchController extends Controller
         $employee = Employee::where("employee_number", $employeeNumber)
             ->where("status", "active")
             ->first()
-            ?? OtherEmployee::where("employee_number", $employeeNumber)
-                ->where("status", "active")
-                ->first()
-            ?? Employee::where("employee_number", $employeeNumber)->first()
-            ?? OtherEmployee::where("employee_number", $employeeNumber)->first();
+            ?? Employee::where("employee_number", $employeeNumber)->first();
 
         if ($employee) {
             return [

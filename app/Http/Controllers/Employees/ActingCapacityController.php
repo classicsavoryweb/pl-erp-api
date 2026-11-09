@@ -14,7 +14,6 @@ use App\Models\IncentivePosition;
 use App\Models\IncentivesBracket;
 use App\Models\IncentivesManagement;
 use App\Models\IncentivesPerEmployee;
-use App\Models\OtherCompany\OtherEmployee;
 use App\Models\Position;
 use App\Models\Rate;
 use App\Models\ScheduleType;
@@ -296,40 +295,44 @@ class ActingCapacityController extends Controller
                 $actingCapacity->end_date = $latestExtension->end_date;
             }
 
-            $station = $actingCapacity->recommended_position->station->name;
+            // $station = $actingCapacity->recommended_position->station->name;
             $type = "english";
             $withRecommendation = false;
             $recommendedBy = null;
             $approvedBy = null;
             $branch = Branch::find($actingCapacity->branch_assignment_id);
 
-            if ( strtolower($station) === "back of the house") {
-                $type = "tagalog";
-                $approvedBy = Employee::with(["current_position"])->where("employee_number", "0007413")->first();
+            // if ( strtolower($station) === "back of the house") {
+            //     $type = "tagalog";
+            //     $approvedBy = Employee::with(["current_position"])->where("employee_number", "0007413")->first();
 
 
-                if (!$approvedBy) {
-                    $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", "0007413")->first();
-                }
-            } else if (strtolower($station) === "head office") {
-                $withRecommendation = true;
-                $approvedBy = Employee::with(["current_position"])->where("employee_number", $branch->group_head_employee_number)->first();
-                $recommendedBy = Employee::with(["current_position"])->where("employee_number", $branch->branch_head_employee_number)->first();
+            //     if (!$approvedBy) {
+            //         $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", "0007413")->first();
+            //     }
+            // } else if (strtolower($station) === "head office") {
+            //     $withRecommendation = true;
+            //     $approvedBy = Employee::with(["current_position"])->where("employee_number", $branch->group_head_employee_number)->first();
+            //     $recommendedBy = Employee::with(["current_position"])->where("employee_number", $branch->branch_head_employee_number)->first();
 
-                if (!$approvedBy) {
-                    $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", $branch->group_head_employee_number)->first();
-                }
+            //     if (!$approvedBy) {
+            //         $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", $branch->group_head_employee_number)->first();
+            //     }
 
-                if (!$recommendedBy) {
-                    $recommendedBy = OtherEmployee::with(["current_position"])->where("employee_number", $branch->branch_head_employee_number)->first();
-                }
-            } else {
-                $approvedBy = Employee::with(["current_position"])->where("employee_number", "639")->first();
+            //     if (!$recommendedBy) {
+            //         $recommendedBy = OtherEmployee::with(["current_position"])->where("employee_number", $branch->branch_head_employee_number)->first();
+            //     }
+            // } else {
+            //     $approvedBy = Employee::with(["current_position"])->where("employee_number", "639")->first();
 
-                if (!$approvedBy) {
-                    $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", "639")->first();
-                }
-            }
+            //     if (!$approvedBy) {
+            //         $approvedBy = OtherEmployee::with(["current_position"])->where("employee_number", "639")->first();
+            //     }
+            // }
+
+             $approvedBy = Employee::with(["current_position"])
+                ->where("employee_number", "0000007")
+                ->first();
 
             return $this->sendResponse([
                 "acting_capacity" => $actingCapacity,
@@ -337,7 +340,7 @@ class ActingCapacityController extends Controller
                 'type' => $type,
                 "recommended_by" => $recommendedBy,
                 "approved_by" => $approvedBy,
-                "station" => $station
+                // "station" => $station
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
