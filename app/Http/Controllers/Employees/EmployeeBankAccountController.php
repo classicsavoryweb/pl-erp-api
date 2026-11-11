@@ -34,9 +34,11 @@ class EmployeeBankAccountController extends Controller
                 "remarks" => "required"
             ]);
 
+            $employeeBankId = BankDetail::where('description', 'Savings Account')
+                ->value('id');
             $employee = Employee::where("employee_number", $employee_number)->first();
              $employee->bank_details()->create([
-                "bank_account_type_id" => 2,
+                "bank_account_type_id" => $employeeBankId,
                 "bank_number" => $request->bank_number,
                 "remarks" => $request->remarks,
             ]);
