@@ -348,7 +348,9 @@ class EmployeeController extends Controller
                 "separation",
                 "latest_bank_details",
                 "schedule",
-                "schedule.schedule_type"
+                "schedule.schedule_type",
+                "additionalDailyRate"
+
             ])
             ->orderBy("date_hired", "desc");
 
@@ -563,6 +565,17 @@ class EmployeeController extends Controller
                     Rule::unique("employees", "email")
                     ->ignore($employee->id)
                     ->where(fn ($query) => $query->where("status", "active")),
+                ]
+            ]);
+
+            $regularStatusId = EmployeeStatus::where('description','regular')->value('id');
+
+            $request->validate([
+                'employee_status_id' => 'required',
+                'regularization_date' => [
+                    'nullable',
+                    'date',
+                    Rule::requiredIf($request->employee_status_id == $regularStatusId)
                 ]
             ]);
 
