@@ -74,6 +74,7 @@ class EmployeeController extends Controller
                 "birthday" => "required",
                 "contact_number" => "required",
                 "contract_duration" => "required",
+                "email" => "required"
             ]);
             
             $duplicate = Employee::where('first_name', $request->first_name)
@@ -89,22 +90,9 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            $thisCompanyEmployeeCount = Employee::count();
-            // $otherCompanyEmployeeCount = OtherEmployee::count();
-            $employeeCount = $thisCompanyEmployeeCount;
-            $company = env('COMPANY_NAME');
-            $employeeNumber = str_pad($thisCompanyEmployeeCount, 7, '0', STR_PAD_LEFT);
-            $employeeNumber2 = $company."-".str_pad($employeeNumber, 7, '0', STR_PAD_LEFT);
-
             $pendingStatus = EmployeeStatus::where('description', "Pending")->first();
             $fields = $request->except(["contract_duration", "flexible_schedule", "schedule_type", "incentive_leave", "region"]);
             $position = Position::find($request->position_id);
-            $biometricsNumber = "";
-
-            if ($request->type === "Direct") {
-                $prefix = env('COMPANY_NAME') == "PL" ? "10" : "30";
-                $biometricsNumber = $prefix . $employeeNumber;
-            }
 
             $region = null;
             if ($request->has("region")) {
@@ -112,11 +100,11 @@ class EmployeeController extends Controller
             }
 
             $employee = Employee::create([
-                "employee_number" => $employeeNumber,
-                "employee_number_2" => $employeeNumber2,
+                "employee_number" => "TEMP",
+                "employee_number_2" => "TEMP",
                 "employee_status_id" => $pendingStatus->id,
                 "station_id" => $position->station_id,
-                "biometric_number" => $biometricsNumber,
+                "biometric_number" => "TEMP",
                 "region" => $region,
                 ...$fields
             ]);

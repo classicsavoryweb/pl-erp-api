@@ -19,6 +19,12 @@ class Employee extends Model
     {
 
         static::created(function (Employee $employee) {
+            $employee_number = str_pad($employee->id , 8, '0', STR_PAD_LEFT);
+            $employee->employee_number = $employee_number;
+            $employee->employee_number_2 = env('COMPANY_NAME')."-".$employee_number;
+            $employee->biometric_number = $employee_number;
+            $employee->saveQuietly();
+
             $employee->additionalDailyRate()->create([
                 'amount' => 0
             ]);
