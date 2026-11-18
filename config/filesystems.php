@@ -65,7 +65,7 @@ return [
         'hr_system_folder' => [
             'driver' => "local",
             'root' => env('STORAGE_PATH'),
-            'visibility' => 'private',
+            // 'visibility' => 'private',
             'throw' => false,
         ],
 
