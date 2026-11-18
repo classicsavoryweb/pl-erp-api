@@ -196,7 +196,7 @@ class EmployeeContractControlller extends Controller
             ->first();
 
             $middleInitial = strtoupper(substr($employee->middle_name, 0, 1));
-            $fullName = strtolower($employee->first_name . ' ' . $middleInitial . '. ' . $employee->last_name);
+            $fullName = strtolower($employee->first_name . ' ' . ($middleInitial ? $middleInitial . '. ' : '') . $employee->last_name);
             $properFullName = ucwords($fullName);
 
             return $this->sendResponse([
