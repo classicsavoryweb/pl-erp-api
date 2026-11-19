@@ -586,15 +586,15 @@ class EmployeeController extends Controller
                 $schedule = ScheduleDetail::where("employee_id",$employee->id)->first();
                 $schedule->update([
                     "schedule_type_id" => $scheduleTypeId,
-                    "flexible_schedule" => $request->flexible_schedule ?? 0,
-                    "incentive_leave" => $request->incentive_leave ?? 0
+                    "flexible_schedule" => $request->flexible_schedule ?? "No",
+                    "incentive_leave" => $request->incentive_leave ?? "No"
                 ]);
             } else {
                 ScheduleDetail::create([
                     "employee_id" => $employee->id,
                     "schedule_type_id" => $scheduleTypeId,
-                    "flexible_schedule" => $request->flexible_schedule ?? 0,
-                    "incentive_leave" => $request->incentive_leave ?? 0
+                    "flexible_schedule" => $request->flexible_schedule ?? "No",
+                    "incentive_leave" => $request->incentive_leave ?? "No"
                 ]);
             }
             $amount = $request->input('additional_daily_rate.amount');
