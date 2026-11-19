@@ -580,35 +580,34 @@ class EmployeeController extends Controller
                 $education = EducationHistory::create($educationData);
             }
 
-            $scheduleType = ScheduleType::where("name", $request->schedule_type)->first();
+            $scheduleTypeId = ScheduleType::where('name', 'Normal Schedule')->value('id');
 
             if ($employee->schedule) {
                 $schedule = ScheduleDetail::where("employee_id",$employee->id)->first();
                 $schedule->update([
-                    "schedule_type_id" => $scheduleType->id,
-                    "flexible_schedule" => $request->flexible_schedule,
-                    "incentive_leave" => $request->incentive_leave
+                    "schedule_type_id" => $scheduleTypeId,
+                    "flexible_schedule" => $request->flexible_schedule ?? "No",
+                    "incentive_leave" => $request->incentive_leave ?? "No"
                 ]);
             } else {
                 ScheduleDetail::create([
                     "employee_id" => $employee->id,
-                    "schedule_type_id" => $scheduleType->id,
-                    "flexible_schedule" => $request->flexible_schedule,
-                    "incentive_leave" => $request->incentive_leave
+                    "schedule_type_id" => $scheduleTypeId,
+                    "flexible_schedule" => $request->flexible_schedule ?? "No",
+                    "incentive_leave" => $request->incentive_leave ?? "No"
                 ]);
             }
             $amount = $request->input('additional_daily_rate.amount');
 
             if ($amount !== null && $amount !== '') {
-                $additionalDailyRate = AdditionalDailyRate::where(
-                    'employee_id',
-                    $employee->id
-                )->first();
-
-                if ($additionalDailyRate) {
-                    $additionalDailyRate->amount = $amount;
-                    $additionalDailyRate->save();
-                }
+                AdditionalDailyRate::updateOrCreate(
+                    [
+                        'employee_id' => $employee->id,
+                    ],
+                    [
+                        'amount' => $amount
+                    ]
+                );
             }
             $employeeStatusId = $request->employee_status_id;
             if ($request->filled('regularization_date')) {
