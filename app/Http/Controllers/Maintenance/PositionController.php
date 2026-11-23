@@ -61,6 +61,7 @@ class PositionController extends Controller
                 "station_id" => "nullable",
                 "schedule_type" => "required",
                 "timekeeping_type" => "required",
+                "branch_type" => "required"
             ]);
 
             Position::create([
@@ -70,6 +71,7 @@ class PositionController extends Controller
                 "station_id" => $request->station_id,
                 "schedule_type" => $request->schedule_type,
                 "timekeeping_type" => $request->timekeeping_type,
+                "branch_type" => $request->branch_type
             ]);
 
             return $this->sendResponse(["message" => "Position saved successfully"]);
@@ -84,9 +86,10 @@ class PositionController extends Controller
                 "description" => "required|unique:positions,description,".$id,
                 "rank" => "required",
                 "status" => "required",
-                "station_id" => "required",
+                // "station_id" => "required",
                 "schedule_type" => "required",
                 "timekeeping_type"=> "required",
+                "branch_type" => "required"
             ]);
 
             Position::where("id", $id)
@@ -94,9 +97,10 @@ class PositionController extends Controller
                 "description"=> $request->description,
                 "rank" => $request->rank,
                 "status" => $request->status,
-                "station_id" => $request->station_id,
+                // "station_id" => $request->station_id,
                 "schedule_type" => $request->schedule_type,
                 "timekeeping_type" => $request->timekeeping_type,
+                "branch_type" => $request->branch_type
             ]);
 
             return $this->sendResponse(["message" => "Position saved successfully"]);

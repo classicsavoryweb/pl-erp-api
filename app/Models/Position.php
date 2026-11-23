@@ -15,7 +15,8 @@ class Position extends Model
         "status",
         "station_id",
         "schedule_type",
-        "timekeeping_type"
+        "timekeeping_type",
+        "branch_type"
     ];
 
     public function station() {
