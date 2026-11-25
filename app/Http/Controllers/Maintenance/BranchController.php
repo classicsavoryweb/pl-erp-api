@@ -816,15 +816,15 @@ class BranchController extends Controller
             if ($request->filled('branch_head_employee_number') && !$bhEmployee) {
                 return $this->sendError(["message" => "Branch head employee number not found."]);
             }
-            if ($request->filled('area_head_employee_number') && !$ghEmployee) {
-                return $this->sendError(["message" => "Group head employee number not found."]);
-            }
+            // if ($request->filled('area_head_employee_number') && !$ghEmployee) {
+            //     return $this->sendError(["message" => "Group head employee number not found."]);
+            // }
             if ($request->filled('mancom_employee_number') && !$mancom) {
                 return $this->sendError(["message" => "Mancom employee number not found."]);
             }
-            if ($request->filled('lab_head_employee_number') && !$kitchenOIC) {
-                return $this->sendError(["message" => "Kitchen OIC employee number not found."]);
-            }
+            // if ($request->filled('lab_head_employee_number') && !$kitchenOIC) {
+            //     return $this->sendError(["message" => "Laboratory Head employee number not found."]);
+            // }
             if ($request->filled('lab_head_2_employee_number') && !$kitchenOIC2) {
                 return $this->sendError(["message" => "Kitchen OIC 2 employee number not found."]);
             }
