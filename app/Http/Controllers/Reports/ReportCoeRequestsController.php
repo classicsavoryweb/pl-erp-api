@@ -178,7 +178,7 @@ class ReportCoeRequestsController extends Controller
                 "current_salary" => $coeRequest->basic_salary,
                 "salary" => $this->convertToChequeWords($coeRequest->basic_salary),
                 "current_position" => $coeRequest->position,
-                "current_branch" => $branch->name,
+                "current_branch" => $branch->name ?? "",
                 "purpose" => $purpose,
                 "positions" => $result,
                 "date_hired" => $employee->date_hired,
