@@ -73,11 +73,13 @@ class Employee extends Model
         "philhealth",
         "pagibig",
         "referred_by",
+        "employee_referred",
         "remarks",
         "date_hired",
         "regularization_date",
         "separation_date",
         "separation_reason",
+        "separation_remarks",
         "employee_status_id",
         "education_history_id",
         "position_id",
@@ -550,28 +552,27 @@ class Employee extends Model
                 "regularization_date",
                 "separation_date",
                 "separation_reason",
+                "separation_remarks",
                 "employee_status_id",
                 "employee_status.description",
                 "education_history_id",
                 "position_id",
                 "current_position.description",
-                "station_id",
                 "branch_id",
                 "current_branch.name",
-                "home_branch_id",
-                "home_branch.name",
                 "type",
-                "agency_id",
-                "agency.name",
                 "emergency_contact_name",
                 "emergency_contact_number",
                 "emergency_contact_address",
                 "emergency_contact_relationship",
                 "oic_status",
                 "status",
+                'current_branch.branch_head',
+                'current_branch.lab_head',
+                'current_branch.area_head'
             ])
             ->useLogName('Employee')
-            ->logOnlyDirty()
+            // ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 }

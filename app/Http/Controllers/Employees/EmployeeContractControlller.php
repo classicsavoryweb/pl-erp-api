@@ -154,7 +154,7 @@ class EmployeeContractControlller extends Controller
             $contract = Contract::find($id);
             $employee = $contract->employee()->first();
             $position = $employee->current_position()->first();
-            $branch = $employee->home_branch()->first();
+            $branch = $employee->current_branch()->first();
 
             $date1 = Carbon::parse($contract->contract_start_date);
             $date2 = Carbon::parse($contract->contract_end_date);
@@ -210,9 +210,9 @@ class EmployeeContractControlller extends Controller
                 "duration_type" => $durationType,
                 "proper_full_name" => $properFullName,
                 "position" => $position->description,
-                "branch" => $branch->name,
-                "branch_location" => $branch->location,
-                "branch_address" => $branch->address,
+                "branch" => $branch->name ?? null,
+                "branch_location" => $branch->location ?? "",
+                "branch_address" => $branch->address ?? "",
                 "salary_amount" => $salary_amount
             ]);
         } catch (Exception $e) {

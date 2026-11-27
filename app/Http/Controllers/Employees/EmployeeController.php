@@ -213,6 +213,17 @@ class EmployeeController extends Controller
                 Log::info($e->getMessage());
             }
 
+           $referredEmployee = null;
+
+            if ($employee->employee_referred) {
+                $referredEmployee = Employee::where(
+                    'employee_number',
+                    $employee->employee_referred
+                )->first();
+            }
+
+            $employee->employee_referred_name = $referredEmployee?->full_name;
+
             return $this->sendResponse(["employee" => $employee]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage() ]);
@@ -553,7 +564,31 @@ class EmployeeController extends Controller
                     Rule::unique("employees", "email")
                     ->ignore($employee->id)
                     ->where(fn ($query) => $query->where("status", "active")),
-                ]
+                ],
+                 "tin" => [
+                    "nullable",
+                    "regex:/^\d{3}-\d{3}-\d{3}(?:-\d{3})?$/",
+                ],
+
+                "sss" => [
+                    "nullable",
+                    "regex:/^\d{2}-\d{7}-\d{1}$/",
+                ],
+
+                "philhealth" => [
+                    "nullable",
+                    "regex:/^\d{2}-\d{9}-\d{1}$/",
+                ],
+
+                "pagibig" => [
+                    "nullable",
+                    "regex:/^\d{4}-\d{4}-\d{4}$/",
+                ],
+            ], [
+                "tin.regex" => "TIN must follow the format XXX-XXX-XXX or XXX-XXX-XXX-XXX.",
+                "sss.regex" => "SSS must follow the format XX-XXXXXXX-X.",
+                "philhealth.regex" => "PhilHealth must follow the format XX-XXXXXXXXX-X.",
+                "pagibig.regex" => "Pag-IBIG must follow the format XXXX-XXXX-XXXX.",
             ]);
 
             $regularStatusId = EmployeeStatus::where('description','regular')->value('id');
@@ -658,11 +693,13 @@ class EmployeeController extends Controller
                 "philhealth" => $request->philhealth,
                 "pagibig" => $request->pagibig,
                 "referred_by" => $request->referred_by,
+                "employee_referred" => $request->employee_referred,
                 "date_hired" => $request->date_hired,
                 "remarks" => $request->remarks,
                 "regularization_date" => $request->regularization_date,
                 "separation_date" => $request->status == "inactive" ? $request->separation_date : null,
                 "separation_reason" => $request->status == "inactive" ? $request->separation_reason : null,
+                "separation_remarks" => $request->status == "inactive" ? $request->separation_remarks : null,
                 "emergency_contact_name" => $request->emergency_contact_name,
                 "emergency_contact_number" => $request->emergency_contact_number,
                 "emergency_contact_address" => $request->emergency_contact_address,
