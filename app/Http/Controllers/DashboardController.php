@@ -51,6 +51,8 @@ class DashboardController extends Controller
                 $query->where("description", "Pending");
             })
             ->count();
+            $inactiveEmployees = Employee::where("status", "inactive")
+            ->count();
 
             $monthlyHires = Employee::selectRaw('MONTH(date_hired) as month, COUNT(*) as total')
             ->whereYear('date_hired', Carbon::now()->year)
@@ -63,6 +65,18 @@ class DashboardController extends Controller
             ->all();
             $allMonths = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyHires) {
                 return [$month => $monthlyHires[$month] ?? 0];
+            });
+            $monthlyInactiveEmployee = Employee::selectRaw('MONTH(separation_date) as month, COUNT(*) as total')
+            ->whereYear('separation_date', Carbon::now()->year)
+            ->groupBy(DB::raw('MONTH(separation_date)'))
+            ->orderBy(DB::raw('MONTH(separation_date)'))
+            ->pluck('total', 'month')
+            ->mapWithKeys(function ($value, $key) {
+                return [(int)$key => $value];
+            })
+            ->all();
+            $allMonths = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyInactiveEmployee) {
+                return [$month => $monthlyInactiveEmployee[$month] ?? 0];
             });
 
             $monthlyTardy = Tardiness::selectRaw('month, COUNT(*) as total')
@@ -99,9 +113,11 @@ class DashboardController extends Controller
                 "pending_employees" => $pendingEmployees,
                 "regular_employees" => $regularEmployees,
                 "contractual_employees" => $contractualEmployees,
+                "inactive_employees" => $inactiveEmployees,
                 "monthly_hires" => $allMonths,
                 "monthly_tardy" => $allTardy,
                 "monthly_promotions" => $allPromotions,
+                "monthly_inactive" => $monthlyInactiveEmployee
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
