@@ -572,7 +572,7 @@ class Employee extends Model
                 'current_branch.area_head'
             ])
             ->useLogName('Employee')
-            // ->logOnlyDirty()
+            ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 }

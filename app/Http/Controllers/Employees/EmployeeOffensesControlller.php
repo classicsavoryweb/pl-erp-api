@@ -7,10 +7,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\EmployeeOffense;
+use App\Models\OffensesAttachment;
 use Exception;
 use DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
 
 class EmployeeOffensesControlller extends Controller
 {
@@ -20,7 +22,8 @@ class EmployeeOffensesControlller extends Controller
             $storage = Storage::disk("hr_system_folder");
 
             $employee = Employee::where("employee_number", $employee_number)->first();
-            $offenses = EmployeeOffense::where("employee_id", $employee->id)
+            $offenses = EmployeeOffense::with('attachments')
+                ->where("employee_id", $employee->id)
                 ->with(["offense", "sanction", "employee"])
                 ->orderBy("date_committed","DESC");
 
@@ -30,20 +33,27 @@ class EmployeeOffensesControlller extends Controller
             }
 
             $offenses = $offenses->paginate($perPage);
+            $storage = Storage::disk("hr_system_folder");
 
             $offenses->getCollection()->transform(function ($offense) use ($storage) {
-                if ($offense->attachment && $storage->exists($offense->attachment)) {
+            $offense->attachments->transform(function ($attachment) use ($storage) {
+                $path = $attachment->attachment;
 
-                    $mimeType = $storage->mimeType($offense->attachment);
-                    // $actingCapacity->recommendation_letter ='data:'. $mimeType .';base64,' . base64_encode($fileContents);
-                    $fileContents = $storage->get($offense->attachment);
-                    $offense->attached_file ='data:'.$mimeType.';base64,' . base64_encode($fileContents);
+                if ($storage->exists($path)) {
+                    $mimeType = $storage->mimeType($path);
+                    $fileContents = $storage->get($path);
+
+                    $attachment->attached_file =
+                        'data:' . $mimeType . ';base64,' . base64_encode($fileContents);
                 } else {
-                    $offense->attached_file = null;
+                    $attachment->attached_file = null;
                 }
 
-                return $offense;
+                return $attachment;
             });
+
+            return $offense;
+        });
 
             return $this->sendResponse($offenses);
         } catch (Exception $e) {
@@ -57,10 +67,12 @@ class EmployeeOffensesControlller extends Controller
         return $this->getEmployeeOffenses($request, $employee_number);
     }
 
-    public function addOffense (Request $request, $employee_number) {
+    public function addOffense(Request $request, $employee_number)
+    {
         try {
             DB::beginTransaction();
-            $request->validate([     
+
+            $request->validate([
                 'offense_id' => "required",
                 'sanction_id' => "required",
                 'transgression' => "required",
@@ -71,85 +83,145 @@ class EmployeeOffensesControlller extends Controller
                 'date_served_ao' => "required",
                 'suspension_dates' => "required",
                 'date_served_da' => "required",
+                'attachments' => "nullable|array",
+                'attachments.*' => "file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx",
             ]);
 
-            $employee = Employee::where("employee_number", $employee_number)->first();
-            $offense = $employee->offenses()->create([
-                ...$request->except(["attachment"])
-            ]);
+            $employee = Employee::where("employee_number", $employee_number)->firstOrFail();
 
-            if ($request->hasFile("attachment")) {
-                $file = $request->file("attachment");
+            $offense = $employee->offenses()->create(
+                $request->except(["attachments"])
+            );
+
+            if ($request->hasFile("attachments")) {
+
                 $storage = Storage::disk("hr_system_folder");
+
                 $directory = "/Files Per Employee/" . $employee->employee_number;
+
                 if (!$storage->exists($directory)) {
                     $storage->makeDirectory($directory);
                 }
+
+                foreach ($request->file("attachments") as $file) {
+
+                    $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+
+                    $filePath = $directory . '/' . $fileName;
+
+                    $storage->put($filePath, file_get_contents($file));
+
+                    $offense->attachments()->create([
+                        "attachment" => $filePath,
+                        "attachment_file_name" => $file->getClientOriginalName(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return $this->sendResponse([
+                "message" => "Offense added successfully."
+            ]);
+
+        } catch (Exception $e) {
+
+            DB::rollBack();
+
+            return $this->sendError([
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function editOffense(Request $request, $employee_number)
+    {
+    try {
+        DB::beginTransaction();
+        $request->validate([
+            "id" => "required",
+            "offense_id" => "required",
+            "sanction_id" => "required",
+            "transgression" => "required",
+            "repetition" => "required",
+            "summary" => "required",
+            "date_committed" => "required",
+            "offense_action" => "required",
+            "date_served_ao" => "required",
+            "suspension_dates" => "required",
+            "date_served_da" => "required",
+            "attachments" => "nullable|array",
+            "attachments.*" => "file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx",
+            "removed_attachment_ids" => "nullable|array",
+            "removed_attachment_ids.*" => "integer",
+        ]);
+        $employee = Employee::where("employee_number", $employee_number)
+            ->firstOrFail();
+
+        $offense = $employee->offenses()
+            ->where("id", $request->id)
+            ->firstOrFail();
+
+        // Update offense details
+        $offense->update(
+            $request->except([
+                "id",
+                "attachments",
+                "removed_attachment_ids",
+            ])
+        );
+        $storage = Storage::disk("hr_system_folder");
+        $directory = "/Files Per Employee/" . $employee->employee_number;
+        if (!empty($request->removed_attachment_ids)) {
+
+            $attachments = $offense->attachments()
+                ->whereIn("id", $request->removed_attachment_ids)
+                ->get();
+
+            foreach ($attachments as $attachment) {
+
+                if ($storage->exists($attachment->attachment)) {
+                    $storage->delete($attachment->attachment);
+                }
+
+                $attachment->delete();
+            }
+        }
+        if ($request->hasFile("attachments")) {
+
+            if (!$storage->exists($directory)) {
+                $storage->makeDirectory($directory);
+            }
+
+            foreach ($request->file("attachments") as $file) {
+
                 $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+
                 $filePath = $directory . '/' . $fileName;
+
                 $storage->put($filePath, file_get_contents($file));
 
-                $offense->update([
+                $offense->attachments()->create([
                     "attachment" => $filePath,
                     "attachment_file_name" => $file->getClientOriginalName(),
                 ]);
             }
-
-            DB::commit();
-            return $this->sendResponse(["message" => "Offense added successfully."]);
-        } catch (Exception $e) {
-            DB::rollBack();
-            return $this->sendError(["message" => $e->getMessage() ]);
         }
-    }
-
-    public function editOffense (Request $request, $employee_number) {
-        try {
-            DB::beginTransaction();
-            $request->validate([   
-                "id" => "required",     
-                'offense_id' => "required",
-                'sanction_id' => "required",
-                'transgression' => "required",
-                'repetition' => "required",
-                'summary' => "required",
-                'date_committed' => "required",
-                'offense_action' => "required",
-                'date_served_ao' => "required",
-                'suspension_dates' => "required",
-                'date_served_da' => "required",
-            ]);
-
-            $employee = Employee::where("employee_number", $employee_number)->first();
-            $pathName = "";
-            $originalFileName = "";
-            if ($request->hasFile("attachment")) {
-                $file = $request->file("attachment");
-                $storage = Storage::disk("hr_system_folder");
-                $directory = "/Files Per Employee/" . $employee->employee_number;
-                if (!$storage->exists($directory)) {
-                    $storage->makeDirectory($directory);
-                }
-                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
-                $filePath = $directory . '/' . $fileName;
-                $storage->put($filePath, file_get_contents($file));
-                $pathName = $filePath;
-                $originalFileName = $file->getClientOriginalName();
-            } else {
-                $pathName = $request->attachment;
-                $originalFileName = $request->attachment_file_name;
-            }
-            $employee->offenses()->where("id", $request->id)->update([
-                "attachment" => $pathName,
-                "attachment_file_name" => $originalFileName,
-                ...$request->except("attachment", "attachment_file_name", "attached_file")
-            ]);
-
-            DB::commit();
-            return $this->sendResponse(["message" => "Offense updated successfully."]);
+        DB::commit();
+        $offense->load([
+            "attachments",
+            "offense",
+            "sanction",
+        ]);
+        return $this->sendResponse([
+            "message" => "Offense updated successfully.",
+            "offense" => $offense,
+        ]);
         } catch (Exception $e) {
             DB::rollBack();
-            return $this->sendError(["message" => $e->getMessage() ]);
+            return $this->sendError([
+                "message" => $e->getMessage()
+            ]);
         }
     }
 }
