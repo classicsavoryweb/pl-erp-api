@@ -27,7 +27,13 @@ class EmployeeOffense extends Model
         'remarks',
         'tardiness_id',
         'voided',
-        'void_reason'
+        'void_reason',
+        'remarks_on',
+        'sanction_id_two',
+        'sanction_id_three',
+        'date_memo_three',
+        'remarks_two',
+        'remarks_three',
     ];
 
     protected $table = "employee_offenses";
@@ -42,6 +48,10 @@ class EmployeeOffense extends Model
 
     public function employee() {
         return $this->belongsTo(Employee::class);
+    }
+    public function attachments()
+    {
+        return $this->hasMany(OffensesAttachment::class, 'offenses_id');
     }
 
     public function getActivitylogOptions(): LogOptions

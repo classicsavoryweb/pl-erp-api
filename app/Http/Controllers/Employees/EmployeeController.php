@@ -591,7 +591,9 @@ class EmployeeController extends Controller
                 "pagibig.regex" => "Pag-IBIG must follow the format XXXX-XXXX-XXXX.",
             ]);
 
-            $regularStatusId = EmployeeStatus::where('description','regular')->value('id');
+            $regularStatusId = EmployeeStatus::where('description', 'regular')->value('id');
+
+            $oldStatusId = $employee->employee_status_id;
 
             $request->validate([
                 'employee_status_id' => 'required',
@@ -672,6 +674,12 @@ class EmployeeController extends Controller
 
             $homeBranchUpdated = $employee->home_branch_id != $request->home_branch_id ? true : false;
 
+            if($request->separation_date < $request->date_hired){
+                return response()->json([
+                    'message' => 'Separation date cannot be earlier than date hired.',
+                ], 422);
+            }
+
             $employee->update([
                 "image" => $pathName,
                 "first_name" => $request->first_name,
@@ -709,6 +717,33 @@ class EmployeeController extends Controller
                 "status" => $request->status,
                 "home_branch_id" => $request->home_branch_id
             ]);
+            if ((int) $oldStatusId !== (int) $employee->employee_status_id) {
+
+                $oldStatus = EmployeeStatus::find($oldStatusId);
+                $newStatus = EmployeeStatus::find($employee->employee_status_id);
+
+                $employee->load('current_branch');
+
+                activity()
+                    ->performedOn($employee)
+                    ->useLog('Employee Status')
+                    ->withProperties([
+                        'old' => [
+                            'employee_status_id' => $oldStatusId,
+                            'description' => $oldStatus?->description,
+                            'branch_head' => $employee->current_branch?->branch_head,
+                            'lab_head' => $employee->current_branch?->lab_head,
+                        ],
+                        'attributes' => [
+                            'employee_status_id' => $employee->employee_status_id,
+                            'description' => $newStatus?->description,
+                            'regularization_date' => $employee->regularization_date,
+                            'branch_head' => $employee->current_branch?->branch_head,
+                            'lab_head' => $employee->current_branch?->lab_head,
+                        ],
+                    ])
+                    ->log('Regularization');
+            }
 
             if (!empty($request->dependents) && count($request->dependents) > 0) {
                 foreach($request->dependents as $dependant) {

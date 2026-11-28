@@ -75,7 +75,7 @@ class DashboardController extends Controller
                 return [(int)$key => $value];
             })
             ->all();
-            $allMonths = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyInactiveEmployee) {
+            $allMonthsInactive = collect(range(1, 12))->mapWithKeys(function ($month) use ($monthlyInactiveEmployee) {
                 return [$month => $monthlyInactiveEmployee[$month] ?? 0];
             });
 
@@ -117,7 +117,7 @@ class DashboardController extends Controller
                 "monthly_hires" => $allMonths,
                 "monthly_tardy" => $allTardy,
                 "monthly_promotions" => $allPromotions,
-                "monthly_inactive" => $monthlyInactiveEmployee
+                "monthly_inactive" => $allMonthsInactive
             ]);
         } catch (Exception $e) {
             return $this->sendError(["message" => $e->getMessage()]);
